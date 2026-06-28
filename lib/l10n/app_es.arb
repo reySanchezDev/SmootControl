@@ -1,0 +1,481 @@
+{
+  "@@locale": "es",
+  "appTitle": "SmooControl",
+  "dashboardTitle": "Panel operativo",
+  "dashboardSubtitle": "Base inicial lista para ventas, caja, gastos y sincronización.",
+  "primaryAction": "Abrir POS",
+  "secondaryAction": "Ver reportes",
+  "trackingStatus": "Estado del proyecto",
+  "trackingStatusValue": "Base en preparación",
+  "offlineFirst": "Offline-first",
+  "offlineFirstValue": "La app guardará ventas y gastos localmente antes de sincronizar.",
+  "responsiveReady": "Responsivo",
+  "responsiveReadyValue": "Diseñado para móvil, tablet y web desde el inicio.",
+  "moduleCatalog": "Categorías",
+  "moduleProducts": "Productos",
+  "moduleModifiers": "Modificadores POS",
+  "modulePaymentMethods": "Métodos de pago",
+  "moduleTables": "Mesas",
+  "moduleSales": "Ventas",
+  "moduleCashRegister": "Caja diaria",
+  "moduleExpenses": "Gastos",
+  "moduleExchangeRates": "Tasas de cambio",
+  "moduleSettings": "Configuración",
+  "moduleRoles": "Roles",
+  "moduleUsers": "Usuarios",
+  "moduleAudit": "Auditoría",
+  "moduleSync": "Sincronización",
+  "moduleComingSoon": "Módulo en preparación",
+  "emptyCatalogTitle": "Sin categorías",
+  "emptyCatalogMessage": "Crea categorías y subcategorías para ordenar el POS.",
+  "emptyProductsTitle": "Sin productos",
+  "emptyProductsMessage": "Crea productos para venderlos desde el POS.",
+  "emptyModifiersTitle": "Sin modificadores",
+  "emptyModifiersMessage": "Crea grupos como Bastimento o Guarnicion y agrega las opciones disponibles.",
+  "emptyPaymentMethodsTitle": "Sin métodos de pago",
+  "emptyPaymentMethodsMessage": "Configura efectivo, tarjeta, transferencia u otros métodos.",
+  "emptyTablesTitle": "Sin mesas",
+  "emptyTablesMessage": "Crea las mesas que se usarán en el servicio.",
+  "emptySalesTitle": "Sin ventas",
+  "emptySalesMessage": "Las ventas registradas aparecerán aquí.",
+  "salesDateLabel": "Fecha",
+  "emptyExpensesTitle": "Sin categorías de gastos",
+  "emptyExpensesMessage": "Crea categorías para controlar salidas operativas.",
+  "posReadyTitle": "POS en preparación",
+  "posReadyMessage": "La pantalla de facturación usará categorías, productos, mesas y cuentas separadas.",
+  "reportsReadyTitle": "Reportes en preparación",
+  "reportsReadyMessage": "Aquí se mostrarán ventas, ganancias, gastos, caja y anulaciones.",
+  "reportPeriodToday": "Día",
+  "reportPeriodWeek": "Semana",
+  "reportPeriodMonth": "Mes",
+  "reportPeriodYear": "Año",
+  "reportPeriodCustom": "Rango",
+  "reportSelectDate": "Seleccionar fecha",
+  "reportSelectRange": "Seleccionar rango",
+  "reportRangeLabel": "Rango",
+  "reportGrossSales": "Ventas",
+  "reportGrossProfit": "Ganancia bruta",
+  "reportExpenses": "Gastos",
+  "reportExpensesDetail": "Detalle de gastos",
+  "reportNoExpenses": "Sin gastos registrados en este periodo.",
+  "expenseCategoryFilter": "Filtrar por categoria",
+  "allCategoriesOption": "Todas las categorias",
+  "reportNetProfit": "Ganancia real",
+  "reportAverageTicket": "Ticket promedio",
+  "reportSalesCount": "Ventas registradas",
+  "reportVoidsCount": "Anulaciones",
+  "reportCashSessions": "Cajas registradas",
+  "reportVoidsDetail": "Detalle de anulaciones",
+  "reportNoVoids": "Sin anulaciones en este periodo.",
+  "reportVoidBy": "Anulada por",
+  "localUserLabel": "Usuario local",
+  "reportTopProducts": "Productos más vendidos",
+  "reportLowestProducts": "Productos menos vendidos",
+  "reportNoProducts": "Sin productos vendidos en este periodo.",
+  "reportUnitsSold": "unidades",
+  "activeStatus": "Activo",
+  "inactiveStatus": "Inactivo",
+  "availableInPosField": "Disponible en POS",
+  "availableInPosStatus": "Disponible en POS",
+  "unavailableInPosStatus": "No disponible en POS",
+  "productOptionGroupsField": "Opciones para POS",
+  "productOptionGroupsEmptyMessage": "Agrega grupos solo si el producto debe pedir acompanamientos, bases u otras elecciones.",
+  "productOptionGroupsFormatError": "Completa el nombre del grupo y al menos una opcion.",
+  "productModifierGroupsField": "Grupos modificadores",
+  "productModifierGroupsEmptyMessage": "Crea grupos en Modificadores POS y luego asignelos al producto.",
+  "productHasOptionsStatus": "Pide opciones en POS",
+  "selectProductOptionsTitle": "Seleccionar opciones",
+  "addOptionGroupAction": "Agregar grupo",
+  "optionGroupNameField": "Nombre del grupo",
+  "optionGroupRequiredField": "Requerido en POS",
+  "productOptionField": "Opcion",
+  "addOptionAction": "Agregar opcion",
+  "skipOptionalOptionAction": "Omitir",
+  "removeAction": "Quitar",
+  "deleteAction": "Eliminar",
+  "nextAction": "Siguiente",
+  "previousAction": "Anterior",
+  "addToCartAction": "Agregar",
+  "cashAffectsRegister": "Afecta efectivo",
+  "requiresReference": "Requiere referencia",
+  "saleStatusCompleted": "Completada",
+  "saleStatusVoided": "Anulada",
+  "voidSaleAction": "Anular",
+  "voidSaleTitle": "Anular venta",
+  "voidReasonField": "Motivo de anulación",
+  "saleVoidedMessage": "Venta anulada.",
+  "generatePdfAction": "Generar PDF",
+  "previewPdfAction": "Ver comprobante",
+  "invoicePreviewTitle": "Vista previa del comprobante",
+  "pdfGenerationError": "No se pudo generar el PDF.",
+  "createAction": "Crear",
+  "editAction": "Editar",
+  "confirmAction": "Confirmar",
+  "cancelAction": "Cancelar",
+  "okAction": "OK",
+  "saveAction": "Guardar",
+  "backAction": "Volver",
+  "searchField": "Buscar",
+  "emptySearchTitle": "Sin resultados",
+  "emptySearchMessage": "No hay registros que coincidan con la busqueda.",
+  "nameField": "Nombre",
+  "categoryTypeField": "Tipo",
+  "categoryTypeCategory": "Categoría",
+  "categoryTypeSubcategory": "Subcategoría",
+  "catalogParentField": "Ubicar dentro de",
+  "rootCategoryOption": "Categoría principal",
+  "categoryInsideOf": "Dentro de",
+  "expandGroupAction": "Expandir grupo",
+  "collapseGroupAction": "Contraer grupo",
+  "expandedStatus": "Expandido",
+  "collapsedStatus": "Contraído",
+  "parentCategoryField": "Categoría",
+  "priceInCentsField": "Precio",
+  "costInCentsField": "Costo",
+  "createCategoryTitle": "Nueva categoría",
+  "editCategoryTitle": "Editar categoría",
+  "removeCategoryLevelTitle": "Quitar nivel",
+  "removeCategoryLevelMessage": "Se eliminara el nivel \"{name}\". Sus productos y subniveles directos quedaran dentro del nivel anterior.",
+  "@removeCategoryLevelMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "removeCategoryLevelWithChildrenMessage": "Esta accion no elimina la categoria principal.",
+  "removeCategoryLevelConfirm": "Quitar nivel",
+  "createProductTitle": "Nuevo producto",
+  "editProductTitle": "Editar producto",
+  "createModifierGroupTitle": "Nuevo grupo modificador",
+  "editModifierGroupTitle": "Editar grupo modificador",
+  "createModifierOptionTitle": "Nueva opcion modificadora",
+  "editModifierOptionTitle": "Editar opcion modificadora",
+  "addModifierOptionAction": "Agregar opcion",
+  "deactivateAction": "Inactivar",
+  "deactivateCatalogItemTitle": "Inactivar registro",
+  "deactivateCatalogItemMessage": "Se inactivara \"{name}\". El historico se conserva y no se borra fisicamente.",
+  "@deactivateCatalogItemMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "deactivateModifierGroupTitle": "Inactivar grupo modificador",
+  "deactivateModifierGroupMessage": "Se inactivara el grupo \"{name}\" y dejara de solicitarse en el POS. Sus opciones se conservan para historico.",
+  "@deactivateModifierGroupMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "deactivateModifierOptionTitle": "Inactivar opcion modificadora",
+  "deactivateModifierOptionMessage": "Se inactivara la opcion \"{name}\" y dejara de aparecer en el POS.",
+  "@deactivateModifierOptionMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "modifierGroupNoOptions": "Sin opciones",
+  "modifierGroupOneOption": "1 opcion",
+  "modifierGroupManyOptions": "{count} opciones",
+  "@modifierGroupManyOptions": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "createPaymentMethodTitle": "Nuevo método de pago",
+  "editPaymentMethodTitle": "Editar método de pago",
+  "createTableTitle": "Nueva mesa",
+  "editTableTitle": "Editar mesa",
+  "fieldRequiredError": "Completa los campos requeridos.",
+  "numericFieldError": "Ingresa un número válido.",
+  "activeField": "Activo",
+  "optionalFieldHint": "Opcional",
+  "optionalField": "Opcional",
+  "yesLabel": "Sí",
+  "noLabel": "No",
+  "createExpenseCategoryTitle": "Nueva categoría de gasto",
+  "editExpenseCategoryTitle": "Editar categoría de gasto",
+  "deleteExpenseCategoryTitle": "Eliminar categoría de gasto",
+  "deleteExpenseCategoryMessage": "Se eliminara \"{name}\". Si tiene categorias hijas, quedaran en la raiz.",
+  "@deleteExpenseCategoryMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "createExpenseTitle": "Nuevo gasto",
+  "expenseSavedMessage": "Gasto registrado correctamente.",
+  "expenseCategoriesSection": "Categorías de gasto",
+  "todayExpensesSection": "Gastos de hoy",
+  "noExpensesTodayMessage": "No hay gastos registrados hoy.",
+  "unknownExpenseCategory": "Sin categoría",
+  "amountInCentsField": "Monto",
+  "descriptionField": "Descripción",
+  "openCashRegisterTitle": "Abrir caja",
+  "closeCashRegisterTitle": "Cerrar caja",
+  "openingCashField": "Efectivo inicial",
+  "closingCashField": "Conteo físico",
+  "cashOpeningAmount": "Efectivo inicial",
+  "cashSalesAmount": "Ventas en efectivo",
+  "cashExpensesAmount": "Gastos desde caja",
+  "cashExpectedAmount": "Efectivo esperado",
+  "cashPhysicalAmount": "Conteo físico",
+  "cashDifferenceAmount": "Diferencia",
+  "cashStatusOpen": "Caja abierta",
+  "cashStatusClosed": "Caja cerrada",
+  "openAction": "Abrir",
+  "closeAction": "Cerrar",
+  "posCashRegisterRequiredTitle": "Caja requerida",
+  "posCashRegisterRequiredMessage": "Abrí tu caja para ingresar al POS y registrar ventas.",
+  "posStaleCashRegisterRequiredTitle": "Caja anterior abierta",
+  "posStaleCashRegisterRequiredMessage": "La caja del {date} quedo abierta. Debes cerrarla antes de abrir la caja de hoy.",
+  "@posStaleCashRegisterRequiredMessage": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "posOpenCashRegisterAction": "Abrir caja",
+  "posCloseCashRegisterAction": "Cerrar caja",
+  "posViewTransactionsAction": "Ver Transacciones",
+  "posNoTransactionsMessage": "No hay transacciones cobradas en esta caja.",
+  "posTransactionsTotalLabel": "Total cobrado",
+  "posCloseCashPendingCart": "No se puede cerrar caja mientras existan mesas con productos pendientes.",
+  "posExitAction": "Salir",
+  "tableOccupiedLabel": "Ocupada",
+  "renameTableTitle": "Renombrar mesa",
+  "tableDisplayNameField": "Nombre visible en POS",
+  "cartTitle": "Cuenta",
+  "cartEmptyMessage": "Selecciona productos para agregarlos a la cuenta.",
+  "checkoutAction": "Cobrar",
+  "clearCartAction": "Limpiar",
+  "clearCartConfirmTitle": "Limpiar pedido",
+  "clearCartConfirmMessage": "Se quitaran todos los productos de la mesa seleccionada. Esta accion no se puede deshacer.",
+  "removeCartLineConfirmTitle": "Quitar producto",
+  "removeCartLineConfirmMessage": "Se quitara \"{name}\" del pedido. Esta accion no se puede deshacer.",
+  "@removeCartLineConfirmMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "removeSplitAccountConfirmTitle": "Quitar cuenta",
+  "removeSplitAccountConfirmMessage": "Se quitara la cuenta \"{name}\" y sus productos regresaran a la orden original.",
+  "@removeSplitAccountConfirmMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "paymentReferenceField": "Referencia de pago",
+  "paymentGroupField": "Grupo de pago",
+  "paymentParentField": "Ubicación",
+  "paymentRootOption": "Nivel principal",
+  "paymentFinalOptionField": "Opción cobrable en POS",
+  "paymentNavigationNode": "Grupo de navegación",
+  "removePaymentLevelTitle": "Quitar nivel de pago",
+  "removePaymentLevelMessage": "Se eliminara el nivel \"{name}\". Sus bancos, cuentas u opciones directas quedaran dentro del nivel anterior.",
+  "@removePaymentLevelMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "removePaymentLevelWithChildrenMessage": "Esta accion no elimina un metodo de pago principal.",
+  "removePaymentLevelConfirm": "Quitar nivel",
+  "currencyCodeField": "Moneda",
+  "exchangeRateField": "Tasa",
+  "exchangeRateMonthLabel": "Mes",
+  "exchangeRateMonthlyField": "Tasa para todo el mes",
+  "exchangeRateApplyMonthAction": "Aplicar al mes",
+  "exchangeRateNotConfigured": "No configurada",
+  "exchangeRateMissingMessage": "No existe tasa de cambio para {currency} en el dia actual.",
+  "@exchangeRateMissingMessage": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "moreOptionsAction": "Más opciones",
+  "moreOptionsEmptyMessage": "Aquí se agregarán opciones secundarias del POS.",
+  "posRegisterExpenseAction": "Registrar Gasto",
+  "paymentAmountTitle": "Monto {method}",
+  "@paymentAmountTitle": {
+    "placeholders": {
+      "method": {
+        "type": "String"
+      }
+    }
+  },
+  "paymentAmountInsufficient": "El monto recibido no cubre el total.",
+  "paymentChangeMessage": "Vuelto: {amount}",
+  "@paymentChangeMessage": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "posAmountReceivedField": "Recibido",
+  "posChangeDueLabel": "Cambio",
+  "posDescriptionColumn": "Descripcion",
+  "posServedColumn": "Servido",
+  "posQuantityColumn": "Cantidad",
+  "posPriceColumn": "Precio",
+  "posAmountColumn": "Monto",
+  "posRemoveColumn": "Remover",
+  "posMarkServedTooltip": "Marcar como servido",
+  "posMarkPendingTooltip": "Marcar como pendiente",
+  "posHideProductsAction": "Ocultar Productos",
+  "posShowProductsAction": "Mostrar Productos",
+  "posHideProductsCompactAction": "Ocultar",
+  "posShowProductsCompactAction": "Mostrar",
+  "posTodayExchangeRateLabel": "Tasa de cambio del dia: {rate}",
+  "@posTodayExchangeRateLabel": {
+    "placeholders": {
+      "rate": {
+        "type": "String"
+      }
+    }
+  },
+  "paymentMethodField": "Método de pago",
+  "posTodayExchangeRateCompactLabel": "Tasa: {rate}",
+  "@posTodayExchangeRateCompactLabel": {
+    "placeholders": {
+      "rate": {
+        "type": "String"
+      }
+    }
+  },
+  "tableField": "Mesa",
+  "tableStatusAvailable": "Disponible",
+  "tableStatusOccupied": "Ocupada",
+  "tableStatusDisabled": "Inactiva",
+  "noTableOption": "Sin mesa",
+  "splitAccountsAction": "Separar cuentas",
+  "splitAccountsTitle": "Separar cuentas",
+  "accountCountField": "Cantidad de cuentas",
+  "accountNameField": "Nombre de cuenta",
+  "assignItemsTitle": "Asignar productos",
+  "selectAccountHint": "Selecciona una cuenta",
+  "pendingItemsTitle": "Productos pendientes",
+  "assignedItemsTitle": "Productos asignados",
+  "splitAccountsHelp": "Selecciona una cuenta y toca los productos que pertenecen a esa factura.",
+  "splitAccountsPendingError": "Asigna todos los productos y deja al menos un producto en cada cuenta.",
+  "splitAccountsMinimumItemsError": "Solo se puede separar una cuenta cuando la mesa tiene más de un producto.",
+  "splitAddAccountAction": "Agregar cuenta",
+  "splitOriginalOrderTitle": "Orden original",
+  "splitSelectedItemHint": "Producto seleccionado",
+  "splitTapAccountHint": "Toca una cuenta para moverlo.",
+  "splitRemoveAccountAction": "Eliminar cuenta",
+  "splitReturnItemAction": "Regresar a la orden",
+  "splitAccountTotalLabel": "Total",
+  "confirmSplitAction": "Confirmar separación",
+  "splitAccountsConfirmedMessage": "Cuentas separadas listas para facturar.",
+  "splitAccountPaymentsTitle": "Pago por cuenta",
+  "checkoutSuccessTitle": "Venta registrada",
+  "checkoutSuccessMessage": "La venta se guardó localmente.",
+  "businessSettingsTitle": "Datos del negocio",
+  "businessNameField": "Nombre comercial",
+  "legalNameField": "Razón social",
+  "taxNumberField": "RUC",
+  "phoneField": "Teléfono",
+  "addressField": "Dirección",
+  "invoicePrefixField": "Prefijo de factura",
+  "initialInvoiceNumberField": "Número inicial",
+  "showCompanyInfoOnPdfField": "Mostrar datos de empresa en PDF",
+  "settingsSavedMessage": "Configuración guardada.",
+  "emptyRolesTitle": "Sin roles",
+  "emptyRolesMessage": "Crea roles y asigna permisos para controlar el acceso.",
+  "emptyUsersTitle": "Sin usuarios",
+  "emptyUsersMessage": "Crea usuarios locales y asígnales un rol.",
+  "emptyAuditTitle": "Sin eventos",
+  "emptyAuditMessage": "No hay acciones auditadas para la fecha seleccionada.",
+  "auditActionCategorySaved": "CategorÃ­a guardada",
+  "auditActionProductSaved": "Producto guardado",
+  "auditActionPaymentMethodSaved": "MÃ©todo de pago guardado",
+  "auditActionTableSaved": "Mesa guardada",
+  "auditActionSaleVoided": "Venta anulada",
+  "auditActionCashOpened": "Caja abierta",
+  "auditActionCashClosed": "Caja cerrada",
+  "auditActionExpenseCategorySaved": "CategorÃ­a de gasto guardada",
+  "auditActionExpenseCategoryDeleted": "Categoría de gasto eliminada",
+  "auditActionExpenseSaved": "Gasto registrado",
+  "auditActionSettingsSaved": "ConfiguraciÃ³n guardada",
+  "auditActionRoleSaved": "Rol guardado",
+  "auditActionUserSaved": "Usuario guardado",
+  "auditDetailReason": "Motivo",
+  "auditDetailStatus": "Estado",
+  "auditDetailOptionGroups": "Grupos de opciones",
+  "auditDetailPermissions": "Permisos",
+  "emptySyncTitle": "Sin pendientes",
+  "emptySyncMessage": "No hay operaciones locales pendientes de sincronizar.",
+  "syncNowAction": "Sincronizar ahora",
+  "syncOperationCreate": "Registro nuevo",
+  "syncOperationUpdate": "Actualización",
+  "syncOperationDelete": "Eliminación",
+  "syncStatusPending": "Pendiente",
+  "syncStatusSyncing": "Sincronizando",
+  "syncStatusSynced": "Sincronizado",
+  "syncStatusError": "Con error",
+  "syncLastError": "Último error",
+  "syncRetryCount": "Reintentos: {count}",
+  "@syncRetryCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncSummary": "Procesadas: {processed} | Correctas: {succeeded} | Fallidas: {failed}",
+  "@syncSummary": {
+    "placeholders": {
+      "processed": {
+        "type": "int"
+      },
+      "succeeded": {
+        "type": "int"
+      },
+      "failed": {
+        "type": "int"
+      }
+    }
+  },
+  "createRoleTitle": "Nuevo rol",
+  "editRoleTitle": "Editar rol",
+  "roleDescriptionField": "Descripción",
+  "systemRoleField": "Rol del sistema",
+  "permissionsSection": "Permisos",
+  "createUserTitle": "Nuevo usuario",
+  "editUserTitle": "Editar usuario",
+  "displayNameField": "Nombre visible",
+  "emailField": "Correo",
+  "pinField": "PIN",
+  "pinOptionalField": "PIN nuevo (opcional)",
+  "posUserField": "Usuario POS",
+  "posUserHelp": "Al iniciar sesion entra directo al flujo operativo del POS.",
+  "loginTitle": "Iniciar sesion",
+  "loginMessage": "Ingresa con tu correo y PIN para operar SmooControl.",
+  "loginAction": "Entrar",
+  "initialAdminTitle": "Crear administrador inicial",
+  "initialAdminMessage": "No hay usuarios con PIN. Crea el primer administrador para activar el acceso.",
+  "createInitialAdminAction": "Crear administrador",
+  "accessDeniedTitle": "Acceso restringido",
+  "accessDeniedMessage": "Tu usuario no tiene permisos para abrir esta pantalla.",
+  "roleField": "Rol",
+  "noRoleAvailableMessage": "Primero crea un rol activo."
+}

@@ -1,0 +1,481 @@
+{
+  "@@locale": "en",
+  "appTitle": "SmooControl",
+  "dashboardTitle": "Operations dashboard",
+  "dashboardSubtitle": "Initial foundation ready for sales, cash register, expenses, and sync.",
+  "primaryAction": "Open POS",
+  "secondaryAction": "View reports",
+  "trackingStatus": "Project status",
+  "trackingStatusValue": "Foundation in progress",
+  "offlineFirst": "Offline-first",
+  "offlineFirstValue": "The app will store sales and expenses locally before syncing.",
+  "responsiveReady": "Responsive",
+  "responsiveReadyValue": "Designed for mobile, tablet, and web from day one.",
+  "moduleCatalog": "Categories",
+  "moduleProducts": "Products",
+  "moduleModifiers": "POS modifiers",
+  "modulePaymentMethods": "Payment methods",
+  "moduleTables": "Tables",
+  "moduleSales": "Sales",
+  "moduleCashRegister": "Daily cash register",
+  "moduleExpenses": "Expenses",
+  "moduleExchangeRates": "Exchange rates",
+  "moduleSettings": "Settings",
+  "moduleRoles": "Roles",
+  "moduleUsers": "Users",
+  "moduleAudit": "Audit",
+  "moduleSync": "Sync",
+  "moduleComingSoon": "Module in progress",
+  "emptyCatalogTitle": "No categories",
+  "emptyCatalogMessage": "Create categories and subcategories to organize the POS.",
+  "emptyProductsTitle": "No products",
+  "emptyProductsMessage": "Create products to sell them from the POS.",
+  "emptyModifiersTitle": "No modifiers",
+  "emptyModifiersMessage": "Create groups such as sides or garnishes and add the available options.",
+  "emptyPaymentMethodsTitle": "No payment methods",
+  "emptyPaymentMethodsMessage": "Configure cash, card, transfer or other methods.",
+  "emptyTablesTitle": "No tables",
+  "emptyTablesMessage": "Create the tables used during service.",
+  "emptySalesTitle": "No sales",
+  "emptySalesMessage": "Registered sales will appear here.",
+  "salesDateLabel": "Date",
+  "emptyExpensesTitle": "No expense categories",
+  "emptyExpensesMessage": "Create categories to control operational expenses.",
+  "posReadyTitle": "POS in progress",
+  "posReadyMessage": "The checkout screen will use categories, products, tables and split accounts.",
+  "reportsReadyTitle": "Reports in progress",
+  "reportsReadyMessage": "Sales, profits, expenses, cash register and voids will be shown here.",
+  "reportPeriodToday": "Day",
+  "reportPeriodWeek": "Week",
+  "reportPeriodMonth": "Month",
+  "reportPeriodYear": "Year",
+  "reportPeriodCustom": "Range",
+  "reportSelectDate": "Select date",
+  "reportSelectRange": "Select range",
+  "reportRangeLabel": "Range",
+  "reportGrossSales": "Sales",
+  "reportGrossProfit": "Gross profit",
+  "reportExpenses": "Expenses",
+  "reportExpensesDetail": "Expense detail",
+  "reportNoExpenses": "No expenses registered in this period.",
+  "expenseCategoryFilter": "Filter by category",
+  "allCategoriesOption": "All categories",
+  "reportNetProfit": "Real profit",
+  "reportAverageTicket": "Average ticket",
+  "reportSalesCount": "Registered sales",
+  "reportVoidsCount": "Voids",
+  "reportCashSessions": "Cash sessions",
+  "reportVoidsDetail": "Void details",
+  "reportNoVoids": "No voids in this period.",
+  "reportVoidBy": "Voided by",
+  "localUserLabel": "Local user",
+  "reportTopProducts": "Top-selling products",
+  "reportLowestProducts": "Least-selling products",
+  "reportNoProducts": "No products sold in this period.",
+  "reportUnitsSold": "units",
+  "activeStatus": "Active",
+  "inactiveStatus": "Inactive",
+  "availableInPosField": "Available in POS",
+  "availableInPosStatus": "Available in POS",
+  "unavailableInPosStatus": "Unavailable in POS",
+  "productOptionGroupsField": "POS options",
+  "productOptionGroupsEmptyMessage": "Add groups only when the product must request sides, bases or other choices.",
+  "productOptionGroupsFormatError": "Complete the group name and at least one option.",
+  "productModifierGroupsField": "Modifier groups",
+  "productModifierGroupsEmptyMessage": "Create groups in POS modifiers and then assign them to the product.",
+  "productHasOptionsStatus": "Requests options in POS",
+  "selectProductOptionsTitle": "Select options",
+  "addOptionGroupAction": "Add group",
+  "optionGroupNameField": "Group name",
+  "optionGroupRequiredField": "Required in POS",
+  "productOptionField": "Option",
+  "addOptionAction": "Add option",
+  "skipOptionalOptionAction": "Skip",
+  "removeAction": "Remove",
+  "deleteAction": "Delete",
+  "nextAction": "Next",
+  "previousAction": "Previous",
+  "addToCartAction": "Add",
+  "cashAffectsRegister": "Affects cash",
+  "requiresReference": "Requires reference",
+  "saleStatusCompleted": "Completed",
+  "saleStatusVoided": "Voided",
+  "voidSaleAction": "Void",
+  "voidSaleTitle": "Void sale",
+  "voidReasonField": "Void reason",
+  "saleVoidedMessage": "Sale voided.",
+  "generatePdfAction": "Generate PDF",
+  "previewPdfAction": "Preview receipt",
+  "invoicePreviewTitle": "Receipt preview",
+  "pdfGenerationError": "The PDF could not be generated.",
+  "createAction": "Create",
+  "editAction": "Edit",
+  "confirmAction": "Confirm",
+  "cancelAction": "Cancel",
+  "okAction": "OK",
+  "saveAction": "Save",
+  "backAction": "Back",
+  "searchField": "Search",
+  "emptySearchTitle": "No results",
+  "emptySearchMessage": "No records match the search.",
+  "nameField": "Name",
+  "categoryTypeField": "Type",
+  "categoryTypeCategory": "Category",
+  "categoryTypeSubcategory": "Subcategory",
+  "catalogParentField": "Place inside",
+  "rootCategoryOption": "Main category",
+  "categoryInsideOf": "Inside",
+  "expandGroupAction": "Expand group",
+  "collapseGroupAction": "Collapse group",
+  "expandedStatus": "Expanded",
+  "collapsedStatus": "Collapsed",
+  "parentCategoryField": "Category",
+  "priceInCentsField": "Price",
+  "costInCentsField": "Cost",
+  "createCategoryTitle": "New category",
+  "editCategoryTitle": "Edit category",
+  "removeCategoryLevelTitle": "Remove level",
+  "removeCategoryLevelMessage": "The \"{name}\" level will be deleted. Its direct products and sublevels will move to the previous level.",
+  "@removeCategoryLevelMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "removeCategoryLevelWithChildrenMessage": "This action does not delete the main category.",
+  "removeCategoryLevelConfirm": "Remove level",
+  "createProductTitle": "New product",
+  "editProductTitle": "Edit product",
+  "createModifierGroupTitle": "New modifier group",
+  "editModifierGroupTitle": "Edit modifier group",
+  "createModifierOptionTitle": "New modifier option",
+  "editModifierOptionTitle": "Edit modifier option",
+  "addModifierOptionAction": "Add option",
+  "deactivateAction": "Deactivate",
+  "deactivateCatalogItemTitle": "Deactivate record",
+  "deactivateCatalogItemMessage": "\"{name}\" will be deactivated. History is preserved and the record is not physically deleted.",
+  "@deactivateCatalogItemMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "deactivateModifierGroupTitle": "Deactivate modifier group",
+  "deactivateModifierGroupMessage": "The \"{name}\" group will be deactivated and will no longer be requested in the POS. Its options are kept for history.",
+  "@deactivateModifierGroupMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "deactivateModifierOptionTitle": "Deactivate modifier option",
+  "deactivateModifierOptionMessage": "The \"{name}\" option will be deactivated and will no longer appear in the POS.",
+  "@deactivateModifierOptionMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "modifierGroupNoOptions": "No options",
+  "modifierGroupOneOption": "1 option",
+  "modifierGroupManyOptions": "{count} options",
+  "@modifierGroupManyOptions": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "createPaymentMethodTitle": "New payment method",
+  "editPaymentMethodTitle": "Edit payment method",
+  "createTableTitle": "New table",
+  "editTableTitle": "Edit table",
+  "fieldRequiredError": "Complete the required fields.",
+  "numericFieldError": "Enter a valid number.",
+  "activeField": "Active",
+  "optionalFieldHint": "Optional",
+  "optionalField": "Optional",
+  "yesLabel": "Yes",
+  "noLabel": "No",
+  "createExpenseCategoryTitle": "New expense category",
+  "editExpenseCategoryTitle": "Edit expense category",
+  "deleteExpenseCategoryTitle": "Delete expense category",
+  "deleteExpenseCategoryMessage": "\"{name}\" will be deleted. If it has child categories, they will move to root.",
+  "@deleteExpenseCategoryMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "createExpenseTitle": "New expense",
+  "expenseSavedMessage": "Expense registered successfully.",
+  "expenseCategoriesSection": "Expense categories",
+  "todayExpensesSection": "Today's expenses",
+  "noExpensesTodayMessage": "No expenses registered today.",
+  "unknownExpenseCategory": "No category",
+  "amountInCentsField": "Amount",
+  "descriptionField": "Description",
+  "openCashRegisterTitle": "Open cash register",
+  "closeCashRegisterTitle": "Close cash register",
+  "openingCashField": "Opening cash",
+  "closingCashField": "Physical count",
+  "cashOpeningAmount": "Opening cash",
+  "cashSalesAmount": "Cash sales",
+  "cashExpensesAmount": "Cash expenses",
+  "cashExpectedAmount": "Expected cash",
+  "cashPhysicalAmount": "Physical count",
+  "cashDifferenceAmount": "Difference",
+  "cashStatusOpen": "Cash register open",
+  "cashStatusClosed": "Cash register closed",
+  "openAction": "Open",
+  "closeAction": "Close",
+  "posCashRegisterRequiredTitle": "Cash register required",
+  "posCashRegisterRequiredMessage": "Open your cash register to enter the POS and record sales.",
+  "posStaleCashRegisterRequiredTitle": "Previous cash register open",
+  "posStaleCashRegisterRequiredMessage": "The cash register from {date} was left open. Close it before opening today's cash register.",
+  "@posStaleCashRegisterRequiredMessage": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "posOpenCashRegisterAction": "Open cash register",
+  "posCloseCashRegisterAction": "Close cash register",
+  "posViewTransactionsAction": "View Transactions",
+  "posNoTransactionsMessage": "There are no charged transactions in this cash register.",
+  "posTransactionsTotalLabel": "Charged total",
+  "posCloseCashPendingCart": "The cash register cannot be closed while tables have pending products.",
+  "posExitAction": "Exit",
+  "tableOccupiedLabel": "Occupied",
+  "renameTableTitle": "Rename table",
+  "tableDisplayNameField": "Visible POS name",
+  "cartTitle": "Account",
+  "cartEmptyMessage": "Select products to add them to the account.",
+  "checkoutAction": "Checkout",
+  "clearCartAction": "Clear",
+  "clearCartConfirmTitle": "Clear order",
+  "clearCartConfirmMessage": "All products will be removed from the selected table. This action cannot be undone.",
+  "removeCartLineConfirmTitle": "Remove product",
+  "removeCartLineConfirmMessage": "\"{name}\" will be removed from the order. This action cannot be undone.",
+  "@removeCartLineConfirmMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "removeSplitAccountConfirmTitle": "Remove account",
+  "removeSplitAccountConfirmMessage": "The \"{name}\" account will be removed and its products will return to the original order.",
+  "@removeSplitAccountConfirmMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "paymentReferenceField": "Payment reference",
+  "paymentGroupField": "Payment group",
+  "paymentParentField": "Location",
+  "paymentRootOption": "Top level",
+  "paymentFinalOptionField": "Chargeable POS option",
+  "paymentNavigationNode": "Navigation group",
+  "removePaymentLevelTitle": "Remove payment level",
+  "removePaymentLevelMessage": "The \"{name}\" level will be deleted. Its direct banks, accounts or options will move to the previous level.",
+  "@removePaymentLevelMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "removePaymentLevelWithChildrenMessage": "This action does not delete a top-level payment method.",
+  "removePaymentLevelConfirm": "Remove level",
+  "currencyCodeField": "Currency",
+  "exchangeRateField": "Rate",
+  "exchangeRateMonthLabel": "Month",
+  "exchangeRateMonthlyField": "Rate for the whole month",
+  "exchangeRateApplyMonthAction": "Apply to month",
+  "exchangeRateNotConfigured": "Not configured",
+  "exchangeRateMissingMessage": "There is no exchange rate for {currency} on the current day.",
+  "@exchangeRateMissingMessage": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "moreOptionsAction": "More options",
+  "moreOptionsEmptyMessage": "Secondary POS options will be added here.",
+  "posRegisterExpenseAction": "Register Expense",
+  "paymentAmountTitle": "Amount {method}",
+  "@paymentAmountTitle": {
+    "placeholders": {
+      "method": {
+        "type": "String"
+      }
+    }
+  },
+  "paymentAmountInsufficient": "The received amount does not cover the total.",
+  "paymentChangeMessage": "Change: {amount}",
+  "@paymentChangeMessage": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "posAmountReceivedField": "Received",
+  "posChangeDueLabel": "Change",
+  "posDescriptionColumn": "Description",
+  "posServedColumn": "Served",
+  "posQuantityColumn": "Quantity",
+  "posPriceColumn": "Price",
+  "posAmountColumn": "Amount",
+  "posRemoveColumn": "Remove",
+  "posMarkServedTooltip": "Mark as served",
+  "posMarkPendingTooltip": "Mark as pending",
+  "posHideProductsAction": "Hide Products",
+  "posShowProductsAction": "Show Products",
+  "posHideProductsCompactAction": "Hide",
+  "posShowProductsCompactAction": "Show",
+  "posTodayExchangeRateLabel": "Today's exchange rate: {rate}",
+  "@posTodayExchangeRateLabel": {
+    "placeholders": {
+      "rate": {
+        "type": "String"
+      }
+    }
+  },
+  "posTodayExchangeRateCompactLabel": "Rate: {rate}",
+  "@posTodayExchangeRateCompactLabel": {
+    "placeholders": {
+      "rate": {
+        "type": "String"
+      }
+    }
+  },
+  "paymentMethodField": "Payment method",
+  "tableField": "Table",
+  "tableStatusAvailable": "Available",
+  "tableStatusOccupied": "Occupied",
+  "tableStatusDisabled": "Inactive",
+  "noTableOption": "No table",
+  "splitAccountsAction": "Split accounts",
+  "splitAccountsTitle": "Split accounts",
+  "accountCountField": "Number of accounts",
+  "accountNameField": "Account name",
+  "assignItemsTitle": "Assign products",
+  "selectAccountHint": "Select an account",
+  "pendingItemsTitle": "Pending products",
+  "assignedItemsTitle": "Assigned products",
+  "splitAccountsHelp": "Select an account and tap the products that belong to that invoice.",
+  "splitAccountsPendingError": "Assign every product and leave at least one product in each account.",
+  "splitAccountsMinimumItemsError": "You can split an account only when the table has more than one product.",
+  "splitAddAccountAction": "Add account",
+  "splitOriginalOrderTitle": "Original order",
+  "splitSelectedItemHint": "Selected product",
+  "splitTapAccountHint": "Tap an account to move it.",
+  "splitRemoveAccountAction": "Remove account",
+  "splitReturnItemAction": "Return to order",
+  "splitAccountTotalLabel": "Total",
+  "confirmSplitAction": "Confirm split",
+  "splitAccountsConfirmedMessage": "Split accounts are ready to invoice.",
+  "splitAccountPaymentsTitle": "Payment by account",
+  "checkoutSuccessTitle": "Sale registered",
+  "checkoutSuccessMessage": "The sale was saved locally.",
+  "businessSettingsTitle": "Business information",
+  "businessNameField": "Business name",
+  "legalNameField": "Legal name",
+  "taxNumberField": "Tax number",
+  "phoneField": "Phone",
+  "addressField": "Address",
+  "invoicePrefixField": "Invoice prefix",
+  "initialInvoiceNumberField": "Initial number",
+  "showCompanyInfoOnPdfField": "Show company information on PDF",
+  "settingsSavedMessage": "Settings saved.",
+  "emptyRolesTitle": "No roles",
+  "emptyRolesMessage": "Create roles and assign permissions to control access.",
+  "emptyUsersTitle": "No users",
+  "emptyUsersMessage": "Create local users and assign a role.",
+  "emptyAuditTitle": "No events",
+  "emptyAuditMessage": "No audited actions for the selected date.",
+  "auditActionCategorySaved": "Category saved",
+  "auditActionProductSaved": "Product saved",
+  "auditActionPaymentMethodSaved": "Payment method saved",
+  "auditActionTableSaved": "Table saved",
+  "auditActionSaleVoided": "Sale voided",
+  "auditActionCashOpened": "Cash register opened",
+  "auditActionCashClosed": "Cash register closed",
+  "auditActionExpenseCategorySaved": "Expense category saved",
+  "auditActionExpenseCategoryDeleted": "Expense category deleted",
+  "auditActionExpenseSaved": "Expense registered",
+  "auditActionSettingsSaved": "Settings saved",
+  "auditActionRoleSaved": "Role saved",
+  "auditActionUserSaved": "User saved",
+  "auditDetailReason": "Reason",
+  "auditDetailStatus": "Status",
+  "auditDetailOptionGroups": "Option groups",
+  "auditDetailPermissions": "Permissions",
+  "emptySyncTitle": "No pending items",
+  "emptySyncMessage": "There are no local operations pending sync.",
+  "syncNowAction": "Sync now",
+  "syncOperationCreate": "New record",
+  "syncOperationUpdate": "Update",
+  "syncOperationDelete": "Delete",
+  "syncStatusPending": "Pending",
+  "syncStatusSyncing": "Syncing",
+  "syncStatusSynced": "Synced",
+  "syncStatusError": "Error",
+  "syncLastError": "Last error",
+  "syncRetryCount": "Retries: {count}",
+  "@syncRetryCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncSummary": "Processed: {processed} | Succeeded: {succeeded} | Failed: {failed}",
+  "@syncSummary": {
+    "placeholders": {
+      "processed": {
+        "type": "int"
+      },
+      "succeeded": {
+        "type": "int"
+      },
+      "failed": {
+        "type": "int"
+      }
+    }
+  },
+  "createRoleTitle": "New role",
+  "editRoleTitle": "Edit role",
+  "roleDescriptionField": "Description",
+  "systemRoleField": "System role",
+  "permissionsSection": "Permissions",
+  "createUserTitle": "New user",
+  "editUserTitle": "Edit user",
+  "displayNameField": "Display name",
+  "emailField": "Email",
+  "pinField": "PIN",
+  "pinOptionalField": "New PIN (optional)",
+  "posUserField": "POS user",
+  "posUserHelp": "When signing in, opens the POS operational flow directly.",
+  "loginTitle": "Sign in",
+  "loginMessage": "Use your email and PIN to operate SmooControl.",
+  "loginAction": "Enter",
+  "initialAdminTitle": "Create initial administrator",
+  "initialAdminMessage": "There are no users with a PIN. Create the first administrator to enable access.",
+  "createInitialAdminAction": "Create administrator",
+  "accessDeniedTitle": "Restricted access",
+  "accessDeniedMessage": "Your user does not have permission to open this screen.",
+  "roleField": "Role",
+  "noRoleAvailableMessage": "Create an active role first."
+}
