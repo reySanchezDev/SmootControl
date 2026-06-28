@@ -1,4 +1,4 @@
-package com.example.smoo_control
+package com.smoocontrol.pos
 
 import io.flutter.embedding.android.FlutterActivity
 
