@@ -37,6 +37,7 @@ android/local.properties
 .pub/
 /build/
 /coverage/
+release/*.apk
 
 # Generated Drift worker debug metadata can contain local filesystem paths.
 web/*.map
