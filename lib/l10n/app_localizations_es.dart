@@ -25,6 +25,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get secondaryAction => 'Ver reportes';
 
   @override
+  String get signOutAction => 'Cerrar sesion';
+
+  @override
   String get trackingStatus => 'Estado del proyecto';
 
   @override

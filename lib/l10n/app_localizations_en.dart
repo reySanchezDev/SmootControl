@@ -25,6 +25,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get secondaryAction => 'View reports';
 
   @override
+  String get signOutAction => 'Sign out';
+
+  @override
   String get trackingStatus => 'Project status';
 
   @override

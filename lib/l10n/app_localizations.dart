@@ -128,6 +128,12 @@ abstract class AppLocalizations {
   /// **'Ver reportes'**
   String get secondaryAction;
 
+  /// No description provided for @signOutAction.
+  ///
+  /// In es, this message translates to:
+  /// **'Cerrar sesion'**
+  String get signOutAction;
+
   /// No description provided for @trackingStatus.
   ///
   /// In es, this message translates to:

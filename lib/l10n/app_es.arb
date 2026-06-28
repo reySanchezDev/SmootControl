@@ -5,6 +5,7 @@
   "dashboardSubtitle": "Base inicial lista para ventas, caja, gastos y sincronización.",
   "primaryAction": "Abrir POS",
   "secondaryAction": "Ver reportes",
+  "signOutAction": "Cerrar sesion",
   "trackingStatus": "Estado del proyecto",
   "trackingStatusValue": "Base en preparación",
   "offlineFirst": "Offline-first",

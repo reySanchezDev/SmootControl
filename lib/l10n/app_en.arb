@@ -5,6 +5,7 @@
   "dashboardSubtitle": "Initial foundation ready for sales, cash register, expenses, and sync.",
   "primaryAction": "Open POS",
   "secondaryAction": "View reports",
+  "signOutAction": "Sign out",
   "trackingStatus": "Project status",
   "trackingStatusValue": "Foundation in progress",
   "offlineFirst": "Offline-first",

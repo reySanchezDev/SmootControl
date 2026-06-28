@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smoo_control/core/design_system/app_button.dart';
 import 'package:smoo_control/core/design_system/app_empty_state.dart';
 import 'package:smoo_control/core/design_system/app_loading_page.dart';
@@ -12,6 +13,8 @@ import 'package:smoo_control/core/responsive/responsive_breakpoints.dart';
 import 'package:smoo_control/core/responsive/responsive_builder.dart';
 import 'package:smoo_control/core/result/app_result.dart';
 import 'package:smoo_control/core/session/current_operator_service.dart';
+import 'package:smoo_control/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:smoo_control/features/auth/presentation/bloc/auth_event.dart';
 import 'package:smoo_control/features/roles/domain/repositories/i_roles_repository.dart';
 import 'package:smoo_control/features/roles/domain/services/default_access_roles.dart';
 import 'package:smoo_control/l10n/app_localizations.dart';
@@ -86,11 +89,29 @@ class _DashboardContent extends StatelessWidget {
             return ListView(
               padding: EdgeInsets.all(horizontalPadding),
               children: [
-                AppText(
-                  l10n.dashboardTitle,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  variant: AppTextVariant.titleLarge,
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: AppText(
+                        l10n.dashboardTitle,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        variant: AppTextVariant.titleLarge,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    AppButton(
+                      icon: Icons.logout,
+                      label: l10n.signOutAction,
+                      onPressed: () {
+                        context.read<AuthBloc>().add(
+                          const AuthSignOutRequested(),
+                        );
+                      },
+                      primary: false,
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 24),
                 Wrap(
