@@ -5,6 +5,7 @@ import 'package:smoo_control/core/result/app_result.dart';
 import 'package:smoo_control/features/sync/data/datasources/local_sync_queue_datasource.dart';
 import 'package:smoo_control/features/sync/data/repositories/sync_queue_repository.dart';
 import 'package:smoo_control/features/sync/domain/entities/sync_queue_item.dart';
+import 'package:smoo_control/features/sync/domain/services/i_sync_remote_sender.dart';
 
 void main() {
   group('SyncQueueRepository', () {
@@ -65,5 +66,72 @@ void main() {
       expect(rows.single.status, SyncQueueStatus.synced.name);
       expect(rows.single.lastError, isNull);
     });
+
+    test('syncs immediately when a remote sender is configured', () async {
+      final sender = _RecordingSender();
+      repository = SyncQueueRepository(
+        LocalSyncQueueDataSource(database),
+        remoteSender: sender,
+      );
+
+      final enqueueResult = await repository.enqueue(
+        entityType: 'product',
+        entityId: 'product-1',
+        operation: SyncOperation.create,
+        payload: const {'name': 'Cafe'},
+      );
+      final pendingResult = await repository.getPendingItems();
+
+      expect(enqueueResult, isA<AppSuccess<SyncQueueItem>>());
+      expect(sender.pushed.map((item) => item.entityId), ['product-1']);
+      expect(
+        (pendingResult as AppSuccess<List<SyncQueueItem>>).value,
+        isEmpty,
+      );
+
+      final rows = await database.select(database.localSyncQueue).get();
+      expect(rows.single.status, SyncQueueStatus.synced.name);
+      expect(rows.single.lastError, isNull);
+    });
+
+    test('keeps failed immediate syncs eligible for retry', () async {
+      repository = SyncQueueRepository(
+        LocalSyncQueueDataSource(database),
+        remoteSender: const _FailingSender(),
+      );
+
+      final enqueueResult = await repository.enqueue(
+        entityType: 'product',
+        entityId: 'product-1',
+        operation: SyncOperation.create,
+        payload: const {'name': 'Cafe'},
+      );
+      final pendingResult = await repository.getPendingItems();
+
+      expect(enqueueResult, isA<AppSuccess<SyncQueueItem>>());
+
+      final pending = (pendingResult as AppSuccess<List<SyncQueueItem>>).value;
+      expect(pending, hasLength(1));
+      expect(pending.single.status, SyncQueueStatus.error);
+      expect(pending.single.lastError, contains('Sin conexion'));
+    });
   });
+}
+
+final class _RecordingSender implements ISyncRemoteSender {
+  final List<SyncQueueItem> pushed = [];
+
+  @override
+  Future<void> push(SyncQueueItem item) async {
+    pushed.add(item);
+  }
+}
+
+final class _FailingSender implements ISyncRemoteSender {
+  const _FailingSender();
+
+  @override
+  Future<void> push(SyncQueueItem item) {
+    throw StateError('Sin conexion');
+  }
 }

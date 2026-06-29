@@ -4,6 +4,7 @@ import 'package:smoo_control/features/sync/data/datasources/local_sync_queue_dat
 import 'package:smoo_control/features/sync/data/models/sync_queue_item_model.dart';
 import 'package:smoo_control/features/sync/domain/entities/sync_queue_item.dart';
 import 'package:smoo_control/features/sync/domain/repositories/i_sync_queue_repository.dart';
+import 'package:smoo_control/features/sync/domain/services/i_sync_remote_sender.dart';
 import 'package:uuid/uuid.dart';
 
 /// Sync queue repository backed by the local offline database.
@@ -11,10 +12,13 @@ final class SyncQueueRepository implements ISyncQueueRepository {
   /// Creates a sync queue repository.
   const SyncQueueRepository(
     this._localDataSource, {
+    ISyncRemoteSender? remoteSender,
     Uuid uuid = const Uuid(),
-  }) : _uuid = uuid;
+  }) : _remoteSender = remoteSender,
+       _uuid = uuid;
 
   final LocalSyncQueueDataSource _localDataSource;
+  final ISyncRemoteSender? _remoteSender;
   final Uuid _uuid;
 
   @override
@@ -38,6 +42,7 @@ final class SyncQueueRepository implements ISyncQueueRepository {
         updatedAt: now,
       );
       final saved = await _localDataSource.saveItem(item);
+      await _trySyncImmediately(saved.toEntity());
 
       return AppSuccess(saved.toEntity());
     } on Object catch (error) {
@@ -88,6 +93,26 @@ final class SyncQueueRepository implements ISyncQueueRepository {
   @override
   Future<AppResult<void>> markSyncing(String itemId) {
     return _runStatusUpdate(() => _localDataSource.markSyncing(itemId));
+  }
+
+  Future<void> _trySyncImmediately(SyncQueueItem item) async {
+    final remoteSender = _remoteSender;
+    if (remoteSender == null) return;
+
+    try {
+      await _localDataSource.markSyncing(item.id);
+      await remoteSender.push(item);
+      await _localDataSource.markSynced(item.id);
+    } on Object catch (error) {
+      try {
+        await _localDataSource.markError(
+          itemId: item.id,
+          error: error.toString(),
+        );
+      } on Object {
+        // The local queue must never block the original business operation.
+      }
+    }
   }
 
   Future<AppResult<void>> _runStatusUpdate(Future<void> Function() run) async {

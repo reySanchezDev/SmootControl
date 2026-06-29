@@ -298,14 +298,17 @@ Future<void> configureDependencies() async {
     ..registerLazySingleton<LocalSyncQueueDataSource>(
       () => LocalSyncQueueDataSource(serviceLocator<AppDatabase>()),
     )
-    ..registerLazySingleton<ISyncQueueRepository>(
-      () => SyncQueueRepository(serviceLocator<LocalSyncQueueDataSource>()),
-    )
     ..registerLazySingleton<ISyncRemoteSender>(
       () => SupabaseSyncRemoteSender(
         config: serviceLocator<SupabaseAppConfig>(),
         restaurantService: serviceLocator<CurrentRestaurantService>(),
         client: serviceLocator<http.Client>(),
+      ),
+    )
+    ..registerLazySingleton<ISyncQueueRepository>(
+      () => SyncQueueRepository(
+        serviceLocator<LocalSyncQueueDataSource>(),
+        remoteSender: serviceLocator<ISyncRemoteSender>(),
       ),
     )
     ..registerLazySingleton<SyncQueueProcessor>(
