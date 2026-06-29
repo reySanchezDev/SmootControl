@@ -50,6 +50,25 @@ final class AccessSeedService {
         }
       }
     }
+    final adminPermissionResult = await _rolesRepository
+        .getPermissionCodesForRole(
+          DefaultAccessRoles.adminId,
+        );
+    if (adminPermissionResult case AppSuccess(:final value)) {
+      final expected =
+          DefaultRolePermissions.values[DefaultAccessRoles.adminId] ??
+          const <String>[];
+      final merged = {...value, ...expected}.toList()..sort();
+      if (merged.length != value.toSet().length) {
+        final result = await _rolesRepository.setRolePermissions(
+          roleId: DefaultAccessRoles.adminId,
+          permissionCodes: merged,
+        );
+        if (result case AppFailureResult(:final error)) {
+          return AppFailureResult(error);
+        }
+      }
+    }
 
     return const AppSuccess<void>(null);
   }

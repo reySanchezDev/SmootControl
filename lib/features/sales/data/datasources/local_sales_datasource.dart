@@ -3,6 +3,7 @@ import 'package:smoo_control/core/database/app_database.dart';
 import 'package:smoo_control/features/sales/data/models/sale_item_model.dart';
 import 'package:smoo_control/features/sales/data/models/sale_model.dart';
 import 'package:smoo_control/features/sales/data/models/sale_void_model.dart';
+import 'package:smoo_control/features/sales/domain/entities/sale.dart';
 
 /// Local datasource for sales and sale items.
 final class LocalSalesDataSource {
@@ -21,7 +22,7 @@ final class LocalSalesDataSource {
       ..orderBy([(sale) => OrderingTerm.desc(sale.createdAt)]);
     final rows = await query.get();
 
-    return rows.map(SaleModel.fromLocal).toList();
+    return _salesWithQueueStatus(rows);
   }
 
   /// Returns local sales for one cash register session.
@@ -33,7 +34,7 @@ final class LocalSalesDataSource {
       ..orderBy([(sale) => OrderingTerm.desc(sale.createdAt)]);
     final rows = await query.get();
 
-    return rows.map(SaleModel.fromLocal).toList();
+    return _salesWithQueueStatus(rows);
   }
 
   /// Returns local sale items for a sale.
@@ -81,6 +82,7 @@ final class LocalSalesDataSource {
               status: Value(sale.statusValue),
               subtotalInCents: Value(sale.subtotalInCents),
               totalInCents: Value(sale.totalInCents),
+              syncStatus: Value(sale.syncStatusValue),
               createdAt: Value(sale.createdAt),
               updatedAt: Value(now),
             ),
@@ -150,5 +152,44 @@ final class LocalSalesDataSource {
     )..where((sale) => sale.id.equals(saleId))).getSingle();
 
     return SaleModel.fromLocal(row);
+  }
+
+  Future<List<SaleModel>> _salesWithQueueStatus(List<LocalSale> rows) async {
+    final sales = <SaleModel>[];
+    for (final row in rows) {
+      final model = SaleModel.fromLocal(row);
+      sales.add(
+        model.copyWith(
+          syncStatus: await _latestQueueStatusForSale(
+            row.id,
+            fallback: model.syncStatus,
+          ),
+        ),
+      );
+    }
+
+    return sales;
+  }
+
+  Future<SaleSyncStatus> _latestQueueStatusForSale(
+    String saleId, {
+    required SaleSyncStatus fallback,
+  }) async {
+    final row =
+        await (_database.select(_database.localSyncQueue)
+              ..where(
+                (item) =>
+                    item.entityType.equals('sales') &
+                    item.entityId.equals(saleId),
+              )
+              ..orderBy([(item) => OrderingTerm.desc(item.updatedAt)])
+              ..limit(1))
+            .getSingleOrNull();
+    if (row == null) return fallback;
+
+    return SaleSyncStatus.values.firstWhere(
+      (status) => status.name == row.status,
+      orElse: () => SaleSyncStatus.pending,
+    );
   }
 }

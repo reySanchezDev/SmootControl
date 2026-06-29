@@ -18,7 +18,8 @@ VALUES
   ('configuracion.gestionar', 'Gestionar configuracion'),
   ('tasas.gestionar', 'Gestionar tasas de cambio'),
   ('auditoria.ver', 'Ver auditoria'),
-  ('sync.configurar', 'Configurar sincronizacion')
+  ('sync.configurar', 'Configurar sincronizacion'),
+  ('sync.ejecutar', 'Ejecutar sincronizacion manual')
 ON CONFLICT (code) DO NOTHING;
 
 INSERT INTO public.roles (code, name, is_system)

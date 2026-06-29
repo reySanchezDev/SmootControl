@@ -91,6 +91,11 @@ final class LocalAuthRepository implements IAuthRepository {
         return _invalidCredentials();
       }
 
+      final seedResult = await _seedService.ensureSeeded();
+      if (seedResult case AppFailureResult(:final error)) {
+        return AppFailureResult(error);
+      }
+
       return AppSuccess(_setCurrentSession(user));
     } on Object catch (error) {
       return _failure(

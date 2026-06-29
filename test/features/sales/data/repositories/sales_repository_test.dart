@@ -79,6 +79,55 @@ void main() {
       expect(syncItem.operation, SyncOperation.create);
     });
 
+    test(
+      'returns sale synchronization status from the latest queue item',
+      () async {
+        final createdAt = DateTime(2026, 6, 23, 10);
+        final sale = Sale(
+          id: 'sale-1',
+          invoiceNumber: 'F-0001',
+          paymentMethodId: 'cash',
+          status: SaleStatus.completed,
+          subtotalInCents: 850,
+          totalInCents: 850,
+          createdAt: createdAt,
+        );
+        final item = SaleItem(
+          id: 'item-1',
+          saleId: 'sale-1',
+          productId: 'product-1',
+          productName: 'Espresso',
+          categoryName: 'Cafe Caliente',
+          quantity: 1,
+          unitPriceInCents: 850,
+          unitCostInCents: 100,
+          createdAt: createdAt,
+        );
+
+        await repository.saveSale(sale: sale, items: [item]);
+        var salesResult = await repository.getSalesByCashRegisterSession('');
+        expect(
+          (salesResult as AppSuccess<List<Sale>>).value,
+          isEmpty,
+        );
+
+        final syncResult = await syncQueueRepository.getPendingItems();
+        final syncItem =
+            (syncResult as AppSuccess<List<SyncQueueItem>>).value.single;
+        await syncQueueRepository.markSynced(syncItem.id);
+
+        salesResult = await repository.getSales(
+          from: DateTime(2026, 6, 23),
+          to: DateTime(2026, 6, 24),
+        );
+
+        expect(
+          (salesResult as AppSuccess<List<Sale>>).value.single.syncStatus,
+          SaleSyncStatus.synced,
+        );
+      },
+    );
+
     test('voids a sale and records audit data locally', () async {
       final createdAt = DateTime(2026, 6, 23, 10);
       final sale = Sale(

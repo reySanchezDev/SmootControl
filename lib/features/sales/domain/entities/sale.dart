@@ -9,6 +9,21 @@ enum SaleStatus {
   voided,
 }
 
+/// Local remote synchronization state for one sale.
+enum SaleSyncStatus {
+  /// Waiting to be synchronized.
+  pending,
+
+  /// Currently being synchronized.
+  syncing,
+
+  /// Successfully synchronized remotely.
+  synced,
+
+  /// Failed and waiting for retry.
+  error,
+}
+
 /// Completed sale summary.
 final class Sale extends Equatable {
   /// Creates a sale.
@@ -20,6 +35,7 @@ final class Sale extends Equatable {
     required this.subtotalInCents,
     required this.totalInCents,
     required this.createdAt,
+    this.syncStatus = SaleSyncStatus.pending,
     this.paymentReference,
     this.tableId,
     this.tableAccountId,
@@ -59,6 +75,9 @@ final class Sale extends Equatable {
   /// Sale creation date.
   final DateTime createdAt;
 
+  /// Remote synchronization state.
+  final SaleSyncStatus syncStatus;
+
   @override
   List<Object?> get props => [
     id,
@@ -72,5 +91,6 @@ final class Sale extends Equatable {
     subtotalInCents,
     totalInCents,
     createdAt,
+    syncStatus,
   ];
 }

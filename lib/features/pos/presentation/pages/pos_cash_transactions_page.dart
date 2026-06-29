@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:smoo_control/core/design_system/app_button.dart';
 import 'package:smoo_control/core/design_system/app_empty_state.dart';
 import 'package:smoo_control/core/design_system/app_loading_page.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
@@ -6,14 +7,17 @@ import 'package:smoo_control/core/design_system/app_text.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/core/formatters/money_formatter.dart';
 import 'package:smoo_control/core/result/app_result.dart';
+import 'package:smoo_control/core/session/current_operator_service.dart';
 import 'package:smoo_control/features/payment_methods/domain/entities/payment_method.dart';
 import 'package:smoo_control/features/payment_methods/domain/repositories/i_payment_methods_repository.dart';
+import 'package:smoo_control/features/roles/domain/services/access_control_service.dart';
 import 'package:smoo_control/features/sales/domain/entities/sale.dart';
 import 'package:smoo_control/features/sales/domain/repositories/i_sales_repository.dart';
+import 'package:smoo_control/features/sync/domain/services/sync_scheduler_service.dart';
 import 'package:smoo_control/l10n/app_localizations.dart';
 
 /// Shows completed transactions for the current open cash register.
-class PosCashTransactionsPage extends StatelessWidget {
+class PosCashTransactionsPage extends StatefulWidget {
   /// Creates the transactions page.
   const PosCashTransactionsPage({
     required this.cashRegisterSessionId,
@@ -24,12 +28,26 @@ class PosCashTransactionsPage extends StatelessWidget {
   final String cashRegisterSessionId;
 
   @override
+  State<PosCashTransactionsPage> createState() =>
+      _PosCashTransactionsPageState();
+}
+
+class _PosCashTransactionsPageState extends State<PosCashTransactionsPage> {
+  late Future<_TransactionsData> _future;
+
+  @override
+  void initState() {
+    super.initState();
+    _future = _load();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return AppPageScaffold(
       title: l10n.posViewTransactionsAction,
       body: FutureBuilder<_TransactionsData>(
-        future: _load(),
+        future: _future,
         builder: (context, snapshot) {
           final data = snapshot.data;
           if (data == null) return const AppLoadingPage();
@@ -60,17 +78,25 @@ class PosCashTransactionsPage extends StatelessWidget {
             children: [
               Padding(
                 padding: const EdgeInsets.all(16),
-                child: Row(
+                child: Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
+                  crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     AppText(
                       l10n.posTransactionsTotalLabel,
                       variant: AppTextVariant.titleMedium,
                     ),
-                    const Spacer(),
                     AppText(
                       MoneyFormatter.format(total),
                       variant: AppTextVariant.titleMedium,
                     ),
+                    if (data.canRunManualSync)
+                      AppButton(
+                        icon: Icons.sync,
+                        label: l10n.syncNowAction,
+                        onPressed: _syncNow,
+                      ),
                   ],
                 ),
               ),
@@ -82,8 +108,16 @@ class PosCashTransactionsPage extends StatelessWidget {
                     final method = data.paymentMethods[sale.paymentMethodId];
                     return ListTile(
                       leading: const Icon(Icons.receipt_long_outlined),
-                      title: AppText('${sale.invoiceNumber} · ${method ?? ''}'),
-                      subtitle: AppText(_timeText(sale.createdAt)),
+                      title: AppText('${sale.invoiceNumber} - ${method ?? ''}'),
+                      subtitle: Wrap(
+                        spacing: 8,
+                        runSpacing: 4,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
+                          AppText(_timeText(sale.createdAt)),
+                          _SyncStatusChip(status: sale.syncStatus),
+                        ],
+                      ),
                       trailing: AppText(
                         MoneyFormatter.format(sale.totalInCents),
                       ),
@@ -102,9 +136,10 @@ class PosCashTransactionsPage extends StatelessWidget {
 
   Future<_TransactionsData> _load() async {
     final salesResult = await serviceLocator<ISalesRepository>()
-        .getSalesByCashRegisterSession(cashRegisterSessionId);
+        .getSalesByCashRegisterSession(widget.cashRegisterSessionId);
     final methodsResult = await serviceLocator<IPaymentMethodsRepository>()
         .getPaymentMethods();
+    final canRunManualSync = await _canRunManualSync();
 
     return switch ((salesResult, methodsResult)) {
       (
@@ -116,6 +151,7 @@ class PosCashTransactionsPage extends StatelessWidget {
           paymentMethods: {
             for (final method in methods) method.id: method.name,
           },
+          canRunManualSync: canRunManualSync,
         ),
       (AppFailureResult(:final error), _) => _TransactionsData.failure(
         error.message,
@@ -131,20 +167,83 @@ class PosCashTransactionsPage extends StatelessWidget {
     final minute = date.minute.toString().padLeft(2, '0');
     return '$hour:$minute';
   }
+
+  Future<bool> _canRunManualSync() async {
+    final session = serviceLocator<CurrentOperatorService>().session;
+    if (session == null) return false;
+    final result = await serviceLocator<AccessControlService>().hasPermission(
+      roleId: session.roleId,
+      permissionCode: 'sync.ejecutar',
+    );
+
+    return result.when(success: (value) => value, failure: (_) => false);
+  }
+
+  Future<void> _syncNow() async {
+    await serviceLocator<SyncSchedulerService>().runNow();
+    if (!mounted) return;
+    setState(() {
+      _future = _load();
+    });
+  }
+}
+
+class _SyncStatusChip extends StatelessWidget {
+  const _SyncStatusChip({required this.status});
+
+  final SaleSyncStatus status;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final colorScheme = Theme.of(context).colorScheme;
+    final style = switch (status) {
+      SaleSyncStatus.synced => (
+        icon: Icons.cloud_done_outlined,
+        label: l10n.syncStatusSynced,
+        color: colorScheme.primary,
+      ),
+      SaleSyncStatus.syncing => (
+        icon: Icons.cloud_sync_outlined,
+        label: l10n.syncStatusSyncing,
+        color: colorScheme.tertiary,
+      ),
+      SaleSyncStatus.error => (
+        icon: Icons.cloud_off_outlined,
+        label: l10n.syncStatusError,
+        color: colorScheme.error,
+      ),
+      SaleSyncStatus.pending => (
+        icon: Icons.cloud_queue_outlined,
+        label: l10n.syncStatusPending,
+        color: colorScheme.onSurfaceVariant,
+      ),
+    };
+
+    return Chip(
+      avatar: Icon(style.icon, size: 16, color: style.color),
+      label: Text(style.label),
+      side: BorderSide(color: style.color),
+      visualDensity: VisualDensity.compact,
+    );
+  }
 }
 
 class _TransactionsData {
   const _TransactionsData({
     required this.sales,
     required this.paymentMethods,
+    required this.canRunManualSync,
   }) : failure = null;
 
   const _TransactionsData.failure(String message)
     : sales = const [],
       paymentMethods = const {},
+      canRunManualSync = false,
       failure = message;
 
   final List<Sale> sales;
   final Map<String, String> paymentMethods;
+  final bool canRunManualSync;
   final String? failure;
 }

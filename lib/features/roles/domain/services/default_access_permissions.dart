@@ -38,5 +38,9 @@ abstract final class DefaultAccessPermissions {
     ),
     AccessPermission(code: 'auditoria.ver', name: 'Ver auditoria'),
     AccessPermission(code: 'sync.configurar', name: 'Configurar sync'),
+    AccessPermission(
+      code: 'sync.ejecutar',
+      name: 'Ejecutar sincronizacion manual',
+    ),
   ];
 }

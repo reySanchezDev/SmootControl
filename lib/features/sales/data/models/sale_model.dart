@@ -13,6 +13,7 @@ final class SaleModel extends Equatable {
     required this.subtotalInCents,
     required this.totalInCents,
     required this.createdAt,
+    this.syncStatus = SaleSyncStatus.pending,
     this.tableId,
     this.tableAccountId,
     this.cashRegisterSessionId,
@@ -33,6 +34,7 @@ final class SaleModel extends Equatable {
       subtotalInCents: row.subtotalInCents,
       totalInCents: row.totalInCents,
       createdAt: row.createdAt,
+      syncStatus: _syncStatusFromText(row.syncStatus),
     );
   }
 
@@ -50,6 +52,7 @@ final class SaleModel extends Equatable {
       subtotalInCents: entity.subtotalInCents,
       totalInCents: entity.totalInCents,
       createdAt: entity.createdAt,
+      syncStatus: entity.syncStatus,
     );
   }
 
@@ -86,8 +89,32 @@ final class SaleModel extends Equatable {
   /// Local creation date.
   final DateTime createdAt;
 
+  /// Current synchronization state.
+  final SaleSyncStatus syncStatus;
+
   /// Database value for status.
   String get statusValue => status.name;
+
+  /// Database value for sync status.
+  String get syncStatusValue => syncStatus.name;
+
+  /// Creates a modified copy.
+  SaleModel copyWith({SaleSyncStatus? syncStatus}) {
+    return SaleModel(
+      id: id,
+      invoiceNumber: invoiceNumber,
+      tableId: tableId,
+      tableAccountId: tableAccountId,
+      cashRegisterSessionId: cashRegisterSessionId,
+      paymentMethodId: paymentMethodId,
+      paymentReference: paymentReference,
+      status: status,
+      subtotalInCents: subtotalInCents,
+      totalInCents: totalInCents,
+      createdAt: createdAt,
+      syncStatus: syncStatus ?? this.syncStatus,
+    );
+  }
 
   /// Converts this model to a domain entity.
   Sale toEntity() {
@@ -103,6 +130,7 @@ final class SaleModel extends Equatable {
       subtotalInCents: subtotalInCents,
       totalInCents: totalInCents,
       createdAt: createdAt,
+      syncStatus: syncStatus,
     );
   }
 
@@ -110,6 +138,13 @@ final class SaleModel extends Equatable {
     return SaleStatus.values.firstWhere(
       (status) => status.name == value,
       orElse: () => SaleStatus.completed,
+    );
+  }
+
+  static SaleSyncStatus _syncStatusFromText(String value) {
+    return SaleSyncStatus.values.firstWhere(
+      (status) => status.name == value,
+      orElse: () => SaleSyncStatus.pending,
     );
   }
 
@@ -126,5 +161,6 @@ final class SaleModel extends Equatable {
     subtotalInCents,
     totalInCents,
     createdAt,
+    syncStatus,
   ];
 }
