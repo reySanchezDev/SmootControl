@@ -80,3 +80,63 @@ La app debe operar sin internet para ventas, gastos y anulaciones locales.
 - La pantalla de sincronizacion muestra modulos, operaciones y estados con etiquetas de negocio; no expone ids locales ni nombres tecnicos de tablas.
 - No marcar una operacion como sincronizada si el envio remoto no confirma exito.
 - Mientras Supabase remoto no este configurado, el envio remoto debe fallar de forma explicita y auditable.
+
+## Regla Operativa: POS No Depende De La Red
+
+La venta, el gasto, la apertura/cierre de caja y los cambios operativos deben
+confirmarse contra la base local antes de cualquier intento remoto. La
+sincronizacion no puede detener la operacion de vender.
+
+Flujo esperado para una venta:
+
+1. Guardar venta y detalle en Drift/SQLite.
+2. Encolar la operacion en `local_sync_queue`.
+3. Limpiar el ticket abierto de la mesa.
+4. Intentar sincronizar en segundo plano si la configuracion lo permite.
+5. Si Supabase o la red fallan, conservar la venta local y dejar la cola como
+   reintentable.
+
+## Decision: Sin Pre-Check De Conexion En V1
+
+En V1 no se hace un `ping` ni una prueba previa de conexion antes de intentar
+sincronizar. La prueba efectiva de conectividad es el propio intento de envio
+remoto.
+
+Razon:
+
+- Reduce carga y complejidad en el POS.
+- Evita depender de un indicador de conexion que puede ser falso positivo:
+  puede haber internet y Supabase estar lento, bloqueado o caido.
+- Mantiene una sola fuente de verdad para el resultado: la respuesta real del
+  envio remoto.
+
+Defensas obligatorias:
+
+- El intento remoto tiene timeout.
+- Si falla, el item queda en `error` y se vuelve a intentar despues.
+- Si la app se cierra mientras un item esta `syncing`, el item se considera
+  reintentable cuando queda viejo.
+- La sincronizacion inmediata se dispara en segundo plano y no bloquea el
+  retorno de la operacion local.
+
+Esta decision puede revisarse si en produccion se observa que los intentos
+fallidos consumen demasiados recursos o ensucian la operacion. En ese caso se
+podria agregar un servicio de conectividad previo sin eliminar los timeouts ni
+la cola reintentable.
+
+## Reintentos Y Recuperacion
+
+La cola procesa como reintentables los items en:
+
+- `pending`
+- `error`
+- `syncing` viejo, usado para recuperar items atascados por cierre de app,
+  apagado del dispositivo o corte durante el envio.
+
+Un fallo temporal de red, timeout de Supabase o app cerrada a media
+sincronizacion no debe perder la venta ni bloquear ventas nuevas. El item queda
+en cola y se procesa por sincronizacion automatica o manual.
+
+Si el error es permanente por datos invalidos o una restriccion remota, el item
+seguira reintentando pero continuara fallando hasta corregir la causa. Ese caso
+debe revisarse desde la pantalla de sincronizacion usando el ultimo error.

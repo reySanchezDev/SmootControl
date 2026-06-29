@@ -46,6 +46,13 @@
 - Edge cases: Si el carrito esta vacio o falta referencia requerida, se muestra error y no se crea venta; si la cola de sync falla, la venta local no se revierte en V1.
 - Data impact: `sales`, `sale_items`, `local_sync_queue`.
 
+### Regla: Sincronizacion no bloquea ventas
+- Description: El POS debe completar la venta local aunque no haya internet o Supabase no responda. La sincronizacion corre despues mediante cola local reintentable.
+- Rationale: SmooControl es offline first; la operacion de vender no puede detenerse por problemas de red, Supabase lento o cortes temporales.
+- Example(s): El cajero cobra una mesa sin internet. La venta queda guardada localmente, la mesa se libera, la transaccion aparece en la caja actual y la cola queda pendiente/error hasta que sincronice.
+- Edge cases: No se hace pre-check de conexion en V1; el intento remoto real, con timeout, determina si se marca como sincronizado o como error reintentable. Si la app se cierra con un item en `syncing`, el item viejo vuelve a ser elegible para reintento. Si el error remoto es permanente por datos invalidos, se seguira reintentando hasta corregir la causa desde sincronizacion.
+- Data impact: `sales`, `sale_items`, `local_pos_open_ticket_lines`, `local_sync_queue`.
+
 ### Regla: Cambio en pagos en efectivo
 - Description: Cuando el metodo de pago afecta caja, el POS debe abrir un teclado tactil con el total precargado, pedir el efectivo recibido, calcular el cambio y bloquear el cobro si el recibido es menor al total.
 - Rationale: El cajero necesita cerrar el pago con rapidez y reducir errores al devolver cambio.
