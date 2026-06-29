@@ -127,6 +127,7 @@ final class PosBloc extends Bloc<PosEvent, PosState> {
   final IAuditLogRepository _auditLogRepository;
   final CurrentOperatorService _currentOperatorService;
   final IPosOpenTicketRepository _openTicketRepository;
+  bool _checkoutInProgress = false;
 
   void _onCategorySelected(
     PosCategorySelected event,

@@ -102,29 +102,9 @@ class _PosCashTransactionsPageState extends State<PosCashTransactionsPage> {
               ),
               const Divider(height: 1),
               Expanded(
-                child: ListView.separated(
-                  itemBuilder: (context, index) {
-                    final sale = data.sales[index];
-                    final method = data.paymentMethods[sale.paymentMethodId];
-                    return ListTile(
-                      leading: const Icon(Icons.receipt_long_outlined),
-                      title: AppText('${sale.invoiceNumber} - ${method ?? ''}'),
-                      subtitle: Wrap(
-                        spacing: 8,
-                        runSpacing: 4,
-                        crossAxisAlignment: WrapCrossAlignment.center,
-                        children: [
-                          AppText(_timeText(sale.createdAt)),
-                          _SyncStatusChip(status: sale.syncStatus),
-                        ],
-                      ),
-                      trailing: AppText(
-                        MoneyFormatter.format(sale.totalInCents),
-                      ),
-                    );
-                  },
-                  itemCount: data.sales.length,
-                  separatorBuilder: (_, _) => const Divider(height: 1),
+                child: _TransactionsTable(
+                  sales: data.sales,
+                  paymentMethods: data.paymentMethods,
                 ),
               ),
             ],
@@ -162,12 +142,6 @@ class _PosCashTransactionsPageState extends State<PosCashTransactionsPage> {
     };
   }
 
-  String _timeText(DateTime date) {
-    final hour = date.hour.toString().padLeft(2, '0');
-    final minute = date.minute.toString().padLeft(2, '0');
-    return '$hour:$minute';
-  }
-
   Future<bool> _canRunManualSync() async {
     final session = serviceLocator<CurrentOperatorService>().session;
     if (session == null) return false;
@@ -185,6 +159,193 @@ class _PosCashTransactionsPageState extends State<PosCashTransactionsPage> {
     setState(() {
       _future = _load();
     });
+  }
+}
+
+class _TransactionsTable extends StatelessWidget {
+  const _TransactionsTable({
+    required this.sales,
+    required this.paymentMethods,
+  });
+
+  final List<Sale> sales;
+  final Map<String, String> paymentMethods;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minWidth: constraints.maxWidth),
+            child: SizedBox(
+              width: constraints.maxWidth < 900 ? 900 : constraints.maxWidth,
+              child: Column(
+                children: [
+                  _TransactionsHeader(background: colorScheme.primaryContainer),
+                  Expanded(
+                    child: ListView.builder(
+                      itemBuilder: (context, index) {
+                        final sale = sales[index];
+                        return _TransactionRow(
+                          methodName:
+                              paymentMethods[sale.paymentMethodId] ?? '',
+                          sale: sale,
+                        );
+                      },
+                      itemCount: sales.length,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _TransactionsHeader extends StatelessWidget {
+  const _TransactionsHeader({required this.background});
+
+  final Color background;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = Theme.of(context).colorScheme.onPrimaryContainer;
+    return Container(
+      decoration: BoxDecoration(
+        color: background,
+        border: Border(
+          bottom: BorderSide(
+            color: Theme.of(context).colorScheme.outlineVariant,
+          ),
+        ),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: DefaultTextStyle.merge(
+        style: TextStyle(color: color, fontWeight: FontWeight.w700),
+        child: const Row(
+          children: [
+            _HeaderCell('Factura', flex: 18),
+            _HeaderCell('Fecha', flex: 14),
+            _HeaderCell('Hora', flex: 10),
+            _HeaderCell('Metodo', flex: 18),
+            _HeaderCell('Estado', flex: 18),
+            _HeaderCell('Monto', flex: 14, textAlign: TextAlign.right),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TransactionRow extends StatelessWidget {
+  const _TransactionRow({
+    required this.methodName,
+    required this.sale,
+  });
+
+  final String methodName;
+  final Sale sale;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: Theme.of(context).colorScheme.outlineVariant,
+          ),
+        ),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      child: Row(
+        children: [
+          _BodyCell(sale.invoiceNumber, flex: 18),
+          _BodyCell(_dateText(sale.createdAt), flex: 14),
+          _BodyCell(_timeText(sale.createdAt), flex: 10),
+          _BodyCell(methodName, flex: 18),
+          Expanded(
+            flex: 18,
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: _SyncStatusChip(status: sale.syncStatus),
+            ),
+          ),
+          _BodyCell(
+            MoneyFormatter.format(sale.totalInCents),
+            flex: 14,
+            textAlign: TextAlign.right,
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _dateText(DateTime date) {
+    final day = date.day.toString().padLeft(2, '0');
+    final month = date.month.toString().padLeft(2, '0');
+    return '$day/$month/${date.year}';
+  }
+
+  String _timeText(DateTime date) {
+    final hour = date.hour.toString().padLeft(2, '0');
+    final minute = date.minute.toString().padLeft(2, '0');
+    return '$hour:$minute';
+  }
+}
+
+class _HeaderCell extends StatelessWidget {
+  const _HeaderCell(
+    this.text, {
+    required this.flex,
+    this.textAlign = TextAlign.left,
+  });
+
+  final String text;
+  final int flex;
+  final TextAlign textAlign;
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      flex: flex,
+      child: Text(
+        text,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        textAlign: textAlign,
+      ),
+    );
+  }
+}
+
+class _BodyCell extends StatelessWidget {
+  const _BodyCell(
+    this.text, {
+    required this.flex,
+    this.textAlign = TextAlign.left,
+  });
+
+  final String text;
+  final int flex;
+  final TextAlign textAlign;
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      flex: flex,
+      child: AppText(
+        text,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        textAlign: textAlign,
+      ),
+    );
   }
 }
 

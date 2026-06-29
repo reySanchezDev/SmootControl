@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:smoo_control/core/database/app_database.dart';
@@ -82,9 +84,10 @@ void main() {
         operation: SyncOperation.create,
         payload: const {'name': 'Cafe'},
       );
+      final item = (enqueueResult as AppSuccess<SyncQueueItem>).value;
+      await _waitForQueueStatus(database, item.id, SyncQueueStatus.synced);
       final pendingResult = await repository.getPendingItems();
 
-      expect(enqueueResult, isA<AppSuccess<SyncQueueItem>>());
       expect(sender.pushed.map((item) => item.entityId), ['product-1']);
       expect(
         (pendingResult as AppSuccess<List<SyncQueueItem>>).value,
@@ -117,6 +120,11 @@ void main() {
           payload: const {'id': 'sale-1'},
         );
 
+        await _waitForQueueStatus(
+          database,
+          (await database.select(database.localSyncQueue).get()).single.id,
+          SyncQueueStatus.synced,
+        );
         expect(sender.pushed.map((item) => item.entityId), ['sale-1']);
         final pendingResult = await repository.getPendingItems();
         expect(
@@ -138,15 +146,46 @@ void main() {
         operation: SyncOperation.create,
         payload: const {'name': 'Cafe'},
       );
+      final item = (enqueueResult as AppSuccess<SyncQueueItem>).value;
+      await _waitForQueueStatus(database, item.id, SyncQueueStatus.error);
       final pendingResult = await repository.getPendingItems();
-
-      expect(enqueueResult, isA<AppSuccess<SyncQueueItem>>());
 
       final pending = (pendingResult as AppSuccess<List<SyncQueueItem>>).value;
       expect(pending, hasLength(1));
       expect(pending.single.status, SyncQueueStatus.error);
       expect(pending.single.lastError, contains('Sin conexion'));
     });
+
+    test(
+      'does not block local enqueue while immediate sync is pending',
+      () async {
+        final sender = _BlockingSender();
+        repository = SyncQueueRepository(
+          LocalSyncQueueDataSource(database),
+          remoteSender: sender,
+        );
+
+        final enqueueResult = await repository
+            .enqueue(
+              entityType: 'sales',
+              entityId: 'sale-1',
+              operation: SyncOperation.create,
+              payload: const {'id': 'sale-1'},
+            )
+            .timeout(const Duration(seconds: 1));
+        final item = (enqueueResult as AppSuccess<SyncQueueItem>).value;
+
+        await sender.pushStarted.future.timeout(const Duration(seconds: 1));
+        expect(sender.pushed.map((item) => item.entityId), ['sale-1']);
+
+        final rows = await database.select(database.localSyncQueue).get();
+        expect(rows.single.id, item.id);
+        expect(rows.single.status, SyncQueueStatus.syncing.name);
+
+        sender.complete();
+        await _waitForQueueStatus(database, item.id, SyncQueueStatus.synced);
+      },
+    );
   });
 }
 
@@ -168,6 +207,27 @@ final class _FailingSender implements ISyncRemoteSender {
   }
 }
 
+final class _BlockingSender implements ISyncRemoteSender {
+  final Completer<void> pushStarted = Completer<void>();
+  final Completer<void> _release = Completer<void>();
+  final List<SyncQueueItem> pushed = [];
+
+  @override
+  Future<void> push(SyncQueueItem item) async {
+    pushed.add(item);
+    if (!pushStarted.isCompleted) {
+      pushStarted.complete();
+    }
+    await _release.future;
+  }
+
+  void complete() {
+    if (!_release.isCompleted) {
+      _release.complete();
+    }
+  }
+}
+
 final class _SettingsRepositoryFake implements ISyncSettingsRepository {
   const _SettingsRepositoryFake(this.settings);
 
@@ -182,4 +242,23 @@ final class _SettingsRepositoryFake implements ISyncSettingsRepository {
   Future<AppResult<SyncSettings>> saveSettings(SyncSettings settings) async {
     return AppSuccess(settings);
   }
+}
+
+Future<void> _waitForQueueStatus(
+  AppDatabase database,
+  String itemId,
+  SyncQueueStatus status,
+) async {
+  for (var attempt = 0; attempt < 20; attempt += 1) {
+    final row = await (database.select(
+      database.localSyncQueue,
+    )..where((item) => item.id.equals(itemId))).getSingle();
+    if (row.status == status.name) return;
+    await Future<void>.delayed(const Duration(milliseconds: 10));
+  }
+
+  final row = await (database.select(
+    database.localSyncQueue,
+  )..where((item) => item.id.equals(itemId))).getSingle();
+  expect(row.status, status.name);
 }

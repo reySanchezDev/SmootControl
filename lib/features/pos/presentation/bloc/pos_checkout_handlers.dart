@@ -15,16 +15,31 @@ Future<void> _handleCheckoutRequested(
     return;
   }
 
-  if (current.selectedSplitAccountId != null) {
-    await _saveSelectedSplitAccountSale(bloc, current, event, emit);
-    return;
-  }
+  if (bloc._checkoutInProgress) return;
+  bloc._checkoutInProgress = true;
+  try {
+    if (current.selectedSplitAccountId != null) {
+      await _saveSelectedSplitAccountSale(bloc, current, event, emit);
+      return;
+    }
 
-  if (current.hasSplitAccounts) {
-    await _saveSplitSales(bloc, current, emit);
-    return;
-  }
+    if (current.hasSplitAccounts) {
+      await _saveSplitSales(bloc, current, emit);
+      return;
+    }
 
+    await _saveSingleSale(bloc, current, event, emit);
+  } finally {
+    bloc._checkoutInProgress = false;
+  }
+}
+
+Future<void> _saveSingleSale(
+  PosBloc bloc,
+  PosReady current,
+  PosCheckoutRequested event,
+  Emitter<PosState> emit,
+) async {
   final cashRegisterSessionId = await _openCashSessionId(
     bloc: bloc,
     current: current,
@@ -66,7 +81,15 @@ Future<void> _handleCheckoutRequested(
   final result = await bloc._salesRepository.saveSale(sale: sale, items: items);
   switch (result) {
     case AppSuccess(:final value):
-      await _clearPersistedActiveTicket(bloc, current, emit);
+      final ticketCleared = await _clearPersistedActiveTicket(
+        bloc,
+        current,
+        emit,
+      );
+      if (!ticketCleared) {
+        emit(current);
+        return;
+      }
       final tables = await _resetSelectedTableDisplayNameIfNeeded(
         bloc,
         current,
@@ -92,13 +115,13 @@ Future<void> _handleCheckoutRequested(
   }
 }
 
-Future<void> _clearPersistedActiveTicket(
+Future<bool> _clearPersistedActiveTicket(
   PosBloc bloc,
   PosReady current,
   Emitter<PosState> emit,
 ) async {
   final tableId = current.selectedTableId;
-  if (tableId == null) return;
+  if (tableId == null) return true;
 
   final result = await bloc._openTicketRepository.saveTableTicket(
     tableId: tableId,
@@ -106,9 +129,10 @@ Future<void> _clearPersistedActiveTicket(
   );
   switch (result) {
     case AppSuccess():
-      break;
+      return true;
     case AppFailureResult(:final error):
       emit(PosFailure(error));
+      return false;
   }
 }
 
@@ -194,7 +218,11 @@ Future<void> _saveSplitSales(
     }
   }
 
-  await _clearPersistedActiveTicket(bloc, current, emit);
+  final ticketCleared = await _clearPersistedActiveTicket(bloc, current, emit);
+  if (!ticketCleared) {
+    emit(current);
+    return;
+  }
   final tables = await _resetSelectedTableDisplayNameIfNeeded(
     bloc,
     current,

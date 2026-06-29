@@ -113,7 +113,7 @@ final class _ModifiersRepositoryFake implements IModifiersRepository {
   }
 }
 
-final class _SalesRepositoryFake implements ISalesRepository {
+class _SalesRepositoryFake implements ISalesRepository {
   final savedItemsBySaleId = <String, List<SaleItem>>{};
 
   @override
@@ -162,6 +162,29 @@ final class _SalesRepositoryFake implements ISalesRepository {
     return const AppFailureResult(
       AppFailure(code: 'unsupported', message: 'Operacion no usada.'),
     );
+  }
+}
+
+final class _BlockingSalesRepositoryFake extends _SalesRepositoryFake {
+  final Completer<void> firstSaveStarted = Completer<void>();
+  final Completer<void> _release = Completer<void>();
+
+  @override
+  Future<AppResult<Sale>> saveSale({
+    required Sale sale,
+    required List<SaleItem> items,
+  }) async {
+    if (!firstSaveStarted.isCompleted) {
+      firstSaveStarted.complete();
+    }
+    await _release.future;
+    return super.saveSale(sale: sale, items: items);
+  }
+
+  void complete() {
+    if (!_release.isCompleted) {
+      _release.complete();
+    }
   }
 }
 

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:smoo_control/core/result/app_failure.dart';
 import 'package:smoo_control/core/result/app_result.dart';
 import 'package:smoo_control/features/sync/data/datasources/local_sync_queue_datasource.dart';
@@ -46,7 +48,7 @@ final class SyncQueueRepository implements ISyncQueueRepository {
         updatedAt: now,
       );
       final saved = await _localDataSource.saveItem(item);
-      await _trySyncImmediately(saved.toEntity());
+      unawaited(_trySyncImmediately(saved.toEntity()));
 
       return AppSuccess(saved.toEntity());
     } on Object catch (error) {

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:smoo_control/core/result/app_failure.dart';
@@ -435,6 +437,39 @@ void main() {
         final items = sales.savedItemsBySaleId.values.single;
         expect(items, hasLength(1));
         expect(items.single.quantity, 3);
+      },
+    );
+
+    blocTest<PosBloc, PosState>(
+      'ignores duplicate checkout requests while a sale is being saved',
+      build: () {
+        sales = _BlockingSalesRepositoryFake();
+        return buildBloc(salesRepository: sales);
+      },
+      seed: () => PosReady(
+        products: const [product],
+        tables: const [table],
+        paymentMethods: const [method],
+        cartLines: const [PosCartLine(product: product, quantity: 1)],
+        cartLinesByTable: const {
+          'table-1': [PosCartLine(product: product, quantity: 1)],
+        },
+        selectedTableId: 'table-1',
+        selectedPaymentMethodId: 'cash',
+        openCashRegisterSession: cashSession,
+      ),
+      act: (bloc) async {
+        bloc
+          ..add(const PosCheckoutRequested())
+          ..add(const PosCheckoutRequested());
+        final blockingSales = sales as _BlockingSalesRepositoryFake;
+        await blockingSales.firstSaveStarted.future;
+        blockingSales.complete();
+      },
+      wait: const Duration(milliseconds: 10),
+      expect: () => [isA<PosReady>()],
+      verify: (_) {
+        expect(sales.savedItemsBySaleId, hasLength(1));
       },
     );
 

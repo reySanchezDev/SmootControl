@@ -81,7 +81,15 @@ Future<void> _saveSelectedSplitAccountSale(
     case AppSuccess(:final value):
       var next = _stateAfterSplitAccountPayment(current, account, value);
       if (next.splitAccounts.isEmpty) {
-        await _clearPersistedActiveTicket(bloc, current, emit);
+        final ticketCleared = await _clearPersistedActiveTicket(
+          bloc,
+          current,
+          emit,
+        );
+        if (!ticketCleared) {
+          emit(current);
+          return;
+        }
         final tables = await _resetSelectedTableDisplayNameIfNeeded(
           bloc,
           current,
