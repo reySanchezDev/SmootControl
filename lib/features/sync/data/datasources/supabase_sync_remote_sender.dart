@@ -5,6 +5,7 @@ import 'package:smoo_control/core/config/supabase_app_config.dart';
 import 'package:smoo_control/core/session/current_restaurant_service.dart';
 import 'package:smoo_control/features/sync/domain/entities/sync_queue_item.dart';
 import 'package:smoo_control/features/sync/domain/services/i_sync_remote_sender.dart';
+import 'package:uuid/uuid.dart';
 
 /// Sends queued local operations to Supabase through PostgREST.
 final class SupabaseSyncRemoteSender implements ISyncRemoteSender {
@@ -13,13 +14,16 @@ final class SupabaseSyncRemoteSender implements ISyncRemoteSender {
     required SupabaseAppConfig config,
     required CurrentRestaurantService restaurantService,
     required http.Client client,
+    Uuid uuid = const Uuid(),
   }) : _config = config,
        _restaurantService = restaurantService,
-       _client = client;
+       _client = client,
+       _uuid = uuid;
 
   final SupabaseAppConfig _config;
   final CurrentRestaurantService _restaurantService;
   final http.Client _client;
+  final Uuid _uuid;
 
   String? _accessToken;
   String? _remoteUserId;
@@ -169,14 +173,20 @@ final class SupabaseSyncRemoteSender implements ISyncRemoteSender {
       },
     );
     final totalAmount = _intValue(salePayload['totalInCents']);
+    final saleId = _remoteUuid(salePayload['id'], scope: 'sales');
+    final tableAccountId = _nullableRemoteUuid(
+      salePayload['tableAccountId'],
+      scope: 'table_accounts',
+    );
 
     await _upsert('sales', {
-      'id': salePayload['id'],
+      'id': saleId,
       'local_id': salePayload['id'],
       'restaurant_id': _restaurantId,
       'cash_register_session_id': salePayload['cashRegisterSessionId'],
       'table_id': salePayload['tableId'],
-      'table_account_id': salePayload['tableAccountId'],
+      'table_account_id': tableAccountId,
+      'account_name': salePayload['tableAccountId'],
       'user_id': remoteUserId,
       'payment_method_id': salePayload['paymentMethodId'],
       'payment_reference': salePayload['paymentReference'],
@@ -191,7 +201,7 @@ final class SupabaseSyncRemoteSender implements ISyncRemoteSender {
     });
 
     for (final saleItem in itemPayloads) {
-      await _upsert('sale_items', _saleItemPayload(saleItem));
+      await _upsert('sale_items', _saleItemPayload(saleItem, saleId));
     }
 
     final voidPayload = _mapPayload(item.payload['void']);
@@ -199,7 +209,7 @@ final class SupabaseSyncRemoteSender implements ISyncRemoteSender {
       await _upsert(
         'sale_voids',
         {
-          'sale_id': salePayload['id'],
+          'sale_id': saleId,
           'restaurant_id': _restaurantId,
           'cash_register_session_id': salePayload['cashRegisterSessionId'],
           'voided_by_user_id': remoteUserId,
@@ -219,7 +229,7 @@ final class SupabaseSyncRemoteSender implements ISyncRemoteSender {
     return {
       'id': item.entityId,
       'restaurant_id': _restaurantId,
-      'actor_user_id': _uuidOrNull(payload['actorUserId']),
+      'actor_user_id': null,
       'action': payload['action'],
       'entity_name': payload['entityName'],
       'entity_id': _uuidOrNull(payload['entityId']),
@@ -382,7 +392,7 @@ final class SupabaseSyncRemoteSender implements ISyncRemoteSender {
   Future<Map<String, Object?>> _tableAccountPayload(SyncQueueItem item) async {
     final payload = item.payload;
     return {
-      'id': payload['id'],
+      'id': _remoteUuid(payload['id'], scope: 'table_accounts'),
       'restaurant_id': _restaurantId,
       'table_id': payload['table_id'],
       'name': payload['name'],
@@ -392,17 +402,23 @@ final class SupabaseSyncRemoteSender implements ISyncRemoteSender {
     };
   }
 
-  Map<String, Object?> _saleItemPayload(Map<String, Object?> payload) {
+  Map<String, Object?> _saleItemPayload(
+    Map<String, Object?> payload,
+    String saleId,
+  ) {
     final quantity = _intValue(payload['quantity']);
     final unitPrice = _intValue(payload['unitPriceInCents']);
     final unitCost = _intValue(payload['unitCostInCents']);
     final subtotal = quantity * unitPrice;
     final totalCost = quantity * unitCost;
     return {
-      'id': payload['id'],
-      'sale_id': payload['saleId'],
+      'id': _remoteUuid(payload['id'], scope: 'sale_items'),
+      'sale_id': saleId,
       'product_id': payload['productId'],
-      'table_account_id': payload['tableAccountId'],
+      'table_account_id': _nullableRemoteUuid(
+        payload['tableAccountId'],
+        scope: 'table_accounts',
+      ),
       'product_code': payload['productId'],
       'product_name': payload['productName'],
       'category_name': payload['categoryName'],
@@ -577,5 +593,27 @@ final class SupabaseSyncRemoteSender implements ISyncRemoteSender {
       return normalized;
     }
     return null;
+  }
+
+  String _remoteUuid(Object? value, {required String scope}) {
+    final directUuid = _uuidOrNull(value);
+    if (directUuid != null) return directUuid;
+
+    final text = value?.toString().trim();
+    if (text == null || text.isEmpty) {
+      throw StateError('No se pudo generar UUID remoto para $scope.');
+    }
+
+    return _uuid.v5(
+      Namespace.url.value,
+      'smoo-control:$_restaurantId:$scope:$text',
+    );
+  }
+
+  String? _nullableRemoteUuid(Object? value, {required String scope}) {
+    final text = value?.toString().trim();
+    if (text == null || text.isEmpty) return null;
+
+    return _remoteUuid(text, scope: scope);
   }
 }
