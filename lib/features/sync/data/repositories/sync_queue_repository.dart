@@ -4,6 +4,7 @@ import 'package:smoo_control/features/sync/data/datasources/local_sync_queue_dat
 import 'package:smoo_control/features/sync/data/models/sync_queue_item_model.dart';
 import 'package:smoo_control/features/sync/domain/entities/sync_queue_item.dart';
 import 'package:smoo_control/features/sync/domain/repositories/i_sync_queue_repository.dart';
+import 'package:smoo_control/features/sync/domain/repositories/i_sync_settings_repository.dart';
 import 'package:smoo_control/features/sync/domain/services/i_sync_remote_sender.dart';
 import 'package:uuid/uuid.dart';
 
@@ -13,12 +14,15 @@ final class SyncQueueRepository implements ISyncQueueRepository {
   const SyncQueueRepository(
     this._localDataSource, {
     ISyncRemoteSender? remoteSender,
+    ISyncSettingsRepository? settingsRepository,
     Uuid uuid = const Uuid(),
   }) : _remoteSender = remoteSender,
+       _settingsRepository = settingsRepository,
        _uuid = uuid;
 
   final LocalSyncQueueDataSource _localDataSource;
   final ISyncRemoteSender? _remoteSender;
+  final ISyncSettingsRepository? _settingsRepository;
   final Uuid _uuid;
 
   @override
@@ -98,6 +102,14 @@ final class SyncQueueRepository implements ISyncQueueRepository {
   Future<void> _trySyncImmediately(SyncQueueItem item) async {
     final remoteSender = _remoteSender;
     if (remoteSender == null) return;
+    final settings = await _settingsRepository?.getSettings();
+    if (settings != null) {
+      final shouldSync = settings.when(
+        success: (value) => value.autoSyncEnabled && value.syncOnSave,
+        failure: (_) => false,
+      );
+      if (!shouldSync) return;
+    }
 
     try {
       await _localDataSource.markSyncing(item.id);

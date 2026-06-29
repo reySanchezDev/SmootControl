@@ -47,6 +47,29 @@ void main() {
       );
     });
 
+    test('processes all successful batches in one run', () async {
+      for (var index = 0; index < 55; index++) {
+        await _enqueueSale(repository, 'sale-$index');
+      }
+      final processor = SyncQueueProcessor(
+        repository: repository,
+        remoteSender: const _SuccessfulSender(),
+      );
+
+      final result = await processor.processPending();
+
+      expect(
+        (result as AppSuccess<SyncProcessSummary>).value,
+        const SyncProcessSummary(processed: 55, succeeded: 55, failed: 0),
+      );
+
+      final rows = await database.select(database.localSyncQueue).get();
+      expect(
+        rows.map((row) => row.status),
+        everyElement(SyncQueueStatus.synced.name),
+      );
+    });
+
     test('marks failed pushes as error for retry', () async {
       await _enqueueSale(repository, 'sale-1');
       final processor = SyncQueueProcessor(

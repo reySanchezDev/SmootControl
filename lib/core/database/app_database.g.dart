@@ -16440,6 +16440,453 @@ class LocalAuditLogsCompanion extends UpdateCompanion<LocalAuditLog> {
   }
 }
 
+class $LocalSyncSettingsTable extends LocalSyncSettings
+    with TableInfo<$LocalSyncSettingsTable, LocalSyncSetting> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LocalSyncSettingsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('default'),
+  );
+  static const VerificationMeta _autoSyncEnabledMeta = const VerificationMeta(
+    'autoSyncEnabled',
+  );
+  @override
+  late final GeneratedColumn<bool> autoSyncEnabled = GeneratedColumn<bool>(
+    'auto_sync_enabled',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("auto_sync_enabled" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _intervalMinutesMeta = const VerificationMeta(
+    'intervalMinutes',
+  );
+  @override
+  late final GeneratedColumn<int> intervalMinutes = GeneratedColumn<int>(
+    'interval_minutes',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(5),
+  );
+  static const VerificationMeta _syncOnStartupMeta = const VerificationMeta(
+    'syncOnStartup',
+  );
+  @override
+  late final GeneratedColumn<bool> syncOnStartup = GeneratedColumn<bool>(
+    'sync_on_startup',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("sync_on_startup" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _syncOnSaveMeta = const VerificationMeta(
+    'syncOnSave',
+  );
+  @override
+  late final GeneratedColumn<bool> syncOnSave = GeneratedColumn<bool>(
+    'sync_on_save',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("sync_on_save" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    autoSyncEnabled,
+    intervalMinutes,
+    syncOnStartup,
+    syncOnSave,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_sync_settings';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LocalSyncSetting> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('auto_sync_enabled')) {
+      context.handle(
+        _autoSyncEnabledMeta,
+        autoSyncEnabled.isAcceptableOrUnknown(
+          data['auto_sync_enabled']!,
+          _autoSyncEnabledMeta,
+        ),
+      );
+    }
+    if (data.containsKey('interval_minutes')) {
+      context.handle(
+        _intervalMinutesMeta,
+        intervalMinutes.isAcceptableOrUnknown(
+          data['interval_minutes']!,
+          _intervalMinutesMeta,
+        ),
+      );
+    }
+    if (data.containsKey('sync_on_startup')) {
+      context.handle(
+        _syncOnStartupMeta,
+        syncOnStartup.isAcceptableOrUnknown(
+          data['sync_on_startup']!,
+          _syncOnStartupMeta,
+        ),
+      );
+    }
+    if (data.containsKey('sync_on_save')) {
+      context.handle(
+        _syncOnSaveMeta,
+        syncOnSave.isAcceptableOrUnknown(
+          data['sync_on_save']!,
+          _syncOnSaveMeta,
+        ),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  LocalSyncSetting map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalSyncSetting(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      autoSyncEnabled: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}auto_sync_enabled'],
+      )!,
+      intervalMinutes: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}interval_minutes'],
+      )!,
+      syncOnStartup: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}sync_on_startup'],
+      )!,
+      syncOnSave: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}sync_on_save'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $LocalSyncSettingsTable createAlias(String alias) {
+    return $LocalSyncSettingsTable(attachedDatabase, alias);
+  }
+}
+
+class LocalSyncSetting extends DataClass
+    implements Insertable<LocalSyncSetting> {
+  /// Single settings row identifier managed by the system.
+  final String id;
+
+  /// Whether periodic automatic sync is enabled.
+  final bool autoSyncEnabled;
+
+  /// Interval in minutes used by the automatic scheduler.
+  final int intervalMinutes;
+
+  /// Whether the app should process the queue after startup.
+  final bool syncOnStartup;
+
+  /// Whether each new queued item should try to sync immediately.
+  final bool syncOnSave;
+
+  /// Last settings update timestamp.
+  final DateTime updatedAt;
+  const LocalSyncSetting({
+    required this.id,
+    required this.autoSyncEnabled,
+    required this.intervalMinutes,
+    required this.syncOnStartup,
+    required this.syncOnSave,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['auto_sync_enabled'] = Variable<bool>(autoSyncEnabled);
+    map['interval_minutes'] = Variable<int>(intervalMinutes);
+    map['sync_on_startup'] = Variable<bool>(syncOnStartup);
+    map['sync_on_save'] = Variable<bool>(syncOnSave);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  LocalSyncSettingsCompanion toCompanion(bool nullToAbsent) {
+    return LocalSyncSettingsCompanion(
+      id: Value(id),
+      autoSyncEnabled: Value(autoSyncEnabled),
+      intervalMinutes: Value(intervalMinutes),
+      syncOnStartup: Value(syncOnStartup),
+      syncOnSave: Value(syncOnSave),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory LocalSyncSetting.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalSyncSetting(
+      id: serializer.fromJson<String>(json['id']),
+      autoSyncEnabled: serializer.fromJson<bool>(json['autoSyncEnabled']),
+      intervalMinutes: serializer.fromJson<int>(json['intervalMinutes']),
+      syncOnStartup: serializer.fromJson<bool>(json['syncOnStartup']),
+      syncOnSave: serializer.fromJson<bool>(json['syncOnSave']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'autoSyncEnabled': serializer.toJson<bool>(autoSyncEnabled),
+      'intervalMinutes': serializer.toJson<int>(intervalMinutes),
+      'syncOnStartup': serializer.toJson<bool>(syncOnStartup),
+      'syncOnSave': serializer.toJson<bool>(syncOnSave),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  LocalSyncSetting copyWith({
+    String? id,
+    bool? autoSyncEnabled,
+    int? intervalMinutes,
+    bool? syncOnStartup,
+    bool? syncOnSave,
+    DateTime? updatedAt,
+  }) => LocalSyncSetting(
+    id: id ?? this.id,
+    autoSyncEnabled: autoSyncEnabled ?? this.autoSyncEnabled,
+    intervalMinutes: intervalMinutes ?? this.intervalMinutes,
+    syncOnStartup: syncOnStartup ?? this.syncOnStartup,
+    syncOnSave: syncOnSave ?? this.syncOnSave,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  LocalSyncSetting copyWithCompanion(LocalSyncSettingsCompanion data) {
+    return LocalSyncSetting(
+      id: data.id.present ? data.id.value : this.id,
+      autoSyncEnabled: data.autoSyncEnabled.present
+          ? data.autoSyncEnabled.value
+          : this.autoSyncEnabled,
+      intervalMinutes: data.intervalMinutes.present
+          ? data.intervalMinutes.value
+          : this.intervalMinutes,
+      syncOnStartup: data.syncOnStartup.present
+          ? data.syncOnStartup.value
+          : this.syncOnStartup,
+      syncOnSave: data.syncOnSave.present
+          ? data.syncOnSave.value
+          : this.syncOnSave,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalSyncSetting(')
+          ..write('id: $id, ')
+          ..write('autoSyncEnabled: $autoSyncEnabled, ')
+          ..write('intervalMinutes: $intervalMinutes, ')
+          ..write('syncOnStartup: $syncOnStartup, ')
+          ..write('syncOnSave: $syncOnSave, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    autoSyncEnabled,
+    intervalMinutes,
+    syncOnStartup,
+    syncOnSave,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalSyncSetting &&
+          other.id == this.id &&
+          other.autoSyncEnabled == this.autoSyncEnabled &&
+          other.intervalMinutes == this.intervalMinutes &&
+          other.syncOnStartup == this.syncOnStartup &&
+          other.syncOnSave == this.syncOnSave &&
+          other.updatedAt == this.updatedAt);
+}
+
+class LocalSyncSettingsCompanion extends UpdateCompanion<LocalSyncSetting> {
+  final Value<String> id;
+  final Value<bool> autoSyncEnabled;
+  final Value<int> intervalMinutes;
+  final Value<bool> syncOnStartup;
+  final Value<bool> syncOnSave;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const LocalSyncSettingsCompanion({
+    this.id = const Value.absent(),
+    this.autoSyncEnabled = const Value.absent(),
+    this.intervalMinutes = const Value.absent(),
+    this.syncOnStartup = const Value.absent(),
+    this.syncOnSave = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LocalSyncSettingsCompanion.insert({
+    this.id = const Value.absent(),
+    this.autoSyncEnabled = const Value.absent(),
+    this.intervalMinutes = const Value.absent(),
+    this.syncOnStartup = const Value.absent(),
+    this.syncOnSave = const Value.absent(),
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : updatedAt = Value(updatedAt);
+  static Insertable<LocalSyncSetting> custom({
+    Expression<String>? id,
+    Expression<bool>? autoSyncEnabled,
+    Expression<int>? intervalMinutes,
+    Expression<bool>? syncOnStartup,
+    Expression<bool>? syncOnSave,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (autoSyncEnabled != null) 'auto_sync_enabled': autoSyncEnabled,
+      if (intervalMinutes != null) 'interval_minutes': intervalMinutes,
+      if (syncOnStartup != null) 'sync_on_startup': syncOnStartup,
+      if (syncOnSave != null) 'sync_on_save': syncOnSave,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LocalSyncSettingsCompanion copyWith({
+    Value<String>? id,
+    Value<bool>? autoSyncEnabled,
+    Value<int>? intervalMinutes,
+    Value<bool>? syncOnStartup,
+    Value<bool>? syncOnSave,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return LocalSyncSettingsCompanion(
+      id: id ?? this.id,
+      autoSyncEnabled: autoSyncEnabled ?? this.autoSyncEnabled,
+      intervalMinutes: intervalMinutes ?? this.intervalMinutes,
+      syncOnStartup: syncOnStartup ?? this.syncOnStartup,
+      syncOnSave: syncOnSave ?? this.syncOnSave,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (autoSyncEnabled.present) {
+      map['auto_sync_enabled'] = Variable<bool>(autoSyncEnabled.value);
+    }
+    if (intervalMinutes.present) {
+      map['interval_minutes'] = Variable<int>(intervalMinutes.value);
+    }
+    if (syncOnStartup.present) {
+      map['sync_on_startup'] = Variable<bool>(syncOnStartup.value);
+    }
+    if (syncOnSave.present) {
+      map['sync_on_save'] = Variable<bool>(syncOnSave.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalSyncSettingsCompanion(')
+          ..write('id: $id, ')
+          ..write('autoSyncEnabled: $autoSyncEnabled, ')
+          ..write('intervalMinutes: $intervalMinutes, ')
+          ..write('syncOnStartup: $syncOnStartup, ')
+          ..write('syncOnSave: $syncOnSave, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -16481,6 +16928,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $LocalUserProfilesTable localUserProfiles =
       $LocalUserProfilesTable(this);
   late final $LocalAuditLogsTable localAuditLogs = $LocalAuditLogsTable(this);
+  late final $LocalSyncSettingsTable localSyncSettings =
+      $LocalSyncSettingsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -16508,6 +16957,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     localRolePermissions,
     localUserProfiles,
     localAuditLogs,
+    localSyncSettings,
   ];
 }
 
@@ -24258,6 +24708,246 @@ typedef $$LocalAuditLogsTableProcessedTableManager =
       LocalAuditLog,
       PrefetchHooks Function()
     >;
+typedef $$LocalSyncSettingsTableCreateCompanionBuilder =
+    LocalSyncSettingsCompanion Function({
+      Value<String> id,
+      Value<bool> autoSyncEnabled,
+      Value<int> intervalMinutes,
+      Value<bool> syncOnStartup,
+      Value<bool> syncOnSave,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$LocalSyncSettingsTableUpdateCompanionBuilder =
+    LocalSyncSettingsCompanion Function({
+      Value<String> id,
+      Value<bool> autoSyncEnabled,
+      Value<int> intervalMinutes,
+      Value<bool> syncOnStartup,
+      Value<bool> syncOnSave,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$LocalSyncSettingsTableFilterComposer
+    extends Composer<_$AppDatabase, $LocalSyncSettingsTable> {
+  $$LocalSyncSettingsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get autoSyncEnabled => $composableBuilder(
+    column: $table.autoSyncEnabled,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get intervalMinutes => $composableBuilder(
+    column: $table.intervalMinutes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get syncOnStartup => $composableBuilder(
+    column: $table.syncOnStartup,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get syncOnSave => $composableBuilder(
+    column: $table.syncOnSave,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LocalSyncSettingsTableOrderingComposer
+    extends Composer<_$AppDatabase, $LocalSyncSettingsTable> {
+  $$LocalSyncSettingsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get autoSyncEnabled => $composableBuilder(
+    column: $table.autoSyncEnabled,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get intervalMinutes => $composableBuilder(
+    column: $table.intervalMinutes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get syncOnStartup => $composableBuilder(
+    column: $table.syncOnStartup,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get syncOnSave => $composableBuilder(
+    column: $table.syncOnSave,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LocalSyncSettingsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LocalSyncSettingsTable> {
+  $$LocalSyncSettingsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<bool> get autoSyncEnabled => $composableBuilder(
+    column: $table.autoSyncEnabled,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get intervalMinutes => $composableBuilder(
+    column: $table.intervalMinutes,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get syncOnStartup => $composableBuilder(
+    column: $table.syncOnStartup,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get syncOnSave => $composableBuilder(
+    column: $table.syncOnSave,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$LocalSyncSettingsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LocalSyncSettingsTable,
+          LocalSyncSetting,
+          $$LocalSyncSettingsTableFilterComposer,
+          $$LocalSyncSettingsTableOrderingComposer,
+          $$LocalSyncSettingsTableAnnotationComposer,
+          $$LocalSyncSettingsTableCreateCompanionBuilder,
+          $$LocalSyncSettingsTableUpdateCompanionBuilder,
+          (
+            LocalSyncSetting,
+            BaseReferences<
+              _$AppDatabase,
+              $LocalSyncSettingsTable,
+              LocalSyncSetting
+            >,
+          ),
+          LocalSyncSetting,
+          PrefetchHooks Function()
+        > {
+  $$LocalSyncSettingsTableTableManager(
+    _$AppDatabase db,
+    $LocalSyncSettingsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LocalSyncSettingsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LocalSyncSettingsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$LocalSyncSettingsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<bool> autoSyncEnabled = const Value.absent(),
+                Value<int> intervalMinutes = const Value.absent(),
+                Value<bool> syncOnStartup = const Value.absent(),
+                Value<bool> syncOnSave = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalSyncSettingsCompanion(
+                id: id,
+                autoSyncEnabled: autoSyncEnabled,
+                intervalMinutes: intervalMinutes,
+                syncOnStartup: syncOnStartup,
+                syncOnSave: syncOnSave,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<bool> autoSyncEnabled = const Value.absent(),
+                Value<int> intervalMinutes = const Value.absent(),
+                Value<bool> syncOnStartup = const Value.absent(),
+                Value<bool> syncOnSave = const Value.absent(),
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => LocalSyncSettingsCompanion.insert(
+                id: id,
+                autoSyncEnabled: autoSyncEnabled,
+                intervalMinutes: intervalMinutes,
+                syncOnStartup: syncOnStartup,
+                syncOnSave: syncOnSave,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LocalSyncSettingsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LocalSyncSettingsTable,
+      LocalSyncSetting,
+      $$LocalSyncSettingsTableFilterComposer,
+      $$LocalSyncSettingsTableOrderingComposer,
+      $$LocalSyncSettingsTableAnnotationComposer,
+      $$LocalSyncSettingsTableCreateCompanionBuilder,
+      $$LocalSyncSettingsTableUpdateCompanionBuilder,
+      (
+        LocalSyncSetting,
+        BaseReferences<
+          _$AppDatabase,
+          $LocalSyncSettingsTable,
+          LocalSyncSetting
+        >,
+      ),
+      LocalSyncSetting,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -24321,4 +25011,6 @@ class $AppDatabaseManager {
       $$LocalUserProfilesTableTableManager(_db, _db.localUserProfiles);
   $$LocalAuditLogsTableTableManager get localAuditLogs =>
       $$LocalAuditLogsTableTableManager(_db, _db.localAuditLogs);
+  $$LocalSyncSettingsTableTableManager get localSyncSettings =>
+      $$LocalSyncSettingsTableTableManager(_db, _db.localSyncSettings);
 }

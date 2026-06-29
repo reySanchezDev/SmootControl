@@ -67,6 +67,7 @@ final class SupabaseSyncRemoteSender implements ISyncRemoteSender {
       case 'table_accounts':
         await _upsert('table_accounts', await _tableAccountPayload(item));
       case 'audit_logs':
+        await _upsert('audit_logs', _auditLogPayload(item));
       case 'permissions':
       case 'profiles':
       case 'role_permissions':
@@ -211,6 +212,20 @@ final class SupabaseSyncRemoteSender implements ISyncRemoteSender {
         conflictColumn: 'sale_id',
       );
     }
+  }
+
+  Map<String, Object?> _auditLogPayload(SyncQueueItem item) {
+    final payload = item.payload;
+    return {
+      'id': item.entityId,
+      'restaurant_id': _restaurantId,
+      'actor_user_id': _uuidOrNull(payload['actorUserId']),
+      'action': payload['action'],
+      'entity_name': payload['entityName'],
+      'entity_id': _uuidOrNull(payload['entityId']),
+      'details': payload['details'] ?? const <String, Object?>{},
+      'created_at': payload['occurredAt'],
+    };
   }
 
   Map<String, Object?> _productCategoryPayload(SyncQueueItem item) {
@@ -547,5 +562,20 @@ final class SupabaseSyncRemoteSender implements ISyncRemoteSender {
   List<String> _stringList(Object? value) {
     if (value is! List) return const [];
     return value.whereType<String>().toList();
+  }
+
+  String? _uuidOrNull(Object? value) {
+    final text = value?.toString();
+    if (text == null) return null;
+    final normalized = text.trim();
+    if (RegExp(
+      '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-'
+      '[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-'
+      '[0-9a-fA-F]{12}'
+      r'$',
+    ).hasMatch(normalized)) {
+      return normalized;
+    }
+    return null;
   }
 }

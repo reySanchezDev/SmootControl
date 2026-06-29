@@ -55,11 +55,15 @@ import 'package:smoo_control/features/settings/data/repositories/business_settin
 import 'package:smoo_control/features/settings/domain/repositories/i_business_settings_repository.dart';
 import 'package:smoo_control/features/settings/presentation/bloc/business_settings_bloc.dart';
 import 'package:smoo_control/features/sync/data/datasources/local_sync_queue_datasource.dart';
+import 'package:smoo_control/features/sync/data/datasources/local_sync_settings_datasource.dart';
 import 'package:smoo_control/features/sync/data/datasources/supabase_sync_remote_sender.dart';
 import 'package:smoo_control/features/sync/data/repositories/sync_queue_repository.dart';
+import 'package:smoo_control/features/sync/data/repositories/sync_settings_repository.dart';
 import 'package:smoo_control/features/sync/domain/repositories/i_sync_queue_repository.dart';
+import 'package:smoo_control/features/sync/domain/repositories/i_sync_settings_repository.dart';
 import 'package:smoo_control/features/sync/domain/services/i_sync_remote_sender.dart';
 import 'package:smoo_control/features/sync/domain/services/sync_queue_processor.dart';
+import 'package:smoo_control/features/sync/domain/services/sync_scheduler_service.dart';
 import 'package:smoo_control/features/sync/presentation/bloc/sync_bloc.dart';
 import 'package:smoo_control/features/tables/data/datasources/local_tables_datasource.dart';
 import 'package:smoo_control/features/tables/data/repositories/tables_repository.dart';
@@ -298,6 +302,14 @@ Future<void> configureDependencies() async {
     ..registerLazySingleton<LocalSyncQueueDataSource>(
       () => LocalSyncQueueDataSource(serviceLocator<AppDatabase>()),
     )
+    ..registerLazySingleton<LocalSyncSettingsDataSource>(
+      () => LocalSyncSettingsDataSource(serviceLocator<AppDatabase>()),
+    )
+    ..registerLazySingleton<ISyncSettingsRepository>(
+      () => SyncSettingsRepository(
+        serviceLocator<LocalSyncSettingsDataSource>(),
+      ),
+    )
     ..registerLazySingleton<ISyncRemoteSender>(
       () => SupabaseSyncRemoteSender(
         config: serviceLocator<SupabaseAppConfig>(),
@@ -309,6 +321,7 @@ Future<void> configureDependencies() async {
       () => SyncQueueRepository(
         serviceLocator<LocalSyncQueueDataSource>(),
         remoteSender: serviceLocator<ISyncRemoteSender>(),
+        settingsRepository: serviceLocator<ISyncSettingsRepository>(),
       ),
     )
     ..registerLazySingleton<SyncQueueProcessor>(
@@ -317,10 +330,19 @@ Future<void> configureDependencies() async {
         remoteSender: serviceLocator<ISyncRemoteSender>(),
       ),
     )
+    ..registerLazySingleton<SyncSchedulerService>(
+      () => SyncSchedulerService(
+        settingsRepository: serviceLocator<ISyncSettingsRepository>(),
+        processor: serviceLocator<SyncQueueProcessor>(),
+      ),
+      dispose: (scheduler) => scheduler.dispose(),
+    )
     ..registerFactory<SyncBloc>(
       () => SyncBloc(
         repository: serviceLocator<ISyncQueueRepository>(),
+        settingsRepository: serviceLocator<ISyncSettingsRepository>(),
         processor: serviceLocator<SyncQueueProcessor>(),
+        scheduler: serviceLocator<SyncSchedulerService>(),
       ),
     );
 

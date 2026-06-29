@@ -2,9 +2,12 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:smoo_control/core/result/app_result.dart';
 import 'package:smoo_control/features/sync/domain/entities/sync_queue_item.dart';
+import 'package:smoo_control/features/sync/domain/entities/sync_settings.dart';
 import 'package:smoo_control/features/sync/domain/repositories/i_sync_queue_repository.dart';
+import 'package:smoo_control/features/sync/domain/repositories/i_sync_settings_repository.dart';
 import 'package:smoo_control/features/sync/domain/services/i_sync_remote_sender.dart';
 import 'package:smoo_control/features/sync/domain/services/sync_queue_processor.dart';
+import 'package:smoo_control/features/sync/domain/services/sync_scheduler_service.dart';
 import 'package:smoo_control/features/sync/presentation/bloc/sync_bloc.dart';
 import 'package:smoo_control/features/sync/presentation/bloc/sync_event.dart';
 import 'package:smoo_control/features/sync/presentation/bloc/sync_state.dart';
@@ -17,19 +20,26 @@ void main() {
       'loads pending queue items',
       build: () {
         final repository = _SyncQueueRepositoryFake(items: [item]);
+        final settingsRepository = _SyncSettingsRepositoryFake();
+        final processor = SyncQueueProcessor(
+          repository: repository,
+          remoteSender: const _SuccessfulRemoteSenderFake(),
+        );
 
         return SyncBloc(
           repository: repository,
-          processor: SyncQueueProcessor(
-            repository: repository,
-            remoteSender: const _SuccessfulRemoteSenderFake(),
+          settingsRepository: settingsRepository,
+          processor: processor,
+          scheduler: SyncSchedulerService(
+            settingsRepository: settingsRepository,
+            processor: processor,
           ),
         );
       },
       act: (bloc) => bloc.add(const SyncQueueRequested()),
       expect: () => [
         const SyncLoading(),
-        SyncLoaded(items: [item]),
+        SyncLoaded(items: [item], settings: const SyncSettings()),
       ],
     );
 
@@ -37,12 +47,19 @@ void main() {
       'processes pending queue items',
       build: () {
         final repository = _SyncQueueRepositoryFake(items: [item]);
+        final settingsRepository = _SyncSettingsRepositoryFake();
+        final processor = SyncQueueProcessor(
+          repository: repository,
+          remoteSender: const _SuccessfulRemoteSenderFake(),
+        );
 
         return SyncBloc(
           repository: repository,
-          processor: SyncQueueProcessor(
-            repository: repository,
-            remoteSender: const _SuccessfulRemoteSenderFake(),
+          settingsRepository: settingsRepository,
+          processor: processor,
+          scheduler: SyncSchedulerService(
+            settingsRepository: settingsRepository,
+            processor: processor,
           ),
         );
       },
@@ -161,4 +178,20 @@ final class _SuccessfulRemoteSenderFake implements ISyncRemoteSender {
 
   @override
   Future<void> push(SyncQueueItem item) async {}
+}
+
+final class _SyncSettingsRepositoryFake implements ISyncSettingsRepository {
+  SyncSettings settings = const SyncSettings();
+
+  @override
+  Future<AppResult<SyncSettings>> getSettings() async {
+    return AppSuccess(settings);
+  }
+
+  @override
+  Future<AppResult<SyncSettings>> saveSettings(SyncSettings settings) async {
+    this.settings = settings;
+
+    return AppSuccess(settings);
+  }
 }

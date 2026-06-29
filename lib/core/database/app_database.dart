@@ -37,6 +37,7 @@ part 'app_database.g.dart';
     LocalRolePermissions,
     LocalUserProfiles,
     LocalAuditLogs,
+    LocalSyncSettings,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -44,7 +45,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 17;
+  int get schemaVersion => 18;
 
   @override
   MigrationStrategy get migration {
@@ -172,6 +173,9 @@ class AppDatabase extends _$AppDatabase {
             localExpenseCategories,
             localExpenseCategories.parentId,
           );
+        }
+        if (from < 18) {
+          await migrator.createTable(localSyncSettings);
         }
       },
     );

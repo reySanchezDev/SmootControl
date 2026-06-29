@@ -20,17 +20,45 @@ final class SyncQueueProcessor {
   Future<AppResult<SyncProcessSummary>> processPending({
     int limit = 50,
   }) async {
-    final pendingResult = await _repository.getPendingItems(limit: limit);
+    var processed = 0;
+    var succeeded = 0;
+    var failed = 0;
 
-    return pendingResult.when(
-      success: _processItems,
-      failure: AppFailureResult.new,
-    );
+    while (true) {
+      final pendingResult = await _repository.getPendingItems(limit: limit);
+      switch (pendingResult) {
+        case AppFailureResult(:final error):
+          return AppFailureResult(error);
+        case AppSuccess(:final value):
+          if (value.isEmpty) {
+            return AppSuccess(
+              SyncProcessSummary(
+                processed: processed,
+                succeeded: succeeded,
+                failed: failed,
+              ),
+            );
+          }
+
+          final summary = await _processItems(value);
+          processed += summary.processed;
+          succeeded += summary.succeeded;
+          failed += summary.failed;
+
+          if (summary.failed > 0 || value.length < limit) {
+            return AppSuccess(
+              SyncProcessSummary(
+                processed: processed,
+                succeeded: succeeded,
+                failed: failed,
+              ),
+            );
+          }
+      }
+    }
   }
 
-  Future<AppResult<SyncProcessSummary>> _processItems(
-    List<SyncQueueItem> items,
-  ) async {
+  Future<SyncProcessSummary> _processItems(List<SyncQueueItem> items) async {
     var succeeded = 0;
     var failed = 0;
 
@@ -58,12 +86,10 @@ final class SyncQueueProcessor {
       }
     }
 
-    return AppSuccess(
-      SyncProcessSummary(
-        processed: items.length,
-        succeeded: succeeded,
-        failed: failed,
-      ),
+    return SyncProcessSummary(
+      processed: items.length,
+      succeeded: succeeded,
+      failed: failed,
     );
   }
 }
