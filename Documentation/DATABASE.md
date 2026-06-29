@@ -83,7 +83,6 @@ Cada tabla operativa local incluye metadatos de sincronizacion:
 
 ## Pendiente Remoto
 
-- Crear proyecto Supabase remoto nuevo.
 - Configurar Google Auth en proyecto nuevo.
 - Cerrar hallazgos de prioridad alta de la auditoria ready for Supabase:
   `restaurant_id`, usuario autenticado, codigos remotos y payloads sync.
@@ -97,3 +96,11 @@ Cada tabla operativa local incluye metadatos de sincronizacion:
 - Migracion inicial documentada en `supabase/migrations/001_initial_schema.sql`.
 - Drift local operativo con SQLite en memoria para pruebas.
 - Assets Web requeridos por Drift agregados y copiados por `tool/build_web_release.ps1`.
+
+## Validado Remoto Supabase
+
+- Proyecto `SmooControl` enlazado con ref `hexejdgbcmyiyqtvfihr`.
+- Migracion remota `001_initial_schema.sql` aplicada.
+- Seed remoto aplicado con permisos, roles, metodos de pago y categorias de gasto base.
+- RLS habilitado en 23 de 23 tablas publicas.
+- `supabase db lint --linked --schema public` sin errores de esquema.

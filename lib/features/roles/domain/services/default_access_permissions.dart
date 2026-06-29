@@ -8,6 +8,10 @@ abstract final class DefaultAccessPermissions {
     AccessPermission(code: 'roles.gestionar', name: 'Gestionar roles'),
     AccessPermission(code: 'mesas.gestionar', name: 'Gestionar mesas'),
     AccessPermission(code: 'productos.gestionar', name: 'Gestionar productos'),
+    AccessPermission(
+      code: 'modificadores.gestionar',
+      name: 'Gestionar modificadores POS',
+    ),
     AccessPermission(code: 'ventas.registrar', name: 'Registrar ventas'),
     AccessPermission(code: 'caja.aperturar', name: 'Aperturar caja'),
     AccessPermission(code: 'caja.cerrar', name: 'Cerrar caja'),

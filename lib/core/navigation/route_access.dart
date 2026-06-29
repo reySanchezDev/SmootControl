@@ -17,9 +17,8 @@ abstract final class RouteAccess {
     return switch (route) {
       AppRoutes.pos => const ['ventas.registrar'],
       AppRoutes.reports => const ['reportes.ver'],
-      AppRoutes.catalog ||
-      AppRoutes.products ||
-      AppRoutes.modifiers => const ['productos.gestionar'],
+      AppRoutes.catalog || AppRoutes.products => const ['productos.gestionar'],
+      AppRoutes.modifiers => const ['modificadores.gestionar'],
       AppRoutes.paymentMethods => const ['pagos.gestionar'],
       AppRoutes.tables => const ['mesas.gestionar'],
       AppRoutes.sales => const [

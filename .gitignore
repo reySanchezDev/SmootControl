@@ -5,6 +5,7 @@
 *.swp
 .DS_Store
 Requerimiento/CredencialesSupabase.md
+supabase/.temp/
 .atom/
 .build/
 .buildlog/

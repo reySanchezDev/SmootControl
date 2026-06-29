@@ -893,6 +893,13 @@
 | 2026-06-28 | `flutter test` | 158 tests pasan despues de refinar boton de productos y posicion de tasa POS. |
 | 2026-06-28 | `powershell -NoProfile -ExecutionPolicy Bypass -File .\tool\build_web_release.ps1` | Build Web release correcto despues de refinar la franja del total POS. |
 | 2026-06-28 | Verificacion HTTP release | `http://127.0.0.1:8101/` responde HTTP 200 despues del build release. |
+| 2026-06-28 | Supabase remoto SmooControl | CLI enlazada al proyecto `hexejdgbcmyiyqtvfihr` en East US (Ohio), separado de `MemberShip`. |
+| 2026-06-28 | Migracion remota Supabase | `001_initial_schema.sql` aplicada correctamente al proyecto remoto SmooControl. |
+| 2026-06-28 | Seed remoto Supabase | `seed.sql` aplicado con roles, permisos, metodos de pago y categorias de gasto base; permisos alineados con la app. |
+| 2026-06-28 | Validacion remota Supabase | 23 tablas publicas creadas, RLS habilitado en 23/23 y `supabase db lint --linked --schema public` sin errores. |
+| 2026-06-28 | Permiso de modificadores | App local alinea `modificadores.gestionar` con seed remoto y ruta `Modificadores POS`. |
+| 2026-06-28 | `flutter analyze` | Sin issues despues de alinear permisos y aplicar Supabase remoto. |
+| 2026-06-28 | `flutter test test\features\roles test\app_test.dart` | 9 tests pasan despues de alinear permisos con Supabase. |
 
 ## Riesgos Activos
 

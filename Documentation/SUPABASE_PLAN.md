@@ -23,13 +23,19 @@
 
 ## Remoto Pendiente
 
-- Cerrar `Documentation/SUPABASE_READINESS_AUDIT.md` prioridad alta.
-- Crear proyecto nuevo.
+- Cerrar `Documentation/SUPABASE_READINESS_AUDIT.md` prioridad alta restante.
 - Configurar Google Auth.
 - Reemplazar `DisabledAuthRepository` por repositorio Supabase Auth.
-- Aplicar migraciones.
+- Conectar `SupabaseSyncRemoteSender`.
 - Validar RLS.
-- Validar seeds.
+
+## Remoto Aplicado
+
+- Proyecto remoto nuevo `SmooControl` creado en East US (Ohio).
+- Project ref enlazado: `hexejdgbcmyiyqtvfihr`.
+- Migracion `001_initial_schema.sql` aplicada.
+- `seed.sql` aplicado con roles, permisos, metodos de pago base y categorias de gastos base.
+- RLS habilitado en las 23 tablas publicas.
 
 ## Comandos Seguros
 

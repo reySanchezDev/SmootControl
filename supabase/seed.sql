@@ -15,6 +15,9 @@ VALUES
   ('cuentas.separar', 'Separar cuentas'),
   ('ventas.anular', 'Anular ventas'),
   ('reportes.ver', 'Ver reportes'),
+  ('configuracion.gestionar', 'Gestionar configuracion'),
+  ('tasas.gestionar', 'Gestionar tasas de cambio'),
+  ('auditoria.ver', 'Ver auditoria'),
   ('sync.configurar', 'Configurar sincronizacion')
 ON CONFLICT (code) DO NOTHING;
 

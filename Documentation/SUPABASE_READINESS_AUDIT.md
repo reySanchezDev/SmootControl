@@ -17,11 +17,12 @@ Todo modulo que persista datos debe quedar alineado con:
 
 ## Estado General
 
-Estado: En progreso, con base local funcional.
+Estado: En progreso, con base local funcional y esquema remoto inicial aplicado.
 
-La app local ya opera con Drift/SQLite y cola de sincronizacion, pero antes de
-aplicar migraciones remotas hay campos que deben alinearse para evitar deuda al
-conectar Supabase.
+La app local ya opera con Drift/SQLite y cola de sincronizacion. El proyecto
+remoto `SmooControl` ya tiene la migracion inicial y seeds base aplicados; antes
+de conectar la app en produccion deben cerrarse los mapeos de restaurante,
+usuario autenticado, codigos y payloads de sync.
 
 ## Ready
 
@@ -32,6 +33,7 @@ conectar Supabase.
 | Cola sync local | Ready | `local_sync_queue`, `SyncQueueRepository`, `SyncQueueProcessor`. |
 | Sync remoto desacoplado | Ready | `ISyncRemoteSender` permite conectar Supabase sin cambiar repositorios locales. |
 | Auditoria local | Ready | `local_audit_logs` y repositorio de auditoria local. |
+| Proyecto remoto SmooControl | Ready parcial | Proyecto `hexejdgbcmyiyqtvfihr` enlazado, migracion inicial aplicada, seed base aplicado y RLS habilitado. |
 | Categorias multinivel | Ready | Local `parent_id`; remoto `product_categories.parent_id`. |
 | Productos con disponibilidad POS | Ready | Local `is_available_in_pos`; remoto `products.is_available_in_pos`. |
 | Modificadores POS | Ready | Local `local_modifier_groups`, `local_modifier_options` y `modifier_group_ids_json`; remoto `modifier_groups`, `modifier_options` y `product_modifier_groups`. |
@@ -67,9 +69,6 @@ conectar Supabase.
 
 ## Modulos Que No Deben Marcarsen Como Finales Hasta Supabase
 
-- Auth Google.
-- Usuarios reales.
-- RLS.
 - Sync remoto.
 - Perfiles multiusuario asociados a `auth.users`.
 - Migracion de datos locales a remoto.
@@ -86,5 +85,6 @@ conectar Supabase.
 
 ## Decision Actual
 
-Se puede continuar finalizando V1 local, pero la app no se considerara lista
-para Supabase remoto hasta cerrar los hallazgos de prioridad alta.
+Se puede continuar finalizando V1 local y el esquema remoto base ya existe, pero
+la app no se considerara conectada a Supabase en produccion hasta cerrar los
+hallazgos de prioridad alta y reemplazar el enviador remoto deshabilitado.
