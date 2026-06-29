@@ -4,6 +4,7 @@
 *.pyc
 *.swp
 .DS_Store
+Requerimiento/CredencialesSupabase.md
 .atom/
 .build/
 .buildlog/
