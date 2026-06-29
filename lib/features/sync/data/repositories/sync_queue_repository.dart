@@ -105,7 +105,7 @@ final class SyncQueueRepository implements ISyncQueueRepository {
     final settings = await _settingsRepository?.getSettings();
     if (settings != null) {
       final shouldSync = settings.when(
-        success: (value) => value.autoSyncEnabled && value.syncOnSave,
+        success: (value) => value.syncOnSave,
         failure: (_) => false,
       );
       if (!shouldSync) return;

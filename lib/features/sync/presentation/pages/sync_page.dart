@@ -197,31 +197,39 @@ class _SyncSettingsPanelState extends State<_SyncSettingsPanel> {
             const SizedBox(height: 12),
             Wrap(
               spacing: 12,
-              runSpacing: 8,
+              runSpacing: 12,
               children: [
-                FilterChip(
-                  selected: _autoSyncEnabled,
-                  avatar: const Icon(Icons.schedule_outlined),
-                  label: const Text('Automatico'),
-                  onSelected: (value) =>
+                _SyncToggleTile(
+                  icon: Icons.schedule_outlined,
+                  label: 'Automatico',
+                  value: _autoSyncEnabled,
+                  onChanged: (value) =>
                       setState(() => _autoSyncEnabled = value),
                 ),
-                FilterChip(
-                  selected: _syncOnStartup,
-                  avatar: const Icon(Icons.rocket_launch_outlined),
-                  label: const Text('Al iniciar'),
-                  onSelected: (value) => setState(() => _syncOnStartup = value),
+                _SyncToggleTile(
+                  icon: Icons.rocket_launch_outlined,
+                  label: 'Al iniciar',
+                  value: _syncOnStartup,
+                  onChanged: (value) => setState(() => _syncOnStartup = value),
                 ),
-                FilterChip(
-                  selected: _syncOnSave,
-                  avatar: const Icon(Icons.save_as_outlined),
-                  label: const Text('Al guardar'),
-                  onSelected: (value) => setState(() => _syncOnSave = value),
+                _SyncToggleTile(
+                  icon: Icons.save_as_outlined,
+                  label: 'Al guardar',
+                  value: _syncOnSave,
+                  onChanged: (value) => setState(() => _syncOnSave = value),
                 ),
               ],
             ),
             const SizedBox(height: 12),
-            const AppText('Frecuencia', variant: AppTextVariant.label),
+            AppText(
+              'Frecuencia del temporizador',
+              variant: AppTextVariant.label,
+              style: TextStyle(
+                color: _autoSyncEnabled
+                    ? null
+                    : Theme.of(context).disabledColor,
+              ),
+            ),
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
@@ -231,8 +239,9 @@ class _SyncSettingsPanelState extends State<_SyncSettingsPanel> {
                   ChoiceChip(
                     selected: _intervalMinutes == minutes,
                     label: Text('$minutes min'),
-                    onSelected: (_) =>
-                        setState(() => _intervalMinutes = minutes),
+                    onSelected: _autoSyncEnabled
+                        ? (_) => setState(() => _intervalMinutes = minutes)
+                        : null,
                   ),
               ],
             ),
@@ -259,6 +268,67 @@ class _SyncSettingsPanelState extends State<_SyncSettingsPanel> {
           intervalMinutes: _intervalMinutes,
           syncOnStartup: _syncOnStartup,
           syncOnSave: _syncOnSave,
+        ),
+      ),
+    );
+  }
+}
+
+class _SyncToggleTile extends StatelessWidget {
+  const _SyncToggleTile({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.onChanged,
+  });
+
+  final IconData icon;
+  final String label;
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final statusColor = value ? colorScheme.primary : colorScheme.onSurface;
+
+    return SizedBox(
+      width: 260,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: value ? colorScheme.primaryContainer : colorScheme.surface,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: value ? colorScheme.primary : Theme.of(context).dividerColor,
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, color: statusColor),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    AppText(label, variant: AppTextVariant.label),
+                    AppText(
+                      value ? 'Activado' : 'Desactivado',
+                      variant: AppTextVariant.label,
+                      style: TextStyle(color: statusColor),
+                    ),
+                  ],
+                ),
+              ),
+              Switch(
+                value: value,
+                onChanged: onChanged,
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -5,6 +5,8 @@ import 'package:smoo_control/core/result/app_result.dart';
 import 'package:smoo_control/features/sync/data/datasources/local_sync_queue_datasource.dart';
 import 'package:smoo_control/features/sync/data/repositories/sync_queue_repository.dart';
 import 'package:smoo_control/features/sync/domain/entities/sync_queue_item.dart';
+import 'package:smoo_control/features/sync/domain/entities/sync_settings.dart';
+import 'package:smoo_control/features/sync/domain/repositories/i_sync_settings_repository.dart';
 import 'package:smoo_control/features/sync/domain/services/i_sync_remote_sender.dart';
 
 void main() {
@@ -94,6 +96,36 @@ void main() {
       expect(rows.single.lastError, isNull);
     });
 
+    test(
+      'syncs on save even when periodic automatic sync is disabled',
+      () async {
+        final sender = _RecordingSender();
+        repository = SyncQueueRepository(
+          LocalSyncQueueDataSource(database),
+          remoteSender: sender,
+          settingsRepository: const _SettingsRepositoryFake(
+            SyncSettings(
+              autoSyncEnabled: false,
+            ),
+          ),
+        );
+
+        await repository.enqueue(
+          entityType: 'sales',
+          entityId: 'sale-1',
+          operation: SyncOperation.create,
+          payload: const {'id': 'sale-1'},
+        );
+
+        expect(sender.pushed.map((item) => item.entityId), ['sale-1']);
+        final pendingResult = await repository.getPendingItems();
+        expect(
+          (pendingResult as AppSuccess<List<SyncQueueItem>>).value,
+          isEmpty,
+        );
+      },
+    );
+
     test('keeps failed immediate syncs eligible for retry', () async {
       repository = SyncQueueRepository(
         LocalSyncQueueDataSource(database),
@@ -133,5 +165,21 @@ final class _FailingSender implements ISyncRemoteSender {
   @override
   Future<void> push(SyncQueueItem item) {
     throw StateError('Sin conexion');
+  }
+}
+
+final class _SettingsRepositoryFake implements ISyncSettingsRepository {
+  const _SettingsRepositoryFake(this.settings);
+
+  final SyncSettings settings;
+
+  @override
+  Future<AppResult<SyncSettings>> getSettings() async {
+    return AppSuccess(settings);
+  }
+
+  @override
+  Future<AppResult<SyncSettings>> saveSettings(SyncSettings settings) async {
+    return AppSuccess(settings);
   }
 }
