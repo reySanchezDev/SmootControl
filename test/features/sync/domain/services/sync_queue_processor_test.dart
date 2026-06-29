@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:smoo_control/core/database/app_database.dart';
@@ -89,6 +91,28 @@ void main() {
       expect(rows.single.retryCount, 1);
       expect(rows.single.lastError, contains('Sin conexion'));
     });
+
+    test('marks timed out pushes as error for retry', () async {
+      await _enqueueSale(repository, 'sale-1');
+      final sender = _BlockingSender();
+      final processor = SyncQueueProcessor(
+        repository: repository,
+        remoteSender: sender,
+        remoteTimeout: const Duration(milliseconds: 20),
+      );
+
+      final result = await processor.processPending();
+      sender.complete();
+
+      expect(
+        (result as AppSuccess<SyncProcessSummary>).value,
+        const SyncProcessSummary(processed: 1, succeeded: 0, failed: 1),
+      );
+
+      final rows = await database.select(database.localSyncQueue).get();
+      expect(rows.single.status, SyncQueueStatus.error.name);
+      expect(rows.single.retryCount, 1);
+    });
   });
 }
 
@@ -117,5 +141,20 @@ final class _FailingSender implements ISyncRemoteSender {
   @override
   Future<void> push(SyncQueueItem item) {
     throw StateError('Sin conexion');
+  }
+}
+
+final class _BlockingSender implements ISyncRemoteSender {
+  final Completer<void> _release = Completer<void>();
+
+  @override
+  Future<void> push(SyncQueueItem item) async {
+    await _release.future;
+  }
+
+  void complete() {
+    if (!_release.isCompleted) {
+      _release.complete();
+    }
   }
 }

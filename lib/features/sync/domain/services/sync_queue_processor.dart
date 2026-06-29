@@ -10,11 +10,14 @@ final class SyncQueueProcessor {
   const SyncQueueProcessor({
     required ISyncQueueRepository repository,
     required ISyncRemoteSender remoteSender,
+    Duration remoteTimeout = const Duration(seconds: 30),
   }) : _repository = repository,
-       _remoteSender = remoteSender;
+       _remoteSender = remoteSender,
+       _remoteTimeout = remoteTimeout;
 
   final ISyncQueueRepository _repository;
   final ISyncRemoteSender _remoteSender;
+  final Duration _remoteTimeout;
 
   /// Sends pending queue items and updates their local state.
   Future<AppResult<SyncProcessSummary>> processPending({
@@ -70,7 +73,7 @@ final class SyncQueueProcessor {
       }
 
       try {
-        await _remoteSender.push(item);
+        await _remoteSender.push(item).timeout(_remoteTimeout);
         final syncedResult = await _repository.markSynced(item.id);
         if (syncedResult.isSuccess) {
           succeeded++;

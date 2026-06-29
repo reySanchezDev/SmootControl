@@ -8,6 +8,8 @@ final class LocalSyncQueueDataSource {
   /// Creates a local sync queue datasource.
   const LocalSyncQueueDataSource(this._database);
 
+  static const _staleSyncingAge = Duration(minutes: 2);
+
   final AppDatabase _database;
 
   /// Inserts or updates a queue item.
@@ -34,10 +36,13 @@ final class LocalSyncQueueDataSource {
 
   /// Returns items waiting to be synchronized.
   Future<List<SyncQueueItemModel>> getPendingItems({int limit = 50}) async {
+    final staleSyncingCutoff = DateTime.now().subtract(_staleSyncingAge);
     final query = _database.select(_database.localSyncQueue)
       ..where((item) {
         return item.status.equals(SyncQueueStatus.pending.name) |
-            item.status.equals(SyncQueueStatus.error.name);
+            item.status.equals(SyncQueueStatus.error.name) |
+            (item.status.equals(SyncQueueStatus.syncing.name) &
+                item.updatedAt.isSmallerThanValue(staleSyncingCutoff));
       })
       ..orderBy([(item) => OrderingTerm.asc(item.createdAt)])
       ..limit(limit);

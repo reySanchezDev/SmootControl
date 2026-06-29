@@ -17,14 +17,17 @@ final class SyncQueueRepository implements ISyncQueueRepository {
     this._localDataSource, {
     ISyncRemoteSender? remoteSender,
     ISyncSettingsRepository? settingsRepository,
+    Duration immediateSyncTimeout = const Duration(seconds: 30),
     Uuid uuid = const Uuid(),
   }) : _remoteSender = remoteSender,
        _settingsRepository = settingsRepository,
+       _immediateSyncTimeout = immediateSyncTimeout,
        _uuid = uuid;
 
   final LocalSyncQueueDataSource _localDataSource;
   final ISyncRemoteSender? _remoteSender;
   final ISyncSettingsRepository? _settingsRepository;
+  final Duration _immediateSyncTimeout;
   final Uuid _uuid;
 
   @override
@@ -102,20 +105,20 @@ final class SyncQueueRepository implements ISyncQueueRepository {
   }
 
   Future<void> _trySyncImmediately(SyncQueueItem item) async {
-    final remoteSender = _remoteSender;
-    if (remoteSender == null) return;
-    final settings = await _settingsRepository?.getSettings();
-    if (settings != null) {
-      final shouldSync = settings.when(
-        success: (value) => value.syncOnSave,
-        failure: (_) => false,
-      );
-      if (!shouldSync) return;
-    }
-
     try {
+      final remoteSender = _remoteSender;
+      if (remoteSender == null) return;
+      final settings = await _settingsRepository?.getSettings();
+      if (settings != null) {
+        final shouldSync = settings.when(
+          success: (value) => value.syncOnSave,
+          failure: (_) => false,
+        );
+        if (!shouldSync) return;
+      }
+
       await _localDataSource.markSyncing(item.id);
-      await remoteSender.push(item);
+      await remoteSender.push(item).timeout(_immediateSyncTimeout);
       await _localDataSource.markSynced(item.id);
     } on Object catch (error) {
       try {

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:smoo_control/core/database/app_database.dart';
@@ -155,6 +156,67 @@ void main() {
       expect(pending.single.status, SyncQueueStatus.error);
       expect(pending.single.lastError, contains('Sin conexion'));
     });
+
+    test('marks timed out immediate syncs as retryable errors', () async {
+      final sender = _BlockingSender();
+      repository = SyncQueueRepository(
+        LocalSyncQueueDataSource(database),
+        remoteSender: sender,
+        immediateSyncTimeout: const Duration(milliseconds: 20),
+      );
+
+      final enqueueResult = await repository.enqueue(
+        entityType: 'sales',
+        entityId: 'sale-timeout',
+        operation: SyncOperation.create,
+        payload: const {'id': 'sale-timeout'},
+      );
+      final item = (enqueueResult as AppSuccess<SyncQueueItem>).value;
+
+      await _waitForQueueStatus(database, item.id, SyncQueueStatus.error);
+      sender.complete();
+
+      final pendingResult = await repository.getPendingItems();
+      final pending = (pendingResult as AppSuccess<List<SyncQueueItem>>).value;
+      expect(pending.single.id, item.id);
+      expect(pending.single.retryCount, 1);
+    });
+
+    test(
+      'retries stale syncing items but ignores fresh syncing items',
+      () async {
+        final enqueueResult = await repository.enqueue(
+          entityType: 'sales',
+          entityId: 'sale-stale',
+          operation: SyncOperation.create,
+          payload: const {'id': 'sale-stale'},
+        );
+        final item = (enqueueResult as AppSuccess<SyncQueueItem>).value;
+        await repository.markSyncing(item.id);
+
+        var pendingResult = await repository.getPendingItems();
+        expect(
+          (pendingResult as AppSuccess<List<SyncQueueItem>>).value,
+          isEmpty,
+        );
+
+        await (database.update(
+          database.localSyncQueue,
+        )..where((row) => row.id.equals(item.id))).write(
+          LocalSyncQueueCompanion(
+            updatedAt: Value(
+              DateTime.now().subtract(const Duration(minutes: 3)),
+            ),
+          ),
+        );
+
+        pendingResult = await repository.getPendingItems();
+        final pending =
+            (pendingResult as AppSuccess<List<SyncQueueItem>>).value;
+        expect(pending.single.id, item.id);
+        expect(pending.single.status, SyncQueueStatus.syncing);
+      },
+    );
 
     test(
       'does not block local enqueue while immediate sync is pending',
