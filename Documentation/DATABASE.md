@@ -83,9 +83,9 @@ Cada tabla operativa local incluye metadatos de sincronizacion:
 
 ## Pendiente Remoto
 
-- Configurar Google Auth en proyecto nuevo.
-- Cerrar hallazgos de prioridad alta de la auditoria ready for Supabase:
-  `restaurant_id`, usuario autenticado, codigos remotos y payloads sync.
+- Configurar Google Auth en proyecto nuevo si se usara como proveedor de login.
+- Reemplazar el usuario tecnico de sincronizacion por usuarios Auth reales para
+  trazabilidad remota por operador.
 - Implementar ciclo persistente de cuentas hijas confirmadas en POS:
   `open`, `invoiced`, visibilidad en fila de mesas, edicion de division y liberacion de la mesa original cuando todas las hijas esten pagadas.
 - Definir si `local_pos_open_ticket_lines` se sincroniza a Supabase para uso
@@ -101,6 +101,9 @@ Cada tabla operativa local incluye metadatos de sincronizacion:
 
 - Proyecto `SmooControl` enlazado con ref `hexejdgbcmyiyqtvfihr`.
 - Migracion remota `001_initial_schema.sql` aplicada.
+- Migracion remota `002_sync_writes_and_exchange_rates.sql` aplicada.
 - Seed remoto aplicado con permisos, roles, metodos de pago y categorias de gasto base.
 - RLS habilitado en 23 de 23 tablas publicas.
+- RLS validado con usuario tecnico Auth y escritura de prueba en
+  `expense_categories`, `payment_methods` y `exchange_rates`.
 - `supabase db lint --linked --schema public` sin errores de esquema.

@@ -23,19 +23,39 @@
 
 ## Remoto Pendiente
 
-- Cerrar `Documentation/SUPABASE_READINESS_AUDIT.md` prioridad alta restante.
-- Configurar Google Auth.
-- Reemplazar `DisabledAuthRepository` por repositorio Supabase Auth.
-- Conectar `SupabaseSyncRemoteSender`.
-- Validar RLS.
+- Configurar Google Auth si se mantiene como proveedor de entrada.
+- Reemplazar el usuario tecnico de sincronizacion por Auth por usuario real
+  cuando se quiera trazabilidad remota por operador.
+- Definir si `local_pos_open_ticket_lines` debe sincronizarse para trabajo
+  multi-dispositivo o si queda como borrador local por tablet.
 
 ## Remoto Aplicado
 
 - Proyecto remoto nuevo `SmooControl` creado en East US (Ohio).
 - Project ref enlazado: `hexejdgbcmyiyqtvfihr`.
 - Migracion `001_initial_schema.sql` aplicada.
+- Migracion `002_sync_writes_and_exchange_rates.sql` aplicada.
 - `seed.sql` aplicado con roles, permisos, metodos de pago base y categorias de gastos base.
 - RLS habilitado en las 23 tablas publicas.
+- RLS validado con usuario tecnico autenticado asociado al restaurante de
+  produccion.
+- `SupabaseSyncRemoteSender` conectado por DI y activable por `dart-define`.
+- El archivo privado `Requerimiento/CredencialesSupabase.md` contiene los
+  valores runtime para construir el APK conectado; no se versiona.
+
+## Runtime APK Conectado
+
+El APK conectado requiere:
+
+- `SMOO_SUPABASE_URL`
+- `SMOO_SUPABASE_PUBLISHABLE_KEY`
+- `SMOO_RESTAURANT_ID`
+- `SMOO_SUPABASE_AUTH_EMAIL`
+- `SMOO_SUPABASE_AUTH_PASSWORD`
+
+Regla temporal: la app sigue usando usuarios/PIN locales para operar, pero la
+cola remota escribe en Supabase mediante un usuario tecnico Auth confirmado. En
+una version posterior se debe cambiar a sesion Supabase por operador.
 
 ## Comandos Seguros
 

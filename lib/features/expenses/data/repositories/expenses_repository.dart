@@ -66,7 +66,9 @@ final class ExpensesRepository implements IExpensesRepository {
     try {
       final model = ExpenseCategoryModel.fromEntity(category);
       final saved = await _localDataSource.saveCategory(model);
-      return AppSuccess(saved.toEntity());
+      final entity = saved.toEntity();
+      await _enqueueCategory(entity);
+      return AppSuccess(entity);
     } on Object catch (error) {
       return AppFailureResult(
         AppFailure(
@@ -82,6 +84,12 @@ final class ExpensesRepository implements IExpensesRepository {
   Future<AppResult<void>> deleteCategory(String categoryId) async {
     try {
       await _localDataSource.deleteCategory(categoryId);
+      await _syncQueueRepository?.enqueue(
+        entityType: 'expense_categories',
+        entityId: categoryId,
+        operation: SyncOperation.delete,
+        payload: {'id': categoryId},
+      );
       return const AppSuccess(null);
     } on Object catch (error) {
       return AppFailureResult(
@@ -129,6 +137,20 @@ final class ExpensesRepository implements IExpensesRepository {
         'description': expense.description,
         'createdAt': expense.createdAt.toIso8601String(),
         'createdBy': expense.createdBy,
+      },
+    );
+  }
+
+  Future<void> _enqueueCategory(ExpenseCategory category) async {
+    await _syncQueueRepository?.enqueue(
+      entityType: 'expense_categories',
+      entityId: category.id,
+      operation: SyncOperation.create,
+      payload: {
+        'id': category.id,
+        'name': category.name,
+        'parentId': category.parentId,
+        'isActive': category.isActive,
       },
     );
   }

@@ -4,13 +4,19 @@ import 'package:smoo_control/features/exchange_rates/data/datasources/local_exch
 import 'package:smoo_control/features/exchange_rates/data/models/exchange_rate_model.dart';
 import 'package:smoo_control/features/exchange_rates/domain/entities/exchange_rate.dart';
 import 'package:smoo_control/features/exchange_rates/domain/repositories/i_exchange_rate_repository.dart';
+import 'package:smoo_control/features/sync/domain/entities/sync_queue_item.dart';
+import 'package:smoo_control/features/sync/domain/repositories/i_sync_queue_repository.dart';
 
 /// Exchange rate repository backed by local database.
 final class ExchangeRateRepository implements IExchangeRateRepository {
   /// Creates an exchange rate repository.
-  const ExchangeRateRepository(this._localDataSource);
+  const ExchangeRateRepository(
+    this._localDataSource, {
+    ISyncQueueRepository? syncQueueRepository,
+  }) : _syncQueueRepository = syncQueueRepository;
 
   final LocalExchangeRateDataSource _localDataSource;
+  final ISyncQueueRepository? _syncQueueRepository;
 
   @override
   Future<AppResult<List<ExchangeRate>>> getRatesForMonth({
@@ -58,7 +64,9 @@ final class ExchangeRateRepository implements IExchangeRateRepository {
       final saved = await _localDataSource.saveRate(
         ExchangeRateModel.fromEntity(rate),
       );
-      return AppSuccess(saved.toEntity());
+      final entity = saved.toEntity();
+      await _enqueueRate(entity);
+      return AppSuccess(entity);
     } on Object catch (error) {
       return _failure(
         'exchange_rate_save_failed',
@@ -85,7 +93,11 @@ final class ExchangeRateRepository implements IExchangeRateRepository {
           ),
       ];
       final saved = await _localDataSource.saveRates(rates);
-      return AppSuccess(saved.map((rate) => rate.toEntity()).toList());
+      final entities = saved.map((rate) => rate.toEntity()).toList();
+      for (final rate in entities) {
+        await _enqueueRate(rate);
+      }
+      return AppSuccess(entities);
     } on Object catch (error) {
       return _failure(
         'exchange_rates_fill_failed',
@@ -102,6 +114,19 @@ final class ExchangeRateRepository implements IExchangeRateRepository {
   ) {
     return AppFailureResult(
       AppFailure(code: code, message: message, cause: error),
+    );
+  }
+
+  Future<void> _enqueueRate(ExchangeRate rate) async {
+    await _syncQueueRepository?.enqueue(
+      entityType: 'exchange_rates',
+      entityId: '${rate.currencyCode}-${rate.businessDate.toIso8601String()}',
+      operation: SyncOperation.update,
+      payload: {
+        'currencyCode': rate.currencyCode,
+        'businessDate': rate.businessDate.toIso8601String(),
+        'rateInCents': rate.rateInCents,
+      },
     );
   }
 }

@@ -1,8 +1,11 @@
 import 'package:get_it/get_it.dart';
+import 'package:http/http.dart' as http;
+import 'package:smoo_control/core/config/supabase_app_config.dart';
 import 'package:smoo_control/core/database/app_database.dart';
 import 'package:smoo_control/core/database/open_database_connection.dart';
 import 'package:smoo_control/core/di/register_auth_dependencies.dart';
 import 'package:smoo_control/core/di/register_pos_dependencies.dart';
+import 'package:smoo_control/core/session/current_restaurant_service.dart';
 import 'package:smoo_control/features/audit/data/datasources/local_audit_log_datasource.dart';
 import 'package:smoo_control/features/audit/data/repositories/audit_log_repository.dart';
 import 'package:smoo_control/features/audit/domain/repositories/i_audit_log_repository.dart';
@@ -51,8 +54,8 @@ import 'package:smoo_control/features/settings/data/datasources/local_business_s
 import 'package:smoo_control/features/settings/data/repositories/business_settings_repository.dart';
 import 'package:smoo_control/features/settings/domain/repositories/i_business_settings_repository.dart';
 import 'package:smoo_control/features/settings/presentation/bloc/business_settings_bloc.dart';
-import 'package:smoo_control/features/sync/data/datasources/disabled_sync_remote_sender.dart';
 import 'package:smoo_control/features/sync/data/datasources/local_sync_queue_datasource.dart';
+import 'package:smoo_control/features/sync/data/datasources/supabase_sync_remote_sender.dart';
 import 'package:smoo_control/features/sync/data/repositories/sync_queue_repository.dart';
 import 'package:smoo_control/features/sync/domain/repositories/i_sync_queue_repository.dart';
 import 'package:smoo_control/features/sync/domain/services/i_sync_remote_sender.dart';
@@ -74,6 +77,14 @@ final GetIt serviceLocator = GetIt.instance;
 Future<void> configureDependencies() async {
   await serviceLocator.reset();
   serviceLocator
+    ..registerLazySingleton<SupabaseAppConfig>(SupabaseAppConfig.new)
+    ..registerLazySingleton<CurrentRestaurantService>(
+      CurrentRestaurantService.new,
+    )
+    ..registerLazySingleton<http.Client>(
+      http.Client.new,
+      dispose: (client) => client.close(),
+    )
     ..registerLazySingleton<AppDatabase>(
       () => AppDatabase(openDatabaseConnection()),
       dispose: (database) => database.close(),
@@ -189,6 +200,7 @@ Future<void> configureDependencies() async {
     ..registerLazySingleton<IExchangeRateRepository>(
       () => ExchangeRateRepository(
         serviceLocator<LocalExchangeRateDataSource>(),
+        syncQueueRepository: serviceLocator<ISyncQueueRepository>(),
       ),
     )
     ..registerLazySingleton<ReportSummaryService>(
@@ -289,7 +301,13 @@ Future<void> configureDependencies() async {
     ..registerLazySingleton<ISyncQueueRepository>(
       () => SyncQueueRepository(serviceLocator<LocalSyncQueueDataSource>()),
     )
-    ..registerLazySingleton<ISyncRemoteSender>(DisabledSyncRemoteSender.new)
+    ..registerLazySingleton<ISyncRemoteSender>(
+      () => SupabaseSyncRemoteSender(
+        config: serviceLocator<SupabaseAppConfig>(),
+        restaurantService: serviceLocator<CurrentRestaurantService>(),
+        client: serviceLocator<http.Client>(),
+      ),
+    )
     ..registerLazySingleton<SyncQueueProcessor>(
       () => SyncQueueProcessor(
         repository: serviceLocator<ISyncQueueRepository>(),

@@ -19,7 +19,7 @@
 | Offline local Drift | En progreso | 2026-06-24 | Tablas locales, conexion por plataforma, repositorios locales y cola/procesador sync base creados. |
 | Pantallas base | En progreso | 2026-06-23 | Dashboard, formularios, POS, reportes y settings iniciales creados. |
 | Supabase local | En progreso | 2026-06-22 | Configuracion, seed y migracion inicial creados. |
-| Supabase remoto | Pendiente | 2026-06-22 | Usar proyecto nuevo SmooControl. |
+| Supabase remoto | En progreso | 2026-06-28 | Proyecto SmooControl enlazado, migraciones 001/002 y seed aplicados; sender remoto conectado por dart-define. |
 
 ## Checklist De Fase
 
@@ -88,7 +88,7 @@
 - [x] Agregar assets Web de Drift (`sqlite3.wasm`, `drift_worker.js`).
 - [x] Crear servicio base de sincronizacion local.
 - [x] Crear pantalla local de seguimiento y sincronizacion manual.
-- [ ] Conectar servicio de sincronizacion con Supabase remoto nuevo.
+- [x] Conectar servicio de sincronizacion con Supabase remoto nuevo.
 
 ### Fase 6 - Funcionalidad V1
 
