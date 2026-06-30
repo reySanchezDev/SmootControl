@@ -545,15 +545,25 @@ final class SupabaseCatalogPullService implements ICatalogPullService {
 
   Future<void> _applyInventoryStock(List<Map<String, Object?>> rows) async {
     final now = DateTime.now();
+    final pendingDeltas = await _pendingInventoryDeltasByProduct();
     for (final row in rows) {
       final productId = _optionalText(row['product_id']);
       if (productId == null) continue;
+      final remoteQuantity = _int(row['quantity_on_hand']);
+      final localPendingDelta = pendingDeltas[productId] ?? 0;
+      final adjustedQuantity = remoteQuantity + localPendingDelta;
+      if (adjustedQuantity < 0) {
+        throw StateError(
+          'La descarga de inventario produciria stock negativo para '
+          '$productId por movimientos locales pendientes.',
+        );
+      }
       await _database
           .into(_database.localInventoryStock)
           .insert(
             LocalInventoryStockCompanion(
               productId: Value(productId),
-              quantityOnHand: Value(_int(row['quantity_on_hand'])),
+              quantityOnHand: Value(adjustedQuantity),
               remoteId: Value(productId),
               syncStatus: const Value('synced'),
               syncError: const Value(null),
@@ -564,6 +574,82 @@ final class SupabaseCatalogPullService implements ICatalogPullService {
             mode: InsertMode.insertOrReplace,
           );
     }
+  }
+
+  Future<Map<String, int>> _pendingInventoryDeltasByProduct() async {
+    final movements = await _database
+        .select(_database.localInventoryMovements)
+        .get();
+    if (movements.isEmpty) return const {};
+
+    final salesQueue = await (_database.select(
+      _database.localSyncQueue,
+    )..where((item) => item.entityType.equals('sales'))).get();
+    final inventoryQueue = await (_database.select(
+      _database.localSyncQueue,
+    )..where((item) => item.entityType.equals('inventory_movements'))).get();
+    final salesByEntity = _latestQueueByEntityId(salesQueue);
+    final inventoryByEntity = _latestQueueByEntityId(inventoryQueue);
+
+    final deltas = <String, int>{};
+    for (final movement in movements) {
+      if (!_shouldPreserveMovementDelta(
+        movement,
+        salesByEntity: salesByEntity,
+        inventoryByEntity: inventoryByEntity,
+      )) {
+        continue;
+      }
+      deltas.update(
+        movement.productId,
+        (value) => value + movement.quantityDelta,
+        ifAbsent: () => movement.quantityDelta,
+      );
+    }
+    return deltas;
+  }
+
+  Map<String, LocalSyncQueueData> _latestQueueByEntityId(
+    List<LocalSyncQueueData> rows,
+  ) {
+    final byEntityId = <String, LocalSyncQueueData>{};
+    for (final row in rows) {
+      final current = byEntityId[row.entityId];
+      if (current == null || row.updatedAt.isAfter(current.updatedAt)) {
+        byEntityId[row.entityId] = row;
+      }
+    }
+    return byEntityId;
+  }
+
+  bool _shouldPreserveMovementDelta(
+    LocalInventoryMovement movement, {
+    required Map<String, LocalSyncQueueData> salesByEntity,
+    required Map<String, LocalSyncQueueData> inventoryByEntity,
+  }) {
+    final referenceType = movement.referenceType;
+    if (referenceType == 'sale' || referenceType == 'sale_void') {
+      final referenceId = movement.referenceId;
+      if (referenceId == null) return true;
+      return _isNotSynced(salesByEntity[referenceId], missingIsPending: true);
+    }
+
+    if (referenceType == 'purchase') {
+      return _isNotSynced(
+        inventoryByEntity[movement.id],
+        missingIsPending: false,
+      );
+    }
+
+    return false;
+  }
+
+  bool _isNotSynced(
+    LocalSyncQueueData? row, {
+    required bool missingIsPending,
+  }) {
+    if (row == null) return missingIsPending;
+    return row.status != 'synced';
   }
 
   Future<void> _applyPaymentMethods(List<Map<String, Object?>> rows) async {

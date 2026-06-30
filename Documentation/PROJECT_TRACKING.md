@@ -905,6 +905,9 @@
 | 2026-06-30 | Inventario simple V1.1 | Productos agregan `Controla inventario`; stock vive en tablas separadas y el POS descuenta/reintegra por movimientos auditables al cobrar/anular. |
 | 2026-06-30 | Drift schema v19 | Agregadas tablas `local_inventory_stock`, `local_inventory_movements` y columna `local_products.tracks_inventory`; codigo Drift regenerado. |
 | 2026-06-30 | Supabase inventario | Agregada migracion `005_simple_inventory.sql` con `products.tracks_inventory`, `inventory_stock`, `inventory_movements` y RPC idempotente `apply_inventory_movement`. |
+| 2026-06-30 | Auditoria inventario/sync | El pull de stock preserva movimientos locales pendientes de ventas/anulaciones antes de sobrescribir con Supabase. |
+| 2026-06-30 | Supabase inventario endurecido | Migracion `006_harden_inventory_sync.sql` valida restaurante, producto, tipo y cantidad dentro de la RPC `apply_inventory_movement`. |
+| 2026-06-30 | Validacion auditoria inventario | `flutter analyze --no-pub` sin issues, `flutter test --reporter=compact` con 196 tests correctos, build Web release correcto y `supabase db lint --linked --schema public` sin errores. |
 
 ## Riesgos Activos
 

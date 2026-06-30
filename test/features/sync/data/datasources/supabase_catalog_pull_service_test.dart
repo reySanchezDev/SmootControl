@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
@@ -8,6 +9,7 @@ import 'package:smoo_control/core/config/supabase_app_config.dart';
 import 'package:smoo_control/core/database/app_database.dart';
 import 'package:smoo_control/core/session/current_restaurant_service.dart';
 import 'package:smoo_control/features/sync/data/datasources/supabase_catalog_pull_service.dart';
+import 'package:smoo_control/features/sync/domain/services/i_catalog_pull_service.dart';
 
 void main() {
   group('SupabaseCatalogPullService', () {
@@ -47,6 +49,7 @@ void main() {
       expect(summary.modifierGroups, 1);
       expect(summary.modifierOptions, 1);
       expect(summary.products, 1);
+      expect(summary.inventoryStock, 1);
       expect(summary.paymentMethods, 1);
       expect(summary.tables, 1);
       expect(summary.expenseCategories, 1);
@@ -78,7 +81,11 @@ void main() {
         await database.select(database.localProductCategories).get(),
         hasLength(1),
       );
-      expect(await database.select(database.localProducts).get(), hasLength(1));
+      final products = await database.select(database.localProducts).get();
+      expect(products, hasLength(1));
+      expect(products.single.tracksInventory, isTrue);
+      final stock = await database.select(database.localInventoryStock).get();
+      expect(stock.single.quantityOnHand, 10);
       expect(
         await database.select(database.localModifierGroups).get(),
         hasLength(1),
@@ -137,6 +144,60 @@ void main() {
           summary.missingPosRequirements,
           containsAll(['usuarios POS', 'productos', 'metodos de pago']),
         );
+      },
+    );
+    test(
+      'preserves pending local inventory deltas when stock is downloaded',
+      () async {
+        final now = DateTime(2026, 6, 30, 12);
+        await database
+            .into(database.localInventoryMovements)
+            .insert(
+              LocalInventoryMovementsCompanion.insert(
+                id: 'sale-sale-local-product-chicken',
+                productId: 'product-chicken',
+                movementType: 'sale',
+                quantityDelta: -2,
+                referenceType: const Value('sale'),
+                referenceId: const Value('sale-local'),
+                createdAt: now,
+                updatedAt: now,
+              ),
+            );
+        await database
+            .into(database.localSyncQueue)
+            .insert(
+              LocalSyncQueueCompanion.insert(
+                id: 'queue-sale-local',
+                entityType: 'sales',
+                entityId: 'sale-local',
+                operation: 'create',
+                payloadJson: '{}',
+                status: const Value('pending'),
+                createdAt: now,
+                updatedAt: now,
+              ),
+            );
+        final service = SupabaseCatalogPullService(
+          database: database,
+          config: const SupabaseAppConfig(
+            supabaseUrl: 'https://smoo.test',
+            publishableKey: 'publishable-key',
+            authEmail: 'tablet@smoo.test',
+            authPassword: 'secret',
+          ),
+          restaurantService: const CurrentRestaurantService(
+            restaurantId: 'restaurant-1',
+          ),
+          client: _catalogMockClient(),
+        );
+
+        await service.pullScopes({CatalogPullScope.products});
+
+        final stock = await database
+            .select(database.localInventoryStock)
+            .getSingle();
+        expect(stock.quantityOnHand, 8);
       },
     );
   });
@@ -287,7 +348,15 @@ final _rowsByTable = <String, List<Map<String, Object?>>>{
       'cost': 95,
       'is_active': true,
       'is_available_in_pos': true,
+      'tracks_inventory': true,
       'option_groups': const [],
+    },
+  ],
+  'inventory_stock': [
+    {
+      'restaurant_id': 'restaurant-1',
+      'product_id': 'product-chicken',
+      'quantity_on_hand': 10,
     },
   ],
   'payment_methods': [
