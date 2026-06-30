@@ -5,6 +5,7 @@ import 'package:smoo_control/core/database/app_database.dart';
 import 'package:smoo_control/core/database/open_database_connection.dart';
 import 'package:smoo_control/core/di/register_auth_dependencies.dart';
 import 'package:smoo_control/core/di/register_pos_dependencies.dart';
+import 'package:smoo_control/core/session/current_operator_service.dart';
 import 'package:smoo_control/core/session/current_restaurant_service.dart';
 import 'package:smoo_control/features/audit/data/datasources/local_audit_log_datasource.dart';
 import 'package:smoo_control/features/audit/data/repositories/audit_log_repository.dart';
@@ -25,6 +26,9 @@ import 'package:smoo_control/features/expenses/data/datasources/local_expenses_d
 import 'package:smoo_control/features/expenses/data/repositories/expenses_repository.dart';
 import 'package:smoo_control/features/expenses/domain/repositories/i_expenses_repository.dart';
 import 'package:smoo_control/features/expenses/presentation/bloc/expenses_bloc.dart';
+import 'package:smoo_control/features/inventory/data/datasources/local_inventory_datasource.dart';
+import 'package:smoo_control/features/inventory/data/repositories/inventory_repository.dart';
+import 'package:smoo_control/features/inventory/domain/repositories/i_inventory_repository.dart';
 import 'package:smoo_control/features/modifiers/data/datasources/local_modifiers_datasource.dart';
 import 'package:smoo_control/features/modifiers/data/repositories/modifiers_repository.dart';
 import 'package:smoo_control/features/modifiers/domain/repositories/i_modifiers_repository.dart';
@@ -130,6 +134,16 @@ Future<void> configureDependencies() async {
         repository: serviceLocator<IProductsRepository>(),
         auditLogRepository: serviceLocator<IAuditLogRepository>(),
         remoteRefreshService: serviceLocator<AdminDataRefreshService>(),
+      ),
+    )
+    ..registerLazySingleton<LocalInventoryDataSource>(
+      () => LocalInventoryDataSource(serviceLocator<AppDatabase>()),
+    )
+    ..registerLazySingleton<IInventoryRepository>(
+      () => InventoryRepository(
+        serviceLocator<LocalInventoryDataSource>(),
+        syncQueueRepository: serviceLocator<ISyncQueueRepository>(),
+        remoteSender: serviceLocator<ISyncRemoteSender>(),
       ),
     )
     ..registerLazySingleton<LocalModifiersDataSource>(
@@ -315,12 +329,17 @@ Future<void> configureDependencies() async {
     )
     ..registerLazySingleton<SaleInvoicePdfService>(SaleInvoicePdfService.new)
     ..registerLazySingleton<LocalSalesDataSource>(
-      () => LocalSalesDataSource(serviceLocator<AppDatabase>()),
+      () => LocalSalesDataSource(
+        serviceLocator<AppDatabase>(),
+        inventoryDataSource: serviceLocator<LocalInventoryDataSource>(),
+      ),
     )
     ..registerLazySingleton<ISalesRepository>(
       () => SalesRepository(
         serviceLocator<LocalSalesDataSource>(),
         syncQueueRepository: serviceLocator<ISyncQueueRepository>(),
+        inventoryDataSource: serviceLocator<LocalInventoryDataSource>(),
+        currentOperatorService: serviceLocator<CurrentOperatorService>(),
       ),
     )
     ..registerFactory<SalesBloc>(

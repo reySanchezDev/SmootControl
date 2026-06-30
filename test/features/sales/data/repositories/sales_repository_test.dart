@@ -1,7 +1,9 @@
+import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:smoo_control/core/database/app_database.dart';
 import 'package:smoo_control/core/result/app_result.dart';
+import 'package:smoo_control/features/inventory/data/datasources/local_inventory_datasource.dart';
 import 'package:smoo_control/features/sales/data/datasources/local_sales_datasource.dart';
 import 'package:smoo_control/features/sales/data/repositories/sales_repository.dart';
 import 'package:smoo_control/features/sales/domain/entities/sale.dart';
@@ -178,5 +180,201 @@ void main() {
       expect(syncItems.last.operation, SyncOperation.update);
       expect(syncItems.last.payload['void'], isA<Map<String, Object?>>());
     });
+
+    test('decrements tracked stock when a sale is saved', () async {
+      final inventory = LocalInventoryDataSource(database);
+      repository = SalesRepository(
+        LocalSalesDataSource(database, inventoryDataSource: inventory),
+        syncQueueRepository: syncQueueRepository,
+        inventoryDataSource: inventory,
+      );
+      await _insertProduct(database, tracksInventory: true);
+      await inventory.registerPurchase(
+        productId: 'product-1',
+        quantity: 10,
+        userId: 'admin-1',
+      );
+
+      final createdAt = DateTime(2026, 6, 23, 10);
+      final result = await repository.saveSale(
+        sale: Sale(
+          id: 'sale-stock',
+          invoiceNumber: 'F-100',
+          paymentMethodId: 'cash',
+          status: SaleStatus.completed,
+          subtotalInCents: 200,
+          totalInCents: 200,
+          createdAt: createdAt,
+        ),
+        items: [
+          SaleItem(
+            id: 'item-stock',
+            saleId: 'sale-stock',
+            productId: 'product-1',
+            productName: 'Pollo',
+            categoryName: 'Comidas',
+            quantity: 2,
+            unitPriceInCents: 100,
+            unitCostInCents: 50,
+            createdAt: createdAt,
+          ),
+        ],
+      );
+
+      final stockRows = await database
+          .select(database.localInventoryStock)
+          .get();
+      final movements = await database
+          .select(database.localInventoryMovements)
+          .get();
+      final syncResult = await syncQueueRepository.getPendingItems();
+      final saleSync =
+          (syncResult as AppSuccess<List<SyncQueueItem>>).value.last;
+      final inventoryPayload =
+          saleSync.payload['inventoryMovements']! as List<Object?>;
+      final inventoryMovement =
+          inventoryPayload.single! as Map<String, Object?>;
+
+      expect(result, isA<AppSuccess<Sale>>());
+      expect(stockRows.single.quantityOnHand, 8);
+      expect(movements.map((movement) => movement.movementType), [
+        'purchase',
+        'sale',
+      ]);
+      expect(inventoryPayload, hasLength(1));
+      expect(inventoryMovement['quantityDelta'], -2);
+    });
+
+    test('blocks tracked product sale when stock is insufficient', () async {
+      final inventory = LocalInventoryDataSource(database);
+      repository = SalesRepository(
+        LocalSalesDataSource(database, inventoryDataSource: inventory),
+        syncQueueRepository: syncQueueRepository,
+        inventoryDataSource: inventory,
+      );
+      await _insertProduct(database, tracksInventory: true);
+      await inventory.registerPurchase(
+        productId: 'product-1',
+        quantity: 1,
+        userId: 'admin-1',
+      );
+
+      final result = await repository.saveSale(
+        sale: Sale(
+          id: 'sale-blocked',
+          invoiceNumber: 'F-101',
+          paymentMethodId: 'cash',
+          status: SaleStatus.completed,
+          subtotalInCents: 200,
+          totalInCents: 200,
+          createdAt: DateTime(2026, 6, 23, 10),
+        ),
+        items: [
+          SaleItem(
+            id: 'item-blocked',
+            saleId: 'sale-blocked',
+            productId: 'product-1',
+            productName: 'Pollo',
+            categoryName: 'Comidas',
+            quantity: 2,
+            unitPriceInCents: 100,
+            unitCostInCents: 50,
+            createdAt: DateTime(2026, 6, 23, 10),
+          ),
+        ],
+      );
+
+      final sales = await database.select(database.localSales).get();
+      final stockRows = await database
+          .select(database.localInventoryStock)
+          .get();
+
+      expect(result, isA<AppFailureResult<Sale>>());
+      expect(sales, isEmpty);
+      expect(stockRows.single.quantityOnHand, 1);
+    });
+
+    test('reintegrates tracked stock when a sale is voided', () async {
+      final inventory = LocalInventoryDataSource(database);
+      repository = SalesRepository(
+        LocalSalesDataSource(database, inventoryDataSource: inventory),
+        syncQueueRepository: syncQueueRepository,
+        inventoryDataSource: inventory,
+      );
+      await _insertProduct(database, tracksInventory: true);
+      await inventory.registerPurchase(
+        productId: 'product-1',
+        quantity: 10,
+        userId: 'admin-1',
+      );
+      final createdAt = DateTime(2026, 6, 23, 10);
+      await repository.saveSale(
+        sale: Sale(
+          id: 'sale-void-stock',
+          invoiceNumber: 'F-102',
+          paymentMethodId: 'cash',
+          status: SaleStatus.completed,
+          subtotalInCents: 200,
+          totalInCents: 200,
+          createdAt: createdAt,
+        ),
+        items: [
+          SaleItem(
+            id: 'item-void-stock',
+            saleId: 'sale-void-stock',
+            productId: 'product-1',
+            productName: 'Pollo',
+            categoryName: 'Comidas',
+            quantity: 2,
+            unitPriceInCents: 100,
+            unitCostInCents: 50,
+            createdAt: createdAt,
+          ),
+        ],
+      );
+
+      await repository.voidSale(
+        saleId: 'sale-void-stock',
+        reason: 'Error',
+        voidedBy: 'admin-1',
+      );
+
+      final stockRows = await database
+          .select(database.localInventoryStock)
+          .get();
+      final movements = await database
+          .select(database.localInventoryMovements)
+          .get();
+
+      expect(stockRows.single.quantityOnHand, 10);
+      expect(movements.map((movement) => movement.movementType), [
+        'purchase',
+        'sale',
+        'sale_void',
+      ]);
+    });
   });
+}
+
+Future<void> _insertProduct(
+  AppDatabase database, {
+  required bool tracksInventory,
+}) async {
+  final now = DateTime(2026, 6, 23);
+  await database
+      .into(database.localProducts)
+      .insert(
+        LocalProductsCompanion(
+          id: const Value('product-1'),
+          categoryId: const Value('category-1'),
+          name: const Value('Pollo'),
+          priceInCents: const Value(100),
+          costInCents: const Value(50),
+          isActive: const Value(true),
+          isAvailableInPos: const Value(true),
+          tracksInventory: Value(tracksInventory),
+          createdAt: Value(now),
+          updatedAt: Value(now),
+        ),
+      );
 }

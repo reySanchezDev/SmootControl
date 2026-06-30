@@ -4,6 +4,7 @@ import 'package:smoo_control/core/database/tables/audit_tables.dart';
 import 'package:smoo_control/core/database/tables/cash_expense_tables.dart';
 import 'package:smoo_control/core/database/tables/catalog_tables.dart';
 import 'package:smoo_control/core/database/tables/exchange_rate_tables.dart';
+import 'package:smoo_control/core/database/tables/inventory_tables.dart';
 import 'package:smoo_control/core/database/tables/pos_tables.dart';
 import 'package:smoo_control/core/database/tables/sales_tables.dart';
 import 'package:smoo_control/core/database/tables/settings_tables.dart';
@@ -20,6 +21,8 @@ part 'app_database.g.dart';
     LocalModifierGroups,
     LocalModifierOptions,
     LocalPaymentMethods,
+    LocalInventoryStock,
+    LocalInventoryMovements,
     LocalPosOpenTicketLines,
     LocalRestaurantTables,
     LocalTableAccounts,
@@ -45,7 +48,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 18;
+  int get schemaVersion => 19;
 
   @override
   MigrationStrategy get migration {
@@ -176,6 +179,14 @@ class AppDatabase extends _$AppDatabase {
         }
         if (from < 18) {
           await migrator.createTable(localSyncSettings);
+        }
+        if (from < 19) {
+          await migrator.addColumn(
+            localProducts,
+            localProducts.tracksInventory,
+          );
+          await migrator.createTable(localInventoryStock);
+          await migrator.createTable(localInventoryMovements);
         }
       },
     );

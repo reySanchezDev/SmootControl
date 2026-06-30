@@ -9,6 +9,10 @@ abstract final class DefaultAccessPermissions {
     AccessPermission(code: 'mesas.gestionar', name: 'Gestionar mesas'),
     AccessPermission(code: 'productos.gestionar', name: 'Gestionar productos'),
     AccessPermission(
+      code: 'inventario.gestionar',
+      name: 'Gestionar inventario',
+    ),
+    AccessPermission(
       code: 'modificadores.gestionar',
       name: 'Gestionar modificadores POS',
     ),

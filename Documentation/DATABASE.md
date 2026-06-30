@@ -22,7 +22,9 @@
 | `restaurant_tables` | Mesas del restaurante, con nombre interno y nombre operativo temporal para POS. |
 | `table_accounts` | Cuentas separadas por mesa, usadas para cobrar divisiones una por una. |
 | `product_categories` | Categorias y subcategorias. |
-| `products` | Productos vendibles con disponibilidad diaria y compatibilidad legacy de opciones embebidas. |
+| `products` | Productos vendibles con disponibilidad diaria, bandera `tracks_inventory` y compatibilidad legacy de opciones embebidas. |
+| `inventory_stock` | Stock actual por producto que controla inventario. |
+| `inventory_movements` | Movimientos auditables de inventario: compras, ventas y anulaciones. |
 | `modifier_groups` | Grupos reutilizables para POS como `Bastimento`, `Guarnicion` o `Salsa`. |
 | `modifier_options` | Opciones administrables por grupo, con disponibilidad diaria en POS. |
 | `product_modifier_groups` | Relacion entre productos vendibles y grupos modificadores reutilizables. |
@@ -50,7 +52,9 @@
 Tablas locales creadas:
 
 - `local_product_categories`
-- `local_products` (`is_available_in_pos` permite ocultar productos del POS sin inactivarlos; `modifier_group_ids_json` asigna grupos reutilizables; `option_groups_json` queda como compatibilidad legacy)
+- `local_products` (`is_available_in_pos` permite ocultar productos del POS sin inactivarlos; `tracks_inventory` indica si valida y descuenta inventario; `modifier_group_ids_json` asigna grupos reutilizables; `option_groups_json` queda como compatibilidad legacy)
+- `local_inventory_stock` (stock local actual por producto; se descarga desde Supabase y se actualiza por movimientos locales)
+- `local_inventory_movements` (bitacora idempotente de movimientos `purchase`, `sale` y `sale_void`)
 - `local_modifier_groups`
 - `local_modifier_options`
 - `local_payment_methods` (`parent_id` permite jerarquia tipo `Transferencias > BANPRO > Cuenta`; `is_payment_target` distingue grupos de navegacion de opciones cobrables)

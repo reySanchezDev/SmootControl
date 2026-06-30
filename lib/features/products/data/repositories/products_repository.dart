@@ -93,6 +93,7 @@ final class ProductsRepository implements IProductsRepository {
       'costInCents': product.costInCents,
       'isActive': product.isActive,
       'isAvailableInPos': product.isAvailableInPos,
+      'tracksInventory': product.tracksInventory,
       'optionGroups': product.optionGroups
           .map(
             (group) => {

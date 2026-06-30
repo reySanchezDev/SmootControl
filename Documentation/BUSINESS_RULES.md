@@ -182,6 +182,13 @@
 - Edge cases: Producto inactivo sigue existiendo en reportes.
 - Data impact: `sale_items.unit_price`, `sale_items.unit_cost`, `sale_items.category_name`.
 
+### Regla: Inventario simple por producto
+- Description: Un producto puede marcarse como `Controla inventario`; esa bandera vive en productos, pero el stock actual vive en una tabla separada y se modifica solo con movimientos auditables.
+- Rationale: Separar catalogo, stock y movimientos evita perder trazabilidad, permite reconstruir el saldo y reduce el riesgo de doble descuento en sincronizacion.
+- Example(s): `Pollo` controla inventario. Una compra de 10 crea movimiento `purchase` y deja stock 10. Una venta de 2 crea movimiento `sale` y deja stock 8.
+- Edge cases: Productos que no controlan inventario no validan ni descuentan stock. El POS nunca descuenta al agregar productos al ticket; descuenta solo al confirmar cobro. Si el stock no alcanza, el cobro se bloquea con mensaje claro y no se guarda venta parcial. Las anulaciones reintegran con movimiento `sale_void`, sin borrar ni editar el movimiento original.
+- Data impact: `products.tracks_inventory`, `inventory_stock`, `inventory_movements`, `local_inventory_stock`, `local_inventory_movements`.
+
 ## Cuentas Separadas
 
 ### Regla: Estado operativo de mesa

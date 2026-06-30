@@ -36,6 +36,7 @@ final class LocalProductsDataSource {
             costInCents: Value(product.costInCents),
             isActive: Value(product.isActive),
             isAvailableInPos: Value(product.isAvailableInPos),
+            tracksInventory: Value(product.tracksInventory),
             optionGroupsJson: Value(product.optionGroupsJson),
             modifierGroupIdsJson: Value(product.modifierGroupIdsJson),
             createdAt: Value(now),

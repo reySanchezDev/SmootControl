@@ -902,6 +902,9 @@
 | 2026-06-28 | `flutter test test\features\roles test\app_test.dart` | 9 tests pasan despues de alinear permisos con Supabase. |
 | 2026-06-30 | Cierre go-live Supabase/POS | Documentado checklist de salida a produccion, rescate desde remoto, prueba offline y reglas para actualizar APK sin perder datos. |
 | 2026-06-30 | Validacion final y APK release | `flutter analyze --no-pub` sin issues, `flutter test --reporter=compact` con 189 tests correctos, APK `release/SmooControl-produccion.apk` generado y verificado con firma v2. |
+| 2026-06-30 | Inventario simple V1.1 | Productos agregan `Controla inventario`; stock vive en tablas separadas y el POS descuenta/reintegra por movimientos auditables al cobrar/anular. |
+| 2026-06-30 | Drift schema v19 | Agregadas tablas `local_inventory_stock`, `local_inventory_movements` y columna `local_products.tracks_inventory`; codigo Drift regenerado. |
+| 2026-06-30 | Supabase inventario | Agregada migracion `005_simple_inventory.sql` con `products.tracks_inventory`, `inventory_stock`, `inventory_movements` y RPC idempotente `apply_inventory_movement`. |
 
 ## Riesgos Activos
 

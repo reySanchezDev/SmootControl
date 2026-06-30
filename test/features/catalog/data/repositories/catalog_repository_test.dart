@@ -118,6 +118,7 @@ void main() {
           costInCents: 1000,
           isActive: true,
           isAvailableInPos: true,
+          tracksInventory: false,
           optionGroups: [],
           modifierGroupIds: [],
         );

@@ -49,6 +49,8 @@ final class SupabaseSyncRemoteSender implements ISyncRemoteSender {
         );
       case 'expense_categories':
         await _pushExpenseCategory(item);
+      case 'inventory_movements':
+        await _pushInventoryMovement(item);
       case 'modifier_groups':
         await _upsert('modifier_groups', _modifierGroupPayload(item));
       case 'modifier_options':
@@ -242,6 +244,10 @@ final class SupabaseSyncRemoteSender implements ISyncRemoteSender {
       await _upsert('sale_items', _saleItemPayload(saleItem, saleId));
     }
 
+    for (final movement in _listPayload(item.payload['inventoryMovements'])) {
+      await _applyInventoryMovement(movement);
+    }
+
     final voidPayload = _mapPayload(item.payload['void']);
     if (voidPayload.isNotEmpty) {
       await _upsert(
@@ -260,6 +266,10 @@ final class SupabaseSyncRemoteSender implements ISyncRemoteSender {
         conflictColumn: 'sale_id',
       );
     }
+  }
+
+  Future<void> _pushInventoryMovement(SyncQueueItem item) async {
+    await _applyInventoryMovement(item.payload);
   }
 
   Map<String, Object?> _auditLogPayload(SyncQueueItem item) {
@@ -354,6 +364,7 @@ final class SupabaseSyncRemoteSender implements ISyncRemoteSender {
       'price': _money(_intValue(payload['priceInCents'])),
       'is_active': payload['isActive'],
       'is_available_in_pos': payload['isAvailableInPos'],
+      'tracks_inventory': payload['tracksInventory'] ?? false,
       'option_groups': payload['optionGroups'] ?? const <Object?>[],
       'updated_at': DateTime.now().toIso8601String(),
     };
@@ -536,6 +547,27 @@ final class SupabaseSyncRemoteSender implements ISyncRemoteSender {
       body: jsonEncode(payload),
     );
     _ensureSuccess(response, table);
+  }
+
+  Future<void> _applyInventoryMovement(Map<String, Object?> payload) async {
+    if (payload.isEmpty) return;
+    final response = await _client.post(
+      _config.restUri('rpc/apply_inventory_movement'),
+      headers: await _headers(),
+      body: jsonEncode({
+        'p_id': payload['id'],
+        'p_restaurant_id': _restaurantId,
+        'p_product_id': payload['productId'],
+        'p_movement_type': payload['movementType'],
+        'p_quantity_delta': _intValue(payload['quantityDelta']),
+        'p_reference_type': payload['referenceType'],
+        'p_reference_id': payload['referenceId'],
+        'p_user_id': payload['userId'],
+        'p_notes': payload['notes'],
+        'p_created_at': payload['createdAt'],
+      }),
+    );
+    _ensureSuccess(response, 'inventory_movements');
   }
 
   Future<void> _deleteById(String table, String id) async {

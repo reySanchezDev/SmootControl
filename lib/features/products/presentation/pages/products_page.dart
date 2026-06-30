@@ -79,6 +79,7 @@ class ProductsPage extends StatelessWidget {
                           l10n.availableInPosStatus
                         else
                           l10n.unavailableInPosStatus,
+                        if (product.tracksInventory) 'Controla inventario',
                       ].join(' '),
                       itemBuilder: (context, product) => _ProductTile(
                         categoryPath: _categoryPathFor(
@@ -168,6 +169,7 @@ class ProductsPage extends StatelessWidget {
           isAvailableInPos: false,
           optionGroups: product.optionGroups,
           modifierGroupIds: product.modifierGroupIds,
+          tracksInventory: product.tracksInventory,
         ),
       ),
     );
@@ -280,6 +282,7 @@ class _ProductTile extends StatelessWidget {
       else
         l10n.unavailableInPosStatus,
       if (product.requiresOptionSelection) l10n.productHasOptionsStatus,
+      if (product.tracksInventory) 'Controla inventario',
     ].join(' - ');
     if (categoryPath.isEmpty) return status;
 

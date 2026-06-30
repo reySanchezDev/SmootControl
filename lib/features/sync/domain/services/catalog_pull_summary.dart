@@ -15,6 +15,7 @@ final class CatalogPullSummary {
     required this.roles,
     required this.tables,
     required this.users,
+    this.inventoryStock = 0,
   });
 
   /// Creates an empty pull summary.
@@ -28,6 +29,7 @@ final class CatalogPullSummary {
       paymentMethods = 0,
       permissions = 0,
       products = 0,
+      inventoryStock = 0,
       rolePermissions = 0,
       roles = 0,
       tables = 0,
@@ -60,6 +62,9 @@ final class CatalogPullSummary {
   /// Products updated locally.
   final int products;
 
+  /// Inventory stock rows updated locally.
+  final int inventoryStock;
+
   /// Role permission assignments updated locally.
   final int rolePermissions;
 
@@ -83,6 +88,7 @@ final class CatalogPullSummary {
         paymentMethods +
         permissions +
         products +
+        inventoryStock +
         rolePermissions +
         roles +
         tables +

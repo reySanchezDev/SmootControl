@@ -16,6 +16,7 @@ final class ProductModel extends Equatable {
     required this.costInCents,
     required this.isActive,
     required this.isAvailableInPos,
+    required this.tracksInventory,
     required this.optionGroups,
     required this.modifierGroupIds,
   });
@@ -30,6 +31,7 @@ final class ProductModel extends Equatable {
       costInCents: row.costInCents,
       isActive: row.isActive,
       isAvailableInPos: row.isAvailableInPos,
+      tracksInventory: row.tracksInventory,
       optionGroups: ProductOptionGroupCodec.decode(row.optionGroupsJson),
       modifierGroupIds: StringListCodec.decode(row.modifierGroupIdsJson),
     );
@@ -45,6 +47,7 @@ final class ProductModel extends Equatable {
       costInCents: entity.costInCents,
       isActive: entity.isActive,
       isAvailableInPos: entity.isAvailableInPos,
+      tracksInventory: entity.tracksInventory,
       optionGroups: entity.optionGroups,
       modifierGroupIds: entity.modifierGroupIds,
     );
@@ -71,6 +74,9 @@ final class ProductModel extends Equatable {
   /// Whether the product is visible in the POS today.
   final bool isAvailableInPos;
 
+  /// Whether sales should consume inventory stock.
+  final bool tracksInventory;
+
   /// POS option groups configured for this product.
   final List<ProductOptionGroup> optionGroups;
 
@@ -93,6 +99,7 @@ final class ProductModel extends Equatable {
       costInCents: costInCents,
       isActive: isActive,
       isAvailableInPos: isAvailableInPos,
+      tracksInventory: tracksInventory,
       optionGroups: optionGroups,
       modifierGroupIds: modifierGroupIds,
     );
@@ -107,6 +114,7 @@ final class ProductModel extends Equatable {
     costInCents,
     isActive,
     isAvailableInPos,
+    tracksInventory,
     optionGroups,
     modifierGroupIds,
   ];

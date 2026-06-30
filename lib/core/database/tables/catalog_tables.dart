@@ -46,6 +46,10 @@ class LocalProducts extends Table with SyncColumns {
   BoolColumn get isAvailableInPos =>
       boolean().withDefault(const Constant(true))();
 
+  /// Whether sales should consume inventory stock.
+  BoolColumn get tracksInventory =>
+      boolean().withDefault(const Constant(false))();
+
   /// JSON configuration for POS option groups.
   TextColumn get optionGroupsJson => text().withDefault(const Constant('[]'))();
 

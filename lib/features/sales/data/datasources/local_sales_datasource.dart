@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:smoo_control/core/database/app_database.dart';
+import 'package:smoo_control/features/inventory/data/datasources/local_inventory_datasource.dart';
 import 'package:smoo_control/features/sales/data/models/sale_item_model.dart';
 import 'package:smoo_control/features/sales/data/models/sale_model.dart';
 import 'package:smoo_control/features/sales/data/models/sale_void_model.dart';
@@ -8,9 +9,13 @@ import 'package:smoo_control/features/sales/domain/entities/sale.dart';
 /// Local datasource for sales and sale items.
 final class LocalSalesDataSource {
   /// Creates a local sales datasource.
-  const LocalSalesDataSource(this._database);
+  const LocalSalesDataSource(
+    this._database, {
+    LocalInventoryDataSource? inventoryDataSource,
+  }) : _inventoryDataSource = inventoryDataSource;
 
   final AppDatabase _database;
+  final LocalInventoryDataSource? _inventoryDataSource;
 
   /// Returns local sales created between two dates.
   Future<List<SaleModel>> getSales({
@@ -64,6 +69,7 @@ final class LocalSalesDataSource {
   Future<SaleModel> saveSale({
     required SaleModel sale,
     required List<SaleItemModel> items,
+    String? inventoryUserId,
   }) async {
     final now = DateTime.now();
 
@@ -109,6 +115,12 @@ final class LocalSalesDataSource {
               ),
             );
       }
+
+      await _inventoryDataSource?.applySaleMovements(
+        saleId: sale.id,
+        items: items,
+        userId: inventoryUserId ?? '',
+      );
     });
 
     return sale;
@@ -123,6 +135,7 @@ final class LocalSalesDataSource {
     final now = DateTime.now();
 
     await _database.transaction(() async {
+      final saleItems = await getSaleItems(saleId);
       await (_database.update(
         _database.localSales,
       )..where((sale) => sale.id.equals(saleId))).write(
@@ -145,6 +158,12 @@ final class LocalSalesDataSource {
               updatedAt: now,
             ),
           );
+
+      await _inventoryDataSource?.applySaleVoidMovements(
+        saleId: saleId,
+        items: saleItems,
+        userId: voidedBy,
+      );
     });
 
     final row = await (_database.select(

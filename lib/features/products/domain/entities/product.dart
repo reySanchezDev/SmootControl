@@ -12,6 +12,7 @@ final class Product extends Equatable {
     required this.costInCents,
     required this.isActive,
     this.isAvailableInPos = true,
+    this.tracksInventory = false,
     this.optionGroups = const [],
     this.modifierGroupIds = const [],
   });
@@ -37,6 +38,9 @@ final class Product extends Equatable {
   /// Whether the product is visible for today's POS operation.
   final bool isAvailableInPos;
 
+  /// Whether completed sales should consume inventory stock.
+  final bool tracksInventory;
+
   /// Selection groups requested by the POS before adding this product.
   final List<ProductOptionGroup> optionGroups;
 
@@ -59,6 +63,7 @@ final class Product extends Equatable {
     costInCents,
     isActive,
     isAvailableInPos,
+    tracksInventory,
     optionGroups,
     modifierGroupIds,
   ];

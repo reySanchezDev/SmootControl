@@ -1,5 +1,10 @@
 import 'package:smoo_control/core/result/app_failure.dart';
 import 'package:smoo_control/core/result/app_result.dart';
+import 'package:smoo_control/core/session/current_operator_service.dart';
+import 'package:smoo_control/features/inventory/data/datasources/inventory_stock_exception.dart';
+import 'package:smoo_control/features/inventory/data/datasources/local_inventory_datasource.dart';
+import 'package:smoo_control/features/inventory/data/repositories/inventory_repository.dart';
+import 'package:smoo_control/features/inventory/domain/entities/inventory_movement.dart';
 import 'package:smoo_control/features/sales/data/datasources/local_sales_datasource.dart';
 import 'package:smoo_control/features/sales/data/models/sale_item_model.dart';
 import 'package:smoo_control/features/sales/data/models/sale_model.dart';
@@ -16,10 +21,16 @@ final class SalesRepository implements ISalesRepository {
   const SalesRepository(
     this._localDataSource, {
     ISyncQueueRepository? syncQueueRepository,
-  }) : _syncQueueRepository = syncQueueRepository;
+    LocalInventoryDataSource? inventoryDataSource,
+    CurrentOperatorService? currentOperatorService,
+  }) : _syncQueueRepository = syncQueueRepository,
+       _inventoryDataSource = inventoryDataSource,
+       _currentOperatorService = currentOperatorService;
 
   final LocalSalesDataSource _localDataSource;
   final ISyncQueueRepository? _syncQueueRepository;
+  final LocalInventoryDataSource? _inventoryDataSource;
+  final CurrentOperatorService? _currentOperatorService;
 
   @override
   Future<AppResult<List<Sale>>> getSales({
@@ -104,11 +115,20 @@ final class SalesRepository implements ISalesRepository {
       final saved = await _localDataSource.saveSale(
         sale: SaleModel.fromEntity(sale),
         items: items.map(SaleItemModel.fromEntity).toList(),
+        inventoryUserId: _currentOperatorService?.userId,
       );
       final entity = saved.toEntity();
       await _enqueueSale(entity, items);
 
       return AppSuccess(entity);
+    } on InventoryStockException catch (error) {
+      return AppFailureResult(
+        AppFailure(
+          code: 'inventory_stock_insufficient',
+          message: error.toString(),
+          cause: error,
+        ),
+      );
     } on Object catch (error) {
       return AppFailureResult(
         AppFailure(
@@ -140,6 +160,14 @@ final class SalesRepository implements ISalesRepository {
       );
 
       return AppSuccess(entity);
+    } on InventoryStockException catch (error) {
+      return AppFailureResult(
+        AppFailure(
+          code: 'inventory_stock_invalid',
+          message: error.toString(),
+          cause: error,
+        ),
+      );
     } on Object catch (error) {
       return AppFailureResult(
         AppFailure(
@@ -152,6 +180,10 @@ final class SalesRepository implements ISalesRepository {
   }
 
   Future<void> _enqueueSale(Sale sale, List<SaleItem> items) async {
+    final inventoryMovements = await _inventoryMovementsPayload(
+      referenceType: 'sale',
+      referenceId: sale.id,
+    );
     await _syncQueueRepository?.enqueue(
       entityType: 'sales',
       entityId: sale.id,
@@ -159,6 +191,7 @@ final class SalesRepository implements ISalesRepository {
       payload: {
         'sale': _salePayload(sale),
         'items': items.map(_saleItemPayload).toList(),
+        'inventoryMovements': inventoryMovements,
       },
     );
   }
@@ -168,6 +201,10 @@ final class SalesRepository implements ISalesRepository {
     required String reason,
     required String voidedBy,
   }) async {
+    final inventoryMovements = await _inventoryMovementsPayload(
+      referenceType: 'sale_void',
+      referenceId: sale.id,
+    );
     await _syncQueueRepository?.enqueue(
       entityType: 'sales',
       entityId: sale.id,
@@ -178,8 +215,23 @@ final class SalesRepository implements ISalesRepository {
           'reason': reason,
           'voidedBy': voidedBy,
         },
+        'inventoryMovements': inventoryMovements,
       },
     );
+  }
+
+  Future<List<Map<String, Object?>>> _inventoryMovementsPayload({
+    required String referenceType,
+    required String referenceId,
+  }) async {
+    final movements = await _inventoryDataSource?.getMovementsForReference(
+      referenceType: referenceType,
+      referenceId: referenceId,
+    );
+    return [
+      for (final movement in movements ?? const <InventoryMovement>[])
+        InventoryRepository.movementPayload(movement),
+    ];
   }
 
   Map<String, Object?> _salePayload(Sale sale) {

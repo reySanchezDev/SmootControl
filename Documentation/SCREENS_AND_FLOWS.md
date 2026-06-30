@@ -16,6 +16,7 @@
 - Anulaciones. Base creada desde ventas.
 - Reportes.
 - Tasas de cambio.
+- Inventario.
 - Settings.
 - Sincronizacion local.
 
@@ -49,6 +50,7 @@
 - Regla de pago: la referencia de pago se solicita en un modal tactil solo si la opcion seleccionada la requiere.
 - Regla de efectivo: si el metodo afecta caja, el POS abre un modal numerico tactil con el total precargado y seleccionado; al confirmar con `OK`, valida recibido, calcula cambio y completa la venta.
 - Regla de moneda extranjera: si el metodo de pago usa moneda diferente a `NIO`, el POS exige tasa de cambio del dia, pide el recibido en esa moneda, convierte a moneda local y muestra el vuelto en moneda local.
+- Regla de inventario: al cobrar, el POS valida productos que controlan inventario, bloquea si falta stock y descuenta localmente en la misma transaccion de venta. Productos sin inventario no cambian su flujo.
 - Regla de pago: al cambiar hacia un metodo que no requiere referencia o al completar una venta, cualquier referencia escrita se limpia para evitar datos arrastrados.
 - Regla de caja: el POS requiere caja abierta del usuario actual antes de operar; si no existe, muestra apertura de caja y no permite agregar/cobrar productos. Si existe una caja abierta de un dia anterior, muestra cierre obligatorio de esa caja y no permite abrir la caja de hoy hasta cerrarla.
 - Regla de transacciones: `Mas opciones` incluye `Ver Transacciones`; abre una pantalla con las ventas cobradas en la caja abierta del usuario actual, sin mezclar otras cajas ni otros cajeros.
@@ -159,6 +161,17 @@
 - El POS usa la tasa del dia actual cuando el metodo de pago cobrable tiene moneda extranjera como `USD`.
 - Si falta la tasa del dia, el POS bloquea el cobro extranjero y pide configurar la tasa antes de continuar.
 
+## Inventario
+
+- Catalogo administrativo para productos que controlan inventario.
+- El permiso requerido es `inventario.gestionar`.
+- Productos permite activar o desactivar `Controla inventario`; el stock no se edita en productos.
+- Inventario lista productos con control activo, stock actual y ultima actualizacion.
+- `Registrar compra` permite seleccionar producto, cantidad entera y nota opcional.
+- Registrar compra crea movimiento `purchase` y actualiza `inventory_stock`.
+- El POS crea movimientos `sale` al cobrar y `sale_void` al anular ventas.
+- La sincronizacion remota usa movimientos idempotentes para evitar doble descuento en reintentos.
+
 ## Anulaciones
 
 - Se ejecutan desde transacciones del dia.
@@ -221,6 +234,7 @@
 - Al quitar un nivel, sus productos y subniveles directos se mueven al nivel padre para que el POS muestre productos sin la carpeta innecesaria.
 - Productos permiten crear, editar precio, costo, categoria e inactivar con confirmacion.
 - Productos permiten marcar disponibilidad en POS para operacion diaria.
+- Productos permiten marcar si controlan inventario; el stock se gestiona desde `Inventario`.
 - Productos permiten asignar grupos modificadores reutilizables para el POS.
 - Modificadores POS permite crear grupos como `Bastimento` o `Guarnicion`, marcar si son requeridos y administrar sus opciones disponibles.
 - Las opciones modificadoras se pueden marcar disponibles/no disponibles para ocultarlas del POS sin perder historico.

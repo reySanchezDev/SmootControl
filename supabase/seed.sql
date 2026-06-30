@@ -4,6 +4,7 @@ VALUES
   ('roles.gestionar', 'Gestionar roles'),
   ('mesas.gestionar', 'Gestionar mesas'),
   ('productos.gestionar', 'Gestionar productos'),
+  ('inventario.gestionar', 'Gestionar inventario'),
   ('modificadores.gestionar', 'Gestionar modificadores POS'),
   ('ventas.registrar', 'Registrar ventas'),
   ('caja.aperturar', 'Aperturar caja'),

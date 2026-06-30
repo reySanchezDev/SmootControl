@@ -39,6 +39,7 @@ class _CreateProductDialogState extends State<CreateProductDialog> {
   final _costController = TextEditingController(text: '0');
   bool _isActive = true;
   bool _isAvailableInPos = true;
+  bool _tracksInventory = false;
   String? _error;
   String? _selectedCategoryId;
   final _selectedModifierGroupIds = <String>{};
@@ -57,6 +58,7 @@ class _CreateProductDialogState extends State<CreateProductDialog> {
     _selectedCategoryId = product.categoryId;
     _isActive = product.isActive;
     _isAvailableInPos = product.isAvailableInPos;
+    _tracksInventory = product.tracksInventory;
     _selectedModifierGroupIds.addAll(product.modifierGroupIds);
   }
 
@@ -144,6 +146,14 @@ class _CreateProductDialogState extends State<CreateProductDialog> {
                   setState(() => _isAvailableInPos = value ?? true);
                 },
               ),
+              CheckboxListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const AppText('Controla inventario'),
+                value: _tracksInventory,
+                onChanged: (value) {
+                  setState(() => _tracksInventory = value ?? false);
+                },
+              ),
               ModifierGroupSelector(
                 groups: _activeModifierGroups,
                 selectedIds: _selectedModifierGroupIds,
@@ -199,6 +209,7 @@ class _CreateProductDialogState extends State<CreateProductDialog> {
         costInCents: cost,
         isActive: _isActive,
         isAvailableInPos: _isAvailableInPos,
+        tracksInventory: _tracksInventory,
         optionGroups: widget.product?.optionGroups ?? const [],
         modifierGroupIds: _selectedModifierGroupIds.toList(),
       ),

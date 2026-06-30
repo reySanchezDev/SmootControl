@@ -121,6 +121,9 @@ final class SupabaseCatalogPullService implements ICatalogPullService {
     final products = shouldRefreshProducts
         ? await _getRows('products')
         : const <Map<String, Object?>>[];
+    final inventoryStock = shouldRefreshProducts
+        ? await _getRows('inventory_stock')
+        : const <Map<String, Object?>>[];
     final paymentMethods = shouldRefreshPaymentMethods
         ? await _getRowsIncludingGlobal('payment_methods')
         : const <Map<String, Object?>>[];
@@ -156,6 +159,7 @@ final class SupabaseCatalogPullService implements ICatalogPullService {
       }
       if (shouldRefreshProducts) {
         await _applyProducts(products, modifierIdsByProduct);
+        await _applyInventoryStock(inventoryStock);
       }
       if (shouldRefreshPaymentMethods) {
         await _applyPaymentMethods(paymentMethods);
@@ -183,6 +187,7 @@ final class SupabaseCatalogPullService implements ICatalogPullService {
       paymentMethods: paymentMethods.length,
       permissions: permissions.length,
       products: products.length,
+      inventoryStock: inventoryStock.length,
       rolePermissions: rolePermissions.length,
       roles: roles.length,
       tables: tables.length,
@@ -518,6 +523,9 @@ final class SupabaseCatalogPullService implements ICatalogPullService {
               isAvailableInPos: Value(
                 _bool(row['is_available_in_pos'], defaultValue: true),
               ),
+              tracksInventory: Value(
+                _bool(row['tracks_inventory']),
+              ),
               optionGroupsJson: Value(_jsonListText(row['option_groups'])),
               modifierGroupIdsJson: Value(
                 StringListCodec.encode(modifierIdsByProduct[id] ?? const []),
@@ -533,6 +541,29 @@ final class SupabaseCatalogPullService implements ICatalogPullService {
           );
     }
     await _markMissingProductsInactive(remoteIds, now);
+  }
+
+  Future<void> _applyInventoryStock(List<Map<String, Object?>> rows) async {
+    final now = DateTime.now();
+    for (final row in rows) {
+      final productId = _optionalText(row['product_id']);
+      if (productId == null) continue;
+      await _database
+          .into(_database.localInventoryStock)
+          .insert(
+            LocalInventoryStockCompanion(
+              productId: Value(productId),
+              quantityOnHand: Value(_int(row['quantity_on_hand'])),
+              remoteId: Value(productId),
+              syncStatus: const Value('synced'),
+              syncError: const Value(null),
+              createdAt: Value(now),
+              updatedAt: Value(now),
+              syncedAt: Value(now),
+            ),
+            mode: InsertMode.insertOrReplace,
+          );
+    }
   }
 
   Future<void> _applyPaymentMethods(List<Map<String, Object?>> rows) async {
