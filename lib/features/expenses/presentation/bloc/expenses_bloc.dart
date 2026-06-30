@@ -6,6 +6,7 @@ import 'package:smoo_control/features/expenses/domain/entities/expense_category.
 import 'package:smoo_control/features/expenses/domain/repositories/i_expenses_repository.dart';
 import 'package:smoo_control/features/expenses/presentation/bloc/expenses_event.dart';
 import 'package:smoo_control/features/expenses/presentation/bloc/expenses_state.dart';
+import 'package:smoo_control/features/sync/domain/services/admin_data_refresh_service.dart';
 import 'package:uuid/uuid.dart';
 
 /// BLoC for expense category reads and expense creation.
@@ -14,9 +15,11 @@ final class ExpensesBloc extends Bloc<ExpensesEvent, ExpensesState> {
   ExpensesBloc({
     required IExpensesRepository repository,
     required IAuditLogRepository auditLogRepository,
+    AdminDataRefreshService? remoteRefreshService,
     Uuid uuid = const Uuid(),
   }) : _repository = repository,
        _auditLogRepository = auditLogRepository,
+       _remoteRefreshService = remoteRefreshService,
        _uuid = uuid,
        super(const ExpensesInitial()) {
     on<ExpenseCategoriesLoadRequested>(_onCategoriesLoadRequested);
@@ -27,6 +30,7 @@ final class ExpensesBloc extends Bloc<ExpensesEvent, ExpensesState> {
 
   final IExpensesRepository _repository;
   final IAuditLogRepository _auditLogRepository;
+  final AdminDataRefreshService? _remoteRefreshService;
   final Uuid _uuid;
 
   Future<void> _onCategoriesLoadRequested(
@@ -34,6 +38,7 @@ final class ExpensesBloc extends Bloc<ExpensesEvent, ExpensesState> {
     Emitter<ExpensesState> emit,
   ) async {
     emit(const ExpensesLoading());
+    if (!await _refreshRemoteCache(emit)) return;
     await _emitOverview(emit);
   }
 
@@ -127,5 +132,14 @@ final class ExpensesBloc extends Bloc<ExpensesEvent, ExpensesState> {
     }
 
     emit(ExpensesOverviewLoaded(categories: categories));
+  }
+
+  Future<bool> _refreshRemoteCache(Emitter<ExpensesState> emit) async {
+    final result = await _remoteRefreshService?.refreshExpenseCategories();
+    if (result case AppFailureResult(:final error)) {
+      emit(ExpensesFailure(error));
+      return false;
+    }
+    return true;
   }
 }

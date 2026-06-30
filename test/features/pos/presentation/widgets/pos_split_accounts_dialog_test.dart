@@ -157,6 +157,22 @@ void main() {
     expect(find.byType(AlertDialog), findsOneWidget);
     expect(find.text('OK'), findsOneWidget);
   });
+
+  testWidgets('renders split workspace on constrained touch surfaces', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(600, 900));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await _pumpDialog(tester);
+
+    expect(tester.takeException(), isNull);
+    expect(find.byKey(const ValueKey('split-original-panel')), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('split-account-account-1')),
+      findsOneWidget,
+    );
+  });
 }
 
 Future<void> _pumpDialog(WidgetTester tester, {PosReady state = _state}) async {

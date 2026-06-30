@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:smoo_control/core/design_system/app_button.dart';
 import 'package:smoo_control/core/design_system/app_input.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
+import 'package:smoo_control/core/design_system/responsive_touch_dialog_frame.dart';
 import 'package:smoo_control/core/design_system/touch_numeric_keyboard_dialog.dart';
 import 'package:smoo_control/core/formatters/money_formatter.dart';
 import 'package:smoo_control/l10n/app_localizations.dart';
@@ -41,28 +42,26 @@ class _CloseCashRegisterDialogState extends State<CloseCashRegisterDialog> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
 
-    return AlertDialog(
+    return ResponsiveTouchDialogFrame(
+      maxWidth: 420,
       title: AppText(
         l10n.closeCashRegisterTitle,
         variant: AppTextVariant.titleMedium,
       ),
-      content: SizedBox(
-        width: 360,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            AppInput(
-              label: l10n.closingCashField,
-              controller: _closingCashController,
-              onTap: _openNumericKeyboard,
-              readOnly: true,
-            ),
-            if (_error != null) ...[
-              const SizedBox(height: 8),
-              AppText(_error!, maxLines: 2),
-            ],
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          AppInput(
+            label: l10n.closingCashField,
+            controller: _closingCashController,
+            onTap: _openNumericKeyboard,
+            readOnly: true,
+          ),
+          if (_error != null) ...[
+            const SizedBox(height: 8),
+            AppText(_error!, maxLines: 2),
           ],
-        ),
+        ],
       ),
       actions: [
         AppButton(

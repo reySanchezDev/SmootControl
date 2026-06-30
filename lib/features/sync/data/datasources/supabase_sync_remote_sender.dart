@@ -72,10 +72,13 @@ final class SupabaseSyncRemoteSender implements ISyncRemoteSender {
         await _upsert('table_accounts', await _tableAccountPayload(item));
       case 'audit_logs':
         await _upsert('audit_logs', _auditLogPayload(item));
-      case 'permissions':
       case 'profiles':
-      case 'role_permissions':
+        await _upsert('profiles', _profilePayload(item));
       case 'roles':
+        await _upsert('roles', _rolePayload(item));
+      case 'role_permissions':
+        await _pushRolePermissions(item);
+      case 'permissions':
         return;
       default:
         throw UnsupportedError(
@@ -116,6 +119,18 @@ final class SupabaseSyncRemoteSender implements ISyncRemoteSender {
 
   Future<void> _pushPaymentMethod(SyncQueueItem item) async {
     if (item.operation == SyncOperation.delete) {
+      final parentId = _optionalText(item.payload['parentId']);
+      if (parentId == null) {
+        throw StateError('No se puede eliminar un metodo de pago raiz.');
+      }
+      await _patchWhere(
+        'payment_methods',
+        {
+          'parent_id': parentId,
+          'updated_at': DateTime.now().toIso8601String(),
+        },
+        {'parent_id': 'eq.${item.entityId}'},
+      );
       await _deleteById('payment_methods', item.entityId);
       return;
     }
@@ -124,6 +139,14 @@ final class SupabaseSyncRemoteSender implements ISyncRemoteSender {
 
   Future<void> _pushExpenseCategory(SyncQueueItem item) async {
     if (item.operation == SyncOperation.delete) {
+      await _patchWhere(
+        'expense_categories',
+        {
+          'parent_id': null,
+          'updated_at': DateTime.now().toIso8601String(),
+        },
+        {'parent_id': 'eq.${item.entityId}'},
+      );
       await _deleteById('expense_categories', item.entityId);
       return;
     }
@@ -132,6 +155,21 @@ final class SupabaseSyncRemoteSender implements ISyncRemoteSender {
 
   Future<void> _pushProductCategory(SyncQueueItem item) async {
     if (item.operation == SyncOperation.delete) {
+      final parentId = _optionalText(item.payload['parentId']);
+      if (parentId == null) {
+        throw StateError('No se puede eliminar una categoria raiz.');
+      }
+      final now = DateTime.now().toIso8601String();
+      await _patchWhere(
+        'product_categories',
+        {'parent_id': parentId, 'updated_at': now},
+        {'parent_id': 'eq.${item.entityId}'},
+      );
+      await _patchWhere(
+        'products',
+        {'category_id': parentId, 'updated_at': now},
+        {'category_id': 'eq.${item.entityId}'},
+      );
       await _deleteById('product_categories', item.entityId);
       return;
     }
@@ -236,6 +274,59 @@ final class SupabaseSyncRemoteSender implements ISyncRemoteSender {
       'details': payload['details'] ?? const <String, Object?>{},
       'created_at': payload['occurredAt'],
     };
+  }
+
+  Map<String, Object?> _profilePayload(SyncQueueItem item) {
+    final payload = item.payload;
+    return {
+      'id': payload['id'],
+      'restaurant_id': _restaurantId,
+      'role_id': payload['roleId'],
+      'display_name': payload['displayName'],
+      'email': payload['email'],
+      'is_active': payload['isActive'],
+      'is_pos_user': payload['isPosUser'],
+      'pin_salt': payload['pinSalt'],
+      'pin_hash': payload['pinHash'],
+      'updated_at': DateTime.now().toIso8601String(),
+    };
+  }
+
+  Map<String, Object?> _rolePayload(SyncQueueItem item) {
+    final payload = item.payload;
+    return {
+      'id': payload['id'],
+      'restaurant_id': _restaurantId,
+      'code': payload['id'],
+      'name': payload['name'],
+      'description': payload['description'],
+      'is_system': payload['isSystem'],
+      'is_active': payload['isActive'],
+      'updated_at': DateTime.now().toIso8601String(),
+    };
+  }
+
+  Future<void> _pushRolePermissions(SyncQueueItem item) async {
+    final roleId = item.payload['roleId']?.toString();
+    if (roleId == null || roleId.trim().isEmpty) return;
+
+    final permissionCodes = _stringList(item.payload['permissionCodes']);
+    await _deleteRolePermissions(roleId);
+    if (permissionCodes.isEmpty) return;
+
+    final permissionIdsByCode = await _permissionIdsByCode();
+    for (final code in permissionCodes) {
+      final permissionId = permissionIdsByCode[code];
+      if (permissionId == null) continue;
+      await _upsert(
+        'role_permissions',
+        {
+          'role_id': roleId,
+          'permission_id': permissionId,
+        },
+        conflictColumn: 'role_id,permission_id',
+      );
+    }
   }
 
   Map<String, Object?> _productCategoryPayload(SyncQueueItem item) {
@@ -455,6 +546,47 @@ final class SupabaseSyncRemoteSender implements ISyncRemoteSender {
     _ensureSuccess(response, table);
   }
 
+  Future<void> _patchWhere(
+    String table,
+    Map<String, Object?> payload,
+    Map<String, String> query,
+  ) async {
+    final response = await _client.patch(
+      _config.restUri(table, query),
+      headers: await _headers(prefer: 'return=minimal'),
+      body: jsonEncode(payload),
+    );
+    _ensureSuccess(response, table);
+  }
+
+  Future<void> _deleteRolePermissions(String roleId) async {
+    final response = await _client.delete(
+      _config.restUri('role_permissions', {'role_id': 'eq.$roleId'}),
+      headers: await _headers(prefer: 'return=minimal'),
+    );
+    _ensureSuccess(response, 'role_permissions');
+  }
+
+  Future<Map<String, String>> _permissionIdsByCode() async {
+    final response = await _client.get(
+      _config.restUri('permissions', {'select': 'id,code'}),
+      headers: await _headers(),
+    );
+    _ensureSuccess(response, 'permissions');
+
+    final decoded = jsonDecode(response.body);
+    if (decoded is! List) return const {};
+
+    final idsByCode = <String, String>{};
+    for (final value in decoded) {
+      final row = _mapPayload(value);
+      final id = row['id']?.toString();
+      final code = row['code']?.toString();
+      if (id != null && code != null) idsByCode[code] = id;
+    }
+    return idsByCode;
+  }
+
   Future<Map<String, String>> _headers({String? prefer}) async {
     final headers = <String, String>{
       'apikey': _config.publishableKey,
@@ -560,6 +692,11 @@ final class SupabaseSyncRemoteSender implements ISyncRemoteSender {
     final text = value?.toString();
     if (text == null || text.length < 10) return text;
     return text.substring(0, 10);
+  }
+
+  String? _optionalText(Object? value) {
+    final text = value?.toString().trim();
+    return text == null || text.isEmpty ? null : text;
   }
 
   Map<String, Object?> _mapPayload(Object? value) {

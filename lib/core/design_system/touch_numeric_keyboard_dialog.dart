@@ -76,10 +76,12 @@ class _TouchNumericKeyboardDialogState<T>
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final colorScheme = Theme.of(context).colorScheme;
+    final maxHeight = MediaQuery.sizeOf(context).height * .92;
 
     return Dialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 620),
+        constraints: BoxConstraints(maxHeight: maxHeight, maxWidth: 620),
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(14),

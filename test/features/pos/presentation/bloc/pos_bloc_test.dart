@@ -243,6 +243,39 @@ void main() {
     );
 
     blocTest<PosBloc, PosState>(
+      'refreshes modifier catalog without leaving POS',
+      build: buildBloc,
+      seed: () => const PosReady(
+        products: [product],
+        tables: [table],
+        paymentMethods: [method],
+      ),
+      act: (bloc) => bloc.add(
+        const PosModifierCatalogRefreshed(
+          ModifierCatalog(
+            groups: [
+              ModifierGroup(id: 'modifier-sides', name: 'Guarniciones'),
+            ],
+            options: [
+              ModifierOption(
+                id: 'option-1',
+                groupId: 'modifier-sides',
+                name: 'Frijoles fritos',
+              ),
+            ],
+          ),
+        ),
+      ),
+      expect: () => [
+        isA<PosReady>().having(
+          (state) => state.modifierCatalog.options.single.name,
+          'refreshed modifier option',
+          'Frijoles fritos',
+        ),
+      ],
+    );
+
+    blocTest<PosBloc, PosState>(
       'updates the temporary table name shown in POS',
       build: buildBloc,
       seed: () => const PosReady(

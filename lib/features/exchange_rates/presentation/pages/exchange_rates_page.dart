@@ -9,6 +9,7 @@ import 'package:smoo_control/core/formatters/money_formatter.dart';
 import 'package:smoo_control/core/result/app_result.dart';
 import 'package:smoo_control/features/exchange_rates/domain/entities/exchange_rate.dart';
 import 'package:smoo_control/features/exchange_rates/domain/repositories/i_exchange_rate_repository.dart';
+import 'package:smoo_control/features/sync/domain/services/admin_data_refresh_service.dart';
 import 'package:smoo_control/l10n/app_localizations.dart';
 
 /// Exchange rate management page for the current month.
@@ -26,6 +27,8 @@ class _ExchangeRatesPageState extends State<ExchangeRatesPage> {
   final _monthlyRateController = TextEditingController();
   final IExchangeRateRepository _repository =
       serviceLocator<IExchangeRateRepository>();
+  final AdminDataRefreshService _remoteRefreshService =
+      serviceLocator<AdminDataRefreshService>();
   late DateTime _month;
   late Future<AppResult<List<ExchangeRate>>> _future;
 
@@ -126,11 +129,20 @@ class _ExchangeRatesPageState extends State<ExchangeRatesPage> {
 
   void _load() {
     setState(() {
-      _future = _repository.getRatesForMonth(
-        currencyCode: _currencyCode,
-        month: _month,
-      );
+      _future = _loadRates();
     });
+  }
+
+  Future<AppResult<List<ExchangeRate>>> _loadRates() async {
+    final refreshResult = await _remoteRefreshService.refreshExchangeRates();
+    if (refreshResult case AppFailureResult(:final error)) {
+      return AppFailureResult(error);
+    }
+
+    return _repository.getRatesForMonth(
+      currencyCode: _currencyCode,
+      month: _month,
+    );
   }
 
   void _previousMonth() {

@@ -18,31 +18,106 @@ class _TicketTotalBand extends StatelessWidget {
     final total = lines.fold(0, (sum, line) => sum + line.totalInCents);
     final colorScheme = Theme.of(context).colorScheme;
 
-    return Container(
-      color: colorScheme.primary,
-      height: 48,
-      child: _TicketColumnRow(
-        description: Align(
-          alignment: Alignment.centerLeft,
-          child: _ProductsVisibilityButton(
-            onPressed: onProductsVisibilityToggled,
-            productsVisible: productsVisible,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < _ticketMinWidth;
+        if (compact) {
+          return Container(
+            color: colorScheme.primary,
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            child: constraints.maxWidth < 560
+                ? Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: _ProductsVisibilityButton(
+                                onPressed: onProductsVisibilityToggled,
+                                productsVisible: productsVisible,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          _TotalAmountText(total: total),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      const Align(
+                        alignment: Alignment.centerRight,
+                        child: _ExchangeRateTodayText(compact: true),
+                      ),
+                    ],
+                  )
+                : Row(
+                    children: [
+                      _ProductsVisibilityButton(
+                        onPressed: onProductsVisibilityToggled,
+                        productsVisible: productsVisible,
+                      ),
+                      const Spacer(),
+                      const Flexible(
+                        child: Align(
+                          alignment: Alignment.centerRight,
+                          child: _ExchangeRateTodayText(compact: true),
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      _TotalAmountText(total: total),
+                    ],
+                  ),
+          );
+        }
+
+        return Container(
+          color: colorScheme.primary,
+          height: 48,
+          child: _TicketColumnRow(
+            description: Align(
+              alignment: Alignment.centerLeft,
+              child: _ProductsVisibilityButton(
+                onPressed: onProductsVisibilityToggled,
+                productsVisible: productsVisible,
+              ),
+            ),
+            served: const SizedBox.shrink(),
+            quantity: const SizedBox.shrink(),
+            price: const _ExchangeRateTodayText(compact: true),
+            amount: Text(
+              MoneyFormatter.format(total),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                color: colorScheme.onPrimary,
+              ),
+              textAlign: TextAlign.end,
+            ),
+            remove: const SizedBox.shrink(),
           ),
-        ),
-        served: const SizedBox.shrink(),
-        quantity: const SizedBox.shrink(),
-        price: const _ExchangeRateTodayText(compact: true),
-        amount: Text(
-          MoneyFormatter.format(total),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            color: colorScheme.onPrimary,
-          ),
-          textAlign: TextAlign.end,
-        ),
-        remove: const SizedBox.shrink(),
+        );
+      },
+    );
+  }
+}
+
+class _TotalAmountText extends StatelessWidget {
+  const _TotalAmountText({required this.total});
+
+  final int total;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      MoneyFormatter.format(total),
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+        color: Theme.of(context).colorScheme.onPrimary,
       ),
+      textAlign: TextAlign.end,
     );
   }
 }

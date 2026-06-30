@@ -37,6 +37,8 @@ import 'package:smoo_control/features/products/data/datasources/local_products_d
 import 'package:smoo_control/features/products/data/repositories/products_repository.dart';
 import 'package:smoo_control/features/products/domain/repositories/i_products_repository.dart';
 import 'package:smoo_control/features/products/presentation/bloc/products_bloc.dart';
+import 'package:smoo_control/features/reports/data/services/supabase_report_summary_service.dart';
+import 'package:smoo_control/features/reports/domain/services/i_remote_report_summary_service.dart';
 import 'package:smoo_control/features/reports/domain/services/report_summary_service.dart';
 import 'package:smoo_control/features/reports/presentation/bloc/reports_bloc.dart';
 import 'package:smoo_control/features/roles/data/datasources/local_roles_datasource.dart';
@@ -56,11 +58,14 @@ import 'package:smoo_control/features/settings/domain/repositories/i_business_se
 import 'package:smoo_control/features/settings/presentation/bloc/business_settings_bloc.dart';
 import 'package:smoo_control/features/sync/data/datasources/local_sync_queue_datasource.dart';
 import 'package:smoo_control/features/sync/data/datasources/local_sync_settings_datasource.dart';
+import 'package:smoo_control/features/sync/data/datasources/supabase_catalog_pull_service.dart';
 import 'package:smoo_control/features/sync/data/datasources/supabase_sync_remote_sender.dart';
 import 'package:smoo_control/features/sync/data/repositories/sync_queue_repository.dart';
 import 'package:smoo_control/features/sync/data/repositories/sync_settings_repository.dart';
 import 'package:smoo_control/features/sync/domain/repositories/i_sync_queue_repository.dart';
 import 'package:smoo_control/features/sync/domain/repositories/i_sync_settings_repository.dart';
+import 'package:smoo_control/features/sync/domain/services/admin_data_refresh_service.dart';
+import 'package:smoo_control/features/sync/domain/services/i_catalog_pull_service.dart';
 import 'package:smoo_control/features/sync/domain/services/i_sync_remote_sender.dart';
 import 'package:smoo_control/features/sync/domain/services/sync_queue_processor.dart';
 import 'package:smoo_control/features/sync/domain/services/sync_scheduler_service.dart';
@@ -100,12 +105,14 @@ Future<void> configureDependencies() async {
       () => CatalogRepository(
         serviceLocator<LocalCatalogDataSource>(),
         syncQueueRepository: serviceLocator<ISyncQueueRepository>(),
+        remoteSender: serviceLocator<ISyncRemoteSender>(),
       ),
     )
     ..registerFactory<CatalogBloc>(
       () => CatalogBloc(
         repository: serviceLocator<ICatalogRepository>(),
         auditLogRepository: serviceLocator<IAuditLogRepository>(),
+        remoteRefreshService: serviceLocator<AdminDataRefreshService>(),
       ),
     )
     ..registerLazySingleton<LocalProductsDataSource>(
@@ -115,12 +122,14 @@ Future<void> configureDependencies() async {
       () => ProductsRepository(
         serviceLocator<LocalProductsDataSource>(),
         syncQueueRepository: serviceLocator<ISyncQueueRepository>(),
+        remoteSender: serviceLocator<ISyncRemoteSender>(),
       ),
     )
     ..registerFactory<ProductsBloc>(
       () => ProductsBloc(
         repository: serviceLocator<IProductsRepository>(),
         auditLogRepository: serviceLocator<IAuditLogRepository>(),
+        remoteRefreshService: serviceLocator<AdminDataRefreshService>(),
       ),
     )
     ..registerLazySingleton<LocalModifiersDataSource>(
@@ -130,12 +139,14 @@ Future<void> configureDependencies() async {
       () => ModifiersRepository(
         serviceLocator<LocalModifiersDataSource>(),
         syncQueueRepository: serviceLocator<ISyncQueueRepository>(),
+        remoteSender: serviceLocator<ISyncRemoteSender>(),
       ),
     )
     ..registerFactory<ModifiersBloc>(
       () => ModifiersBloc(
         repository: serviceLocator<IModifiersRepository>(),
         auditLogRepository: serviceLocator<IAuditLogRepository>(),
+        remoteRefreshService: serviceLocator<AdminDataRefreshService>(),
       ),
     )
     ..registerLazySingleton<LocalPaymentMethodsDataSource>(
@@ -145,12 +156,14 @@ Future<void> configureDependencies() async {
       () => PaymentMethodsRepository(
         serviceLocator<LocalPaymentMethodsDataSource>(),
         syncQueueRepository: serviceLocator<ISyncQueueRepository>(),
+        remoteSender: serviceLocator<ISyncRemoteSender>(),
       ),
     )
     ..registerFactory<PaymentMethodsBloc>(
       () => PaymentMethodsBloc(
         repository: serviceLocator<IPaymentMethodsRepository>(),
         auditLogRepository: serviceLocator<IAuditLogRepository>(),
+        remoteRefreshService: serviceLocator<AdminDataRefreshService>(),
       ),
     )
     ..registerLazySingleton<LocalTablesDataSource>(
@@ -160,12 +173,14 @@ Future<void> configureDependencies() async {
       () => TablesRepository(
         serviceLocator<LocalTablesDataSource>(),
         syncQueueRepository: serviceLocator<ISyncQueueRepository>(),
+        remoteSender: serviceLocator<ISyncRemoteSender>(),
       ),
     )
     ..registerFactory<TablesBloc>(
       () => TablesBloc(
         repository: serviceLocator<ITablesRepository>(),
         auditLogRepository: serviceLocator<IAuditLogRepository>(),
+        remoteRefreshService: serviceLocator<AdminDataRefreshService>(),
       ),
     )
     ..registerLazySingleton<LocalCashRegisterDataSource>(
@@ -190,12 +205,14 @@ Future<void> configureDependencies() async {
       () => ExpensesRepository(
         serviceLocator<LocalExpensesDataSource>(),
         syncQueueRepository: serviceLocator<ISyncQueueRepository>(),
+        remoteSender: serviceLocator<ISyncRemoteSender>(),
       ),
     )
     ..registerFactory<ExpensesBloc>(
       () => ExpensesBloc(
         repository: serviceLocator<IExpensesRepository>(),
         auditLogRepository: serviceLocator<IAuditLogRepository>(),
+        remoteRefreshService: serviceLocator<AdminDataRefreshService>(),
       ),
     )
     ..registerLazySingleton<LocalExchangeRateDataSource>(
@@ -205,6 +222,7 @@ Future<void> configureDependencies() async {
       () => ExchangeRateRepository(
         serviceLocator<LocalExchangeRateDataSource>(),
         syncQueueRepository: serviceLocator<ISyncQueueRepository>(),
+        remoteSender: serviceLocator<ISyncRemoteSender>(),
       ),
     )
     ..registerLazySingleton<ReportSummaryService>(
@@ -212,6 +230,15 @@ Future<void> configureDependencies() async {
         cashRegisterRepository: serviceLocator<ICashRegisterRepository>(),
         salesRepository: serviceLocator<ISalesRepository>(),
         expensesRepository: serviceLocator<IExpensesRepository>(),
+        remoteReportSummaryService:
+            serviceLocator<IRemoteReportSummaryService>(),
+      ),
+    )
+    ..registerLazySingleton<IRemoteReportSummaryService>(
+      () => SupabaseReportSummaryService(
+        config: serviceLocator<SupabaseAppConfig>(),
+        restaurantService: serviceLocator<CurrentRestaurantService>(),
+        client: serviceLocator<http.Client>(),
       ),
     )
     ..registerFactory<ReportsBloc>(
@@ -230,6 +257,7 @@ Future<void> configureDependencies() async {
       () => BusinessSettingsBloc(
         repository: serviceLocator<IBusinessSettingsRepository>(),
         auditLogRepository: serviceLocator<IAuditLogRepository>(),
+        remoteRefreshService: serviceLocator<AdminDataRefreshService>(),
       ),
     )
     ..registerLazySingleton<LocalRolesDataSource>(
@@ -252,6 +280,7 @@ Future<void> configureDependencies() async {
         repository: serviceLocator<IRolesRepository>(),
         seedService: serviceLocator<AccessSeedService>(),
         auditLogRepository: serviceLocator<IAuditLogRepository>(),
+        remoteRefreshService: serviceLocator<AdminDataRefreshService>(),
       ),
     )
     ..registerLazySingleton<LocalUsersDataSource>(
@@ -269,6 +298,7 @@ Future<void> configureDependencies() async {
         rolesRepository: serviceLocator<IRolesRepository>(),
         seedService: serviceLocator<AccessSeedService>(),
         auditLogRepository: serviceLocator<IAuditLogRepository>(),
+        remoteRefreshService: serviceLocator<AdminDataRefreshService>(),
       ),
     )
     ..registerLazySingleton<LocalAuditLogDataSource>(
@@ -316,6 +346,17 @@ Future<void> configureDependencies() async {
         restaurantService: serviceLocator<CurrentRestaurantService>(),
         client: serviceLocator<http.Client>(),
       ),
+    )
+    ..registerLazySingleton<ICatalogPullService>(
+      () => SupabaseCatalogPullService(
+        database: serviceLocator<AppDatabase>(),
+        config: serviceLocator<SupabaseAppConfig>(),
+        restaurantService: serviceLocator<CurrentRestaurantService>(),
+        client: serviceLocator<http.Client>(),
+      ),
+    )
+    ..registerLazySingleton<AdminDataRefreshService>(
+      () => AdminDataRefreshService(serviceLocator<ICatalogPullService>()),
     )
     ..registerLazySingleton<ISyncQueueRepository>(
       () => SyncQueueRepository(

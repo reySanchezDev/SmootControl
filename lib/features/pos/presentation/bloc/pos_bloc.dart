@@ -92,6 +92,7 @@ final class PosBloc extends Bloc<PosEvent, PosState> {
     on<PosCartLineServedToggled>(
       (event, emit) => _handleCartLineServedToggled(this, event, emit),
     );
+    on<PosModifierCatalogRefreshed>(_onModifierCatalogRefreshed);
     on<PosPaymentMethodSelected>(_onPaymentMethodSelected);
     on<PosTableSelected>(
       (event, emit) => _handleTableSelected(this, event, emit),
@@ -155,6 +156,21 @@ final class PosBloc extends Bloc<PosEvent, PosState> {
     emit(
       current.copyWith(
         selectedPaymentMethodId: event.paymentMethodId,
+        clearLastCompletedSale: true,
+      ),
+    );
+  }
+
+  void _onModifierCatalogRefreshed(
+    PosModifierCatalogRefreshed event,
+    Emitter<PosState> emit,
+  ) {
+    final current = state;
+    if (current is! PosReady) return;
+
+    emit(
+      current.copyWith(
+        modifierCatalog: event.catalog,
         clearLastCompletedSale: true,
       ),
     );

@@ -130,4 +130,56 @@ void main() {
     expect(selectedOptions?.single.groupName, 'Base');
     expect(selectedOptions?.single.optionName, 'Gallo pinto');
   });
+
+  testWidgets('renders option selector on constrained touch surfaces', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(390, 700));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    const product = Product(
+      id: 'product-1',
+      categoryId: 'food',
+      name: 'Carne asada con bastimentos y guarniciones',
+      priceInCents: 12000,
+      costInCents: 6000,
+      isActive: true,
+      optionGroups: [
+        ProductOptionGroup(
+          name: 'BASTIMENTOS',
+          options: ['Maduro frito', 'Tortillas', 'Tajadas verdes'],
+        ),
+      ],
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Builder(
+          builder: (context) {
+            return TextButton(
+              onPressed: () async {
+                await showDialog<List<SelectedProductOption>>(
+                  context: context,
+                  builder: (_) => ProductOptionsDialog(
+                    product: product,
+                    optionGroups: product.optionGroups,
+                  ),
+                );
+              },
+              child: const Text('Open dialog'),
+            );
+          },
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Open dialog'));
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('BASTIMENTOS'), findsOneWidget);
+    expect(find.text('Maduro frito'), findsOneWidget);
+  });
 }

@@ -8,6 +8,7 @@ import 'package:smoo_control/features/products/domain/entities/product.dart';
 import 'package:smoo_control/features/sync/data/datasources/local_sync_queue_datasource.dart';
 import 'package:smoo_control/features/sync/data/repositories/sync_queue_repository.dart';
 import 'package:smoo_control/features/sync/domain/entities/sync_queue_item.dart';
+import 'package:smoo_control/features/sync/domain/services/i_sync_remote_sender.dart';
 
 void main() {
   group('ProductsRepository', () {
@@ -53,5 +54,38 @@ void main() {
       expect(syncItem.entityId, product.id);
       expect(syncItem.payload['isAvailableInPos'], isFalse);
     });
+
+    test('does not save local product when remote-first push fails', () async {
+      final remoteFirstRepository = ProductsRepository(
+        LocalProductsDataSource(database),
+        syncQueueRepository: syncQueueRepository,
+        remoteSender: const _FailingRemoteSender(),
+      );
+      const product = Product(
+        id: 'product-remote',
+        categoryId: 'category-1',
+        name: 'Remoto',
+        priceInCents: 350,
+        costInCents: 100,
+        isActive: true,
+      );
+
+      final saveResult = await remoteFirstRepository.saveProduct(product);
+      final readResult = await repository.getProducts();
+      final syncResult = await syncQueueRepository.getPendingItems();
+
+      expect(saveResult, isA<AppFailureResult<Product>>());
+      expect((readResult as AppSuccess<List<Product>>).value, isEmpty);
+      expect((syncResult as AppSuccess<List<SyncQueueItem>>).value, isEmpty);
+    });
   });
+}
+
+final class _FailingRemoteSender implements ISyncRemoteSender {
+  const _FailingRemoteSender();
+
+  @override
+  Future<void> push(SyncQueueItem item) {
+    throw StateError('remote failed');
+  }
 }

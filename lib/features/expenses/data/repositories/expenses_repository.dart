@@ -8,6 +8,7 @@ import 'package:smoo_control/features/expenses/domain/entities/operating_expense
 import 'package:smoo_control/features/expenses/domain/repositories/i_expenses_repository.dart';
 import 'package:smoo_control/features/sync/domain/entities/sync_queue_item.dart';
 import 'package:smoo_control/features/sync/domain/repositories/i_sync_queue_repository.dart';
+import 'package:smoo_control/features/sync/domain/services/i_sync_remote_sender.dart';
 
 /// Expenses repository backed by the local offline database.
 final class ExpensesRepository implements IExpensesRepository {
@@ -15,10 +16,13 @@ final class ExpensesRepository implements IExpensesRepository {
   const ExpensesRepository(
     this._localDataSource, {
     ISyncQueueRepository? syncQueueRepository,
-  }) : _syncQueueRepository = syncQueueRepository;
+    ISyncRemoteSender? remoteSender,
+  }) : _syncQueueRepository = syncQueueRepository,
+       _remoteSender = remoteSender;
 
   final LocalExpensesDataSource _localDataSource;
   final ISyncQueueRepository? _syncQueueRepository;
+  final ISyncRemoteSender? _remoteSender;
 
   @override
   Future<AppResult<List<ExpenseCategory>>> getCategories() async {
@@ -65,9 +69,12 @@ final class ExpensesRepository implements IExpensesRepository {
   ) async {
     try {
       final model = ExpenseCategoryModel.fromEntity(category);
+      await _pushCategoryRemote(category);
       final saved = await _localDataSource.saveCategory(model);
       final entity = saved.toEntity();
-      await _enqueueCategory(entity);
+      if (_remoteSender == null) {
+        await _enqueueCategory(entity);
+      }
       return AppSuccess(entity);
     } on Object catch (error) {
       return AppFailureResult(
@@ -83,13 +90,18 @@ final class ExpensesRepository implements IExpensesRepository {
   @override
   Future<AppResult<void>> deleteCategory(String categoryId) async {
     try {
+      if (_remoteSender != null) {
+        await _pushRemovedCategoryRemote(categoryId);
+      }
       await _localDataSource.deleteCategory(categoryId);
-      await _syncQueueRepository?.enqueue(
-        entityType: 'expense_categories',
-        entityId: categoryId,
-        operation: SyncOperation.delete,
-        payload: {'id': categoryId},
-      );
+      if (_remoteSender == null) {
+        await _syncQueueRepository?.enqueue(
+          entityType: 'expense_categories',
+          entityId: categoryId,
+          operation: SyncOperation.delete,
+          payload: {'id': categoryId},
+        );
+      }
       return const AppSuccess(null);
     } on Object catch (error) {
       return AppFailureResult(
@@ -152,6 +164,51 @@ final class ExpensesRepository implements IExpensesRepository {
         'parentId': category.parentId,
         'isActive': category.isActive,
       },
+    );
+  }
+
+  Future<void> _pushCategoryRemote(ExpenseCategory category) async {
+    final remoteSender = _remoteSender;
+    if (remoteSender == null) return;
+
+    final now = DateTime.now();
+    await remoteSender.push(
+      SyncQueueItem(
+        id: 'admin-direct-expense_categories-${category.id}',
+        entityType: 'expense_categories',
+        entityId: category.id,
+        operation: SyncOperation.create,
+        payload: {
+          'id': category.id,
+          'name': category.name,
+          'parentId': category.parentId,
+          'isActive': category.isActive,
+        },
+        status: SyncQueueStatus.pending,
+        retryCount: 0,
+        createdAt: now,
+        updatedAt: now,
+      ),
+    );
+  }
+
+  Future<void> _pushRemovedCategoryRemote(String categoryId) async {
+    final remoteSender = _remoteSender;
+    if (remoteSender == null) return;
+
+    final now = DateTime.now();
+    await remoteSender.push(
+      SyncQueueItem(
+        id: 'admin-direct-expense_categories-delete-$categoryId',
+        entityType: 'expense_categories',
+        entityId: categoryId,
+        operation: SyncOperation.delete,
+        payload: {'id': categoryId},
+        status: SyncQueueStatus.pending,
+        retryCount: 0,
+        createdAt: now,
+        updatedAt: now,
+      ),
     );
   }
 }

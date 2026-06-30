@@ -84,40 +84,48 @@ class _PosRegisterExpensePageState extends State<PosRegisterExpensePage> {
     );
     final children = _children(active, selectedGroup.id);
 
-    return Column(
-      children: [
-        SizedBox(
-          height: 120,
-          child: PosTouchGrid(
-            children: [
-              for (final group in groups)
-                PosTouchButton(
-                  icon: Icons.folder_outlined,
-                  label: group.name,
-                  onPressed: () => setState(() => _selectedGroupId = group.id),
-                  selected: group.id == selectedGroup.id,
-                ),
-            ],
-          ),
-        ),
-        const Divider(height: 1),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 14, 16, 6),
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: AppText(
-              selectedGroup.name,
-              variant: AppTextVariant.titleMedium,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final groupHeight = (constraints.maxHeight * .18).clamp(82.0, 140.0);
+        return Column(
+          children: [
+            SizedBox(
+              height: groupHeight,
+              child: PosTouchGrid(
+                children: [
+                  for (final group in groups)
+                    PosTouchButton(
+                      icon: Icons.folder_outlined,
+                      label: group.name,
+                      onPressed: () {
+                        setState(() => _selectedGroupId = group.id);
+                      },
+                      selected: group.id == selectedGroup.id,
+                    ),
+                ],
+              ),
             ),
-          ),
-        ),
-        Expanded(
-          child: _ExpenseCategoryGrid(
-            categories: children.isEmpty ? [selectedGroup] : children,
-            onSelected: (category) => _registerExpense(categories, category),
-          ),
-        ),
-      ],
+            const Divider(height: 1),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 14, 16, 6),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: AppText(
+                  selectedGroup.name,
+                  variant: AppTextVariant.titleMedium,
+                ),
+              ),
+            ),
+            Expanded(
+              child: _ExpenseCategoryGrid(
+                categories: children.isEmpty ? [selectedGroup] : children,
+                onSelected: (category) =>
+                    _registerExpense(categories, category),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -207,7 +215,10 @@ class _ExpenseCategoryGrid extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final maxExtent = constraints.maxWidth < 700 ? 210.0 : 280.0;
-        final tileHeight = constraints.maxWidth < 700 ? 96.0 : 118.0;
+        final tileHeight = (constraints.maxHeight * .24).clamp(
+          88.0,
+          constraints.maxWidth < 700 ? 104.0 : 124.0,
+        );
         return GridView.builder(
           gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
             crossAxisSpacing: 8,

@@ -34,21 +34,48 @@ class PosActionsBand extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(flex: 4, child: _ImportantActions(state: state)),
-        const VerticalDivider(width: 1),
-        Expanded(flex: 4, child: PosMoreOptionsPanel(state: state)),
-        const VerticalDivider(width: 1),
-        Expanded(
-          flex: 4,
-          child: PosPaymentSection(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final paymentSection = PosPaymentSection(
+          onPaymentParentChanged: onPaymentParentChanged,
+          paymentParentKey: paymentParentKey,
+          state: state,
+        );
+        if (constraints.maxWidth < 560) {
+          return PosMoreOptionsPanel(
+            compactOperationalMode: true,
             onPaymentParentChanged: onPaymentParentChanged,
             paymentParentKey: paymentParentKey,
             state: state,
-          ),
-        ),
-      ],
+          );
+        }
+
+        if (constraints.maxWidth < 760) {
+          return Column(
+            children: [
+              Expanded(
+                child: _ImportantActions(state: state),
+              ),
+              const Divider(height: 1),
+              Expanded(
+                child: PosMoreOptionsPanel(state: state),
+              ),
+              const Divider(height: 1),
+              Expanded(child: paymentSection),
+            ],
+          );
+        }
+
+        return Row(
+          children: [
+            Expanded(flex: 4, child: _ImportantActions(state: state)),
+            const VerticalDivider(width: 1),
+            Expanded(flex: 4, child: PosMoreOptionsPanel(state: state)),
+            const VerticalDivider(width: 1),
+            Expanded(flex: 4, child: paymentSection),
+          ],
+        );
+      },
     );
   }
 }

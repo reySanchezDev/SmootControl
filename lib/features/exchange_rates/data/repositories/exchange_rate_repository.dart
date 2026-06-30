@@ -6,6 +6,7 @@ import 'package:smoo_control/features/exchange_rates/domain/entities/exchange_ra
 import 'package:smoo_control/features/exchange_rates/domain/repositories/i_exchange_rate_repository.dart';
 import 'package:smoo_control/features/sync/domain/entities/sync_queue_item.dart';
 import 'package:smoo_control/features/sync/domain/repositories/i_sync_queue_repository.dart';
+import 'package:smoo_control/features/sync/domain/services/i_sync_remote_sender.dart';
 
 /// Exchange rate repository backed by local database.
 final class ExchangeRateRepository implements IExchangeRateRepository {
@@ -13,10 +14,13 @@ final class ExchangeRateRepository implements IExchangeRateRepository {
   const ExchangeRateRepository(
     this._localDataSource, {
     ISyncQueueRepository? syncQueueRepository,
-  }) : _syncQueueRepository = syncQueueRepository;
+    ISyncRemoteSender? remoteSender,
+  }) : _syncQueueRepository = syncQueueRepository,
+       _remoteSender = remoteSender;
 
   final LocalExchangeRateDataSource _localDataSource;
   final ISyncQueueRepository? _syncQueueRepository;
+  final ISyncRemoteSender? _remoteSender;
 
   @override
   Future<AppResult<List<ExchangeRate>>> getRatesForMonth({
@@ -61,11 +65,14 @@ final class ExchangeRateRepository implements IExchangeRateRepository {
   @override
   Future<AppResult<ExchangeRate>> saveRate(ExchangeRate rate) async {
     try {
+      await _pushRateRemote(rate);
       final saved = await _localDataSource.saveRate(
         ExchangeRateModel.fromEntity(rate),
       );
       final entity = saved.toEntity();
-      await _enqueueRate(entity);
+      if (_remoteSender == null) {
+        await _enqueueRate(entity);
+      }
       return AppSuccess(entity);
     } on Object catch (error) {
       return _failure(
@@ -92,10 +99,15 @@ final class ExchangeRateRepository implements IExchangeRateRepository {
             rateInCents: rateInCents,
           ),
       ];
+      for (final rate in rates) {
+        await _pushRateRemote(rate.toEntity());
+      }
       final saved = await _localDataSource.saveRates(rates);
       final entities = saved.map((rate) => rate.toEntity()).toList();
-      for (final rate in entities) {
-        await _enqueueRate(rate);
+      if (_remoteSender == null) {
+        for (final rate in entities) {
+          await _enqueueRate(rate);
+        }
       }
       return AppSuccess(entities);
     } on Object catch (error) {
@@ -128,5 +140,35 @@ final class ExchangeRateRepository implements IExchangeRateRepository {
         'rateInCents': rate.rateInCents,
       },
     );
+  }
+
+  Future<void> _pushRateRemote(ExchangeRate rate) async {
+    final remoteSender = _remoteSender;
+    if (remoteSender == null) return;
+
+    final now = DateTime.now();
+    await remoteSender.push(
+      SyncQueueItem(
+        id:
+            'admin-direct-exchange_rates-${rate.currencyCode}-'
+            '${rate.businessDate.toIso8601String()}',
+        entityType: 'exchange_rates',
+        entityId: '${rate.currencyCode}-${rate.businessDate.toIso8601String()}',
+        operation: SyncOperation.update,
+        payload: _ratePayload(rate),
+        status: SyncQueueStatus.pending,
+        retryCount: 0,
+        createdAt: now,
+        updatedAt: now,
+      ),
+    );
+  }
+
+  Map<String, Object?> _ratePayload(ExchangeRate rate) {
+    return {
+      'currencyCode': rate.currencyCode,
+      'businessDate': rate.businessDate.toIso8601String(),
+      'rateInCents': rate.rateInCents,
+    };
   }
 }

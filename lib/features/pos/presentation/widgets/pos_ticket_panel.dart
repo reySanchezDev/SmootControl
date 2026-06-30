@@ -40,30 +40,132 @@ class PosTicketPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        border: Border.all(color: colorScheme.outlineVariant),
-      ),
-      child: Column(
-        children: [
-          const _TicketHeader(),
-          const Divider(height: 1),
-          Expanded(
-            child: ListView.separated(
-              itemBuilder: (context, index) {
-                return _TicketLine(line: lines[index]);
-              },
-              separatorBuilder: (_, _) => const Divider(height: 1),
-              itemCount: lines.length,
-            ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < _ticketMinWidth;
+        return DecoratedBox(
+          decoration: BoxDecoration(
+            border: Border.all(color: colorScheme.outlineVariant),
           ),
-          _TicketTotalBand(
-            lines: lines,
-            onProductsVisibilityToggled: onProductsVisibilityToggled,
-            productsVisible: productsVisible,
+          child: Column(
+            children: [
+              if (!compact) ...[
+                const _TicketHeader(),
+                const Divider(height: 1),
+              ],
+              Expanded(
+                child: ListView.separated(
+                  physics: compact && lines.length <= 5
+                      ? const NeverScrollableScrollPhysics()
+                      : const BouncingScrollPhysics(),
+                  itemBuilder: (context, index) {
+                    final line = lines[index];
+                    return compact
+                        ? _CompactTicketLine(line: line)
+                        : _TicketLine(line: line);
+                  },
+                  separatorBuilder: (_, _) => const Divider(height: 1),
+                  itemCount: lines.length,
+                ),
+              ),
+              _TicketTotalBand(
+                lines: lines,
+                onProductsVisibilityToggled: onProductsVisibilityToggled,
+                productsVisible: productsVisible,
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _CompactTicketLine extends StatelessWidget {
+  const _CompactTicketLine({required this.line});
+
+  final PosCartLine line;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    AppText(
+                      line.product.name,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    if (line.selectedOptionsLabel.isNotEmpty)
+                      AppText(
+                        line.selectedOptionsLabel,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        variant: AppTextVariant.label,
+                      ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              AppText(
+                MoneyFormatter.format(line.totalInCents),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.end,
+                variant: AppTextVariant.label,
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            runSpacing: 8,
+            spacing: 10,
+            children: [
+              _ServedToggle(line: line),
+              _QuantityControls(line: line),
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  border: Border.all(color: colorScheme.outlineVariant),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
+                  child: AppText(
+                    MoneyFormatter.format(line.product.priceInCents),
+                    variant: AppTextVariant.label,
+                  ),
+                ),
+              ),
+              IconButton(
+                tooltip: AppLocalizations.of(context).removeAction,
+                icon: const Icon(Icons.delete_outline),
+                onPressed: () => unawaited(_removeLine(context)),
+              ),
+            ],
           ),
         ],
       ),
     );
+  }
+
+  Future<void> _removeLine(BuildContext context) async {
+    final confirmed = await confirmRemovePosLine(context, line: line);
+    if (!confirmed || !context.mounted) return;
+    context.read<PosBloc>().add(PosProductRemoved(line.lineKey));
   }
 }

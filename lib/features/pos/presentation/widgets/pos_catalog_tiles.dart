@@ -253,12 +253,14 @@ class _MenuTile extends StatelessWidget {
                 Icon(icon),
                 const SizedBox(height: 8),
               ],
-              AppText(
-                label,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-                variant: AppTextVariant.titleMedium,
+              Flexible(
+                child: AppText(
+                  label,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  variant: AppTextVariant.titleMedium,
+                ),
               ),
               if (price != null) ...[
                 const SizedBox(height: 4),

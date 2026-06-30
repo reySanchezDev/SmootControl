@@ -2,6 +2,7 @@ import 'package:smoo_control/core/result/app_failure.dart';
 import 'package:smoo_control/core/result/app_result.dart';
 import 'package:smoo_control/features/sync/domain/entities/sync_queue_item.dart';
 import 'package:smoo_control/features/sync/domain/repositories/i_sync_queue_repository.dart';
+import 'package:smoo_control/features/sync/domain/services/i_sync_remote_sender.dart';
 import 'package:smoo_control/features/tables/data/datasources/local_tables_datasource.dart';
 import 'package:smoo_control/features/tables/data/models/restaurant_table_model.dart';
 import 'package:smoo_control/features/tables/data/models/table_account_model.dart';
@@ -15,10 +16,13 @@ final class TablesRepository implements ITablesRepository {
   const TablesRepository(
     this._localDataSource, {
     ISyncQueueRepository? syncQueueRepository,
-  }) : _syncQueueRepository = syncQueueRepository;
+    ISyncRemoteSender? remoteSender,
+  }) : _syncQueueRepository = syncQueueRepository,
+       _remoteSender = remoteSender;
 
   final LocalTablesDataSource _localDataSource;
   final ISyncQueueRepository? _syncQueueRepository;
+  final ISyncRemoteSender? _remoteSender;
 
   @override
   Future<AppResult<List<RestaurantTable>>> getTables() async {
@@ -40,9 +44,12 @@ final class TablesRepository implements ITablesRepository {
   Future<AppResult<RestaurantTable>> saveTable(RestaurantTable table) async {
     try {
       final model = RestaurantTableModel.fromEntity(table);
+      await _pushTableRemote(table);
       final saved = await _localDataSource.saveTable(model);
       final entity = saved.toEntity();
-      await _enqueueTable(entity);
+      if (_remoteSender == null) {
+        await _enqueueTable(entity);
+      }
 
       return AppSuccess(entity);
     } on Object catch (error) {
@@ -108,6 +115,32 @@ final class TablesRepository implements ITablesRepository {
         'status': table.status.name,
         'is_active': table.isActive,
       },
+    );
+  }
+
+  Future<void> _pushTableRemote(RestaurantTable table) async {
+    final remoteSender = _remoteSender;
+    if (remoteSender == null) return;
+
+    final now = DateTime.now();
+    await remoteSender.push(
+      SyncQueueItem(
+        id: 'admin-direct-restaurant_tables-${table.id}',
+        entityType: 'restaurant_tables',
+        entityId: table.id,
+        operation: SyncOperation.create,
+        payload: {
+          'id': table.id,
+          'name': table.name,
+          'display_name': table.displayName,
+          'status': table.status.name,
+          'is_active': table.isActive,
+        },
+        status: SyncQueueStatus.pending,
+        retryCount: 0,
+        createdAt: now,
+        updatedAt: now,
+      ),
     );
   }
 

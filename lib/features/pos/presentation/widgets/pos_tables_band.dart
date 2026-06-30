@@ -35,42 +35,63 @@ class PosTablesBand extends StatelessWidget {
 
     final entries = _orderedEntries();
 
-    return ListView.separated(
-      scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-      itemBuilder: (context, index) {
-        final entry = entries[index];
-        return SizedBox(
-          width: 150,
-          child: _TableButton(
-            indicator: entry.indicator,
-            isOccupied: entry.isOccupied,
-            isSelected: entry.isSelected(
-              tableId: state.selectedTableId,
-              splitAccountId: state.selectedSplitAccountId,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth < 520) {
+          final maxColumns =
+              (constraints.maxWidth /
+                      (constraints.maxWidth < 420 ? 132.0 : 150.0))
+                  .floor()
+                  .clamp(1, entries.length);
+          final rows = (entries.length / maxColumns).ceil();
+          const padding = 4.0;
+          const spacing = 4.0;
+          final tileWidth =
+              (constraints.maxWidth -
+                  padding * 2 -
+                  spacing * (maxColumns - 1)) /
+              maxColumns;
+          final availableHeight = constraints.maxHeight.isFinite
+              ? constraints.maxHeight - padding * 2 - spacing * (rows - 1)
+              : rows * 76.0;
+          final tileHeight = (availableHeight / rows).clamp(70.0, 170.0);
+          return GridView.builder(
+            padding: const EdgeInsets.all(4),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              childAspectRatio: tileWidth / tileHeight,
+              crossAxisCount: maxColumns,
+              crossAxisSpacing: 4,
+              mainAxisSpacing: 4,
             ),
-            label: entry.label,
-            onRename: entry.isAccount
-                ? null
-                : () => _renameTable(context, entry.tableId),
-            onPressed: () {
-              final bloc = context.read<PosBloc>();
-              if (entry.accountId == null) {
-                bloc.add(PosTableSelected(entry.tableId));
-              } else {
-                bloc.add(
-                  PosSplitAccountSelected(
-                    tableId: entry.tableId,
-                    accountId: entry.accountId!,
-                  ),
-                );
-              }
+            itemBuilder: (context, index) {
+              return _TableEntryButton(
+                entry: entries[index],
+                state: state,
+                onRename: _renameTable,
+              );
             },
-          ),
+            itemCount: entries.length,
+            physics: const NeverScrollableScrollPhysics(),
+          );
+        }
+
+        return ListView.separated(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+          itemBuilder: (context, index) {
+            return SizedBox(
+              width: 150,
+              child: _TableEntryButton(
+                entry: entries[index],
+                state: state,
+                onRename: _renameTable,
+              ),
+            );
+          },
+          itemCount: entries.length,
+          separatorBuilder: (_, _) => const SizedBox(width: 4),
         );
       },
-      itemCount: entries.length,
-      separatorBuilder: (_, _) => const SizedBox(width: 4),
     );
   }
 
@@ -155,6 +176,45 @@ class PosTablesBand extends StatelessWidget {
       if (table.id == tableId) return table;
     }
     return null;
+  }
+}
+
+class _TableEntryButton extends StatelessWidget {
+  const _TableEntryButton({
+    required this.entry,
+    required this.onRename,
+    required this.state,
+  });
+
+  final _TableBandEntry entry;
+  final Future<void> Function(BuildContext context, String tableId) onRename;
+  final PosReady state;
+
+  @override
+  Widget build(BuildContext context) {
+    return _TableButton(
+      indicator: entry.indicator,
+      isOccupied: entry.isOccupied,
+      isSelected: entry.isSelected(
+        tableId: state.selectedTableId,
+        splitAccountId: state.selectedSplitAccountId,
+      ),
+      label: entry.label,
+      onRename: entry.isAccount ? null : () => onRename(context, entry.tableId),
+      onPressed: () {
+        final bloc = context.read<PosBloc>();
+        if (entry.accountId == null) {
+          bloc.add(PosTableSelected(entry.tableId));
+        } else {
+          bloc.add(
+            PosSplitAccountSelected(
+              tableId: entry.tableId,
+              accountId: entry.accountId!,
+            ),
+          );
+        }
+      },
+    );
   }
 }
 

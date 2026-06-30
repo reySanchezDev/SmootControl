@@ -71,64 +71,82 @@ class _PosSplitAccountsDialogState extends State<PosSplitAccountsDialog> {
     return Dialog.fullscreen(
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final layout = _SplitDialogLayout.fromWidth(constraints.maxWidth);
+          final layout = _SplitDialogLayout.fromSize(
+            constraints.maxWidth,
+            constraints.maxHeight,
+          );
+          final originalPanel = SplitOriginalOrderPanel(
+            title: '$tableName - ${l10n.splitOriginalOrderTitle}',
+            compact: layout.compact,
+            items: _itemsForAccount(null, items),
+            panelWidth: layout.originalPanelWidth,
+            selectedItemIds: _selectedItemIds,
+            onAddAccount: _addAccount,
+            onAccept: (item) => _moveItem(item, null),
+            onCancel: () => Navigator.of(context).pop(),
+            onConfirm: _confirm,
+            onPanelTap: () => _moveSelectedTo(null, items),
+            onTapItem: _toggleItemSelection,
+          );
+          final accountPanels = ListView(
+            key: const ValueKey('split-horizontal-list'),
+            scrollDirection: Axis.horizontal,
+            children: [
+              for (final account in _accounts) ...[
+                SplitAccountPanel(
+                  account: account,
+                  canRemove: _accounts.length > 2,
+                  compact: layout.compact,
+                  items: _itemsForAccount(account.id, items),
+                  panelWidth: layout.accountPanelWidth,
+                  selectedItemIds: _selectedItemIds,
+                  onAccept: (item) {
+                    _moveItem(item, account.id);
+                  },
+                  onPanelTap: () {
+                    _moveSelectedTo(account.id, items);
+                  },
+                  onRemoveAccount: () {
+                    unawaited(_confirmRemoveAccount(account));
+                  },
+                  onTapItem: _toggleItemSelection,
+                ),
+                const SizedBox(width: 8),
+              ],
+            ],
+          );
           return Padding(
             padding: const EdgeInsets.all(10),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Expanded(
-                  child: Row(
+            child: layout.stacked
+                ? Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      SplitOriginalOrderPanel(
-                        title: '$tableName - ${l10n.splitOriginalOrderTitle}',
-                        compact: layout.compact,
-                        items: _itemsForAccount(null, items),
-                        panelWidth: layout.originalPanelWidth,
-                        selectedItemIds: _selectedItemIds,
-                        onAddAccount: _addAccount,
-                        onAccept: (item) => _moveItem(item, null),
-                        onCancel: () => Navigator.of(context).pop(),
-                        onConfirm: _confirm,
-                        onPanelTap: () => _moveSelectedTo(null, items),
-                        onTapItem: _toggleItemSelection,
+                      SizedBox(
+                        height: (constraints.maxHeight * .46).clamp(
+                          260.0,
+                          430.0,
+                        ),
+                        child: originalPanel,
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(height: 8),
+                      Expanded(child: accountPanels),
+                    ],
+                  )
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
                       Expanded(
-                        child: ListView(
-                          key: const ValueKey('split-horizontal-list'),
-                          scrollDirection: Axis.horizontal,
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            for (final account in _accounts) ...[
-                              SplitAccountPanel(
-                                account: account,
-                                canRemove: _accounts.length > 2,
-                                compact: layout.compact,
-                                items: _itemsForAccount(account.id, items),
-                                panelWidth: layout.accountPanelWidth,
-                                selectedItemIds: _selectedItemIds,
-                                onAccept: (item) {
-                                  _moveItem(item, account.id);
-                                },
-                                onPanelTap: () {
-                                  _moveSelectedTo(account.id, items);
-                                },
-                                onRemoveAccount: () {
-                                  unawaited(_confirmRemoveAccount(account));
-                                },
-                                onTapItem: _toggleItemSelection,
-                              ),
-                              const SizedBox(width: 8),
-                            ],
+                            originalPanel,
+                            const SizedBox(width: 8),
+                            Expanded(child: accountPanels),
                           ],
                         ),
                       ),
                     ],
                   ),
-                ),
-              ],
-            ),
           );
         },
       ),
@@ -265,20 +283,26 @@ final class _SplitDialogLayout {
     required this.accountPanelWidth,
     required this.compact,
     required this.originalPanelWidth,
+    required this.stacked,
   });
 
-  factory _SplitDialogLayout.fromWidth(double width) {
+  factory _SplitDialogLayout.fromSize(double width, double height) {
     final usableWidth = width - 28;
-    final targetWidth = ((usableWidth - 16) / 3).clamp(250.0, 390.0);
+    final stacked = width < 760 || height < 620;
+    final targetWidth = stacked
+        ? usableWidth.clamp(280.0, 430.0)
+        : ((usableWidth - 16) / 3).clamp(250.0, 390.0);
     final compact = targetWidth < 300;
     return _SplitDialogLayout(
       accountPanelWidth: targetWidth,
       compact: compact,
       originalPanelWidth: targetWidth,
+      stacked: stacked,
     );
   }
 
   final double accountPanelWidth;
   final bool compact;
   final double originalPanelWidth;
+  final bool stacked;
 }

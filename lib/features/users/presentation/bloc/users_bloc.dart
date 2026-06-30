@@ -5,6 +5,7 @@ import 'package:smoo_control/features/audit/domain/repositories/i_audit_log_repo
 import 'package:smoo_control/features/roles/domain/entities/access_role.dart';
 import 'package:smoo_control/features/roles/domain/repositories/i_roles_repository.dart';
 import 'package:smoo_control/features/roles/domain/services/access_seed_service.dart';
+import 'package:smoo_control/features/sync/domain/services/admin_data_refresh_service.dart';
 import 'package:smoo_control/features/users/domain/entities/app_user_profile.dart';
 import 'package:smoo_control/features/users/domain/repositories/i_users_repository.dart';
 import 'package:smoo_control/features/users/presentation/bloc/users_event.dart';
@@ -19,11 +20,13 @@ final class UsersBloc extends Bloc<UsersEvent, UsersState> {
     required IRolesRepository rolesRepository,
     required AccessSeedService seedService,
     required IAuditLogRepository auditLogRepository,
+    AdminDataRefreshService? remoteRefreshService,
     Uuid uuid = const Uuid(),
   }) : _usersRepository = usersRepository,
        _rolesRepository = rolesRepository,
        _seedService = seedService,
        _auditLogRepository = auditLogRepository,
+       _remoteRefreshService = remoteRefreshService,
        _uuid = uuid,
        super(const UsersInitial()) {
     on<UsersLoadRequested>(_onLoadRequested);
@@ -34,6 +37,7 @@ final class UsersBloc extends Bloc<UsersEvent, UsersState> {
   final IRolesRepository _rolesRepository;
   final AccessSeedService _seedService;
   final IAuditLogRepository _auditLogRepository;
+  final AdminDataRefreshService? _remoteRefreshService;
   final Uuid _uuid;
 
   Future<void> _onLoadRequested(
@@ -76,6 +80,8 @@ final class UsersBloc extends Bloc<UsersEvent, UsersState> {
   }
 
   Future<void> _load(Emitter<UsersState> emit) async {
+    if (!await _refreshRemoteCache(emit)) return;
+
     final seedResult = await _seedService.ensureSeeded();
     if (seedResult case AppFailureResult(:final error)) {
       emit(UsersFailure(error));
@@ -96,5 +102,14 @@ final class UsersBloc extends Bloc<UsersEvent, UsersState> {
       case (_, AppFailureResult(:final error)):
         emit(UsersFailure(error));
     }
+  }
+
+  Future<bool> _refreshRemoteCache(Emitter<UsersState> emit) async {
+    final result = await _remoteRefreshService?.refreshAccessControl();
+    if (result case AppFailureResult(:final error)) {
+      emit(UsersFailure(error));
+      return false;
+    }
+    return true;
   }
 }

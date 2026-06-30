@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:smoo_control/features/cash_register/domain/entities/cash_register_session.dart';
+import 'package:smoo_control/features/modifiers/domain/entities/modifier_catalog.dart';
 import 'package:smoo_control/features/pos/domain/entities/account_split_draft.dart';
 import 'package:smoo_control/features/products/domain/entities/product.dart';
 import 'package:smoo_control/features/products/domain/entities/product_option_group.dart';
@@ -121,6 +122,18 @@ final class PosCartLineServedToggled extends PosEvent {
 
   @override
   List<Object?> get props => [cartLineKey];
+}
+
+/// Refreshes reusable modifier availability in the active POS.
+final class PosModifierCatalogRefreshed extends PosEvent {
+  /// Creates a modifier catalog refresh event.
+  const PosModifierCatalogRefreshed(this.catalog);
+
+  /// Updated modifier catalog.
+  final ModifierCatalog catalog;
+
+  @override
+  List<Object?> get props => [catalog];
 }
 
 /// Selects a payment method.

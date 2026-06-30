@@ -6,6 +6,7 @@ import 'package:smoo_control/features/catalog/domain/entities/product_category.d
 import 'package:smoo_control/features/catalog/domain/repositories/i_catalog_repository.dart';
 import 'package:smoo_control/features/sync/domain/entities/sync_queue_item.dart';
 import 'package:smoo_control/features/sync/domain/repositories/i_sync_queue_repository.dart';
+import 'package:smoo_control/features/sync/domain/services/i_sync_remote_sender.dart';
 
 /// Catalog repository backed by the local offline database.
 final class CatalogRepository implements ICatalogRepository {
@@ -13,10 +14,13 @@ final class CatalogRepository implements ICatalogRepository {
   const CatalogRepository(
     this._localDataSource, {
     ISyncQueueRepository? syncQueueRepository,
-  }) : _syncQueueRepository = syncQueueRepository;
+    ISyncRemoteSender? remoteSender,
+  }) : _syncQueueRepository = syncQueueRepository,
+       _remoteSender = remoteSender;
 
   final LocalCatalogDataSource _localDataSource;
   final ISyncQueueRepository? _syncQueueRepository;
+  final ISyncRemoteSender? _remoteSender;
 
   @override
   Future<AppResult<List<ProductCategory>>> getCategories() async {
@@ -42,9 +46,12 @@ final class CatalogRepository implements ICatalogRepository {
   ) async {
     try {
       final model = ProductCategoryModel.fromEntity(category);
+      await _pushCategoryRemote(category);
       final saved = await _localDataSource.saveCategory(model);
       final entity = saved.toEntity();
-      await _enqueueCategory(entity);
+      if (_remoteSender == null) {
+        await _enqueueCategory(entity);
+      }
 
       return AppSuccess(entity);
     } on Object catch (error) {
@@ -73,11 +80,16 @@ final class CatalogRepository implements ICatalogRepository {
     }
 
     try {
+      if (_remoteSender != null) {
+        await _pushRemovedCategoryRemote(category);
+      }
       await _localDataSource.removeCategoryLevel(
         categoryId: category.id,
         parentId: parentId,
       );
-      await _enqueueRemovedCategory(category);
+      if (_remoteSender == null) {
+        await _enqueueRemovedCategory(category);
+      }
 
       return AppSuccess(category);
     } on Object catch (error) {
@@ -96,13 +108,21 @@ final class CatalogRepository implements ICatalogRepository {
       entityType: 'product_categories',
       entityId: category.id,
       operation: SyncOperation.create,
-      payload: {
-        'id': category.id,
-        'name': category.name,
-        'parentId': category.parentId,
-        'sortOrder': category.sortOrder,
-        'isActive': category.isActive,
-      },
+      payload: _categoryPayload(category),
+    );
+  }
+
+  Future<void> _pushCategoryRemote(ProductCategory category) async {
+    final remoteSender = _remoteSender;
+    if (remoteSender == null) return;
+
+    await remoteSender.push(
+      _syncItem(
+        entityType: 'product_categories',
+        entityId: category.id,
+        operation: SyncOperation.create,
+        payload: _categoryPayload(category),
+      ),
     );
   }
 
@@ -116,6 +136,54 @@ final class CatalogRepository implements ICatalogRepository {
         'name': category.name,
         'parentId': category.parentId,
       },
+    );
+  }
+
+  Future<void> _pushRemovedCategoryRemote(ProductCategory category) async {
+    final remoteSender = _remoteSender;
+    if (remoteSender == null) return;
+
+    await remoteSender.push(
+      _syncItem(
+        entityType: 'product_categories',
+        entityId: category.id,
+        operation: SyncOperation.delete,
+        payload: {
+          'id': category.id,
+          'name': category.name,
+          'parentId': category.parentId,
+        },
+      ),
+    );
+  }
+
+  Map<String, Object?> _categoryPayload(ProductCategory category) {
+    return {
+      'id': category.id,
+      'name': category.name,
+      'parentId': category.parentId,
+      'sortOrder': category.sortOrder,
+      'isActive': category.isActive,
+    };
+  }
+
+  SyncQueueItem _syncItem({
+    required String entityType,
+    required String entityId,
+    required SyncOperation operation,
+    required Map<String, Object?> payload,
+  }) {
+    final now = DateTime.now();
+    return SyncQueueItem(
+      id: 'admin-direct-$entityType-$entityId',
+      entityType: entityType,
+      entityId: entityId,
+      operation: operation,
+      payload: payload,
+      status: SyncQueueStatus.pending,
+      retryCount: 0,
+      createdAt: now,
+      updatedAt: now,
     );
   }
 }

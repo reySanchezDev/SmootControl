@@ -9,6 +9,7 @@ import 'package:smoo_control/features/modifiers/domain/entities/modifier_option.
 import 'package:smoo_control/features/modifiers/domain/repositories/i_modifiers_repository.dart';
 import 'package:smoo_control/features/sync/domain/entities/sync_queue_item.dart';
 import 'package:smoo_control/features/sync/domain/repositories/i_sync_queue_repository.dart';
+import 'package:smoo_control/features/sync/domain/services/i_sync_remote_sender.dart';
 
 /// Local repository for reusable POS modifiers.
 final class ModifiersRepository implements IModifiersRepository {
@@ -16,10 +17,13 @@ final class ModifiersRepository implements IModifiersRepository {
   const ModifiersRepository(
     this._localDataSource, {
     ISyncQueueRepository? syncQueueRepository,
-  }) : _syncQueueRepository = syncQueueRepository;
+    ISyncRemoteSender? remoteSender,
+  }) : _syncQueueRepository = syncQueueRepository,
+       _remoteSender = remoteSender;
 
   final LocalModifiersDataSource _localDataSource;
   final ISyncQueueRepository? _syncQueueRepository;
+  final ISyncRemoteSender? _remoteSender;
 
   @override
   Future<AppResult<ModifierCatalog>> getCatalog() async {
@@ -46,22 +50,23 @@ final class ModifiersRepository implements IModifiersRepository {
   @override
   Future<AppResult<ModifierGroup>> saveGroup(ModifierGroup group) async {
     try {
+      await _pushRemote(
+        entityType: 'modifier_groups',
+        entityId: group.id,
+        payload: _groupPayload(group),
+      );
       final saved = await _localDataSource.saveGroup(
         ModifierGroupModel.fromEntity(group),
       );
       final entity = saved.toEntity();
-      await _syncQueueRepository?.enqueue(
-        entityType: 'modifier_groups',
-        entityId: entity.id,
-        operation: SyncOperation.create,
-        payload: {
-          'id': entity.id,
-          'name': entity.name,
-          'isRequired': entity.isRequired,
-          'displayOrder': entity.displayOrder,
-          'isActive': entity.isActive,
-        },
-      );
+      if (_remoteSender == null) {
+        await _syncQueueRepository?.enqueue(
+          entityType: 'modifier_groups',
+          entityId: entity.id,
+          operation: SyncOperation.create,
+          payload: _groupPayload(entity),
+        );
+      }
       return AppSuccess(entity);
     } on Object catch (error) {
       return AppFailureResult(
@@ -77,24 +82,23 @@ final class ModifiersRepository implements IModifiersRepository {
   @override
   Future<AppResult<ModifierOption>> saveOption(ModifierOption option) async {
     try {
+      await _pushRemote(
+        entityType: 'modifier_options',
+        entityId: option.id,
+        payload: _optionPayload(option),
+      );
       final saved = await _localDataSource.saveOption(
         ModifierOptionModel.fromEntity(option),
       );
       final entity = saved.toEntity();
-      await _syncQueueRepository?.enqueue(
-        entityType: 'modifier_options',
-        entityId: entity.id,
-        operation: SyncOperation.create,
-        payload: {
-          'id': entity.id,
-          'groupId': entity.groupId,
-          'name': entity.name,
-          'priceDeltaInCents': entity.priceDeltaInCents,
-          'displayOrder': entity.displayOrder,
-          'isActive': entity.isActive,
-          'isAvailableInPos': entity.isAvailableInPos,
-        },
-      );
+      if (_remoteSender == null) {
+        await _syncQueueRepository?.enqueue(
+          entityType: 'modifier_options',
+          entityId: entity.id,
+          operation: SyncOperation.create,
+          payload: _optionPayload(entity),
+        );
+      }
       return AppSuccess(entity);
     } on Object catch (error) {
       return AppFailureResult(
@@ -105,5 +109,51 @@ final class ModifiersRepository implements IModifiersRepository {
         ),
       );
     }
+  }
+
+  Map<String, Object?> _groupPayload(ModifierGroup group) {
+    return {
+      'id': group.id,
+      'name': group.name,
+      'isRequired': group.isRequired,
+      'displayOrder': group.displayOrder,
+      'isActive': group.isActive,
+    };
+  }
+
+  Map<String, Object?> _optionPayload(ModifierOption option) {
+    return {
+      'id': option.id,
+      'groupId': option.groupId,
+      'name': option.name,
+      'priceDeltaInCents': option.priceDeltaInCents,
+      'displayOrder': option.displayOrder,
+      'isActive': option.isActive,
+      'isAvailableInPos': option.isAvailableInPos,
+    };
+  }
+
+  Future<void> _pushRemote({
+    required String entityType,
+    required String entityId,
+    required Map<String, Object?> payload,
+  }) async {
+    final remoteSender = _remoteSender;
+    if (remoteSender == null) return;
+
+    final now = DateTime.now();
+    await remoteSender.push(
+      SyncQueueItem(
+        id: 'admin-direct-$entityType-$entityId',
+        entityType: entityType,
+        entityId: entityId,
+        operation: SyncOperation.create,
+        payload: payload,
+        status: SyncQueueStatus.pending,
+        retryCount: 0,
+        createdAt: now,
+        updatedAt: now,
+      ),
+    );
   }
 }

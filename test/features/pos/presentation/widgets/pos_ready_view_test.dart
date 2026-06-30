@@ -176,6 +176,84 @@ void main() {
     expect(find.text('Cafe'), findsOneWidget);
     expect(find.text('Menu oculto'), findsNothing);
   });
+
+  testWidgets('keeps tablet portrait catalog height content aware', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(800, 1280));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await _pumpReadyView(tester, state: _tabletPortraitCatalogState);
+
+    expect(tester.takeException(), isNull);
+    final subcategoryRect = tester.getRect(find.text('ASADOS'));
+    final rootCategoryRect = tester.getRect(find.text('Comidas'));
+
+    expect(rootCategoryRect.top - subcategoryRect.bottom, lessThan(120));
+  });
+
+  testWidgets('renders dense POS content across constrained surfaces', (
+    tester,
+  ) async {
+    const sizes = [
+      Size(393, 852),
+      Size(390, 720),
+      Size(600, 960),
+      Size(720, 1024),
+      Size(1024, 600),
+      Size(1280, 800),
+    ];
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    for (final size in sizes) {
+      await tester.binding.setSurfaceSize(size);
+      await _pumpReadyView(tester, state: _denseResponsiveState);
+
+      expect(tester.takeException(), isNull, reason: 'surface: $size');
+      expect(find.text('Pollo asado familiar'), findsAtLeastNWidgets(1));
+      expect(find.text('Menu oculto'), findsNothing);
+    }
+  });
+
+  testWidgets('keeps POS actions reachable on phone-width touch surfaces', (
+    tester,
+  ) async {
+    tester.view
+      ..devicePixelRatio = 1
+      ..physicalSize = const Size(393, 852);
+    addTearDown(() {
+      tester.view
+        ..resetDevicePixelRatio()
+        ..resetPhysicalSize();
+    });
+
+    await _pumpReadyView(tester, state: _veryDenseResponsiveState);
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('Pollo asado familiar'), findsAtLeastNWidgets(1));
+    expect(find.text('Mesa 3', skipOffstage: false), findsAtLeastNWidgets(1));
+
+    final optionsFinder = find.textContaining(
+      RegExp('options|opciones', caseSensitive: false),
+    );
+
+    expect(optionsFinder, findsOneWidget);
+    expect(
+      find.textContaining(RegExp('cash|efectivo', caseSensitive: false)),
+      findsNothing,
+    );
+
+    await tester.tap(optionsFinder);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Split accounts'), findsAtLeastNWidgets(1));
+    expect(find.text('Clear'), findsOneWidget);
+    expect(
+      find.textContaining(RegExp('cash|efectivo', caseSensitive: false)),
+      findsAtLeastNWidgets(1),
+    );
+    expect(tester.takeException(), isNull);
+  });
 }
 
 const _cashMethod = PaymentMethod(
@@ -273,6 +351,21 @@ const _thirdEmptyCategory = ProductCategory(
   isActive: true,
 );
 
+const _foodRootCategory = ProductCategory(
+  id: 'food-root',
+  name: 'Comidas',
+  sortOrder: 1,
+  isActive: true,
+);
+
+const _grilledSubcategory = ProductCategory(
+  id: 'grilled-subcategory',
+  name: 'ASADOS',
+  parentId: 'food-root',
+  sortOrder: 1,
+  isActive: true,
+);
+
 PosReady _state(String selectedMethodId) {
   return PosReady(
     products: const [_product],
@@ -294,11 +387,289 @@ const _responsiveState = PosReady(
   selectedTableId: 'table-1',
 );
 
+const _tabletPortraitCatalogState = PosReady(
+  categories: [_foodRootCategory, _grilledSubcategory],
+  products: [],
+  tables: [
+    _table,
+    RestaurantTable(
+      id: 'table-2',
+      name: 'Mesa 2',
+      status: RestaurantTableStatus.available,
+      isActive: true,
+    ),
+    RestaurantTable(
+      id: 'table-3',
+      name: 'Mesa 3',
+      status: RestaurantTableStatus.available,
+      isActive: true,
+    ),
+  ],
+  paymentMethods: [_cashMethod],
+  selectedCategoryId: 'food-root',
+  selectedPaymentMethodId: 'cash',
+  selectedTableId: 'table-1',
+);
+
 const _nestedPaymentState = PosReady(
   products: [_product],
   tables: [_table],
   paymentMethods: [_transferRoot, _banpro, _banproAccount],
   cartLines: [PosCartLine(product: _product, quantity: 1)],
+  selectedTableId: 'table-1',
+);
+
+const _denseResponsiveState = PosReady(
+  categories: [
+    _category,
+    _emptyCategory,
+    _thirdEmptyCategory,
+    ProductCategory(
+      id: 'category-4',
+      name: 'Bebidas naturales largas',
+      sortOrder: 4,
+      isActive: true,
+    ),
+    ProductCategory(
+      id: 'category-5',
+      name: 'Especiales de cocina',
+      sortOrder: 5,
+      isActive: true,
+    ),
+  ],
+  products: [
+    Product(
+      id: 'dense-product-1',
+      categoryId: 'category-1',
+      name: 'Pollo asado familiar',
+      priceInCents: 36000,
+      costInCents: 18000,
+      isActive: true,
+    ),
+    Product(
+      id: 'dense-product-2',
+      categoryId: 'category-1',
+      name: 'Carne asada con guarniciones especiales',
+      priceInCents: 42000,
+      costInCents: 21000,
+      isActive: true,
+    ),
+    _hiddenProduct,
+  ],
+  tables: [
+    _table,
+    RestaurantTable(
+      id: 'table-2',
+      name: 'Mesa 2',
+      status: RestaurantTableStatus.available,
+      isActive: true,
+    ),
+    RestaurantTable(
+      id: 'table-3',
+      name: 'Mesa terraza principal',
+      status: RestaurantTableStatus.available,
+      isActive: true,
+    ),
+  ],
+  paymentMethods: [
+    _cashMethod,
+    _transferRoot,
+    _banpro,
+    _banproAccount,
+  ],
+  cartLines: [
+    PosCartLine(
+      product: Product(
+        id: 'dense-product-1',
+        categoryId: 'category-1',
+        name: 'Pollo asado familiar',
+        priceInCents: 36000,
+        costInCents: 18000,
+        isActive: true,
+      ),
+      quantity: 2,
+    ),
+    PosCartLine(
+      product: Product(
+        id: 'dense-product-2',
+        categoryId: 'category-1',
+        name: 'Carne asada con guarniciones especiales',
+        priceInCents: 42000,
+        costInCents: 21000,
+        isActive: true,
+      ),
+      quantity: 1,
+    ),
+  ],
+  cartLinesByTable: {
+    'table-1': [
+      PosCartLine(
+        product: Product(
+          id: 'dense-product-1',
+          categoryId: 'category-1',
+          name: 'Pollo asado familiar',
+          priceInCents: 36000,
+          costInCents: 18000,
+          isActive: true,
+        ),
+        quantity: 2,
+      ),
+    ],
+  },
+  selectedCategoryId: 'category-1',
+  selectedPaymentMethodId: 'cash',
+  selectedTableId: 'table-1',
+);
+
+const _veryDenseResponsiveState = PosReady(
+  categories: [
+    _category,
+    _emptyCategory,
+    _thirdEmptyCategory,
+    ProductCategory(
+      id: 'category-4',
+      name: 'Bebidas naturales largas',
+      sortOrder: 4,
+      isActive: true,
+    ),
+    ProductCategory(
+      id: 'category-5',
+      name: 'Especiales de cocina',
+      sortOrder: 5,
+      isActive: true,
+    ),
+  ],
+  products: [
+    Product(
+      id: 'dense-product-1',
+      categoryId: 'category-1',
+      name: 'Pollo asado familiar',
+      priceInCents: 36000,
+      costInCents: 18000,
+      isActive: true,
+    ),
+    Product(
+      id: 'dense-product-2',
+      categoryId: 'category-1',
+      name: 'Carne asada con guarniciones especiales',
+      priceInCents: 42000,
+      costInCents: 21000,
+      isActive: true,
+    ),
+    Product(
+      id: 'dense-product-3',
+      categoryId: 'category-1',
+      name: 'Refresco natural grande',
+      priceInCents: 12000,
+      costInCents: 6000,
+      isActive: true,
+    ),
+    _hiddenProduct,
+  ],
+  tables: [
+    _table,
+    RestaurantTable(
+      id: 'table-2',
+      name: 'Mesa 2',
+      status: RestaurantTableStatus.available,
+      isActive: true,
+    ),
+    RestaurantTable(
+      id: 'table-3',
+      name: 'Mesa 3',
+      status: RestaurantTableStatus.available,
+      isActive: true,
+    ),
+    RestaurantTable(
+      id: 'table-4',
+      name: 'Mesa 4',
+      status: RestaurantTableStatus.available,
+      isActive: true,
+    ),
+    RestaurantTable(
+      id: 'table-5',
+      name: 'Mesa 5',
+      status: RestaurantTableStatus.available,
+      isActive: true,
+    ),
+    RestaurantTable(
+      id: 'table-6',
+      name: 'Mesa terraza principal',
+      status: RestaurantTableStatus.available,
+      isActive: true,
+    ),
+  ],
+  paymentMethods: [
+    _cashMethod,
+    _transferRoot,
+    _banpro,
+    _banproAccount,
+  ],
+  cartLines: [
+    PosCartLine(
+      product: Product(
+        id: 'dense-product-1',
+        categoryId: 'category-1',
+        name: 'Pollo asado familiar',
+        priceInCents: 36000,
+        costInCents: 18000,
+        isActive: true,
+      ),
+      quantity: 2,
+    ),
+    PosCartLine(
+      product: Product(
+        id: 'dense-product-2',
+        categoryId: 'category-1',
+        name: 'Carne asada con guarniciones especiales',
+        priceInCents: 42000,
+        costInCents: 21000,
+        isActive: true,
+      ),
+      quantity: 1,
+    ),
+    PosCartLine(
+      product: Product(
+        id: 'dense-product-3',
+        categoryId: 'category-1',
+        name: 'Refresco natural grande',
+        priceInCents: 12000,
+        costInCents: 6000,
+        isActive: true,
+      ),
+      quantity: 1,
+    ),
+  ],
+  cartLinesByTable: {
+    'table-1': [
+      PosCartLine(
+        product: Product(
+          id: 'dense-product-1',
+          categoryId: 'category-1',
+          name: 'Pollo asado familiar',
+          priceInCents: 36000,
+          costInCents: 18000,
+          isActive: true,
+        ),
+        quantity: 2,
+      ),
+    ],
+    'table-2': [
+      PosCartLine(
+        product: Product(
+          id: 'dense-product-2',
+          categoryId: 'category-1',
+          name: 'Carne asada con guarniciones especiales',
+          priceInCents: 42000,
+          costInCents: 21000,
+          isActive: true,
+        ),
+        quantity: 1,
+      ),
+    ],
+  },
+  selectedCategoryId: 'category-1',
+  selectedPaymentMethodId: 'cash',
   selectedTableId: 'table-1',
 );
 

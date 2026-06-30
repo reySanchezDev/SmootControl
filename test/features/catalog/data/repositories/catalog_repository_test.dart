@@ -10,6 +10,7 @@ import 'package:smoo_control/features/products/data/models/product_model.dart';
 import 'package:smoo_control/features/sync/data/datasources/local_sync_queue_datasource.dart';
 import 'package:smoo_control/features/sync/data/repositories/sync_queue_repository.dart';
 import 'package:smoo_control/features/sync/domain/entities/sync_queue_item.dart';
+import 'package:smoo_control/features/sync/domain/services/i_sync_remote_sender.dart';
 
 void main() {
   group('CatalogRepository', () {
@@ -55,6 +56,28 @@ void main() {
       expect(syncItem.entityType, 'product_categories');
       expect(syncItem.entityId, category.id);
       expect(syncItem.operation, SyncOperation.create);
+    });
+
+    test('does not save local category when remote-first push fails', () async {
+      final remoteFirstRepository = CatalogRepository(
+        LocalCatalogDataSource(database),
+        syncQueueRepository: syncQueueRepository,
+        remoteSender: const _FailingRemoteSender(),
+      );
+      const category = ProductCategory(
+        id: 'category-remote',
+        name: 'Remota',
+        sortOrder: 1,
+        isActive: true,
+      );
+
+      final saveResult = await remoteFirstRepository.saveCategory(category);
+      final readResult = await repository.getCategories();
+      final syncResult = await syncQueueRepository.getPendingItems();
+
+      expect(saveResult, isA<AppFailureResult<ProductCategory>>());
+      expect((readResult as AppSuccess<List<ProductCategory>>).value, isEmpty);
+      expect((syncResult as AppSuccess<List<SyncQueueItem>>).value, isEmpty);
     });
 
     test(
@@ -133,5 +156,48 @@ void main() {
         );
       },
     );
+
+    test('does not remove local category when remote delete fails', () async {
+      const root = ProductCategory(
+        id: 'root',
+        name: 'Comidas',
+        sortOrder: 1,
+        isActive: true,
+      );
+      const child = ProductCategory(
+        id: 'child',
+        name: 'Asados',
+        parentId: 'root',
+        sortOrder: 1,
+        isActive: true,
+      );
+      final remoteFirstRepository = CatalogRepository(
+        LocalCatalogDataSource(database),
+        syncQueueRepository: syncQueueRepository,
+        remoteSender: const _FailingRemoteSender(),
+      );
+
+      await repository.saveCategory(root);
+      await repository.saveCategory(child);
+
+      final removeResult = await remoteFirstRepository.removeCategoryLevel(
+        child,
+      );
+      final readResult = await repository.getCategories();
+
+      expect(removeResult, isA<AppFailureResult<ProductCategory>>());
+      final categories =
+          (readResult as AppSuccess<List<ProductCategory>>).value;
+      expect(categories.any((category) => category.id == 'child'), isTrue);
+    });
   });
+}
+
+final class _FailingRemoteSender implements ISyncRemoteSender {
+  const _FailingRemoteSender();
+
+  @override
+  Future<void> push(SyncQueueItem item) {
+    throw StateError('remote failed');
+  }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:smoo_control/core/navigation/admin_online_guard.dart';
 import 'package:smoo_control/core/navigation/app_routes.dart';
 import 'package:smoo_control/core/navigation/route_access.dart';
 import 'package:smoo_control/features/audit/presentation/pages/audit_log_page.dart';
@@ -49,6 +50,27 @@ Widget _guardedPage(String? routeName) {
 
   return RouteAccessGuard(
     anyPermissions: RouteAccess.anyPermissionsFor(routeName),
-    child: page,
+    child: _requiresOnlineAdmin(routeName)
+        ? AdminOnlineGuard(child: page)
+        : page,
   );
+}
+
+bool _requiresOnlineAdmin(String? routeName) {
+  return switch (routeName) {
+    AppRoutes.catalog ||
+    AppRoutes.products ||
+    AppRoutes.modifiers ||
+    AppRoutes.paymentMethods ||
+    AppRoutes.tables ||
+    AppRoutes.sales ||
+    AppRoutes.expenses ||
+    AppRoutes.settings ||
+    AppRoutes.exchangeRates ||
+    AppRoutes.roles ||
+    AppRoutes.users ||
+    AppRoutes.audit ||
+    AppRoutes.reports => true,
+    _ => false,
+  };
 }

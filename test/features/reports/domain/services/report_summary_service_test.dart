@@ -8,6 +8,7 @@ import 'package:smoo_control/features/expenses/domain/entities/operating_expense
 import 'package:smoo_control/features/expenses/domain/repositories/i_expenses_repository.dart';
 import 'package:smoo_control/features/reports/domain/entities/report_period.dart';
 import 'package:smoo_control/features/reports/domain/entities/report_summary.dart';
+import 'package:smoo_control/features/reports/domain/services/i_remote_report_summary_service.dart';
 import 'package:smoo_control/features/reports/domain/services/report_summary_service.dart';
 import 'package:smoo_control/features/sales/domain/entities/sale.dart';
 import 'package:smoo_control/features/sales/domain/entities/sale_item.dart';
@@ -183,5 +184,128 @@ void main() {
       expect(summary.grossSalesInCents, 10000);
       expect(summary.grossProfitInCents, 6000);
     });
+
+    test('uses remote reports when Supabase reporting is configured', () async {
+      final remoteSummary = ReportSummary(
+        from: DateTime(2026, 6, 23),
+        to: DateTime(2026, 6, 24),
+        cashDifferenceInCents: 0,
+        cashExpectedInCents: 0,
+        cashExpensesInCents: 0,
+        cashOpeningInCents: 0,
+        cashPhysicalInCents: 0,
+        cashSalesInCents: 0,
+        cashSessionsCount: 0,
+        salesCount: 3,
+        voidsCount: 0,
+        grossSalesInCents: 90000,
+        grossProfitInCents: 60000,
+        expensesInCents: 0,
+        expenses: const [],
+        netProfitInCents: 60000,
+        averageTicketInCents: 30000,
+        topProducts: const [],
+        lowestProducts: const [],
+        voids: const [],
+      );
+      final remoteService = _RemoteReportSummaryServiceFake(
+        isConfigured: true,
+        summary: remoteSummary,
+      );
+      final service = ReportSummaryService(
+        cashRegisterRepository: const _CashRegisterRepositoryFake(
+          summaries: [],
+        ),
+        salesRepository: const _SalesRepositoryFake(
+          sales: [],
+          itemsBySaleId: {},
+        ),
+        expensesRepository: const _ExpensesRepositoryFake(expenses: []),
+        remoteReportSummaryService: remoteService,
+      );
+
+      final result = await service.loadSummary(
+        period: ReportPeriod.today,
+        now: DateTime(2026, 6, 23, 15),
+      );
+
+      expect((result as AppSuccess<ReportSummary>).value, remoteSummary);
+      expect(remoteService.calls, 1);
+    });
+
+    test(
+      'falls back to local reports when remote reports are not configured',
+      () async {
+        final sale = Sale(
+          id: 'sale-local',
+          invoiceNumber: 'F-local',
+          paymentMethodId: 'cash',
+          status: SaleStatus.completed,
+          subtotalInCents: 12000,
+          totalInCents: 12000,
+          createdAt: DateTime(2026, 6, 23, 10),
+        );
+        final remoteService = _RemoteReportSummaryServiceFake(
+          isConfigured: false,
+          summary: ReportSummary(
+            from: DateTime(2026, 6, 23),
+            to: DateTime(2026, 6, 24),
+            cashDifferenceInCents: 0,
+            cashExpectedInCents: 0,
+            cashExpensesInCents: 0,
+            cashOpeningInCents: 0,
+            cashPhysicalInCents: 0,
+            cashSalesInCents: 0,
+            cashSessionsCount: 0,
+            salesCount: 99,
+            voidsCount: 0,
+            grossSalesInCents: 990000,
+            grossProfitInCents: 990000,
+            expensesInCents: 0,
+            expenses: const [],
+            netProfitInCents: 990000,
+            averageTicketInCents: 990000,
+            topProducts: const [],
+            lowestProducts: const [],
+            voids: const [],
+          ),
+        );
+        final service = ReportSummaryService(
+          cashRegisterRepository: const _CashRegisterRepositoryFake(
+            summaries: [],
+          ),
+          salesRepository: _SalesRepositoryFake(
+            sales: [sale],
+            itemsBySaleId: {
+              'sale-local': [
+                SaleItem(
+                  id: 'item-local',
+                  saleId: 'sale-local',
+                  productId: 'local-product',
+                  productName: 'Local',
+                  categoryName: 'Comidas',
+                  quantity: 1,
+                  unitPriceInCents: 12000,
+                  unitCostInCents: 7000,
+                  createdAt: DateTime(2026, 6, 23, 10),
+                ),
+              ],
+            },
+          ),
+          expensesRepository: const _ExpensesRepositoryFake(expenses: []),
+          remoteReportSummaryService: remoteService,
+        );
+
+        final result = await service.loadSummary(
+          period: ReportPeriod.today,
+          now: DateTime(2026, 6, 23, 15),
+        );
+
+        final summary = (result as AppSuccess<ReportSummary>).value;
+        expect(summary.salesCount, 1);
+        expect(summary.grossSalesInCents, 12000);
+        expect(remoteService.calls, 0);
+      },
+    );
   });
 }

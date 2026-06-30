@@ -175,3 +175,25 @@ final class _ExpensesRepositoryFake implements IExpensesRepository {
     return AppSuccess(expense);
   }
 }
+
+final class _RemoteReportSummaryServiceFake
+    implements IRemoteReportSummaryService {
+  _RemoteReportSummaryServiceFake({
+    required this.isConfigured,
+    required this.summary,
+  });
+
+  @override
+  final bool isConfigured;
+
+  final ReportSummary summary;
+  int calls = 0;
+
+  @override
+  Future<AppResult<ReportSummary>> loadSummaryForRange(
+    ReportDateRange range,
+  ) async {
+    calls++;
+    return AppSuccess(summary);
+  }
+}

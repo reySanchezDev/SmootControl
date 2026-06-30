@@ -87,6 +87,8 @@ final class UsersRepository implements IUsersRepository {
         'roleId': user.roleId,
         'isPosUser': user.isPosUser,
         'isActive': user.isActive,
+        'pinSalt': user.pinSalt,
+        'pinHash': user.pinHash,
         'hasLocalPin': user.hasLocalPin,
       },
     );

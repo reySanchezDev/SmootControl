@@ -6,6 +6,7 @@ import 'package:smoo_control/features/payment_methods/domain/entities/payment_me
 import 'package:smoo_control/features/payment_methods/domain/repositories/i_payment_methods_repository.dart';
 import 'package:smoo_control/features/payment_methods/presentation/bloc/payment_methods_event.dart';
 import 'package:smoo_control/features/payment_methods/presentation/bloc/payment_methods_state.dart';
+import 'package:smoo_control/features/sync/domain/services/admin_data_refresh_service.dart';
 import 'package:uuid/uuid.dart';
 
 /// BLoC for payment methods management.
@@ -15,9 +16,11 @@ final class PaymentMethodsBloc
   PaymentMethodsBloc({
     required IPaymentMethodsRepository repository,
     required IAuditLogRepository auditLogRepository,
+    AdminDataRefreshService? remoteRefreshService,
     Uuid uuid = const Uuid(),
   }) : _repository = repository,
        _auditLogRepository = auditLogRepository,
+       _remoteRefreshService = remoteRefreshService,
        _uuid = uuid,
        super(const PaymentMethodsInitial()) {
     on<PaymentMethodsLoadRequested>(_onLoadRequested);
@@ -27,6 +30,7 @@ final class PaymentMethodsBloc
 
   final IPaymentMethodsRepository _repository;
   final IAuditLogRepository _auditLogRepository;
+  final AdminDataRefreshService? _remoteRefreshService;
   final Uuid _uuid;
 
   Future<void> _onLoadRequested(
@@ -34,6 +38,7 @@ final class PaymentMethodsBloc
     Emitter<PaymentMethodsState> emit,
   ) async {
     emit(const PaymentMethodsLoading());
+    if (!await _refreshRemoteCache(emit)) return;
     final result = await _repository.getPaymentMethods();
     emit(
       result.when(
@@ -137,5 +142,16 @@ final class PaymentMethodsBloc
         AppFailureResult() => const <PaymentMethod>[],
       },
     };
+  }
+
+  Future<bool> _refreshRemoteCache(
+    Emitter<PaymentMethodsState> emit,
+  ) async {
+    final result = await _remoteRefreshService?.refreshPaymentMethods();
+    if (result case AppFailureResult(:final error)) {
+      emit(PaymentMethodsFailure(error));
+      return false;
+    }
+    return true;
   }
 }

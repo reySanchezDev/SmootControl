@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:smoo_control/core/design_system/app_button.dart';
 import 'package:smoo_control/core/design_system/app_input.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
+import 'package:smoo_control/core/design_system/responsive_touch_dialog_frame.dart';
 import 'package:smoo_control/core/design_system/touch_numeric_keyboard_dialog.dart';
 import 'package:smoo_control/core/design_system/touch_text_keyboard_dialog.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
@@ -65,67 +66,60 @@ class _CreateExpenseDialogState extends State<CreateExpenseDialog> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final colorScheme = Theme.of(context).colorScheme;
-    final width = MediaQuery.sizeOf(context).width;
 
-    return AlertDialog(
-      backgroundColor: colorScheme.surface,
+    return ResponsiveTouchDialogFrame(
+      maxWidth: 560,
       title: AppText(
         l10n.createExpenseTitle,
         variant: AppTextVariant.titleMedium,
       ),
-      content: SizedBox(
-        width: width < 700 ? width * .88 : 560,
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              DropdownButtonFormField<String>(
-                decoration: InputDecoration(
-                  labelText: l10n.parentCategoryField,
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          DropdownButtonFormField<String>(
+            decoration: InputDecoration(
+              labelText: l10n.parentCategoryField,
+            ),
+            initialValue: _selectedCategoryId,
+            items: [
+              for (final category in _activeCategories)
+                DropdownMenuItem(
+                  value: category.id,
+                  child: AppText(category.name),
                 ),
-                initialValue: _selectedCategoryId,
-                items: [
-                  for (final category in _activeCategories)
-                    DropdownMenuItem(
-                      value: category.id,
-                      child: AppText(category.name),
-                    ),
-                ],
-                onChanged: widget.lockCategory
-                    ? null
-                    : (value) {
-                        setState(() {
-                          _selectedCategoryId = value;
-                          _error = null;
-                        });
-                      },
-              ),
-              const SizedBox(height: 12),
-              AppInput(
-                label: l10n.amountInCentsField,
-                controller: _amountController,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                onTap: widget.useTouchInput ? _openAmountKeyboard : null,
-                readOnly: widget.useTouchInput,
-              ),
-              const SizedBox(height: 12),
-              AppInput(
-                label: l10n.descriptionField,
-                controller: _descriptionController,
-                maxLines: widget.useTouchInput ? 2 : 1,
-                onTap: widget.useTouchInput ? _openDescriptionKeyboard : null,
-                readOnly: widget.useTouchInput,
-              ),
-              if (_error != null) ...[
-                const SizedBox(height: 8),
-                AppText(_error!, maxLines: 2),
-              ],
             ],
+            onChanged: widget.lockCategory
+                ? null
+                : (value) {
+                    setState(() {
+                      _selectedCategoryId = value;
+                      _error = null;
+                    });
+                  },
           ),
-        ),
+          const SizedBox(height: 12),
+          AppInput(
+            label: l10n.amountInCentsField,
+            controller: _amountController,
+            keyboardType: const TextInputType.numberWithOptions(
+              decimal: true,
+            ),
+            onTap: widget.useTouchInput ? _openAmountKeyboard : null,
+            readOnly: widget.useTouchInput,
+          ),
+          const SizedBox(height: 12),
+          AppInput(
+            label: l10n.descriptionField,
+            controller: _descriptionController,
+            maxLines: widget.useTouchInput ? 2 : 1,
+            onTap: widget.useTouchInput ? _openDescriptionKeyboard : null,
+            readOnly: widget.useTouchInput,
+          ),
+          if (_error != null) ...[
+            const SizedBox(height: 8),
+            AppText(_error!, maxLines: 2),
+          ],
+        ],
       ),
       actions: [
         AppButton(

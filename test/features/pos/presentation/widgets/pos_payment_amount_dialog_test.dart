@@ -50,6 +50,43 @@ void main() {
 
     expect(received, 25000);
   });
+
+  testWidgets('renders numeric payment dialog on short touch surfaces', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(390, 620));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: Builder(
+            builder: (context) => TextButton(
+              onPressed: () async {
+                await showDialog<int>(
+                  context: context,
+                  builder: (_) => const PosPaymentAmountDialog(
+                    methodName: 'Cordoba',
+                    totalInCents: 21000,
+                  ),
+                );
+              },
+              child: const Text('Open'),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Open'));
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('Amount Cordoba'), findsOneWidget);
+    expect(find.text('OK'), findsOneWidget);
+  });
 }
 
 Future<void> _enterAmount(WidgetTester tester, String value) async {

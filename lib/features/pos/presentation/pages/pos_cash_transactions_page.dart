@@ -176,6 +176,21 @@ class _TransactionsTable extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     return LayoutBuilder(
       builder: (context, constraints) {
+        if (constraints.maxWidth < 760) {
+          return ListView.separated(
+            itemBuilder: (context, index) {
+              final sale = sales[index];
+              return _TransactionCard(
+                methodName: paymentMethods[sale.paymentMethodId] ?? '',
+                sale: sale,
+              );
+            },
+            itemCount: sales.length,
+            padding: const EdgeInsets.all(10),
+            separatorBuilder: (_, _) => const SizedBox(height: 8),
+          );
+        }
+
         return SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: ConstrainedBox(
@@ -243,6 +258,69 @@ class _TransactionsHeader extends StatelessWidget {
   }
 }
 
+class _TransactionCard extends StatelessWidget {
+  const _TransactionCard({
+    required this.methodName,
+    required this.sale,
+  });
+
+  final String methodName;
+  final Sale sale;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        border: Border.all(color: colorScheme.outlineVariant),
+        borderRadius: BorderRadius.circular(8),
+        color: colorScheme.surface,
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: AppText(
+                    sale.invoiceNumber,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    variant: AppTextVariant.titleMedium,
+                  ),
+                ),
+                AppText(
+                  MoneyFormatter.format(sale.totalInCents),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.end,
+                  variant: AppTextVariant.titleMedium,
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              crossAxisAlignment: WrapCrossAlignment.center,
+              runSpacing: 8,
+              spacing: 12,
+              children: [
+                AppText(
+                  '${_dateText(sale.createdAt)} ${_timeText(sale.createdAt)}',
+                  variant: AppTextVariant.label,
+                ),
+                AppText(methodName, variant: AppTextVariant.label),
+                _SyncStatusChip(status: sale.syncStatus),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _TransactionRow extends StatelessWidget {
   const _TransactionRow({
     required this.methodName,
@@ -285,18 +363,18 @@ class _TransactionRow extends StatelessWidget {
       ),
     );
   }
+}
 
-  String _dateText(DateTime date) {
-    final day = date.day.toString().padLeft(2, '0');
-    final month = date.month.toString().padLeft(2, '0');
-    return '$day/$month/${date.year}';
-  }
+String _dateText(DateTime date) {
+  final day = date.day.toString().padLeft(2, '0');
+  final month = date.month.toString().padLeft(2, '0');
+  return '$day/$month/${date.year}';
+}
 
-  String _timeText(DateTime date) {
-    final hour = date.hour.toString().padLeft(2, '0');
-    final minute = date.minute.toString().padLeft(2, '0');
-    return '$hour:$minute';
-  }
+String _timeText(DateTime date) {
+  final hour = date.hour.toString().padLeft(2, '0');
+  final minute = date.minute.toString().padLeft(2, '0');
+  return '$hour:$minute';
 }
 
 class _HeaderCell extends StatelessWidget {

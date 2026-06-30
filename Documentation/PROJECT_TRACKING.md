@@ -900,6 +900,8 @@
 | 2026-06-28 | Permiso de modificadores | App local alinea `modificadores.gestionar` con seed remoto y ruta `Modificadores POS`. |
 | 2026-06-28 | `flutter analyze` | Sin issues despues de alinear permisos y aplicar Supabase remoto. |
 | 2026-06-28 | `flutter test test\features\roles test\app_test.dart` | 9 tests pasan despues de alinear permisos con Supabase. |
+| 2026-06-30 | Cierre go-live Supabase/POS | Documentado checklist de salida a produccion, rescate desde remoto, prueba offline y reglas para actualizar APK sin perder datos. |
+| 2026-06-30 | Validacion final y APK release | `flutter analyze --no-pub` sin issues, `flutter test --reporter=compact` con 189 tests correctos, APK `release/SmooControl-produccion.apk` generado y verificado con firma v2. |
 
 ## Riesgos Activos
 

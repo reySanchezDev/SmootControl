@@ -10,6 +10,7 @@ import 'package:smoo_control/features/expenses/domain/entities/operating_expense
 import 'package:smoo_control/features/sync/data/datasources/local_sync_queue_datasource.dart';
 import 'package:smoo_control/features/sync/data/repositories/sync_queue_repository.dart';
 import 'package:smoo_control/features/sync/domain/entities/sync_queue_item.dart';
+import 'package:smoo_control/features/sync/domain/services/i_sync_remote_sender.dart';
 
 void main() {
   group('ExpensesRepository', () {
@@ -104,5 +105,39 @@ void main() {
       expect(categories.map((category) => category.id), ['category-1']);
       expect(categories.single.parentId, isNull);
     });
+
+    test('does not delete local category when remote delete fails', () async {
+      await dataSource.saveCategory(
+        const ExpenseCategoryModel(
+          id: 'group-1',
+          name: 'Combustible',
+          isActive: true,
+        ),
+      );
+      final remoteFirstRepository = ExpensesRepository(
+        dataSource,
+        syncQueueRepository: syncQueueRepository,
+        remoteSender: const _FailingRemoteSender(),
+      );
+
+      final deleteResult = await remoteFirstRepository.deleteCategory(
+        'group-1',
+      );
+      final categoriesResult = await repository.getCategories();
+
+      expect(deleteResult, isA<AppFailureResult<void>>());
+      final categories =
+          (categoriesResult as AppSuccess<List<ExpenseCategory>>).value;
+      expect(categories.any((category) => category.id == 'group-1'), isTrue);
+    });
   });
+}
+
+final class _FailingRemoteSender implements ISyncRemoteSender {
+  const _FailingRemoteSender();
+
+  @override
+  Future<void> push(SyncQueueItem item) {
+    throw StateError('remote failed');
+  }
 }

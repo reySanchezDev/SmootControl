@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:smoo_control/core/design_system/app_button.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
+import 'package:smoo_control/core/design_system/responsive_touch_dialog_frame.dart';
 import 'package:smoo_control/features/products/domain/entities/product.dart';
 import 'package:smoo_control/features/products/domain/entities/product_option_group.dart';
 import 'package:smoo_control/l10n/app_localizations.dart';
@@ -41,44 +42,39 @@ class _ProductOptionsDialogState extends State<ProductOptionsDialog> {
         ? l10n.skipOptionalOptionAction
         : l10n.nextAction;
 
-    return AlertDialog(
+    return ResponsiveTouchDialogFrame(
       title: AppText(
         l10n.selectProductOptionsTitle,
         variant: AppTextVariant.titleMedium,
       ),
-      content: SizedBox(
-        width: 720,
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              AppText(widget.product.name, variant: AppTextVariant.label),
-              const SizedBox(height: 8),
-              LinearProgressIndicator(
-                value: (_currentIndex + 1) / groups.length,
-              ),
-              const SizedBox(height: 8),
-              AppText(
-                '${_currentIndex + 1}/${groups.length}',
-                textAlign: TextAlign.end,
-                variant: AppTextVariant.label,
-              ),
-              const SizedBox(height: 8),
-              AppText(
-                group.name,
-                textAlign: TextAlign.center,
-                variant: AppTextVariant.titleMedium,
-              ),
-              const SizedBox(height: 12),
-              _OptionGrid(
-                options: group.options,
-                selectedOption: selected,
-                onSelected: (option) => _selectOption(group, option),
-              ),
-            ],
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          AppText(widget.product.name, variant: AppTextVariant.label),
+          const SizedBox(height: 8),
+          LinearProgressIndicator(
+            value: (_currentIndex + 1) / groups.length,
           ),
-        ),
+          const SizedBox(height: 8),
+          AppText(
+            '${_currentIndex + 1}/${groups.length}',
+            textAlign: TextAlign.end,
+            variant: AppTextVariant.label,
+          ),
+          const SizedBox(height: 8),
+          AppText(
+            group.name,
+            textAlign: TextAlign.center,
+            variant: AppTextVariant.titleMedium,
+          ),
+          const SizedBox(height: 12),
+          _OptionGrid(
+            options: group.options,
+            selectedOption: selected,
+            onSelected: (option) => _selectOption(group, option),
+          ),
+        ],
       ),
       actions: [
         AppButton(

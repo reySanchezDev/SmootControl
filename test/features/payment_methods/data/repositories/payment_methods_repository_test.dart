@@ -8,6 +8,7 @@ import 'package:smoo_control/features/payment_methods/domain/entities/payment_me
 import 'package:smoo_control/features/sync/data/datasources/local_sync_queue_datasource.dart';
 import 'package:smoo_control/features/sync/data/repositories/sync_queue_repository.dart';
 import 'package:smoo_control/features/sync/domain/entities/sync_queue_item.dart';
+import 'package:smoo_control/features/sync/domain/services/i_sync_remote_sender.dart';
 
 void main() {
   group('PaymentMethodsRepository', () {
@@ -106,5 +107,51 @@ void main() {
         isTrue,
       );
     });
+
+    test('does not remove local method when remote delete fails', () async {
+      const root = PaymentMethod(
+        id: 'transfer-root',
+        name: 'Transferencias',
+        affectsCashRegister: false,
+        requiresReference: false,
+        isPaymentTarget: false,
+        isActive: true,
+      );
+      const bank = PaymentMethod(
+        id: 'banpro',
+        name: 'BANPRO',
+        parentId: 'transfer-root',
+        affectsCashRegister: false,
+        requiresReference: false,
+        isPaymentTarget: false,
+        isActive: true,
+      );
+      final remoteFirstRepository = PaymentMethodsRepository(
+        LocalPaymentMethodsDataSource(database),
+        syncQueueRepository: syncQueueRepository,
+        remoteSender: const _FailingRemoteSender(),
+      );
+
+      await repository.savePaymentMethod(root);
+      await repository.savePaymentMethod(bank);
+
+      final removeResult = await remoteFirstRepository.removePaymentMethodLevel(
+        bank,
+      );
+      final readResult = await repository.getPaymentMethods();
+
+      expect(removeResult, isA<AppFailureResult<PaymentMethod>>());
+      final methods = (readResult as AppSuccess<List<PaymentMethod>>).value;
+      expect(methods.any((method) => method.id == 'banpro'), isTrue);
+    });
   });
+}
+
+final class _FailingRemoteSender implements ISyncRemoteSender {
+  const _FailingRemoteSender();
+
+  @override
+  Future<void> push(SyncQueueItem item) {
+    throw StateError('remote failed');
+  }
 }

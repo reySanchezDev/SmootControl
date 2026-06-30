@@ -7,6 +7,7 @@ import 'package:smoo_control/features/expenses/domain/entities/operating_expense
 import 'package:smoo_control/features/expenses/domain/repositories/i_expenses_repository.dart';
 import 'package:smoo_control/features/reports/domain/entities/report_period.dart';
 import 'package:smoo_control/features/reports/domain/entities/report_summary.dart';
+import 'package:smoo_control/features/reports/domain/services/i_remote_report_summary_service.dart';
 import 'package:smoo_control/features/sales/domain/entities/sale.dart';
 import 'package:smoo_control/features/sales/domain/entities/sale_item.dart';
 import 'package:smoo_control/features/sales/domain/entities/sale_void.dart';
@@ -19,13 +20,16 @@ final class ReportSummaryService {
     required ICashRegisterRepository cashRegisterRepository,
     required ISalesRepository salesRepository,
     required IExpensesRepository expensesRepository,
+    IRemoteReportSummaryService? remoteReportSummaryService,
   }) : _cashRegisterRepository = cashRegisterRepository,
        _salesRepository = salesRepository,
-       _expensesRepository = expensesRepository;
+       _expensesRepository = expensesRepository,
+       _remoteReportSummaryService = remoteReportSummaryService;
 
   final ICashRegisterRepository _cashRegisterRepository;
   final ISalesRepository _salesRepository;
   final IExpensesRepository _expensesRepository;
+  final IRemoteReportSummaryService? _remoteReportSummaryService;
 
   /// Loads and calculates the report summary for a period.
   Future<AppResult<ReportSummary>> loadSummary({
@@ -41,6 +45,12 @@ final class ReportSummaryService {
   Future<AppResult<ReportSummary>> loadSummaryForRange(
     ReportDateRange range,
   ) async {
+    final remoteReportSummaryService = _remoteReportSummaryService;
+    if (remoteReportSummaryService != null &&
+        remoteReportSummaryService.isConfigured) {
+      return remoteReportSummaryService.loadSummaryForRange(range);
+    }
+
     final salesResult = await _salesRepository.getSales(
       from: range.from,
       to: range.to,
