@@ -4,7 +4,9 @@ import 'package:drift/drift.dart';
 import 'package:http/http.dart' as http;
 import 'package:smoo_control/core/config/supabase_app_config.dart';
 import 'package:smoo_control/core/database/app_database.dart';
+import 'package:smoo_control/core/session/current_remote_session_service.dart';
 import 'package:smoo_control/core/session/current_restaurant_service.dart';
+import 'package:smoo_control/core/utils/business_date_formatter.dart';
 import 'package:smoo_control/features/products/data/models/string_list_codec.dart';
 import 'package:smoo_control/features/sync/domain/services/catalog_pull_summary.dart';
 import 'package:smoo_control/features/sync/domain/services/i_catalog_pull_service.dart';
@@ -16,23 +18,46 @@ final class SupabaseCatalogPullService implements ICatalogPullService {
     required AppDatabase database,
     required SupabaseAppConfig config,
     required CurrentRestaurantService restaurantService,
+    required CurrentRemoteSessionService remoteSessionService,
     required http.Client client,
   }) : _database = database,
        _config = config,
        _restaurantService = restaurantService,
+       _remoteSessionService = remoteSessionService,
        _client = client;
 
   final AppDatabase _database;
   final SupabaseAppConfig _config;
   final CurrentRestaurantService _restaurantService;
+  final CurrentRemoteSessionService _remoteSessionService;
   final http.Client _client;
 
   String? _accessToken;
   DateTime? _expiresAt;
+  bool _temporaryTokenOnly = false;
 
   @override
   Future<CatalogPullSummary> pullOperationalCatalog() {
     return pullScopes(CatalogPullScope.values.toSet());
+  }
+
+  /// Downloads the full operational catalog using a temporary admin token.
+  Future<CatalogPullSummary> pullOperationalCatalogWithAccessToken(
+    String accessToken,
+  ) async {
+    final previousToken = _accessToken;
+    final previousExpiration = _expiresAt;
+    final previousTemporaryTokenOnly = _temporaryTokenOnly;
+    _accessToken = accessToken;
+    _expiresAt = DateTime.now().add(const Duration(minutes: 55));
+    _temporaryTokenOnly = true;
+    try {
+      return await pullOperationalCatalog();
+    } finally {
+      _accessToken = previousToken;
+      _expiresAt = previousExpiration;
+      _temporaryTokenOnly = previousTemporaryTokenOnly;
+    }
   }
 
   @override
@@ -45,7 +70,8 @@ final class SupabaseCatalogPullService implements ICatalogPullService {
     if (effectiveScopes.contains(CatalogPullScope.products)) {
       effectiveScopes
         ..add(CatalogPullScope.catalog)
-        ..add(CatalogPullScope.modifiers);
+        ..add(CatalogPullScope.modifiers)
+        ..add(CatalogPullScope.packaging);
     }
 
     final shouldRefreshBusinessSettings = effectiveScopes.contains(
@@ -74,6 +100,12 @@ final class SupabaseCatalogPullService implements ICatalogPullService {
     );
     final shouldRefreshExchangeRates = effectiveScopes.contains(
       CatalogPullScope.exchangeRates,
+    );
+    final shouldRefreshPackaging = effectiveScopes.contains(
+      CatalogPullScope.packaging,
+    );
+    final shouldRefreshCashRegisterSessions = effectiveScopes.contains(
+      CatalogPullScope.cashRegisterSessions,
     );
 
     final restaurantRows = shouldRefreshBusinessSettings
@@ -124,6 +156,21 @@ final class SupabaseCatalogPullService implements ICatalogPullService {
     final inventoryStock = shouldRefreshProducts
         ? await _getRows('inventory_stock')
         : const <Map<String, Object?>>[];
+    if (shouldRefreshPackaging) {
+      await _ensureDefaultSalesTypes();
+    }
+    final salesTypes = shouldRefreshPackaging
+        ? await _getRows('sales_types')
+        : const <Map<String, Object?>>[];
+    final packagingItems = shouldRefreshPackaging
+        ? await _getRows('packaging_items')
+        : const <Map<String, Object?>>[];
+    final packagingRules = shouldRefreshPackaging
+        ? await _getRows('product_packaging_rules')
+        : const <Map<String, Object?>>[];
+    final packagingStock = shouldRefreshPackaging
+        ? await _getRows('packaging_stock')
+        : const <Map<String, Object?>>[];
     final paymentMethods = shouldRefreshPaymentMethods
         ? await _getRowsIncludingGlobal('payment_methods')
         : const <Map<String, Object?>>[];
@@ -135,6 +182,9 @@ final class SupabaseCatalogPullService implements ICatalogPullService {
         : const <Map<String, Object?>>[];
     final exchangeRates = shouldRefreshExchangeRates
         ? await _getRows('exchange_rates')
+        : const <Map<String, Object?>>[];
+    final cashRegisterSessions = shouldRefreshCashRegisterSessions
+        ? await _getRows('cash_register_sessions')
         : const <Map<String, Object?>>[];
     final modifierIdsByProduct = shouldRefreshProducts
         ? _modifierIdsByProduct(productModifierGroups)
@@ -161,6 +211,12 @@ final class SupabaseCatalogPullService implements ICatalogPullService {
         await _applyProducts(products, modifierIdsByProduct);
         await _applyInventoryStock(inventoryStock);
       }
+      if (shouldRefreshPackaging) {
+        await _applySalesTypes(salesTypes);
+        await _applyPackagingItems(packagingItems);
+        await _applyProductPackagingRules(packagingRules);
+        await _applyPackagingStock(packagingStock);
+      }
       if (shouldRefreshPaymentMethods) {
         await _applyPaymentMethods(paymentMethods);
       }
@@ -172,6 +228,9 @@ final class SupabaseCatalogPullService implements ICatalogPullService {
       }
       if (shouldRefreshExchangeRates) {
         await _applyExchangeRates(exchangeRates);
+      }
+      if (shouldRefreshCashRegisterSessions) {
+        await _applyCashRegisterSessions(cashRegisterSessions);
       }
     });
 
@@ -185,11 +244,16 @@ final class SupabaseCatalogPullService implements ICatalogPullService {
       modifierGroups: modifierGroups.length,
       modifierOptions: modifierOptions.length,
       paymentMethods: paymentMethods.length,
+      salesTypes: salesTypes.length,
+      packagingItems: packagingItems.length,
+      packagingRules: packagingRules.length,
+      packagingStock: packagingStock.length,
       permissions: permissions.length,
       products: products.length,
       inventoryStock: inventoryStock.length,
       rolePermissions: rolePermissions.length,
       roles: roles.length,
+      cashRegisterSessions: cashRegisterSessions.length,
       tables: tables.length,
       users: profiles.length,
     );
@@ -576,6 +640,137 @@ final class SupabaseCatalogPullService implements ICatalogPullService {
     }
   }
 
+  Future<void> _applySalesTypes(List<Map<String, Object?>> rows) async {
+    final now = DateTime.now();
+    final remoteIds = <String>{};
+    for (final row in rows) {
+      final id = _requiredText(row['id'], table: 'sales_types');
+      remoteIds.add(id);
+      await _database
+          .into(_database.localSalesTypes)
+          .insert(
+            LocalSalesTypesCompanion(
+              id: Value(id),
+              code: Value(_text(row['code'], defaultValue: id)),
+              name: Value(_text(row['name'], defaultValue: 'Tipo de venta')),
+              displayOrder: Value(_int(row['display_order'])),
+              isDefault: Value(_bool(row['is_default'])),
+              isActive: Value(_bool(row['is_active'], defaultValue: true)),
+              remoteId: Value(id),
+              syncStatus: const Value('synced'),
+              syncError: const Value(null),
+              createdAt: Value(now),
+              updatedAt: Value(now),
+              syncedAt: Value(now),
+            ),
+            mode: InsertMode.insertOrReplace,
+          );
+    }
+    await _markMissingSalesTypesInactive(remoteIds, now);
+  }
+
+  Future<void> _applyPackagingItems(List<Map<String, Object?>> rows) async {
+    final now = DateTime.now();
+    final remoteIds = <String>{};
+    for (final row in rows) {
+      final id = _requiredText(row['id'], table: 'packaging_items');
+      remoteIds.add(id);
+      await _database
+          .into(_database.localPackagingItems)
+          .insert(
+            LocalPackagingItemsCompanion(
+              id: Value(id),
+              name: Value(_text(row['name'], defaultValue: 'Empaque')),
+              costInCents: Value(_moneyCents(row['cost'])),
+              tracksStock: Value(
+                _bool(row['tracks_stock'], defaultValue: true),
+              ),
+              isActive: Value(_bool(row['is_active'], defaultValue: true)),
+              remoteId: Value(id),
+              syncStatus: const Value('synced'),
+              syncError: const Value(null),
+              createdAt: Value(now),
+              updatedAt: Value(now),
+              syncedAt: Value(now),
+            ),
+            mode: InsertMode.insertOrReplace,
+          );
+    }
+    await _markMissingPackagingItemsInactive(remoteIds, now);
+  }
+
+  Future<void> _applyProductPackagingRules(
+    List<Map<String, Object?>> rows,
+  ) async {
+    final now = DateTime.now();
+    final remoteIds = <String>{};
+    for (final row in rows) {
+      final id = _requiredText(row['id'], table: 'product_packaging_rules');
+      final productId = _optionalText(row['product_id']);
+      final salesTypeId = _optionalText(row['sales_type_id']);
+      final packagingItemId = _optionalText(row['packaging_item_id']);
+      if (productId == null || salesTypeId == null || packagingItemId == null) {
+        continue;
+      }
+      remoteIds.add(id);
+      await _database
+          .into(_database.localProductPackagingRules)
+          .insert(
+            LocalProductPackagingRulesCompanion(
+              id: Value(id),
+              productId: Value(productId),
+              salesTypeId: Value(salesTypeId),
+              packagingItemId: Value(packagingItemId),
+              quantityPerUnit: Value(
+                _int(row['quantity_per_unit'], defaultValue: 1),
+              ),
+              isActive: Value(_bool(row['is_active'], defaultValue: true)),
+              remoteId: Value(id),
+              syncStatus: const Value('synced'),
+              syncError: const Value(null),
+              createdAt: Value(now),
+              updatedAt: Value(now),
+              syncedAt: Value(now),
+            ),
+            mode: InsertMode.insertOrReplace,
+          );
+    }
+    await _markMissingPackagingRulesInactive(remoteIds, now);
+  }
+
+  Future<void> _applyPackagingStock(List<Map<String, Object?>> rows) async {
+    final now = DateTime.now();
+    final pendingDeltas = await _pendingPackagingDeltasByItem();
+    for (final row in rows) {
+      final packagingItemId = _optionalText(row['packaging_item_id']);
+      if (packagingItemId == null) continue;
+      final remoteQuantity = _int(row['quantity_on_hand']);
+      final adjustedQuantity =
+          remoteQuantity + (pendingDeltas[packagingItemId] ?? 0);
+      if (adjustedQuantity < 0) {
+        throw StateError(
+          'La descarga de empaques produciria stock negativo para '
+          '$packagingItemId por movimientos locales pendientes.',
+        );
+      }
+      await _database
+          .into(_database.localPackagingStock)
+          .insert(
+            LocalPackagingStockCompanion(
+              packagingItemId: Value(packagingItemId),
+              quantityOnHand: Value(adjustedQuantity),
+              remoteId: Value(packagingItemId),
+              syncStatus: const Value('synced'),
+              syncError: const Value(null),
+              createdAt: Value(now),
+              updatedAt: Value(now),
+              syncedAt: Value(now),
+            ),
+            mode: InsertMode.insertOrReplace,
+          );
+    }
+  }
+
   Future<Map<String, int>> _pendingInventoryDeltasByProduct() async {
     final movements = await _database
         .select(_database.localInventoryMovements)
@@ -602,6 +797,39 @@ final class SupabaseCatalogPullService implements ICatalogPullService {
       }
       deltas.update(
         movement.productId,
+        (value) => value + movement.quantityDelta,
+        ifAbsent: () => movement.quantityDelta,
+      );
+    }
+    return deltas;
+  }
+
+  Future<Map<String, int>> _pendingPackagingDeltasByItem() async {
+    final movements = await _database
+        .select(_database.localPackagingMovements)
+        .get();
+    if (movements.isEmpty) return const {};
+
+    final salesQueue = await (_database.select(
+      _database.localSyncQueue,
+    )..where((item) => item.entityType.equals('sales'))).get();
+    final packagingQueue = await (_database.select(
+      _database.localSyncQueue,
+    )..where((item) => item.entityType.equals('packaging_movements'))).get();
+    final salesByEntity = _latestQueueByEntityId(salesQueue);
+    final packagingByEntity = _latestQueueByEntityId(packagingQueue);
+
+    final deltas = <String, int>{};
+    for (final movement in movements) {
+      if (!_shouldPreservePackagingMovementDelta(
+        movement,
+        salesByEntity: salesByEntity,
+        packagingByEntity: packagingByEntity,
+      )) {
+        continue;
+      }
+      deltas.update(
+        movement.packagingItemId,
         (value) => value + movement.quantityDelta,
         ifAbsent: () => movement.quantityDelta,
       );
@@ -637,6 +865,28 @@ final class SupabaseCatalogPullService implements ICatalogPullService {
     if (referenceType == 'purchase') {
       return _isNotSynced(
         inventoryByEntity[movement.id],
+        missingIsPending: false,
+      );
+    }
+
+    return false;
+  }
+
+  bool _shouldPreservePackagingMovementDelta(
+    LocalPackagingMovement movement, {
+    required Map<String, LocalSyncQueueData> salesByEntity,
+    required Map<String, LocalSyncQueueData> packagingByEntity,
+  }) {
+    final referenceType = movement.referenceType;
+    if (referenceType == 'sale' || referenceType == 'sale_void') {
+      final referenceId = movement.referenceId;
+      if (referenceId == null) return true;
+      return _isNotSynced(salesByEntity[referenceId], missingIsPending: true);
+    }
+
+    if (referenceType == 'packaging_purchase') {
+      return _isNotSynced(
+        packagingByEntity[movement.id],
         missingIsPending: false,
       );
     }
@@ -777,6 +1027,48 @@ final class SupabaseCatalogPullService implements ICatalogPullService {
     }
   }
 
+  Future<void> _applyCashRegisterSessions(
+    List<Map<String, Object?>> rows,
+  ) async {
+    final now = DateTime.now();
+    for (final row in rows) {
+      final id = _requiredText(row['id'], table: 'cash_register_sessions');
+      final cashierId = _optionalText(row['cashier_user_id']);
+      final businessDate = _date(row['business_date']);
+      if (cashierId == null || businessDate == null) continue;
+
+      final existing = await (_database.select(
+        _database.localCashRegisterSessions,
+      )..where((session) => session.id.equals(id))).getSingleOrNull();
+
+      await _database
+          .into(_database.localCashRegisterSessions)
+          .insert(
+            LocalCashRegisterSessionsCompanion(
+              id: Value(id),
+              cashierId: Value(cashierId),
+              businessDate: Value(BusinessDateFormatter.format(businessDate)),
+              openingCashInCents: Value(
+                _moneyCents(row['opening_cash_amount']),
+              ),
+              physicalClosingCashInCents: Value(
+                row['counted_cash_amount'] == null
+                    ? null
+                    : _moneyCents(row['counted_cash_amount']),
+              ),
+              status: Value(_text(row['status'], defaultValue: 'open')),
+              remoteId: Value(id),
+              syncStatus: const Value('synced'),
+              syncError: const Value(null),
+              createdAt: Value(existing?.createdAt ?? now),
+              updatedAt: Value(now),
+              syncedAt: Value(now),
+            ),
+            mode: InsertMode.insertOrReplace,
+          );
+    }
+  }
+
   Future<void> _markMissingCategoriesInactive(
     Set<String> remoteIds,
     DateTime now,
@@ -874,6 +1166,73 @@ final class SupabaseCatalogPullService implements ICatalogPullService {
         LocalModifierOptionsCompanion(
           isActive: const Value(false),
           isAvailableInPos: const Value(false),
+          updatedAt: Value(now),
+          syncedAt: Value(now),
+          syncStatus: const Value('synced'),
+        ),
+      );
+    }
+  }
+
+  Future<void> _markMissingSalesTypesInactive(
+    Set<String> remoteIds,
+    DateTime now,
+  ) async {
+    if (remoteIds.isEmpty) return;
+    final localRows = await _database.select(_database.localSalesTypes).get();
+    for (final row in localRows) {
+      if (remoteIds.contains(row.id) || !row.isActive) continue;
+      await (_database.update(
+        _database.localSalesTypes,
+      )..where((type) => type.id.equals(row.id))).write(
+        LocalSalesTypesCompanion(
+          isActive: const Value(false),
+          updatedAt: Value(now),
+          syncedAt: Value(now),
+          syncStatus: const Value('synced'),
+        ),
+      );
+    }
+  }
+
+  Future<void> _markMissingPackagingItemsInactive(
+    Set<String> remoteIds,
+    DateTime now,
+  ) async {
+    if (remoteIds.isEmpty) return;
+    final localRows = await _database
+        .select(_database.localPackagingItems)
+        .get();
+    for (final row in localRows) {
+      if (remoteIds.contains(row.id) || !row.isActive) continue;
+      await (_database.update(
+        _database.localPackagingItems,
+      )..where((item) => item.id.equals(row.id))).write(
+        LocalPackagingItemsCompanion(
+          isActive: const Value(false),
+          updatedAt: Value(now),
+          syncedAt: Value(now),
+          syncStatus: const Value('synced'),
+        ),
+      );
+    }
+  }
+
+  Future<void> _markMissingPackagingRulesInactive(
+    Set<String> remoteIds,
+    DateTime now,
+  ) async {
+    if (remoteIds.isEmpty) return;
+    final localRows = await _database
+        .select(_database.localProductPackagingRules)
+        .get();
+    for (final row in localRows) {
+      if (remoteIds.contains(row.id) || !row.isActive) continue;
+      await (_database.update(
+        _database.localProductPackagingRules,
+      )..where((rule) => rule.id.equals(row.id))).write(
+        LocalProductPackagingRulesCompanion(
+          isActive: const Value(false),
           updatedAt: Value(now),
           syncedAt: Value(now),
           syncStatus: const Value('synced'),
@@ -1026,6 +1385,25 @@ final class SupabaseCatalogPullService implements ICatalogPullService {
     return decoded.map(_mapRow).toList();
   }
 
+  Future<void> _ensureDefaultSalesTypes() async {
+    final response = await _client.post(
+      _config.restUri('rpc/ensure_default_sales_types'),
+      headers: {
+        ...await _headers(),
+        'content-type': 'application/json',
+      },
+      body: jsonEncode({
+        'p_restaurant_id': _restaurantService.restaurantId,
+      }),
+    );
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw StateError(
+        'Supabase rechazo creacion de tipos de venta base '
+        '(${response.statusCode}): ${response.body}',
+      );
+    }
+  }
+
   Map<String, List<String>> _modifierIdsByProduct(
     List<Map<String, Object?>> rows,
   ) {
@@ -1046,9 +1424,12 @@ final class SupabaseCatalogPullService implements ICatalogPullService {
   }
 
   void _ensureConfigured() {
-    if (!_config.isConfigured || !_restaurantService.isConfigured) {
+    final hasTemporaryToken = _accessToken != null && _accessToken!.isNotEmpty;
+    if (!((hasTemporaryToken || _remoteSessionService.hasUsableToken) &&
+        _config.isConfigured &&
+        _restaurantService.isConfigured)) {
       throw StateError(
-        'Supabase remoto no esta configurado para descargar datos.',
+        'Inicia sesion como administrador remoto para descargar datos.',
       );
     }
   }
@@ -1070,41 +1451,18 @@ final class SupabaseCatalogPullService implements ICatalogPullService {
       return token;
     }
 
-    final response = await _client.post(
-      _config.passwordGrantUri,
-      headers: {
-        'apikey': _config.publishableKey,
-        'content-type': 'application/json',
-        'accept': 'application/json',
-      },
-      body: jsonEncode({
-        'email': _config.authEmail,
-        'password': _config.authPassword,
-      }),
-    );
-    if (response.statusCode < 200 || response.statusCode >= 300) {
+    if (_temporaryTokenOnly) {
       throw StateError(
-        'No se pudo autenticar Supabase para descargar datos '
-        '(${response.statusCode}).',
+        'La sesion remota de inicializacion expiro. Inicia sesion nuevamente.',
       );
     }
 
-    final decoded = jsonDecode(response.body);
-    if (decoded is! Map<String, Object?>) {
-      throw StateError('Respuesta de autenticacion Supabase invalida.');
-    }
+    final sessionToken = _remoteSessionService.accessToken;
+    if (sessionToken != null) return sessionToken;
 
-    final accessToken = decoded['access_token'];
-    final expiresIn = decoded['expires_in'];
-    if (accessToken is! String || accessToken.isEmpty) {
-      throw StateError('Supabase no devolvio access_token.');
-    }
-
-    _accessToken = accessToken;
-    _expiresAt = DateTime.now().add(
-      Duration(seconds: expiresIn is int ? expiresIn : 3600),
+    throw StateError(
+      'La sesion remota expiro. Inicia sesion como administrador remoto.',
     );
-    return accessToken;
   }
 
   Map<String, Object?> _mapRow(Object? value) {

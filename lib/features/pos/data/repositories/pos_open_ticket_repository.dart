@@ -29,6 +29,56 @@ final class PosOpenTicketRepository implements IPosOpenTicketRepository {
   }
 
   @override
+  Future<AppResult<Map<String, String>>> getOrderSalesTypes() async {
+    try {
+      return AppSuccess(await _localDataSource.getOrderSalesTypes());
+    } on Object {
+      return const AppFailureResult(
+        AppFailure(
+          code: 'pos_order_context_read_failed',
+          message: 'No se pudo leer el tipo de venta del pedido abierto.',
+        ),
+      );
+    }
+  }
+
+  @override
+  Future<AppResult<void>> saveOrderSalesType({
+    required String orderKey,
+    required String salesTypeId,
+  }) async {
+    try {
+      await _localDataSource.saveOrderSalesType(
+        orderKey: orderKey,
+        salesTypeId: salesTypeId,
+      );
+      return const AppSuccess<void>(null);
+    } on Object {
+      return const AppFailureResult(
+        AppFailure(
+          code: 'pos_order_context_save_failed',
+          message: 'No se pudo guardar el tipo de venta del pedido.',
+        ),
+      );
+    }
+  }
+
+  @override
+  Future<AppResult<void>> clearOrderContext(String orderKey) async {
+    try {
+      await _localDataSource.clearOrderContext(orderKey);
+      return const AppSuccess<void>(null);
+    } on Object {
+      return const AppFailureResult(
+        AppFailure(
+          code: 'pos_order_context_clear_failed',
+          message: 'No se pudo limpiar el tipo de venta del pedido.',
+        ),
+      );
+    }
+  }
+
+  @override
   Future<AppResult<void>> saveTableTicket({
     required String tableId,
     required List<PosCartLine> lines,

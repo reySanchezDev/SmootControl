@@ -73,4 +73,9 @@ final class AdminDataRefreshService {
   Future<AppResult<void>> refreshExchangeRates() {
     return refresh(scopes: {CatalogPullScope.exchangeRates});
   }
+
+  /// Refreshes sales types, packaging catalog and stock.
+  Future<AppResult<void>> refreshPackaging() {
+    return refresh(scopes: {CatalogPullScope.packaging});
+  }
 }

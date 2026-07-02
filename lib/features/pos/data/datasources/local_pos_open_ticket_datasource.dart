@@ -17,6 +17,39 @@ final class LocalPosOpenTicketDataSource {
     return rows.map(PosOpenTicketLineModel.fromLocal).toList();
   }
 
+  /// Reads selected sales type by open order key.
+  Future<Map<String, String>> getOrderSalesTypes() async {
+    final rows = await _database.select(_database.localPosOrderContexts).get();
+    return {
+      for (final row in rows) row.orderKey: row.salesTypeId,
+    };
+  }
+
+  /// Saves selected sales type for one open order.
+  Future<void> saveOrderSalesType({
+    required String orderKey,
+    required String salesTypeId,
+  }) async {
+    final now = DateTime.now();
+    await _database
+        .into(_database.localPosOrderContexts)
+        .insertOnConflictUpdate(
+          LocalPosOrderContextsCompanion.insert(
+            orderKey: orderKey,
+            salesTypeId: salesTypeId,
+            createdAt: now,
+            updatedAt: now,
+          ),
+        );
+  }
+
+  /// Clears one open order context.
+  Future<void> clearOrderContext(String orderKey) async {
+    await (_database.delete(
+      _database.localPosOrderContexts,
+    )..where((context) => context.orderKey.equals(orderKey))).go();
+  }
+
   /// Replaces the stored ticket for a table.
   Future<void> replaceTableTicket({
     required String tableId,

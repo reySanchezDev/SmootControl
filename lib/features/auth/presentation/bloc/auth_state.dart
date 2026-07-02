@@ -47,6 +47,18 @@ final class AuthInitialSetupRequired extends AuthState {
   const AuthInitialSetupRequired();
 }
 
+/// State used when a clean device must be restored from Supabase.
+final class AuthDeviceInitializationRequired extends AuthState {
+  /// Creates device initialization required state.
+  const AuthDeviceInitializationRequired();
+}
+
+/// State used when the first remote administrator must be created.
+final class AuthRemoteInitialSetupRequired extends AuthState {
+  /// Creates remote initial setup required state.
+  const AuthRemoteInitialSetupRequired();
+}
+
 /// Auth failure state.
 final class AuthFailure extends AuthState {
   /// Creates failure state.

@@ -28,6 +28,12 @@ enum CatalogPullScope {
 
   /// Daily exchange rates.
   exchangeRates,
+
+  /// Sales types, packaging catalog, rules and packaging stock.
+  packaging,
+
+  /// Open/closed cash register sessions needed by POS devices.
+  cashRegisterSessions,
 }
 
 /// Pulls remote operational catalog data into the local POS database.

@@ -57,12 +57,15 @@ Future<void> _saveSingleSale(
 
   final now = DateTime.now();
   final saleId = const Uuid().v4();
+  final salesType = current.selectedSalesType;
   final sale = Sale(
     id: saleId,
     invoiceNumber: invoiceNumbers.single,
     tableId: current.selectedTableId,
     cashRegisterSessionId: cashRegisterSessionId,
     paymentMethodId: current.selectedPaymentMethodId!,
+    salesTypeId: salesType?.id,
+    salesTypeName: salesType?.name,
     paymentReference: event.paymentReference?.trim().isEmpty ?? true
         ? null
         : event.paymentReference!.trim(),
@@ -90,6 +93,15 @@ Future<void> _saveSingleSale(
         emit(current);
         return;
       }
+      final contextCleared = await _clearPersistedActiveOrderContext(
+        bloc,
+        current,
+        emit,
+      );
+      if (!contextCleared) {
+        emit(current);
+        return;
+      }
       final tables = await _resetSelectedTableDisplayNameIfNeeded(
         bloc,
         current,
@@ -103,6 +115,8 @@ Future<void> _saveSingleSale(
         current.copyWith(
           cartLines: const [],
           cartLinesByTable: _cartsWithActiveCart(current, const []),
+          salesTypeIdByOrderKey: _salesTypesWithoutActiveOrder(current),
+          selectedSalesTypeId: _defaultSalesTypeId(current.salesTypes),
           splitAccountsByTable: _splitAccountsWithoutActiveTable(current),
           tables: tables,
           clearSplitAccounts: true,
@@ -112,6 +126,7 @@ Future<void> _saveSingleSale(
       );
     case AppFailureResult(:final error):
       emit(PosFailure(error));
+      emit(current);
   }
 }
 
@@ -126,6 +141,23 @@ Future<bool> _clearPersistedActiveTicket(
   final result = await bloc._openTicketRepository.saveTableTicket(
     tableId: tableId,
     lines: const [],
+  );
+  switch (result) {
+    case AppSuccess():
+      return true;
+    case AppFailureResult(:final error):
+      emit(PosFailure(error));
+      return false;
+  }
+}
+
+Future<bool> _clearPersistedActiveOrderContext(
+  PosBloc bloc,
+  PosReady current,
+  Emitter<PosState> emit,
+) async {
+  final result = await bloc._openTicketRepository.clearOrderContext(
+    current.activeCartKey,
   );
   switch (result) {
     case AppSuccess():
@@ -182,6 +214,7 @@ Future<void> _saveSplitSales(
   for (var index = 0; index < current.splitAccounts.length; index += 1) {
     final account = current.splitAccounts[index];
     final saleId = const Uuid().v4();
+    final salesType = current.selectedSalesType;
     final items = _buildSplitItems(
       account: account,
       current: current,
@@ -196,6 +229,8 @@ Future<void> _saveSplitSales(
       tableAccountId: account.id,
       cashRegisterSessionId: cashRegisterSessionId,
       paymentMethodId: account.paymentMethodId!,
+      salesTypeId: salesType?.id,
+      salesTypeName: salesType?.name,
       paymentReference: account.paymentReference?.trim().isEmpty ?? true
           ? null
           : account.paymentReference!.trim(),
@@ -223,6 +258,15 @@ Future<void> _saveSplitSales(
     emit(current);
     return;
   }
+  final contextCleared = await _clearPersistedActiveOrderContext(
+    bloc,
+    current,
+    emit,
+  );
+  if (!contextCleared) {
+    emit(current);
+    return;
+  }
   final tables = await _resetSelectedTableDisplayNameIfNeeded(
     bloc,
     current,
@@ -236,6 +280,8 @@ Future<void> _saveSplitSales(
     current.copyWith(
       cartLines: const [],
       cartLinesByTable: _cartsWithActiveCart(current, const []),
+      salesTypeIdByOrderKey: _salesTypesWithoutActiveOrder(current),
+      selectedSalesTypeId: _defaultSalesTypeId(current.salesTypes),
       splitAccountsByTable: _splitAccountsWithoutActiveTable(current),
       tables: tables,
       clearSplitAccounts: true,

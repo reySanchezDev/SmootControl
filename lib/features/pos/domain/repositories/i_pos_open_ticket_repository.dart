@@ -7,6 +7,18 @@ abstract interface class IPosOpenTicketRepository {
   /// Reads every locally open table ticket line.
   Future<AppResult<List<PosOpenTicketLine>>> getOpenTickets();
 
+  /// Reads selected sales type by open order key.
+  Future<AppResult<Map<String, String>>> getOrderSalesTypes();
+
+  /// Saves selected sales type for one open order.
+  Future<AppResult<void>> saveOrderSalesType({
+    required String orderKey,
+    required String salesTypeId,
+  });
+
+  /// Clears persisted metadata for one open order.
+  Future<AppResult<void>> clearOrderContext(String orderKey);
+
   /// Replaces the currently stored ticket for one table.
   Future<AppResult<void>> saveTableTicket({
     required String tableId,

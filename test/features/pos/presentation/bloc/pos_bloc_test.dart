@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:bloc_test/bloc_test.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:smoo_control/core/result/app_failure.dart';
 import 'package:smoo_control/core/result/app_result.dart';
@@ -12,10 +14,17 @@ import 'package:smoo_control/features/cash_register/domain/entities/cash_registe
 import 'package:smoo_control/features/cash_register/domain/repositories/i_cash_register_repository.dart';
 import 'package:smoo_control/features/catalog/domain/entities/product_category.dart';
 import 'package:smoo_control/features/catalog/domain/repositories/i_catalog_repository.dart';
+import 'package:smoo_control/features/inventory/domain/entities/inventory_stock_item.dart';
+import 'package:smoo_control/features/inventory/domain/repositories/i_inventory_repository.dart';
 import 'package:smoo_control/features/modifiers/domain/entities/modifier_catalog.dart';
 import 'package:smoo_control/features/modifiers/domain/entities/modifier_group.dart';
 import 'package:smoo_control/features/modifiers/domain/entities/modifier_option.dart';
 import 'package:smoo_control/features/modifiers/domain/repositories/i_modifiers_repository.dart';
+import 'package:smoo_control/features/packaging/domain/entities/packaging_item.dart';
+import 'package:smoo_control/features/packaging/domain/entities/packaging_stock_item.dart';
+import 'package:smoo_control/features/packaging/domain/entities/product_packaging_rule.dart';
+import 'package:smoo_control/features/packaging/domain/entities/sales_type.dart';
+import 'package:smoo_control/features/packaging/domain/repositories/i_packaging_repository.dart';
 import 'package:smoo_control/features/payment_methods/domain/entities/payment_method.dart';
 import 'package:smoo_control/features/payment_methods/domain/repositories/i_payment_methods_repository.dart';
 import 'package:smoo_control/features/pos/domain/entities/pos_cart_line.dart';
@@ -25,6 +34,8 @@ import 'package:smoo_control/features/pos/domain/services/account_separation_ser
 import 'package:smoo_control/features/pos/presentation/bloc/pos_bloc.dart';
 import 'package:smoo_control/features/pos/presentation/bloc/pos_event.dart';
 import 'package:smoo_control/features/pos/presentation/bloc/pos_state.dart';
+import 'package:smoo_control/features/pos/presentation/widgets/pos_more_options_panel.dart';
+import 'package:smoo_control/features/pos/presentation/widgets/pos_payment_amount_dialog.dart';
 import 'package:smoo_control/features/products/domain/entities/product.dart';
 import 'package:smoo_control/features/products/domain/repositories/i_products_repository.dart';
 import 'package:smoo_control/features/sales/domain/entities/sale.dart';
@@ -36,6 +47,7 @@ import 'package:smoo_control/features/settings/domain/repositories/i_business_se
 import 'package:smoo_control/features/tables/domain/entities/restaurant_table.dart';
 import 'package:smoo_control/features/tables/domain/entities/table_account.dart';
 import 'package:smoo_control/features/tables/domain/repositories/i_tables_repository.dart';
+import 'package:smoo_control/l10n/app_localizations.dart';
 
 part 'pos_bloc_fakes.dart';
 part 'pos_bloc_cash_register_test_cases.dart';
@@ -67,6 +79,15 @@ void main() {
       priceInCents: 500,
       costInCents: 150,
       isActive: true,
+    );
+    const trackedOutOfStockProduct = Product(
+      id: 'product-4',
+      categoryId: 'category-1',
+      name: 'Postre limitado',
+      priceInCents: 8000,
+      costInCents: 4000,
+      isActive: true,
+      tracksInventory: true,
     );
     const method = PaymentMethod(
       id: 'cash',
@@ -126,7 +147,9 @@ void main() {
     PosBloc buildBloc({
       ICashRegisterRepository? cashRegisterRepository,
       IPosOpenTicketRepository? openTicketRepository,
+      IPaymentMethodsRepository? paymentMethodsRepository,
       ISalesRepository? salesRepository,
+      IInventoryRepository? inventoryRepository,
     }) {
       return PosBloc(
         catalogRepository: const _CatalogRepositoryFake(
@@ -143,15 +166,21 @@ void main() {
             product,
             unavailableProduct,
             subcategoryProduct,
+            trackedOutOfStockProduct,
           ]),
         ),
+        inventoryRepository:
+            inventoryRepository ?? const _InventoryRepositoryFake(),
         tablesRepository: const _TablesRepositoryFake(
           tablesResult: AppSuccess([table]),
         ),
-        paymentMethodsRepository: const _PaymentMethodsRepositoryFake(
-          methodsResult: AppSuccess([method, transferMethod]),
-        ),
+        paymentMethodsRepository:
+            paymentMethodsRepository ??
+            const _PaymentMethodsRepositoryFake(
+              methodsResult: AppSuccess([method, transferMethod]),
+            ),
         modifiersRepository: const _ModifiersRepositoryFake(),
+        packagingRepository: const _PackagingRepositoryFake(),
         salesRepository: salesRepository ?? _SalesRepositoryFake(),
         settingsRepository: _BusinessSettingsRepositoryFake(),
         cashRegisterRepository:
@@ -186,6 +215,31 @@ void main() {
               'methods',
               [method, transferMethod],
             ),
+      ],
+    );
+
+    blocTest<PosBloc, PosState>(
+      'hides inventory-tracked products without stock in POS',
+      build: () => buildBloc(
+        inventoryRepository: _InventoryRepositoryFake(
+          stockResult: AppSuccess([
+            InventoryStockItem(
+              productId: 'product-4',
+              productName: 'Postre limitado',
+              quantityOnHand: 0,
+              updatedAt: DateTime(2026, 7),
+            ),
+          ]),
+        ),
+      ),
+      act: (bloc) => bloc.add(const PosStarted()),
+      expect: () => [
+        const PosLoading(),
+        isA<PosReady>().having(
+          (state) => state.products.map((product) => product.id),
+          'visible product ids',
+          isNot(contains('product-4')),
+        ),
       ],
     );
 
@@ -404,6 +458,52 @@ void main() {
     );
 
     blocTest<PosBloc, PosState>(
+      'keeps POS ready when checkout save fails',
+      build: () => buildBloc(
+        salesRepository: _FailingSalesRepositoryFake(
+          const AppFailure(
+            code: 'packaging_stock_insufficient',
+            message: 'Stock insuficiente de empaque: Bandeja.',
+          ),
+        ),
+      ),
+      seed: () => PosReady(
+        products: const [product],
+        tables: const [table],
+        paymentMethods: const [method],
+        cartLines: const [PosCartLine(product: product, quantity: 1)],
+        selectedTableId: 'table-1',
+        selectedPaymentMethodId: 'cash',
+        openCashRegisterSession: cashSession,
+      ),
+      act: (bloc) => bloc.add(const PosCheckoutRequested()),
+      expect: () => [
+        isA<PosFailure>().having(
+          (state) => state.failure.message,
+          'message',
+          'Stock insuficiente de empaque: Bandeja.',
+        ),
+        isA<PosReady>()
+            .having((state) => state.cartLines, 'cart preserved', hasLength(1))
+            .having(
+              (state) => state.selectedTableId,
+              'table preserved',
+              'table-1',
+            )
+            .having(
+              (state) => state.selectedPaymentMethodId,
+              'payment preserved',
+              'cash',
+            )
+            .having(
+              (state) => state.openCashRegisterSession?.id,
+              'cash register preserved',
+              'cash-session-1',
+            ),
+      ],
+    );
+
+    blocTest<PosBloc, PosState>(
       'adds a new pending row when the same served product is added again',
       build: buildBloc,
       seed: () => const PosReady(
@@ -503,6 +603,100 @@ void main() {
       expect: () => [isA<PosReady>()],
       verify: (_) {
         expect(sales.savedItemsBySaleId, hasLength(1));
+      },
+    );
+
+    testWidgets(
+      'charges Cordoba from compact more options payment flow',
+      (tester) async {
+        await tester.binding.setSurfaceSize(const Size(390, 720));
+        addTearDown(() => tester.binding.setSurfaceSize(null));
+
+        const cashRoot = PaymentMethod(
+          id: 'cash-root',
+          name: 'Efectivo',
+          affectsCashRegister: false,
+          requiresReference: false,
+          isActive: true,
+          isPaymentTarget: false,
+        );
+        const cordoba = PaymentMethod(
+          id: 'cash-nio',
+          parentId: 'cash-root',
+          name: 'Cordoba',
+          groupName: 'Efectivo',
+          currencyCode: 'NIO',
+          affectsCashRegister: true,
+          requiresReference: false,
+          isActive: true,
+          displayOrder: 10,
+        );
+
+        sales = _SalesRepositoryFake();
+        final bloc = buildBloc(
+          salesRepository: sales,
+          paymentMethodsRepository: const _PaymentMethodsRepositoryFake(
+            methodsResult: AppSuccess([cashRoot, cordoba]),
+          ),
+        );
+        addTearDown(bloc.close);
+
+        final readyLoaded = bloc.stream.firstWhere(
+          (state) => state is PosReady,
+        );
+        bloc.add(const PosStarted());
+        await readyLoaded;
+
+        final tableSelected = bloc.stream.firstWhere(
+          (state) => state is PosReady && state.selectedTableId == table.id,
+        );
+        bloc.add(PosTableSelected(table.id));
+        await tableSelected;
+
+        final productAdded = bloc.stream.firstWhere(
+          (state) => state is PosReady && state.cartLines.isNotEmpty,
+        );
+        bloc.add(const PosProductAdded(product));
+        await productAdded;
+
+        final ready = bloc.state as PosReady;
+        await tester.pumpWidget(
+          MaterialApp(
+            locale: const Locale('es'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: BlocProvider.value(
+              value: bloc,
+              child: Scaffold(
+                body: PosMoreOptionsPanel(
+                  compactOperationalMode: true,
+                  onPaymentParentChanged: (_) {},
+                  state: ready,
+                ),
+              ),
+            ),
+          ),
+        );
+
+        await tester.tap(find.byIcon(Icons.more_horiz));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Efectivo'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Cordoba'));
+        await tester.pumpAndSettle();
+
+        expect(tester.takeException(), isNull);
+        expect(find.byType(PosPaymentAmountDialog), findsOneWidget);
+
+        final saleCompleted = bloc.stream.firstWhere(
+          (state) => state is PosReady && state.lastCompletedSale != null,
+        );
+        await tester.tap(find.text('OK'));
+        await tester.pumpAndSettle();
+        await saleCompleted;
+
+        expect(sales.savedItemsBySaleId, hasLength(1));
+        expect(find.byType(PosPaymentAmountDialog), findsNothing);
       },
     );
 

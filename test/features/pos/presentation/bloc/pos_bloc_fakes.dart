@@ -39,6 +39,29 @@ final class _ProductsRepositoryFake implements IProductsRepository {
   }
 }
 
+final class _InventoryRepositoryFake implements IInventoryRepository {
+  const _InventoryRepositoryFake({
+    this.stockResult = const AppSuccess([]),
+  });
+
+  final AppResult<List<InventoryStockItem>> stockResult;
+
+  @override
+  Future<AppResult<List<InventoryStockItem>>> getTrackedStock() async {
+    return stockResult;
+  }
+
+  @override
+  Future<AppResult<void>> registerPurchase({
+    required String productId,
+    required int quantity,
+    required String userId,
+    String? notes,
+  }) async {
+    return const AppSuccess<void>(null);
+  }
+}
+
 final class _TablesRepositoryFake implements ITablesRepository {
   const _TablesRepositoryFake({required this.tablesResult});
 
@@ -188,6 +211,20 @@ final class _BlockingSalesRepositoryFake extends _SalesRepositoryFake {
   }
 }
 
+final class _FailingSalesRepositoryFake extends _SalesRepositoryFake {
+  _FailingSalesRepositoryFake(this.failure);
+
+  final AppFailure failure;
+
+  @override
+  Future<AppResult<Sale>> saveSale({
+    required Sale sale,
+    required List<SaleItem> items,
+  }) async {
+    return AppFailureResult(failure);
+  }
+}
+
 final class _CashRegisterRepositoryFake implements ICashRegisterRepository {
   const _CashRegisterRepositoryFake(this._session);
 
@@ -299,10 +336,31 @@ final class _PosOpenTicketRepositoryFake implements IPosOpenTicketRepository {
   }) : _tickets = [...tickets];
 
   final List<PosOpenTicketLine> _tickets;
+  final Map<String, String> _salesTypeIdsByOrder = {};
+
+  @override
+  Future<AppResult<void>> clearOrderContext(String orderKey) async {
+    _salesTypeIdsByOrder.remove(orderKey);
+    return const AppSuccess<void>(null);
+  }
 
   @override
   Future<AppResult<List<PosOpenTicketLine>>> getOpenTickets() async {
     return AppSuccess([..._tickets]);
+  }
+
+  @override
+  Future<AppResult<Map<String, String>>> getOrderSalesTypes() async {
+    return AppSuccess({..._salesTypeIdsByOrder});
+  }
+
+  @override
+  Future<AppResult<void>> saveOrderSalesType({
+    required String orderKey,
+    required String salesTypeId,
+  }) async {
+    _salesTypeIdsByOrder[orderKey] = salesTypeId;
+    return const AppSuccess<void>(null);
   }
 
   @override
@@ -323,6 +381,68 @@ final class _PosOpenTicketRepositoryFake implements IPosOpenTicketRepository {
             selectedOptions: line.selectedOptions,
           ),
       ]);
+    return const AppSuccess<void>(null);
+  }
+}
+
+final class _PackagingRepositoryFake implements IPackagingRepository {
+  const _PackagingRepositoryFake();
+
+  @override
+  Future<AppResult<List<SalesType>>> getSalesTypes() async {
+    return const AppSuccess([
+      SalesType(
+        id: 'sales-type-dine-in',
+        code: 'dine_in',
+        name: 'Comer aqui',
+        displayOrder: 0,
+        isDefault: true,
+        isActive: true,
+      ),
+    ]);
+  }
+
+  @override
+  Future<AppResult<SalesType>> saveSalesType(SalesType salesType) async {
+    return AppSuccess(salesType);
+  }
+
+  @override
+  Future<AppResult<List<PackagingItem>>> getPackagingItems() async {
+    return const AppSuccess([]);
+  }
+
+  @override
+  Future<AppResult<PackagingItem>> savePackagingItem(
+    PackagingItem item,
+  ) async {
+    return AppSuccess(item);
+  }
+
+  @override
+  Future<AppResult<List<ProductPackagingRule>>> getRules() async {
+    return const AppSuccess([]);
+  }
+
+  @override
+  Future<AppResult<ProductPackagingRule>> saveRule(
+    ProductPackagingRule rule,
+  ) async {
+    return AppSuccess(rule);
+  }
+
+  @override
+  Future<AppResult<List<PackagingStockItem>>> getPackagingStock() async {
+    return const AppSuccess([]);
+  }
+
+  @override
+  Future<AppResult<void>> registerPackagingPurchase({
+    required String packagingItemId,
+    required int quantity,
+    required String userId,
+    String? notes,
+  }) async {
     return const AppSuccess<void>(null);
   }
 }

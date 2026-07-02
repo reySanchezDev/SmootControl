@@ -12,9 +12,7 @@ if (-not (Test-Path $CredentialsPath)) {
 $requiredKeys = @(
   "SMOO_SUPABASE_URL",
   "SMOO_SUPABASE_PUBLISHABLE_KEY",
-  "SMOO_RESTAURANT_ID",
-  "SMOO_SUPABASE_AUTH_EMAIL",
-  "SMOO_SUPABASE_AUTH_PASSWORD"
+  "SMOO_RESTAURANT_ID"
 )
 
 $values = @{}

@@ -21,6 +21,12 @@ class LocalSales extends Table with SyncColumns {
   /// Payment method identifier.
   TextColumn get paymentMethodId => text()();
 
+  /// Sales type identifier selected for the order.
+  TextColumn get salesTypeId => text().nullable()();
+
+  /// Historical sales type name selected for the order.
+  TextColumn get salesTypeName => text().nullable()();
+
   /// Captured payment reference.
   TextColumn get paymentReference => text().nullable()();
 

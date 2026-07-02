@@ -11,11 +11,16 @@ Future<void> _handlePosStarted(
       .getAnyOpenSessionForCashier(bloc._currentOperatorService.userId);
   final categoriesResult = await bloc._catalogRepository.getCategories();
   final productsResult = await bloc._productsRepository.getProducts();
+  final inventoryStockResult = await bloc._inventoryRepository
+      .getTrackedStock();
   final modifiersResult = await bloc._modifiersRepository.getCatalog();
   final tablesResult = await bloc._tablesRepository.getTables();
   final methodsResult = await bloc._paymentMethodsRepository
       .getPaymentMethods();
+  final salesTypesResult = await bloc._packagingRepository.getSalesTypes();
   final openTicketsResult = await bloc._openTicketRepository.getOpenTickets();
+  final orderSalesTypesResult = await bloc._openTicketRepository
+      .getOrderSalesTypes();
 
   final CashRegisterSession cashSession;
   switch (cashSessionResult) {
@@ -45,11 +50,25 @@ Future<void> _handlePosStarted(
 
   final List<Product> allActiveProducts;
   final List<Product> products;
+  final Map<String, int> stockByProductId;
+  switch (inventoryStockResult) {
+    case AppSuccess(:final value):
+      stockByProductId = {
+        for (final stock in value) stock.productId: stock.quantityOnHand,
+      };
+    case AppFailureResult(:final error):
+      emit(PosFailure(error));
+      return;
+  }
   switch (productsResult) {
     case AppSuccess(:final value):
       allActiveProducts = value.where((product) => product.isActive).toList();
       products = allActiveProducts
-          .where((product) => product.isAvailableInPos)
+          .where(
+            (product) =>
+                product.isAvailableInPos &&
+                _canDisplayProductInPos(product, stockByProductId),
+          )
           .toList();
     case AppFailureResult(:final error):
       emit(PosFailure(error));
@@ -83,6 +102,15 @@ Future<void> _handlePosStarted(
       return;
   }
 
+  final List<SalesType> salesTypes;
+  switch (salesTypesResult) {
+    case AppSuccess(:final value):
+      salesTypes = value.where((type) => type.isActive).toList();
+    case AppFailureResult(:final error):
+      emit(PosFailure(error));
+      return;
+  }
+
   final Map<String, List<PosCartLine>> cartLinesByTable;
   switch (openTicketsResult) {
     case AppSuccess(:final value):
@@ -95,18 +123,48 @@ Future<void> _handlePosStarted(
       return;
   }
 
+  final Map<String, String> salesTypeIdByOrderKey;
+  switch (orderSalesTypesResult) {
+    case AppSuccess(:final value):
+      salesTypeIdByOrderKey = value;
+    case AppFailureResult(:final error):
+      emit(PosFailure(error));
+      return;
+  }
+
   emit(
     PosReady(
       categories: categories,
       products: products,
       modifierCatalog: modifierCatalog,
       tables: tables,
+      salesTypes: salesTypes,
+      salesTypeIdByOrderKey: salesTypeIdByOrderKey,
       paymentMethods: methods,
       cartLinesByTable: cartLinesByTable,
       openCashRegisterSession: cashSession,
       selectedPaymentMethodId: methods.isEmpty ? null : methods.first.id,
+      selectedSalesTypeId: _defaultSalesTypeId(salesTypes),
     ),
   );
+}
+
+bool _canDisplayProductInPos(
+  Product product,
+  Map<String, int> stockByProductId,
+) {
+  if (!product.tracksInventory) return true;
+  return (stockByProductId[product.id] ?? 0) > 0;
+}
+
+String? _defaultSalesTypeId(List<SalesType> salesTypes) {
+  for (final type in salesTypes) {
+    if (type.isDefault && type.isActive) return type.id;
+  }
+  for (final type in salesTypes) {
+    if (type.isActive) return type.id;
+  }
+  return null;
 }
 
 bool _isSameBusinessDate(DateTime first, DateTime second) {

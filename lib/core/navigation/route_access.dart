@@ -19,6 +19,10 @@ abstract final class RouteAccess {
       AppRoutes.reports => const ['reportes.ver'],
       AppRoutes.catalog || AppRoutes.products => const ['productos.gestionar'],
       AppRoutes.inventory => const ['inventario.gestionar'],
+      AppRoutes.packaging => const [
+        'empaques.gestionar',
+        'tipos_venta.gestionar',
+      ],
       AppRoutes.modifiers => const ['modificadores.gestionar'],
       AppRoutes.paymentMethods => const ['pagos.gestionar'],
       AppRoutes.tables => const ['mesas.gestionar'],

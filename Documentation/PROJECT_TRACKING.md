@@ -908,6 +908,7 @@
 | 2026-06-30 | Auditoria inventario/sync | El pull de stock preserva movimientos locales pendientes de ventas/anulaciones antes de sobrescribir con Supabase. |
 | 2026-06-30 | Supabase inventario endurecido | Migracion `006_harden_inventory_sync.sql` valida restaurante, producto, tipo y cantidad dentro de la RPC `apply_inventory_movement`. |
 | 2026-06-30 | Validacion auditoria inventario | `flutter analyze --no-pub` sin issues, `flutter test --reporter=compact` con 196 tests correctos, build Web release correcto y `supabase db lint --linked --schema public` sin errores. |
+| 2026-07-01 | Incidente APK release sin internet | Documentada causa raiz: permiso `android.permission.INTERNET` faltaba en `android/app/src/main/AndroidManifest.xml`; checklist exige validar permisos del APK final con `aapt dump permissions`. |
 
 ## Riesgos Activos
 

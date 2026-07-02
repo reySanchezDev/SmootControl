@@ -68,9 +68,10 @@ Future<List<String>?> _reserveInvoiceNumbers({
   final prefix = settings.invoicePrefix.trim().isEmpty
       ? BusinessSettings.empty.invoicePrefix
       : settings.invoicePrefix.trim().toUpperCase();
+  final separator = prefix.endsWith('-') ? '' : '-';
   final numbers = [
     for (var index = 0; index < count; index += 1)
-      '$prefix-${firstNumber + index}',
+      '$prefix$separator${firstNumber + index}',
   ];
   final saveResult = await bloc._settingsRepository.saveSettings(
     settings.copyWith(nextInvoiceNumber: firstNumber + count),
@@ -242,6 +243,11 @@ List<PosCartLine> _cartLinesForSplitAccount(
     }
   }
   return linesByKey.values.toList();
+}
+
+Map<String, String> _salesTypesWithoutActiveOrder(PosReady current) {
+  return Map<String, String>.from(current.salesTypeIdByOrderKey)
+    ..remove(current.activeCartKey);
 }
 
 String _categoryName({

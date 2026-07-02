@@ -49,6 +49,8 @@ class _PosReadyViewState extends State<PosReadyView> {
         final catalog = PosCatalogPanel(state: widget.state);
         final ticket = PosTicketPanel(
           lines: widget.state.cartLines,
+          salesTypes: widget.state.salesTypes,
+          selectedSalesTypeId: widget.state.selectedSalesType?.id,
           onProductsVisibilityToggled: () {
             setState(() => _productsVisible = !_productsVisible);
           },

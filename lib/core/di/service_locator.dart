@@ -6,11 +6,14 @@ import 'package:smoo_control/core/database/open_database_connection.dart';
 import 'package:smoo_control/core/di/register_auth_dependencies.dart';
 import 'package:smoo_control/core/di/register_pos_dependencies.dart';
 import 'package:smoo_control/core/session/current_operator_service.dart';
+import 'package:smoo_control/core/session/current_remote_session_service.dart';
 import 'package:smoo_control/core/session/current_restaurant_service.dart';
 import 'package:smoo_control/features/audit/data/datasources/local_audit_log_datasource.dart';
 import 'package:smoo_control/features/audit/data/repositories/audit_log_repository.dart';
 import 'package:smoo_control/features/audit/domain/repositories/i_audit_log_repository.dart';
 import 'package:smoo_control/features/audit/presentation/bloc/audit_log_bloc.dart';
+import 'package:smoo_control/features/auth/data/services/remote_bootstrap_auth_service.dart';
+import 'package:smoo_control/features/auth/domain/services/device_initialization_service.dart';
 import 'package:smoo_control/features/cash_register/data/datasources/local_cash_register_datasource.dart';
 import 'package:smoo_control/features/cash_register/data/repositories/cash_register_repository.dart';
 import 'package:smoo_control/features/cash_register/domain/repositories/i_cash_register_repository.dart';
@@ -28,11 +31,15 @@ import 'package:smoo_control/features/expenses/domain/repositories/i_expenses_re
 import 'package:smoo_control/features/expenses/presentation/bloc/expenses_bloc.dart';
 import 'package:smoo_control/features/inventory/data/datasources/local_inventory_datasource.dart';
 import 'package:smoo_control/features/inventory/data/repositories/inventory_repository.dart';
+import 'package:smoo_control/features/inventory/data/services/supabase_inventory_admin_read_service.dart';
 import 'package:smoo_control/features/inventory/domain/repositories/i_inventory_repository.dart';
 import 'package:smoo_control/features/modifiers/data/datasources/local_modifiers_datasource.dart';
 import 'package:smoo_control/features/modifiers/data/repositories/modifiers_repository.dart';
 import 'package:smoo_control/features/modifiers/domain/repositories/i_modifiers_repository.dart';
 import 'package:smoo_control/features/modifiers/presentation/bloc/modifiers_bloc.dart';
+import 'package:smoo_control/features/packaging/data/datasources/local_packaging_datasource.dart';
+import 'package:smoo_control/features/packaging/data/repositories/packaging_repository.dart';
+import 'package:smoo_control/features/packaging/domain/repositories/i_packaging_repository.dart';
 import 'package:smoo_control/features/payment_methods/data/datasources/local_payment_methods_datasource.dart';
 import 'package:smoo_control/features/payment_methods/data/repositories/payment_methods_repository.dart';
 import 'package:smoo_control/features/payment_methods/domain/repositories/i_payment_methods_repository.dart';
@@ -53,6 +60,7 @@ import 'package:smoo_control/features/roles/domain/services/access_seed_service.
 import 'package:smoo_control/features/roles/presentation/bloc/roles_bloc.dart';
 import 'package:smoo_control/features/sales/data/datasources/local_sales_datasource.dart';
 import 'package:smoo_control/features/sales/data/repositories/sales_repository.dart';
+import 'package:smoo_control/features/sales/data/repositories/supabase_sales_admin_repository.dart';
 import 'package:smoo_control/features/sales/domain/repositories/i_sales_repository.dart';
 import 'package:smoo_control/features/sales/domain/services/sale_invoice_pdf_service.dart';
 import 'package:smoo_control/features/sales/presentation/bloc/sales_bloc.dart';
@@ -93,6 +101,9 @@ Future<void> configureDependencies() async {
     ..registerLazySingleton<SupabaseAppConfig>(SupabaseAppConfig.new)
     ..registerLazySingleton<CurrentRestaurantService>(
       CurrentRestaurantService.new,
+    )
+    ..registerLazySingleton<CurrentRemoteSessionService>(
+      CurrentRemoteSessionService.new,
     )
     ..registerLazySingleton<http.Client>(
       http.Client.new,
@@ -142,6 +153,24 @@ Future<void> configureDependencies() async {
     ..registerLazySingleton<IInventoryRepository>(
       () => InventoryRepository(
         serviceLocator<LocalInventoryDataSource>(),
+        syncQueueRepository: serviceLocator<ISyncQueueRepository>(),
+        remoteSender: serviceLocator<ISyncRemoteSender>(),
+      ),
+    )
+    ..registerLazySingleton<SupabaseInventoryAdminReadService>(
+      () => SupabaseInventoryAdminReadService(
+        config: serviceLocator<SupabaseAppConfig>(),
+        restaurantService: serviceLocator<CurrentRestaurantService>(),
+        remoteSessionService: serviceLocator<CurrentRemoteSessionService>(),
+        client: serviceLocator<http.Client>(),
+      ),
+    )
+    ..registerLazySingleton<LocalPackagingDataSource>(
+      () => LocalPackagingDataSource(serviceLocator<AppDatabase>()),
+    )
+    ..registerLazySingleton<IPackagingRepository>(
+      () => PackagingRepository(
+        serviceLocator<LocalPackagingDataSource>(),
         syncQueueRepository: serviceLocator<ISyncQueueRepository>(),
         remoteSender: serviceLocator<ISyncRemoteSender>(),
       ),
@@ -252,6 +281,7 @@ Future<void> configureDependencies() async {
       () => SupabaseReportSummaryService(
         config: serviceLocator<SupabaseAppConfig>(),
         restaurantService: serviceLocator<CurrentRestaurantService>(),
+        remoteSessionService: serviceLocator<CurrentRemoteSessionService>(),
         client: serviceLocator<http.Client>(),
       ),
     )
@@ -280,7 +310,6 @@ Future<void> configureDependencies() async {
     ..registerLazySingleton<IRolesRepository>(
       () => RolesRepository(
         serviceLocator<LocalRolesDataSource>(),
-        syncQueueRepository: serviceLocator<ISyncQueueRepository>(),
       ),
     )
     ..registerLazySingleton<AccessControlService>(
@@ -332,6 +361,7 @@ Future<void> configureDependencies() async {
       () => LocalSalesDataSource(
         serviceLocator<AppDatabase>(),
         inventoryDataSource: serviceLocator<LocalInventoryDataSource>(),
+        packagingDataSource: serviceLocator<LocalPackagingDataSource>(),
       ),
     )
     ..registerLazySingleton<ISalesRepository>(
@@ -339,12 +369,21 @@ Future<void> configureDependencies() async {
         serviceLocator<LocalSalesDataSource>(),
         syncQueueRepository: serviceLocator<ISyncQueueRepository>(),
         inventoryDataSource: serviceLocator<LocalInventoryDataSource>(),
+        packagingDataSource: serviceLocator<LocalPackagingDataSource>(),
         currentOperatorService: serviceLocator<CurrentOperatorService>(),
+      ),
+    )
+    ..registerLazySingleton<SupabaseSalesAdminRepository>(
+      () => SupabaseSalesAdminRepository(
+        config: serviceLocator<SupabaseAppConfig>(),
+        restaurantService: serviceLocator<CurrentRestaurantService>(),
+        remoteSessionService: serviceLocator<CurrentRemoteSessionService>(),
+        client: serviceLocator<http.Client>(),
       ),
     )
     ..registerFactory<SalesBloc>(
       () => SalesBloc(
-        repository: serviceLocator<ISalesRepository>(),
+        repository: serviceLocator<SupabaseSalesAdminRepository>(),
         auditLogRepository: serviceLocator<IAuditLogRepository>(),
       ),
     )
@@ -361,17 +400,40 @@ Future<void> configureDependencies() async {
     )
     ..registerLazySingleton<ISyncRemoteSender>(
       () => SupabaseSyncRemoteSender(
+        database: serviceLocator<AppDatabase>(),
         config: serviceLocator<SupabaseAppConfig>(),
         restaurantService: serviceLocator<CurrentRestaurantService>(),
+        remoteSessionService: serviceLocator<CurrentRemoteSessionService>(),
         client: serviceLocator<http.Client>(),
       ),
     )
-    ..registerLazySingleton<ICatalogPullService>(
+    ..registerLazySingleton<SupabaseCatalogPullService>(
       () => SupabaseCatalogPullService(
         database: serviceLocator<AppDatabase>(),
         config: serviceLocator<SupabaseAppConfig>(),
         restaurantService: serviceLocator<CurrentRestaurantService>(),
+        remoteSessionService: serviceLocator<CurrentRemoteSessionService>(),
         client: serviceLocator<http.Client>(),
+      ),
+    )
+    ..registerLazySingleton<ICatalogPullService>(
+      serviceLocator.get<SupabaseCatalogPullService>,
+    )
+    ..registerLazySingleton<RemoteBootstrapAuthService>(
+      () => RemoteBootstrapAuthService(
+        config: serviceLocator<SupabaseAppConfig>(),
+        restaurantService: serviceLocator<CurrentRestaurantService>(),
+        remoteSessionService: serviceLocator<CurrentRemoteSessionService>(),
+        client: serviceLocator<http.Client>(),
+      ),
+    )
+    ..registerLazySingleton<DeviceInitializationService>(
+      () => DeviceInitializationService(
+        database: serviceLocator<AppDatabase>(),
+        config: serviceLocator<SupabaseAppConfig>(),
+        restaurantService: serviceLocator<CurrentRestaurantService>(),
+        remoteAuthService: serviceLocator<RemoteBootstrapAuthService>(),
+        catalogPullService: serviceLocator<SupabaseCatalogPullService>(),
       ),
     )
     ..registerLazySingleton<AdminDataRefreshService>(

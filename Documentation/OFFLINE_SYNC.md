@@ -81,6 +81,63 @@ La app debe operar sin internet para ventas, gastos y anulaciones locales.
 - No marcar una operacion como sincronizada si el envio remoto no confirma exito.
 - Mientras Supabase remoto no este configurado, el envio remoto debe fallar de forma explicita y auditable.
 
+## Regla De Seguridad: Sincronizacion POS Por Dispositivo
+
+La sincronizacion operativa del POS no debe depender de una sesion humana de
+administrador, ni de una clave quemada en el APK. Durante la inicializacion de
+la tableta, un administrador remoto valida el dispositivo y Supabase registra
+una credencial tecnica unica para esa instalacion.
+
+El dispositivo guarda localmente:
+
+- `syncDeviceId`
+- `syncDeviceSecret`
+
+Supabase guarda solo el hash del secreto en `pos_devices`. Las ventas y cajas
+se suben por RPCs controlados:
+
+- `pos_sync_cash_register_session`
+- `pos_sync_sale`
+- `pos_sync_operating_expense`
+- `pos_sync_table_account`
+
+Esos RPCs validan el dispositivo activo antes de escribir y no habilitan acceso
+general al catalogo administrativo. La sesion remota del propietario se usa
+para inicializar/restaurar y administrar; el POS usa PIN local y credencial de
+dispositivo para sincronizar.
+
+Si una tableta fue inicializada antes de existir esta credencial, debe
+restaurarse nuevamente desde Supabase para activar la sincronizacion POS por
+dispositivo.
+
+### Incidente Documentado: `pgcrypto.digest` En RPC De Dispositivo
+
+El 2026-07-01 la inicializacion Web/APK validaba correctamente el administrador
+remoto, pero fallaba al restaurar el dispositivo con el mensaje generico
+`No se pudo restaurar la tableta desde Supabase`.
+
+Causa real:
+
+- `register_pos_device` y `assert_pos_device` usaban `digest()` de `pgcrypto`.
+- En Supabase la extension vive en el esquema `extensions`.
+- Las funciones `SECURITY DEFINER` estaban con `search_path = public`.
+- PostgREST devolvia error de RPC porque dentro de la funcion no encontraba
+  `digest(text, unknown)`.
+
+Correccion:
+
+- Migracion `012_pos_device_pgcrypto_search_path.sql`.
+- `CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA extensions`.
+- Funciones con `SET search_path = public, extensions`.
+- Uso explicito de `extensions.digest(...)`.
+
+Regla para futuros RPCs:
+
+- Toda funcion `SECURITY DEFINER` que use extensiones debe declarar el esquema
+  requerido en `search_path` o llamar la funcion con esquema explicito.
+- Despues de migrar RPCs se debe probar por HTTP real, no solo verificando que
+  la funcion exista en Postgres.
+
 ## Regla Operativa: POS No Depende De La Red
 
 La venta, el gasto, la apertura/cierre de caja y los cambios operativos deben

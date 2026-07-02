@@ -9,11 +9,15 @@ import 'package:smoo_control/l10n/app_localizations.dart';
 class SalesSearchableList extends StatelessWidget {
   /// Creates the sales searchable list.
   const SalesSearchableList({
+    required this.onOpenDetails,
     required this.onPreviewPdf,
     required this.onVoid,
     required this.sales,
     super.key,
   });
+
+  /// Opens the full detail for a sale.
+  final void Function(BuildContext context, Sale sale) onOpenDetails;
 
   /// Opens the PDF preview for a sale.
   final Future<void> Function(BuildContext context, Sale sale) onPreviewPdf;
@@ -42,6 +46,7 @@ class SalesSearchableList extends StatelessWidget {
       itemBuilder: (context, sale) => SaleTile(
         sale: sale,
         statusLabel: _saleStatusLabel(l10n, sale.status),
+        onOpenDetails: () => onOpenDetails(context, sale),
         onPreviewPdf: () => onPreviewPdf(context, sale),
         onVoid: sale.status == SaleStatus.completed
             ? () => onVoid(context, sale)

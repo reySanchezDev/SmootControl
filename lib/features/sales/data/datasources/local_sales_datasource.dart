@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:smoo_control/core/database/app_database.dart';
 import 'package:smoo_control/features/inventory/data/datasources/local_inventory_datasource.dart';
+import 'package:smoo_control/features/packaging/data/datasources/local_packaging_datasource.dart';
 import 'package:smoo_control/features/sales/data/models/sale_item_model.dart';
 import 'package:smoo_control/features/sales/data/models/sale_model.dart';
 import 'package:smoo_control/features/sales/data/models/sale_void_model.dart';
@@ -12,10 +13,13 @@ final class LocalSalesDataSource {
   const LocalSalesDataSource(
     this._database, {
     LocalInventoryDataSource? inventoryDataSource,
-  }) : _inventoryDataSource = inventoryDataSource;
+    LocalPackagingDataSource? packagingDataSource,
+  }) : _inventoryDataSource = inventoryDataSource,
+       _packagingDataSource = packagingDataSource;
 
   final AppDatabase _database;
   final LocalInventoryDataSource? _inventoryDataSource;
+  final LocalPackagingDataSource? _packagingDataSource;
 
   /// Returns local sales created between two dates.
   Future<List<SaleModel>> getSales({
@@ -84,6 +88,8 @@ final class LocalSalesDataSource {
               tableAccountId: Value(sale.tableAccountId),
               cashRegisterSessionId: Value(sale.cashRegisterSessionId),
               paymentMethodId: Value(sale.paymentMethodId),
+              salesTypeId: Value(sale.salesTypeId),
+              salesTypeName: Value(sale.salesTypeName),
               paymentReference: Value(sale.paymentReference),
               status: Value(sale.statusValue),
               subtotalInCents: Value(sale.subtotalInCents),
@@ -118,6 +124,12 @@ final class LocalSalesDataSource {
 
       await _inventoryDataSource?.applySaleMovements(
         saleId: sale.id,
+        items: items,
+        userId: inventoryUserId ?? '',
+      );
+      await _packagingDataSource?.applySaleMovements(
+        saleId: sale.id,
+        salesTypeId: sale.salesTypeId,
         items: items,
         userId: inventoryUserId ?? '',
       );
@@ -162,6 +174,10 @@ final class LocalSalesDataSource {
       await _inventoryDataSource?.applySaleVoidMovements(
         saleId: saleId,
         items: saleItems,
+        userId: voidedBy,
+      );
+      await _packagingDataSource?.applySaleVoidMovements(
+        saleId: saleId,
         userId: voidedBy,
       );
     });

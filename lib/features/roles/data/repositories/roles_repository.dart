@@ -6,19 +6,13 @@ import 'package:smoo_control/features/roles/data/models/access_role_model.dart';
 import 'package:smoo_control/features/roles/domain/entities/access_permission.dart';
 import 'package:smoo_control/features/roles/domain/entities/access_role.dart';
 import 'package:smoo_control/features/roles/domain/repositories/i_roles_repository.dart';
-import 'package:smoo_control/features/sync/domain/entities/sync_queue_item.dart';
-import 'package:smoo_control/features/sync/domain/repositories/i_sync_queue_repository.dart';
 
 /// Roles repository backed by the local offline database.
 final class RolesRepository implements IRolesRepository {
   /// Creates a roles repository.
-  const RolesRepository(
-    this._localDataSource, {
-    ISyncQueueRepository? syncQueueRepository,
-  }) : _syncQueueRepository = syncQueueRepository;
+  const RolesRepository(this._localDataSource);
 
   final LocalRolesDataSource _localDataSource;
-  final ISyncQueueRepository? _syncQueueRepository;
 
   @override
   Future<AppResult<List<AccessPermission>>> getPermissions() async {
@@ -70,7 +64,6 @@ final class RolesRepository implements IRolesRepository {
       final model = AccessPermissionModel.fromEntity(permission);
       final saved = await _localDataSource.savePermission(model);
       final entity = saved.toEntity();
-      await _enqueuePermission(entity);
 
       return AppSuccess(entity);
     } on Object catch (error) {
@@ -84,7 +77,6 @@ final class RolesRepository implements IRolesRepository {
       final model = AccessRoleModel.fromEntity(role);
       final saved = await _localDataSource.saveRole(model);
       final entity = saved.toEntity();
-      await _enqueueRole(entity);
 
       return AppSuccess(entity);
     } on Object catch (error) {
@@ -99,10 +91,6 @@ final class RolesRepository implements IRolesRepository {
   }) async {
     try {
       await _localDataSource.setRolePermissions(
-        roleId: roleId,
-        permissionCodes: permissionCodes,
-      );
-      await _enqueueRolePermissions(
         roleId: roleId,
         permissionCodes: permissionCodes,
       );
@@ -123,49 +111,6 @@ final class RolesRepository implements IRolesRepository {
   ) {
     return AppFailureResult(
       AppFailure(code: code, message: message, cause: error),
-    );
-  }
-
-  Future<void> _enqueuePermission(AccessPermission permission) async {
-    await _syncQueueRepository?.enqueue(
-      entityType: 'permissions',
-      entityId: permission.code,
-      operation: SyncOperation.create,
-      payload: {
-        'code': permission.code,
-        'name': permission.name,
-        'description': permission.description,
-      },
-    );
-  }
-
-  Future<void> _enqueueRole(AccessRole role) async {
-    await _syncQueueRepository?.enqueue(
-      entityType: 'roles',
-      entityId: role.id,
-      operation: SyncOperation.create,
-      payload: {
-        'id': role.id,
-        'name': role.name,
-        'description': role.description,
-        'isSystem': role.isSystem,
-        'isActive': role.isActive,
-      },
-    );
-  }
-
-  Future<void> _enqueueRolePermissions({
-    required String roleId,
-    required List<String> permissionCodes,
-  }) async {
-    await _syncQueueRepository?.enqueue(
-      entityType: 'role_permissions',
-      entityId: roleId,
-      operation: SyncOperation.update,
-      payload: {
-        'roleId': roleId,
-        'permissionCodes': permissionCodes,
-      },
     );
   }
 }

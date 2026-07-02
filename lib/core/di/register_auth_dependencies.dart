@@ -1,8 +1,10 @@
 import 'package:get_it/get_it.dart';
 import 'package:smoo_control/core/database/app_database.dart';
 import 'package:smoo_control/core/session/current_operator_service.dart';
+import 'package:smoo_control/core/session/current_remote_session_service.dart';
 import 'package:smoo_control/features/auth/data/repositories/local_auth_repository.dart';
 import 'package:smoo_control/features/auth/domain/repositories/i_auth_repository.dart';
+import 'package:smoo_control/features/auth/domain/services/device_initialization_service.dart';
 import 'package:smoo_control/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:smoo_control/features/roles/domain/services/access_seed_service.dart';
 
@@ -17,5 +19,11 @@ void registerAuthDependencies(GetIt locator) {
         currentOperatorService: locator<CurrentOperatorService>(),
       ),
     )
-    ..registerFactory<AuthBloc>(() => AuthBloc(locator<IAuthRepository>()));
+    ..registerFactory<AuthBloc>(
+      () => AuthBloc(
+        locator<IAuthRepository>(),
+        deviceInitializationService: locator<DeviceInitializationService>(),
+        remoteSessionService: locator<CurrentRemoteSessionService>(),
+      ),
+    );
 }

@@ -37,3 +37,21 @@ class LocalPosOpenTicketLines extends Table {
   @override
   Set<Column<Object>> get primaryKey => {id};
 }
+
+/// Open POS order metadata by table or no-table key.
+class LocalPosOrderContexts extends Table {
+  /// Table identifier or reserved no-table key.
+  TextColumn get orderKey => text()();
+
+  /// Selected sales type identifier.
+  TextColumn get salesTypeId => text()();
+
+  /// Local creation date.
+  DateTimeColumn get createdAt => dateTime()();
+
+  /// Local last update date.
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {orderKey};
+}

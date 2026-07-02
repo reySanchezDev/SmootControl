@@ -2,7 +2,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smoo_control/core/result/app_result.dart';
 import 'package:smoo_control/features/audit/domain/entities/audit_log_entry.dart';
 import 'package:smoo_control/features/audit/domain/repositories/i_audit_log_repository.dart';
-import 'package:smoo_control/features/payment_methods/domain/entities/payment_method.dart';
 import 'package:smoo_control/features/payment_methods/domain/repositories/i_payment_methods_repository.dart';
 import 'package:smoo_control/features/payment_methods/presentation/bloc/payment_methods_event.dart';
 import 'package:smoo_control/features/payment_methods/presentation/bloc/payment_methods_state.dart';
@@ -94,12 +93,6 @@ final class PaymentMethodsBloc
     PaymentMethodRemoved event,
     Emitter<PaymentMethodsState> emit,
   ) async {
-    final currentMethods = await _currentMethods();
-    if (event.method.parentId == null) {
-      emit(PaymentMethodsLoaded(currentMethods));
-      return;
-    }
-
     emit(const PaymentMethodsLoading());
     final removeResult = await _repository.removePaymentMethodLevel(
       event.method,
@@ -132,16 +125,6 @@ final class PaymentMethodsBloc
         failure: PaymentMethodsFailure.new,
       ),
     );
-  }
-
-  Future<List<PaymentMethod>> _currentMethods() async {
-    return switch (state) {
-      PaymentMethodsLoaded(:final methods) => methods,
-      _ => switch (await _repository.getPaymentMethods()) {
-        AppSuccess(:final value) => value,
-        AppFailureResult() => const <PaymentMethod>[],
-      },
-    };
   }
 
   Future<bool> _refreshRemoteCache(

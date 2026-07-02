@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:smoo_control/core/database/app_database.dart';
 import 'package:smoo_control/core/result/app_result.dart';
 import 'package:smoo_control/features/inventory/data/datasources/local_inventory_datasource.dart';
+import 'package:smoo_control/features/packaging/data/datasources/local_packaging_datasource.dart';
 import 'package:smoo_control/features/sales/data/datasources/local_sales_datasource.dart';
 import 'package:smoo_control/features/sales/data/repositories/sales_repository.dart';
 import 'package:smoo_control/features/sales/domain/entities/sale.dart';
@@ -353,6 +354,237 @@ void main() {
         'sale_void',
       ]);
     });
+
+    test('decrements packaging stock for to-go sales', () async {
+      final packaging = LocalPackagingDataSource(database);
+      repository = SalesRepository(
+        LocalSalesDataSource(database, packagingDataSource: packaging),
+        syncQueueRepository: syncQueueRepository,
+        packagingDataSource: packaging,
+      );
+      await _insertProduct(database, tracksInventory: false);
+      await _insertPackagingSetup(database, packaging);
+
+      final createdAt = DateTime(2026, 6, 23, 10);
+      final result = await repository.saveSale(
+        sale: Sale(
+          id: 'sale-packaging',
+          invoiceNumber: 'F-200',
+          paymentMethodId: 'cash',
+          status: SaleStatus.completed,
+          subtotalInCents: 300,
+          totalInCents: 300,
+          salesTypeId: 'sales-type-to-go',
+          salesTypeName: 'Para llevar',
+          createdAt: createdAt,
+        ),
+        items: [
+          SaleItem(
+            id: 'item-packaging',
+            saleId: 'sale-packaging',
+            productId: 'product-1',
+            productName: 'Pollo',
+            categoryName: 'Comidas',
+            quantity: 3,
+            unitPriceInCents: 100,
+            unitCostInCents: 50,
+            createdAt: createdAt,
+          ),
+        ],
+      );
+
+      final stockRows = await database
+          .select(database.localPackagingStock)
+          .get();
+      final movements = await database
+          .select(database.localPackagingMovements)
+          .get();
+      final syncResult = await syncQueueRepository.getPendingItems();
+      final saleSync =
+          (syncResult as AppSuccess<List<SyncQueueItem>>).value.last;
+      final packagingPayload =
+          saleSync.payload['packagingMovements']! as List<Object?>;
+      final packagingMovement =
+          packagingPayload.single! as Map<String, Object?>;
+
+      expect(result, isA<AppSuccess<Sale>>());
+      expect(stockRows.single.quantityOnHand, 7);
+      expect(movements.map((movement) => movement.movementType), [
+        'packaging_purchase',
+        'packaging_sale',
+      ]);
+      expect(packagingPayload, hasLength(1));
+      expect(packagingMovement['quantityDelta'], -3);
+      expect(saleSync.payload['sale'], isA<Map<String, Object?>>());
+      expect(
+        (saleSync.payload['sale']! as Map<String, Object?>)['salesTypeName'],
+        'Para llevar',
+      );
+    });
+
+    test('does not decrement packaging stock for dine-in sales', () async {
+      final packaging = LocalPackagingDataSource(database);
+      repository = SalesRepository(
+        LocalSalesDataSource(database, packagingDataSource: packaging),
+        syncQueueRepository: syncQueueRepository,
+        packagingDataSource: packaging,
+      );
+      await _insertProduct(database, tracksInventory: false);
+      await _insertPackagingSetup(database, packaging);
+      await _insertDineInPackagingRule(database);
+
+      final createdAt = DateTime(2026, 6, 23, 10);
+      final result = await repository.saveSale(
+        sale: Sale(
+          id: 'sale-packaging-dine-in',
+          invoiceNumber: 'F-203',
+          paymentMethodId: 'cash',
+          status: SaleStatus.completed,
+          subtotalInCents: 300,
+          totalInCents: 300,
+          salesTypeId: 'sales-type-dine-in',
+          salesTypeName: 'Comer aqui',
+          createdAt: createdAt,
+        ),
+        items: [
+          SaleItem(
+            id: 'item-packaging-dine-in',
+            saleId: 'sale-packaging-dine-in',
+            productId: 'product-1',
+            productName: 'Pollo',
+            categoryName: 'Comidas',
+            quantity: 3,
+            unitPriceInCents: 100,
+            unitCostInCents: 50,
+            createdAt: createdAt,
+          ),
+        ],
+      );
+
+      final stockRows = await database
+          .select(database.localPackagingStock)
+          .get();
+      final movements = await database
+          .select(database.localPackagingMovements)
+          .get();
+      final syncResult = await syncQueueRepository.getPendingItems();
+      final saleSync =
+          (syncResult as AppSuccess<List<SyncQueueItem>>).value.last;
+      final packagingPayload =
+          saleSync.payload['packagingMovements']! as List<Object?>;
+
+      expect(result, isA<AppSuccess<Sale>>());
+      expect(stockRows.single.quantityOnHand, 10);
+      expect(movements.map((movement) => movement.movementType), [
+        'packaging_purchase',
+      ]);
+      expect(packagingPayload, isEmpty);
+    });
+
+    test('blocks to-go sale when packaging stock is insufficient', () async {
+      final packaging = LocalPackagingDataSource(database);
+      repository = SalesRepository(
+        LocalSalesDataSource(database, packagingDataSource: packaging),
+        syncQueueRepository: syncQueueRepository,
+        packagingDataSource: packaging,
+      );
+      await _insertProduct(database, tracksInventory: false);
+      await _insertPackagingSetup(database, packaging, quantity: 1);
+
+      final result = await repository.saveSale(
+        sale: Sale(
+          id: 'sale-packaging-blocked',
+          invoiceNumber: 'F-201',
+          paymentMethodId: 'cash',
+          status: SaleStatus.completed,
+          subtotalInCents: 200,
+          totalInCents: 200,
+          salesTypeId: 'sales-type-to-go',
+          salesTypeName: 'Para llevar',
+          createdAt: DateTime(2026, 6, 23, 10),
+        ),
+        items: [
+          SaleItem(
+            id: 'item-packaging-blocked',
+            saleId: 'sale-packaging-blocked',
+            productId: 'product-1',
+            productName: 'Pollo',
+            categoryName: 'Comidas',
+            quantity: 2,
+            unitPriceInCents: 100,
+            unitCostInCents: 50,
+            createdAt: DateTime(2026, 6, 23, 10),
+          ),
+        ],
+      );
+
+      final sales = await database.select(database.localSales).get();
+      final stockRows = await database
+          .select(database.localPackagingStock)
+          .get();
+
+      expect(result, isA<AppFailureResult<Sale>>());
+      expect(sales, isEmpty);
+      expect(stockRows.single.quantityOnHand, 1);
+    });
+
+    test('reintegrates packaging stock when a to-go sale is voided', () async {
+      final packaging = LocalPackagingDataSource(database);
+      repository = SalesRepository(
+        LocalSalesDataSource(database, packagingDataSource: packaging),
+        syncQueueRepository: syncQueueRepository,
+        packagingDataSource: packaging,
+      );
+      await _insertProduct(database, tracksInventory: false);
+      await _insertPackagingSetup(database, packaging);
+      final createdAt = DateTime(2026, 6, 23, 10);
+      await repository.saveSale(
+        sale: Sale(
+          id: 'sale-packaging-void',
+          invoiceNumber: 'F-202',
+          paymentMethodId: 'cash',
+          status: SaleStatus.completed,
+          subtotalInCents: 200,
+          totalInCents: 200,
+          salesTypeId: 'sales-type-to-go',
+          salesTypeName: 'Para llevar',
+          createdAt: createdAt,
+        ),
+        items: [
+          SaleItem(
+            id: 'item-packaging-void',
+            saleId: 'sale-packaging-void',
+            productId: 'product-1',
+            productName: 'Pollo',
+            categoryName: 'Comidas',
+            quantity: 2,
+            unitPriceInCents: 100,
+            unitCostInCents: 50,
+            createdAt: createdAt,
+          ),
+        ],
+      );
+
+      await repository.voidSale(
+        saleId: 'sale-packaging-void',
+        reason: 'Error',
+        voidedBy: 'admin-1',
+      );
+
+      final stockRows = await database
+          .select(database.localPackagingStock)
+          .get();
+      final movements = await database
+          .select(database.localPackagingMovements)
+          .get();
+
+      expect(stockRows.single.quantityOnHand, 10);
+      expect(movements.map((movement) => movement.movementType), [
+        'packaging_purchase',
+        'packaging_sale',
+        'packaging_sale_void',
+      ]);
+    });
   });
 }
 
@@ -377,4 +609,93 @@ Future<void> _insertProduct(
           updatedAt: Value(now),
         ),
       );
+}
+
+Future<void> _insertDineInPackagingRule(AppDatabase database) async {
+  final now = DateTime(2026, 6, 23);
+  await database
+      .into(database.localSalesTypes)
+      .insert(
+        LocalSalesTypesCompanion.insert(
+          id: 'sales-type-dine-in',
+          code: 'dine_in',
+          name: 'Comer aqui',
+          displayOrder: const Value(0),
+          isDefault: const Value(true),
+          isActive: const Value(true),
+          createdAt: now,
+          updatedAt: now,
+        ),
+      );
+  await database
+      .into(database.localProductPackagingRules)
+      .insert(
+        LocalProductPackagingRulesCompanion.insert(
+          id: 'rule-dine-in-should-not-consume',
+          productId: 'product-1',
+          salesTypeId: 'sales-type-dine-in',
+          packagingItemId: 'packaging-1',
+          quantityPerUnit: const Value(1),
+          isActive: const Value(true),
+          createdAt: now,
+          updatedAt: now,
+        ),
+      );
+}
+
+Future<void> _insertPackagingSetup(
+  AppDatabase database,
+  LocalPackagingDataSource packaging, {
+  int quantity = 10,
+}) async {
+  final now = DateTime(2026, 6, 23);
+  await database
+      .into(database.localSalesTypes)
+      .insert(
+        LocalSalesTypesCompanion.insert(
+          id: 'sales-type-to-go',
+          code: 'to_go',
+          name: 'Para llevar',
+          displayOrder: const Value(1),
+          isDefault: const Value(false),
+          isActive: const Value(true),
+          createdAt: now,
+          updatedAt: now,
+        ),
+      );
+  await database
+      .into(database.localPackagingItems)
+      .insert(
+        LocalPackagingItemsCompanion.insert(
+          id: 'packaging-1',
+          name: 'Bandeja',
+          costInCents: const Value(30),
+          tracksStock: const Value(true),
+          isActive: const Value(true),
+          createdAt: now,
+          updatedAt: now,
+        ),
+      );
+  await database
+      .into(database.localProductPackagingRules)
+      .insert(
+        LocalProductPackagingRulesCompanion.insert(
+          id: 'rule-1',
+          productId: 'product-1',
+          salesTypeId: 'sales-type-to-go',
+          packagingItemId: 'packaging-1',
+          quantityPerUnit: const Value(1),
+          isActive: const Value(true),
+          createdAt: now,
+          updatedAt: now,
+        ),
+      );
+  await packaging.applyPurchaseMovement(
+    packaging.purchaseMovement(
+      packagingItemId: 'packaging-1',
+      quantity: quantity,
+      unitCostInCents: 30,
+      userId: 'admin-1',
+    ),
+  );
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:smoo_control/core/config/app_build_info.dart';
 import 'package:smoo_control/core/design_system/app_button.dart';
 import 'package:smoo_control/core/design_system/app_input.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
@@ -31,6 +32,8 @@ class _LoginPageState extends State<LoginPage> {
   final _displayNameController = TextEditingController();
   final _emailController = TextEditingController();
   final _pinController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _remoteAdminMode = false;
   String? _localError;
 
   @override
@@ -38,6 +41,7 @@ class _LoginPageState extends State<LoginPage> {
     _displayNameController.dispose();
     _emailController.dispose();
     _pinController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
@@ -90,6 +94,32 @@ class _LoginPageState extends State<LoginPage> {
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 24),
+                      if (!widget.setupRequired) ...[
+                        SegmentedButton<bool>(
+                          segments: const [
+                            ButtonSegment<bool>(
+                              value: false,
+                              icon: Icon(Icons.pin_outlined),
+                              label: Text('POS / PIN'),
+                            ),
+                            ButtonSegment<bool>(
+                              value: true,
+                              icon: Icon(Icons.cloud_done_outlined),
+                              label: Text('Admin remoto'),
+                            ),
+                          ],
+                          selected: {_remoteAdminMode},
+                          onSelectionChanged: (selection) {
+                            setState(() {
+                              _remoteAdminMode = selection.first;
+                              _localError = null;
+                              _pinController.clear();
+                              _passwordController.clear();
+                            });
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                      ],
                       if (widget.setupRequired) ...[
                         AppInput(
                           label: l10n.displayNameField,
@@ -103,12 +133,19 @@ class _LoginPageState extends State<LoginPage> {
                         keyboardType: TextInputType.emailAddress,
                       ),
                       const SizedBox(height: 12),
-                      AppInput(
-                        label: l10n.pinField,
-                        controller: _pinController,
-                        keyboardType: TextInputType.number,
-                        obscureText: true,
-                      ),
+                      if (_remoteAdminMode && !widget.setupRequired)
+                        AppInput(
+                          label: 'Clave remota',
+                          controller: _passwordController,
+                          obscureText: true,
+                        )
+                      else
+                        AppInput(
+                          label: l10n.pinField,
+                          controller: _pinController,
+                          keyboardType: TextInputType.number,
+                          obscureText: true,
+                        ),
                       if (error != null) ...[
                         const SizedBox(height: 16),
                         AppText(
@@ -122,11 +159,26 @@ class _LoginPageState extends State<LoginPage> {
                       AppButton(
                         icon: widget.setupRequired
                             ? Icons.admin_panel_settings_outlined
+                            : _remoteAdminMode
+                            ? Icons.cloud_done_outlined
                             : Icons.login,
                         label: widget.setupRequired
                             ? l10n.createInitialAdminAction
+                            : _remoteAdminMode
+                            ? 'Entrar como administrador'
                             : l10n.loginAction,
                         onPressed: _submit,
+                      ),
+                      const SizedBox(height: 16),
+                      const AppText(
+                        AppBuildInfo.visibleLabel,
+                        maxLines: 1,
+                        textAlign: TextAlign.center,
+                        variant: AppTextVariant.label,
+                        style: TextStyle(
+                          color: AppPalette.textSecondary,
+                          fontSize: 11,
+                        ),
                       ),
                     ],
                   ),
@@ -144,9 +196,14 @@ class _LoginPageState extends State<LoginPage> {
     final displayName = _displayNameController.text.trim();
     final email = _emailController.text.trim();
     final pin = _pinController.text.trim();
+    final password = _passwordController.text;
+
+    final secretIsEmpty = _remoteAdminMode && !widget.setupRequired
+        ? password.trim().isEmpty
+        : pin.isEmpty;
 
     if (email.isEmpty ||
-        pin.isEmpty ||
+        secretIsEmpty ||
         (widget.setupRequired && displayName.isEmpty)) {
       setState(() => _localError = l10n.fieldRequiredError);
       return;
@@ -161,6 +218,13 @@ class _LoginPageState extends State<LoginPage> {
           email: email,
           pin: pin,
         ),
+      );
+      return;
+    }
+
+    if (_remoteAdminMode) {
+      context.read<AuthBloc>().add(
+        AuthRemoteAdminSignInRequested(email: email, password: password),
       );
       return;
     }

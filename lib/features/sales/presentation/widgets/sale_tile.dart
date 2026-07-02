@@ -13,9 +13,13 @@ class SaleTile extends StatelessWidget {
     required this.onPreviewPdf,
     required this.sale,
     required this.statusLabel,
+    this.onOpenDetails,
     this.onVoid,
     super.key,
   });
+
+  /// Opens the sale detail page.
+  final VoidCallback? onOpenDetails;
 
   /// Opens the invoice PDF preview.
   final Future<void> Function() onPreviewPdf;
@@ -35,6 +39,7 @@ class SaleTile extends StatelessWidget {
 
     return ListTile(
       leading: const Icon(Icons.receipt_long_outlined),
+      onTap: onOpenDetails,
       subtitle: AppText(statusLabel, variant: AppTextVariant.label),
       title: AppText(sale.invoiceNumber),
       trailing: Row(

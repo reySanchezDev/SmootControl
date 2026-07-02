@@ -3,6 +3,7 @@ import 'package:smoo_control/core/database/tables/access_control_tables.dart';
 import 'package:smoo_control/core/database/tables/audit_tables.dart';
 import 'package:smoo_control/core/database/tables/cash_expense_tables.dart';
 import 'package:smoo_control/core/database/tables/catalog_tables.dart';
+import 'package:smoo_control/core/database/tables/device_state_tables.dart';
 import 'package:smoo_control/core/database/tables/exchange_rate_tables.dart';
 import 'package:smoo_control/core/database/tables/inventory_tables.dart';
 import 'package:smoo_control/core/database/tables/pos_tables.dart';
@@ -18,12 +19,18 @@ part 'app_database.g.dart';
   tables: [
     LocalProductCategories,
     LocalProducts,
+    LocalSalesTypes,
+    LocalPackagingItems,
+    LocalProductPackagingRules,
     LocalModifierGroups,
     LocalModifierOptions,
     LocalPaymentMethods,
     LocalInventoryStock,
     LocalInventoryMovements,
+    LocalPackagingStock,
+    LocalPackagingMovements,
     LocalPosOpenTicketLines,
+    LocalPosOrderContexts,
     LocalRestaurantTables,
     LocalTableAccounts,
     LocalSales,
@@ -41,6 +48,7 @@ part 'app_database.g.dart';
     LocalUserProfiles,
     LocalAuditLogs,
     LocalSyncSettings,
+    LocalDeviceState,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -48,7 +56,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 19;
+  int get schemaVersion => 22;
 
   @override
   MigrationStrategy get migration {
@@ -187,6 +195,46 @@ class AppDatabase extends _$AppDatabase {
           );
           await migrator.createTable(localInventoryStock);
           await migrator.createTable(localInventoryMovements);
+        }
+        if (from < 20) {
+          await migrator.createTable(localDeviceState);
+        }
+        if (from < 21) {
+          await migrator.createTable(localSalesTypes);
+          await migrator.createTable(localPackagingItems);
+          await migrator.createTable(localProductPackagingRules);
+          await migrator.createTable(localPackagingStock);
+          await migrator.createTable(localPackagingMovements);
+          await migrator.createTable(localPosOrderContexts);
+          await migrator.addColumn(localSales, localSales.salesTypeId);
+          await migrator.addColumn(localSales, localSales.salesTypeName);
+          final now = DateTime.now().toIso8601String();
+          await customStatement(
+            'INSERT OR IGNORE INTO local_sales_types '
+            '(id, code, name, display_order, is_default, is_active, '
+            'sync_status, created_at, updated_at) VALUES '
+            "('11111111-1111-4111-8111-111111111111', "
+            "'dine_in', 'Comer aqui', 0, 1, 1, "
+            "'synced', '$now', '$now')",
+          );
+          await customStatement(
+            'INSERT OR IGNORE INTO local_sales_types '
+            '(id, code, name, display_order, is_default, is_active, '
+            'sync_status, created_at, updated_at) VALUES '
+            "('22222222-2222-4222-8222-222222222222', "
+            "'to_go', 'Para llevar', 1, 0, 1, "
+            "'synced', '$now', '$now')",
+          );
+        }
+        if (from < 22) {
+          await migrator.addColumn(
+            localDeviceState,
+            localDeviceState.syncDeviceId,
+          );
+          await migrator.addColumn(
+            localDeviceState,
+            localDeviceState.syncDeviceSecret,
+          );
         }
       },
     );

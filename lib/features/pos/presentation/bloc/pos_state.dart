@@ -3,6 +3,7 @@ import 'package:smoo_control/core/result/app_failure.dart';
 import 'package:smoo_control/features/cash_register/domain/entities/cash_register_session.dart';
 import 'package:smoo_control/features/catalog/domain/entities/product_category.dart';
 import 'package:smoo_control/features/modifiers/domain/entities/modifier_catalog.dart';
+import 'package:smoo_control/features/packaging/domain/entities/sales_type.dart';
 import 'package:smoo_control/features/payment_methods/domain/entities/payment_method.dart';
 import 'package:smoo_control/features/pos/domain/entities/account_split_draft.dart';
 import 'package:smoo_control/features/pos/domain/entities/pos_cart_line.dart';

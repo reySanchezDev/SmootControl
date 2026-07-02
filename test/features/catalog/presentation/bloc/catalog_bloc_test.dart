@@ -68,7 +68,10 @@ void main() {
       act: (bloc) => bloc.add(const CatalogCategorySaved(category)),
       expect: () => const [
         CatalogLoading(),
-        CatalogLoaded([category]),
+        CatalogLoaded(
+          [category],
+          notice: 'Categoria guardada correctamente.',
+        ),
       ],
       verify: (_) {
         expect(auditRepository.entries.single.action, 'catalog.category.save');
@@ -100,7 +103,10 @@ void main() {
       },
       expect: () => const [
         CatalogLoading(),
-        CatalogLoaded([category]),
+        CatalogLoaded(
+          [category],
+          notice: 'Categoria actualizada correctamente.',
+        ),
       ],
       verify: (_) {
         expect(

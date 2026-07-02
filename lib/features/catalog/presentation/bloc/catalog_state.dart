@@ -26,13 +26,16 @@ final class CatalogLoading extends CatalogState {
 /// Catalog loaded state.
 final class CatalogLoaded extends CatalogState {
   /// Creates a loaded state.
-  const CatalogLoaded(this.categories);
+  const CatalogLoaded(this.categories, {this.notice});
 
   /// Available categories and subcategories.
   final List<ProductCategory> categories;
 
+  /// Optional user-facing message emitted after an action.
+  final String? notice;
+
   @override
-  List<Object?> get props => [categories];
+  List<Object?> get props => [categories, notice];
 }
 
 /// Catalog failure state.

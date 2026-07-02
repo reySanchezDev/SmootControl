@@ -7,7 +7,9 @@ import 'package:smoo_control/features/auth/domain/entities/auth_session.dart';
 import 'package:smoo_control/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:smoo_control/features/auth/presentation/bloc/auth_event.dart';
 import 'package:smoo_control/features/auth/presentation/bloc/auth_state.dart';
+import 'package:smoo_control/features/auth/presentation/pages/device_initialization_page.dart';
 import 'package:smoo_control/features/auth/presentation/pages/login_page.dart';
+import 'package:smoo_control/features/auth/presentation/pages/remote_initial_admin_setup_page.dart';
 import 'package:smoo_control/features/dashboard/presentation/pages/dashboard_page.dart';
 import 'package:smoo_control/features/pos/presentation/pages/pos_page.dart';
 
@@ -24,6 +26,10 @@ class AuthGate extends StatelessWidget {
           AuthInitial() => const AppLoadingPage(),
           AuthLoading() => const AppLoadingPage(),
           Authenticated(:final session) => _startPageFor(session),
+          AuthDeviceInitializationRequired() =>
+            const DeviceInitializationPage(),
+          AuthRemoteInitialSetupRequired() =>
+            const RemoteInitialAdminSetupPage(),
           AuthInitialSetupRequired() => const LoginPage(setupRequired: true),
           AuthFailure(:final failure, :final setupRequired) => LoginPage(
             setupRequired: setupRequired,

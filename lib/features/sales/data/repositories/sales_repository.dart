@@ -5,6 +5,10 @@ import 'package:smoo_control/features/inventory/data/datasources/inventory_stock
 import 'package:smoo_control/features/inventory/data/datasources/local_inventory_datasource.dart';
 import 'package:smoo_control/features/inventory/data/repositories/inventory_repository.dart';
 import 'package:smoo_control/features/inventory/domain/entities/inventory_movement.dart';
+import 'package:smoo_control/features/packaging/data/datasources/local_packaging_datasource.dart';
+import 'package:smoo_control/features/packaging/data/datasources/packaging_stock_exception.dart';
+import 'package:smoo_control/features/packaging/data/repositories/packaging_repository.dart';
+import 'package:smoo_control/features/packaging/domain/entities/packaging_movement.dart';
 import 'package:smoo_control/features/sales/data/datasources/local_sales_datasource.dart';
 import 'package:smoo_control/features/sales/data/models/sale_item_model.dart';
 import 'package:smoo_control/features/sales/data/models/sale_model.dart';
@@ -22,14 +26,17 @@ final class SalesRepository implements ISalesRepository {
     this._localDataSource, {
     ISyncQueueRepository? syncQueueRepository,
     LocalInventoryDataSource? inventoryDataSource,
+    LocalPackagingDataSource? packagingDataSource,
     CurrentOperatorService? currentOperatorService,
   }) : _syncQueueRepository = syncQueueRepository,
        _inventoryDataSource = inventoryDataSource,
+       _packagingDataSource = packagingDataSource,
        _currentOperatorService = currentOperatorService;
 
   final LocalSalesDataSource _localDataSource;
   final ISyncQueueRepository? _syncQueueRepository;
   final LocalInventoryDataSource? _inventoryDataSource;
+  final LocalPackagingDataSource? _packagingDataSource;
   final CurrentOperatorService? _currentOperatorService;
 
   @override
@@ -129,6 +136,14 @@ final class SalesRepository implements ISalesRepository {
           cause: error,
         ),
       );
+    } on PackagingStockException catch (error) {
+      return AppFailureResult(
+        AppFailure(
+          code: 'packaging_stock_insufficient',
+          message: error.toString(),
+          cause: error,
+        ),
+      );
     } on Object catch (error) {
       return AppFailureResult(
         AppFailure(
@@ -184,6 +199,10 @@ final class SalesRepository implements ISalesRepository {
       referenceType: 'sale',
       referenceId: sale.id,
     );
+    final packagingMovements = await _packagingMovementsPayload(
+      referenceType: 'sale',
+      referenceId: sale.id,
+    );
     await _syncQueueRepository?.enqueue(
       entityType: 'sales',
       entityId: sale.id,
@@ -192,6 +211,7 @@ final class SalesRepository implements ISalesRepository {
         'sale': _salePayload(sale),
         'items': items.map(_saleItemPayload).toList(),
         'inventoryMovements': inventoryMovements,
+        'packagingMovements': packagingMovements,
       },
     );
   }
@@ -202,6 +222,10 @@ final class SalesRepository implements ISalesRepository {
     required String voidedBy,
   }) async {
     final inventoryMovements = await _inventoryMovementsPayload(
+      referenceType: 'sale_void',
+      referenceId: sale.id,
+    );
+    final packagingMovements = await _packagingMovementsPayload(
       referenceType: 'sale_void',
       referenceId: sale.id,
     );
@@ -216,6 +240,7 @@ final class SalesRepository implements ISalesRepository {
           'voidedBy': voidedBy,
         },
         'inventoryMovements': inventoryMovements,
+        'packagingMovements': packagingMovements,
       },
     );
   }
@@ -234,6 +259,20 @@ final class SalesRepository implements ISalesRepository {
     ];
   }
 
+  Future<List<Map<String, Object?>>> _packagingMovementsPayload({
+    required String referenceType,
+    required String referenceId,
+  }) async {
+    final movements = await _packagingDataSource?.getMovementsForReference(
+      referenceType: referenceType,
+      referenceId: referenceId,
+    );
+    return [
+      for (final movement in movements ?? const <PackagingMovement>[])
+        PackagingRepository.movementPayload(movement),
+    ];
+  }
+
   Map<String, Object?> _salePayload(Sale sale) {
     return {
       'id': sale.id,
@@ -241,8 +280,12 @@ final class SalesRepository implements ISalesRepository {
       'tableId': sale.tableId,
       'tableAccountId': sale.tableAccountId,
       'paymentMethodId': sale.paymentMethodId,
+      'salesTypeId': sale.salesTypeId,
+      'salesTypeName': sale.salesTypeName,
       'paymentReference': sale.paymentReference,
       'cashRegisterSessionId': sale.cashRegisterSessionId,
+      'cashierId': _currentOperatorService?.userId,
+      'businessDate': sale.createdAt.toIso8601String().substring(0, 10),
       'status': sale.status.name,
       'subtotalInCents': sale.subtotalInCents,
       'totalInCents': sale.totalInCents,

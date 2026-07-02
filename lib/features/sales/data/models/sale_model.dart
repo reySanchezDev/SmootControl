@@ -17,6 +17,8 @@ final class SaleModel extends Equatable {
     this.tableId,
     this.tableAccountId,
     this.cashRegisterSessionId,
+    this.salesTypeId,
+    this.salesTypeName,
     this.paymentReference,
   });
 
@@ -29,6 +31,8 @@ final class SaleModel extends Equatable {
       tableAccountId: row.tableAccountId,
       cashRegisterSessionId: row.cashRegisterSessionId,
       paymentMethodId: row.paymentMethodId,
+      salesTypeId: row.salesTypeId,
+      salesTypeName: row.salesTypeName,
       paymentReference: row.paymentReference,
       status: _statusFromText(row.status),
       subtotalInCents: row.subtotalInCents,
@@ -47,6 +51,8 @@ final class SaleModel extends Equatable {
       tableAccountId: entity.tableAccountId,
       cashRegisterSessionId: entity.cashRegisterSessionId,
       paymentMethodId: entity.paymentMethodId,
+      salesTypeId: entity.salesTypeId,
+      salesTypeName: entity.salesTypeName,
       paymentReference: entity.paymentReference,
       status: entity.status,
       subtotalInCents: entity.subtotalInCents,
@@ -73,6 +79,12 @@ final class SaleModel extends Equatable {
 
   /// Payment method identifier.
   final String paymentMethodId;
+
+  /// Selected sales type identifier.
+  final String? salesTypeId;
+
+  /// Historical selected sales type name.
+  final String? salesTypeName;
 
   /// Captured payment reference.
   final String? paymentReference;
@@ -107,6 +119,8 @@ final class SaleModel extends Equatable {
       tableAccountId: tableAccountId,
       cashRegisterSessionId: cashRegisterSessionId,
       paymentMethodId: paymentMethodId,
+      salesTypeId: salesTypeId,
+      salesTypeName: salesTypeName,
       paymentReference: paymentReference,
       status: status,
       subtotalInCents: subtotalInCents,
@@ -125,6 +139,8 @@ final class SaleModel extends Equatable {
       tableAccountId: tableAccountId,
       cashRegisterSessionId: cashRegisterSessionId,
       paymentMethodId: paymentMethodId,
+      salesTypeId: salesTypeId,
+      salesTypeName: salesTypeName,
       paymentReference: paymentReference,
       status: status,
       subtotalInCents: subtotalInCents,
@@ -156,6 +172,8 @@ final class SaleModel extends Equatable {
     tableAccountId,
     cashRegisterSessionId,
     paymentMethodId,
+    salesTypeId,
+    salesTypeName,
     paymentReference,
     status,
     subtotalInCents,

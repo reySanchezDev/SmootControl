@@ -13,6 +13,14 @@ abstract final class DefaultAccessPermissions {
       name: 'Gestionar inventario',
     ),
     AccessPermission(
+      code: 'tipos_venta.gestionar',
+      name: 'Gestionar tipos de venta',
+    ),
+    AccessPermission(
+      code: 'empaques.gestionar',
+      name: 'Gestionar empaques',
+    ),
+    AccessPermission(
       code: 'modificadores.gestionar',
       name: 'Gestionar modificadores POS',
     ),
@@ -45,6 +53,10 @@ abstract final class DefaultAccessPermissions {
     AccessPermission(
       code: 'sync.ejecutar',
       name: 'Ejecutar sincronizacion manual',
+    ),
+    AccessPermission(
+      code: 'dispositivo.inicializar',
+      name: 'Inicializar dispositivo',
     ),
   ];
 }

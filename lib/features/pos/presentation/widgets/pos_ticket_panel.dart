@@ -8,6 +8,7 @@ import 'package:smoo_control/core/formatters/money_formatter.dart';
 import 'package:smoo_control/core/result/app_result.dart';
 import 'package:smoo_control/core/theme/app_palette.dart';
 import 'package:smoo_control/features/exchange_rates/domain/repositories/i_exchange_rate_repository.dart';
+import 'package:smoo_control/features/packaging/domain/entities/sales_type.dart';
 import 'package:smoo_control/features/pos/domain/entities/pos_cart_line.dart';
 import 'package:smoo_control/features/pos/presentation/bloc/pos_bloc.dart';
 import 'package:smoo_control/features/pos/presentation/bloc/pos_event.dart';
@@ -22,6 +23,8 @@ class PosTicketPanel extends StatelessWidget {
   /// Creates the ticket panel.
   const PosTicketPanel({
     required this.lines,
+    this.salesTypes = const [],
+    this.selectedSalesTypeId,
     this.onProductsVisibilityToggled,
     this.productsVisible = true,
     super.key,
@@ -29,6 +32,12 @@ class PosTicketPanel extends StatelessWidget {
 
   /// Current cart lines.
   final List<PosCartLine> lines;
+
+  /// Available sales types.
+  final List<SalesType> salesTypes;
+
+  /// Selected sales type identifier.
+  final String? selectedSalesTypeId;
 
   /// Whether the product catalog is visible below the ticket.
   final bool productsVisible;
@@ -70,6 +79,8 @@ class PosTicketPanel extends StatelessWidget {
               ),
               _TicketTotalBand(
                 lines: lines,
+                salesTypes: salesTypes,
+                selectedSalesTypeId: selectedSalesTypeId,
                 onProductsVisibilityToggled: onProductsVisibilityToggled,
                 productsVisible: productsVisible,
               ),

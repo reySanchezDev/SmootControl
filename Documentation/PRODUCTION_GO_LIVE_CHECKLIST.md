@@ -14,6 +14,37 @@ Supabase y POS offline-first en la tableta.
   migraciones requeridas.
 - Confirmar que el APK fue compilado con URL y anon key del proyecto Supabase
   correcto.
+- Confirmar que el APK release contiene permiso de internet:
+  `uses-permission: name='android.permission.INTERNET'`.
+- Confirmar con `aapt dump permissions release\SmooControl-produccion.apk`
+  antes de entregar el APK a la tableta.
+- Revisar el incidente documentado en
+  `Documentation/ANDROID_RELEASE_INTERNET_INCIDENT.md` si Android muestra
+  `Failed to fetch` o no logra validar el administrador remoto mientras Web si
+  funciona.
+
+## Validacion Obligatoria Del APK Release
+
+Ejecutar despues de construir el APK:
+
+```powershell
+$aapt = Get-ChildItem -Path "$env:LOCALAPPDATA\Android\Sdk\build-tools" `
+  -Recurse -Filter aapt.exe |
+  Sort-Object FullName -Descending |
+  Select-Object -First 1
+
+& $aapt.FullName dump permissions release\SmooControl-produccion.apk
+& $aapt.FullName dump badging release\SmooControl-produccion.apk |
+  Select-String -Pattern "package:"
+```
+
+Debe confirmarse:
+
+- `android.permission.INTERNET` existe en el APK.
+- `versionCode` aumento respecto al APK anterior.
+- `applicationId` sigue siendo `com.smoocontrol.pos`.
+- La pantalla de login/inicializacion muestra la marca visible del build
+  esperado.
 
 ## Datos Minimos En Supabase
 

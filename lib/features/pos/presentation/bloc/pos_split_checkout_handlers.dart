@@ -54,6 +54,7 @@ Future<void> _saveSelectedSplitAccountSale(
 
   final now = DateTime.now();
   final saleId = const Uuid().v4();
+  final salesType = current.selectedSalesType;
   final items = _buildSplitItems(
     account: account,
     current: current,
@@ -68,6 +69,8 @@ Future<void> _saveSelectedSplitAccountSale(
     tableAccountId: account.id,
     cashRegisterSessionId: cashRegisterSessionId,
     paymentMethodId: current.selectedPaymentMethodId!,
+    salesTypeId: salesType?.id,
+    salesTypeName: salesType?.name,
     paymentReference: event.paymentReference?.trim().isEmpty ?? true
         ? null
         : event.paymentReference!.trim(),
@@ -90,6 +93,15 @@ Future<void> _saveSelectedSplitAccountSale(
           emit(current);
           return;
         }
+        final contextCleared = await _clearPersistedActiveOrderContext(
+          bloc,
+          current,
+          emit,
+        );
+        if (!contextCleared) {
+          emit(current);
+          return;
+        }
         final tables = await _resetSelectedTableDisplayNameIfNeeded(
           bloc,
           current,
@@ -99,7 +111,11 @@ Future<void> _saveSelectedSplitAccountSale(
           emit(current);
           return;
         }
-        next = next.copyWith(tables: tables);
+        next = next.copyWith(
+          tables: tables,
+          salesTypeIdByOrderKey: _salesTypesWithoutActiveOrder(current),
+          selectedSalesTypeId: _defaultSalesTypeId(current.salesTypes),
+        );
       }
       emit(next);
     case AppFailureResult(:final error):

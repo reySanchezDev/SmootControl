@@ -68,23 +68,29 @@ final class PaymentMethodsRepository implements IPaymentMethodsRepository {
     PaymentMethod method,
   ) async {
     final parentId = method.parentId;
-    if (parentId == null) {
-      return const AppFailureResult(
-        AppFailure(
-          code: 'payment_root_remove_blocked',
-          message: 'No se puede quitar un metodo de pago principal.',
-        ),
-      );
-    }
 
     try {
+      if (parentId == null && await _localDataSource.hasChildren(method.id)) {
+        return const AppFailureResult(
+          AppFailure(
+            code: 'payment_root_remove_blocked',
+            message:
+                'No se puede eliminar un grupo principal con metodos hijos.',
+          ),
+        );
+      }
+
       if (_remoteSender != null) {
         await _pushRemovedPaymentMethodRemote(method);
       }
-      await _localDataSource.removePaymentMethodLevel(
-        methodId: method.id,
-        parentId: parentId,
-      );
+      if (parentId == null) {
+        await _localDataSource.deletePaymentMethod(method.id);
+      } else {
+        await _localDataSource.removePaymentMethodLevel(
+          methodId: method.id,
+          parentId: parentId,
+        );
+      }
       if (_remoteSender == null) {
         await _enqueueRemovedPaymentMethod(method);
       }

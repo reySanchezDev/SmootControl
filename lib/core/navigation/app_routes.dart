@@ -18,6 +18,9 @@ abstract final class AppRoutes {
   /// Inventory route.
   static const inventory = '/inventory';
 
+  /// Packaging and sales types route.
+  static const packaging = '/packaging';
+
   /// POS modifiers route.
   static const modifiers = '/modifiers';
 

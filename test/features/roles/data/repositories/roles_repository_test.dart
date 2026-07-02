@@ -6,25 +6,15 @@ import 'package:smoo_control/features/roles/data/datasources/local_roles_datasou
 import 'package:smoo_control/features/roles/data/repositories/roles_repository.dart';
 import 'package:smoo_control/features/roles/domain/entities/access_permission.dart';
 import 'package:smoo_control/features/roles/domain/entities/access_role.dart';
-import 'package:smoo_control/features/sync/data/datasources/local_sync_queue_datasource.dart';
-import 'package:smoo_control/features/sync/data/repositories/sync_queue_repository.dart';
-import 'package:smoo_control/features/sync/domain/entities/sync_queue_item.dart';
 
 void main() {
   group('RolesRepository', () {
     late AppDatabase database;
     late RolesRepository repository;
-    late SyncQueueRepository syncQueueRepository;
 
     setUp(() {
       database = AppDatabase(NativeDatabase.memory());
-      syncQueueRepository = SyncQueueRepository(
-        LocalSyncQueueDataSource(database),
-      );
-      repository = RolesRepository(
-        LocalRolesDataSource(database),
-        syncQueueRepository: syncQueueRepository,
-      );
+      repository = RolesRepository(LocalRolesDataSource(database));
     });
 
     tearDown(() async {
@@ -46,15 +36,9 @@ void main() {
 
       final roleResult = await repository.saveRole(role);
       final permissionResult = await repository.savePermission(permission);
-      final syncResult = await syncQueueRepository.getPendingItems();
 
       expect(roleResult, isA<AppSuccess<AccessRole>>());
       expect(permissionResult, isA<AppSuccess<AccessPermission>>());
-      final syncItems = (syncResult as AppSuccess<List<SyncQueueItem>>).value;
-      expect(syncItems.map((item) => item.entityType), [
-        'roles',
-        'permissions',
-      ]);
 
       final rolesResult = await repository.getRoles();
       final permissionsResult = await repository.getPermissions();
@@ -77,16 +61,11 @@ void main() {
       );
 
       final result = await repository.getPermissionCodesForRole('role-admin');
-      final syncResult = await syncQueueRepository.getPendingItems();
-      final syncItems = (syncResult as AppSuccess<List<SyncQueueItem>>).value;
 
       expect(
         (result as AppSuccess<List<String>>).value,
         ['reportes.ver'],
       );
-      expect(syncItems, hasLength(2));
-      expect(syncItems.last.entityType, 'role_permissions');
-      expect(syncItems.last.operation, SyncOperation.update);
     });
   });
 }

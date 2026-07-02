@@ -35,7 +35,20 @@ class CatalogPage extends StatelessWidget {
             ),
           ],
           title: l10n.moduleCatalog,
-          body: BlocBuilder<CatalogBloc, CatalogState>(
+          body: BlocConsumer<CatalogBloc, CatalogState>(
+            listener: (context, state) {
+              final messenger = ScaffoldMessenger.of(context);
+              switch (state) {
+                case CatalogLoaded(:final notice) when notice != null:
+                  messenger.showSnackBar(SnackBar(content: Text(notice)));
+                case CatalogFailure(:final failure):
+                  messenger.showSnackBar(
+                    SnackBar(content: Text(failure.message)),
+                  );
+                default:
+                  break;
+              }
+            },
             builder: (context, state) {
               return switch (state) {
                 CatalogInitial() || CatalogLoading() => const AppLoadingPage(),

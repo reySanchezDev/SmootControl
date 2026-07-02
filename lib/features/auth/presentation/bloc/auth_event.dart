@@ -39,6 +39,24 @@ final class AuthPinSignInRequested extends AuthEvent {
   List<Object?> get props => [email, pin];
 }
 
+/// Requests remote administrator sign-in against Supabase.
+final class AuthRemoteAdminSignInRequested extends AuthEvent {
+  /// Creates a remote administrator sign-in event.
+  const AuthRemoteAdminSignInRequested({
+    required this.email,
+    required this.password,
+  });
+
+  /// Remote administrator email.
+  final String email;
+
+  /// Remote administrator password.
+  final String password;
+
+  @override
+  List<Object?> get props => [email, password];
+}
+
 /// Requests initial administrator creation.
 final class AuthInitialAdminCreated extends AuthEvent {
   /// Creates an initial administrator creation event.

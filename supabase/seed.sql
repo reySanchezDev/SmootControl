@@ -5,6 +5,8 @@ VALUES
   ('mesas.gestionar', 'Gestionar mesas'),
   ('productos.gestionar', 'Gestionar productos'),
   ('inventario.gestionar', 'Gestionar inventario'),
+  ('tipos_venta.gestionar', 'Gestionar tipos de venta'),
+  ('empaques.gestionar', 'Gestionar empaques'),
   ('modificadores.gestionar', 'Gestionar modificadores POS'),
   ('ventas.registrar', 'Registrar ventas'),
   ('caja.aperturar', 'Aperturar caja'),
@@ -20,7 +22,8 @@ VALUES
   ('tasas.gestionar', 'Gestionar tasas de cambio'),
   ('auditoria.ver', 'Ver auditoria'),
   ('sync.configurar', 'Configurar sincronizacion'),
-  ('sync.ejecutar', 'Ejecutar sincronizacion manual')
+  ('sync.ejecutar', 'Ejecutar sincronizacion manual'),
+  ('dispositivo.inicializar', 'Inicializar dispositivo')
 ON CONFLICT (code) DO NOTHING;
 
 INSERT INTO public.roles (code, name, is_system)

@@ -108,6 +108,61 @@ void main() {
       );
     });
 
+    test('deletes a root payment target when it has no children', () async {
+      const account = PaymentMethod(
+        id: 'banpro-nio-root',
+        name: 'Cuenta BANPRO NIO',
+        groupName: 'Transferencias',
+        currencyCode: 'NIO',
+        affectsCashRegister: false,
+        requiresReference: true,
+        isActive: true,
+      );
+
+      await repository.savePaymentMethod(account);
+
+      final removeResult = await repository.removePaymentMethodLevel(account);
+      final readResult = await repository.getPaymentMethods();
+
+      expect(removeResult, isA<AppSuccess<PaymentMethod>>());
+      expect(
+        (readResult as AppSuccess<List<PaymentMethod>>).value,
+        isEmpty,
+      );
+    });
+
+    test('does not delete a root navigation group with children', () async {
+      const root = PaymentMethod(
+        id: 'transfer-root',
+        name: 'Transferencias',
+        affectsCashRegister: false,
+        requiresReference: false,
+        isPaymentTarget: false,
+        isActive: true,
+      );
+      const account = PaymentMethod(
+        id: 'account',
+        name: 'Cuenta 7888889',
+        parentId: 'transfer-root',
+        affectsCashRegister: false,
+        requiresReference: true,
+        isActive: true,
+      );
+
+      await repository.savePaymentMethod(root);
+      await repository.savePaymentMethod(account);
+
+      final removeResult = await repository.removePaymentMethodLevel(root);
+      final readResult = await repository.getPaymentMethods();
+
+      expect(removeResult, isA<AppFailureResult<PaymentMethod>>());
+      final methods = (readResult as AppSuccess<List<PaymentMethod>>).value;
+      expect(
+        methods.map((method) => method.id),
+        containsAll(['transfer-root', 'account']),
+      );
+    });
+
     test('does not remove local method when remote delete fails', () async {
       const root = PaymentMethod(
         id: 'transfer-root',

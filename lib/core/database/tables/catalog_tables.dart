@@ -61,6 +61,75 @@ class LocalProducts extends Table with SyncColumns {
   Set<Column<Object>> get primaryKey => {id};
 }
 
+/// Sales type applied to a whole POS order.
+class LocalSalesTypes extends Table with SyncColumns {
+  /// Local identifier.
+  TextColumn get id => text()();
+
+  /// Stable code, for example dine_in or to_go.
+  TextColumn get code => text()();
+
+  /// Visible sales type name.
+  TextColumn get name => text()();
+
+  /// Sorting position in POS selectors.
+  IntColumn get displayOrder => integer().withDefault(const Constant(0))();
+
+  /// Whether this sales type is selected by default in POS.
+  BoolColumn get isDefault => boolean().withDefault(const Constant(false))();
+
+  /// Whether this sales type can be selected.
+  BoolColumn get isActive => boolean().withDefault(const Constant(true))();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+/// Packaging item consumed by sales types, not sold directly.
+class LocalPackagingItems extends Table with SyncColumns {
+  /// Local identifier.
+  TextColumn get id => text()();
+
+  /// Visible packaging name.
+  TextColumn get name => text()();
+
+  /// Unit cost in minor currency units.
+  IntColumn get costInCents => integer().withDefault(const Constant(0))();
+
+  /// Whether this packaging validates and consumes stock.
+  BoolColumn get tracksStock => boolean().withDefault(const Constant(true))();
+
+  /// Whether this packaging can be used by rules.
+  BoolColumn get isActive => boolean().withDefault(const Constant(true))();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+/// Packaging required by one product under one sales type.
+class LocalProductPackagingRules extends Table with SyncColumns {
+  /// Stable rule identifier.
+  TextColumn get id => text()();
+
+  /// Product sold in POS.
+  TextColumn get productId => text()();
+
+  /// Sales type that activates the rule.
+  TextColumn get salesTypeId => text()();
+
+  /// Packaging item consumed.
+  TextColumn get packagingItemId => text()();
+
+  /// Units consumed per sold product unit.
+  IntColumn get quantityPerUnit => integer().withDefault(const Constant(1))();
+
+  /// Whether this rule can be used.
+  BoolColumn get isActive => boolean().withDefault(const Constant(true))();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
 /// Reusable modifier groups requested by the POS.
 class LocalModifierGroups extends Table with SyncColumns {
   /// Local identifier.

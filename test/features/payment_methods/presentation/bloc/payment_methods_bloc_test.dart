@@ -113,6 +113,34 @@ void main() {
         expect(removeAuditRepository.entries.single.entityId, _childMethod.id);
       },
     );
+
+    late _AuditLogRepositoryFake rootRemoveAuditRepository;
+
+    blocTest<PaymentMethodsBloc, PaymentMethodsState>(
+      'removes a root leaf payment method',
+      build: () {
+        rootRemoveAuditRepository = _AuditLogRepositoryFake();
+
+        return PaymentMethodsBloc(
+          repository: _PaymentMethodsRepositoryFake(
+            methodsResult: const AppSuccess(<PaymentMethod>[]),
+          ),
+          auditLogRepository: rootRemoveAuditRepository,
+        );
+      },
+      act: (bloc) => bloc.add(const PaymentMethodRemoved(method)),
+      expect: () => const [
+        PaymentMethodsLoading(),
+        PaymentMethodsLoaded(<PaymentMethod>[]),
+      ],
+      verify: (_) {
+        expect(
+          rootRemoveAuditRepository.entries.single.action,
+          'payment_methods.remove',
+        );
+        expect(rootRemoveAuditRepository.entries.single.entityId, method.id);
+      },
+    );
   });
 }
 

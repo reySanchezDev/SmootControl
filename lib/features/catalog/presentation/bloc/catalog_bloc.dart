@@ -80,7 +80,10 @@ final class CatalogBloc extends Bloc<CatalogEvent, CatalogState> {
     final loadResult = await _repository.getCategories();
     emit(
       loadResult.when(
-        success: CatalogLoaded.new,
+        success: (categories) => CatalogLoaded(
+          categories,
+          notice: 'Categoria guardada correctamente.',
+        ),
         failure: CatalogFailure.new,
       ),
     );
@@ -121,7 +124,10 @@ final class CatalogBloc extends Bloc<CatalogEvent, CatalogState> {
     final loadResult = await _repository.getCategories();
     emit(
       loadResult.when(
-        success: CatalogLoaded.new,
+        success: (categories) => CatalogLoaded(
+          categories,
+          notice: 'Categoria actualizada correctamente.',
+        ),
         failure: CatalogFailure.new,
       ),
     );

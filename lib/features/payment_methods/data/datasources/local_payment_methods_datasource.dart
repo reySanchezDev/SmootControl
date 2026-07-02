@@ -73,4 +73,19 @@ final class LocalPaymentMethodsDataSource {
       )..where((method) => method.id.equals(methodId))).go();
     });
   }
+
+  /// Deletes one payment method that does not have children.
+  Future<void> deletePaymentMethod(String methodId) async {
+    await (_database.delete(
+      _database.localPaymentMethods,
+    )..where((method) => method.id.equals(methodId))).go();
+  }
+
+  /// Returns whether the payment method has direct child nodes.
+  Future<bool> hasChildren(String methodId) async {
+    final query = _database.select(_database.localPaymentMethods)
+      ..where((method) => method.parentId.equals(methodId))
+      ..limit(1);
+    return (await query.get()).isNotEmpty;
+  }
 }

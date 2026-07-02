@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:smoo_control/core/config/supabase_app_config.dart';
 import 'package:smoo_control/core/database/app_database.dart';
+import 'package:smoo_control/core/session/current_remote_session_service.dart';
 import 'package:smoo_control/core/session/current_restaurant_service.dart';
 import 'package:smoo_control/features/sync/data/datasources/supabase_catalog_pull_service.dart';
 import 'package:smoo_control/features/sync/domain/services/i_catalog_pull_service.dart';
@@ -29,12 +30,11 @@ void main() {
         config: const SupabaseAppConfig(
           supabaseUrl: 'https://smoo.test',
           publishableKey: 'publishable-key',
-          authEmail: 'tablet@smoo.test',
-          authPassword: 'secret',
         ),
         restaurantService: const CurrentRestaurantService(
           restaurantId: 'restaurant-1',
         ),
+        remoteSessionService: _remoteSession(),
         client: _catalogMockClient(),
       );
 
@@ -52,6 +52,7 @@ void main() {
       expect(summary.inventoryStock, 1);
       expect(summary.paymentMethods, 1);
       expect(summary.tables, 1);
+      expect(summary.cashRegisterSessions, 1);
       expect(summary.expenseCategories, 1);
       expect(summary.exchangeRates, 1);
       expect(summary.isReadyForPos, isTrue);
@@ -98,6 +99,12 @@ void main() {
         await database.select(database.localRestaurantTables).get(),
         hasLength(1),
       );
+      final cashSessions = await database
+          .select(database.localCashRegisterSessions)
+          .get();
+      expect(cashSessions, hasLength(1));
+      expect(cashSessions.single.cashierId, 'user-pos-1');
+      expect(cashSessions.single.status, 'open');
       expect(
         await database.select(database.localPaymentMethods).get(),
         hasLength(1),
@@ -115,6 +122,53 @@ void main() {
     });
 
     test(
+      'downloads with the current remote admin session without technical auth',
+      () async {
+        final remoteSession = CurrentRemoteSessionService()
+          ..set(
+            accessToken: 'owner-token',
+            userId: 'owner-profile',
+            expiresAt: DateTime.now().add(const Duration(hours: 1)),
+          );
+        final requests = <http.Request>[];
+        final service = SupabaseCatalogPullService(
+          database: database,
+          config: const SupabaseAppConfig(
+            supabaseUrl: 'https://smoo.test',
+            publishableKey: 'publishable-key',
+          ),
+          restaurantService: const CurrentRestaurantService(
+            restaurantId: 'restaurant-1',
+          ),
+          remoteSessionService: remoteSession,
+          client: MockClient((request) async {
+            requests.add(request);
+            if (request.url.path == '/auth/v1/token') {
+              return http.Response('unexpected auth', 500);
+            }
+            final table = request.url.pathSegments.last;
+            return _jsonResponse(_rowsByTable[table] ?? const <Object?>[]);
+          }),
+        );
+
+        final summary = await service.pullOperationalCatalog();
+
+        expect(summary.isReadyForPos, isTrue);
+        expect(
+          requests.every(
+            (request) =>
+                request.headers['authorization'] == 'Bearer owner-token',
+          ),
+          isTrue,
+        );
+        expect(
+          requests.any((request) => request.url.path == '/auth/v1/token'),
+          isFalse,
+        );
+      },
+    );
+
+    test(
       'reports missing operational data after an incomplete restore',
       () async {
         final service = SupabaseCatalogPullService(
@@ -122,12 +176,11 @@ void main() {
           config: const SupabaseAppConfig(
             supabaseUrl: 'https://smoo.test',
             publishableKey: 'publishable-key',
-            authEmail: 'tablet@smoo.test',
-            authPassword: 'secret',
           ),
           restaurantService: const CurrentRestaurantService(
             restaurantId: 'restaurant-1',
           ),
+          remoteSessionService: _remoteSession(),
           client: _catalogMockClient(
             overrides: {
               'profiles': const <Map<String, Object?>>[],
@@ -183,12 +236,11 @@ void main() {
           config: const SupabaseAppConfig(
             supabaseUrl: 'https://smoo.test',
             publishableKey: 'publishable-key',
-            authEmail: 'tablet@smoo.test',
-            authPassword: 'secret',
           ),
           restaurantService: const CurrentRestaurantService(
             restaurantId: 'restaurant-1',
           ),
+          remoteSessionService: _remoteSession(),
           client: _catalogMockClient(),
         );
 
@@ -200,6 +252,102 @@ void main() {
         expect(stock.quantityOnHand, 8);
       },
     );
+
+    test(
+      'refreshes POS payment methods and expense categories from remote',
+      () async {
+        final now = DateTime(2026, 7);
+        await database
+            .into(database.localPaymentMethods)
+            .insert(
+              LocalPaymentMethodsCompanion.insert(
+                id: 'payment-old',
+                name: 'Pago viejo',
+                createdAt: now,
+                updatedAt: now,
+              ),
+            );
+        await database
+            .into(database.localExpenseCategories)
+            .insert(
+              LocalExpenseCategoriesCompanion.insert(
+                id: 'expense-old',
+                name: 'Gasto viejo',
+                createdAt: now,
+                updatedAt: now,
+              ),
+            );
+        final service = SupabaseCatalogPullService(
+          database: database,
+          config: const SupabaseAppConfig(
+            supabaseUrl: 'https://smoo.test',
+            publishableKey: 'publishable-key',
+          ),
+          restaurantService: const CurrentRestaurantService(
+            restaurantId: 'restaurant-1',
+          ),
+          remoteSessionService: _remoteSession(),
+          client: _catalogMockClient(
+            overrides: {
+              'payment_methods': [
+                {
+                  'id': 'payment-new',
+                  'restaurant_id': 'restaurant-1',
+                  'parent_id': null,
+                  'name': 'Pago nuevo',
+                  'group_name': 'Efectivo',
+                  'currency_code': 'NIO',
+                  'display_order': 1,
+                  'is_payment_target': true,
+                  'affects_cash': true,
+                  'requires_reference': false,
+                  'is_active': true,
+                },
+              ],
+              'expense_categories': [
+                {
+                  'id': 'expense-new',
+                  'restaurant_id': 'restaurant-1',
+                  'parent_id': null,
+                  'name': 'Gasto nuevo',
+                  'is_active': true,
+                },
+              ],
+            },
+          ),
+        );
+
+        final summary = await service.pullScopes({
+          CatalogPullScope.paymentMethods,
+          CatalogPullScope.expenseCategories,
+        });
+
+        expect(summary.paymentMethods, 1);
+        expect(summary.expenseCategories, 1);
+        final paymentRows = await database
+            .select(database.localPaymentMethods)
+            .get();
+        expect(
+          paymentRows.singleWhere((row) => row.id == 'payment-old').isActive,
+          isFalse,
+        );
+        expect(
+          paymentRows.singleWhere((row) => row.id == 'payment-new').isActive,
+          isTrue,
+        );
+        final expenseRows = await database
+            .select(database.localExpenseCategories)
+            .get();
+        expect(
+          expenseRows.singleWhere((row) => row.id == 'expense-old').isActive,
+          isFalse,
+        );
+        expect(
+          expenseRows.singleWhere((row) => row.id == 'expense-new').isActive,
+          isTrue,
+        );
+      },
+    );
   });
 }
 
@@ -207,13 +355,6 @@ MockClient _catalogMockClient({
   Map<String, List<Map<String, Object?>>> overrides = const {},
 }) {
   return MockClient((request) async {
-    if (request.url.path == '/auth/v1/token') {
-      return _jsonResponse({
-        'access_token': 'token',
-        'expires_in': 3600,
-      });
-    }
-
     final table = request.url.pathSegments.last;
     return _jsonResponse(
       overrides.containsKey(table)
@@ -221,6 +362,14 @@ MockClient _catalogMockClient({
           : _rowsByTable[table] ?? const <Object?>[],
     );
   });
+}
+
+CurrentRemoteSessionService _remoteSession() {
+  return CurrentRemoteSessionService()..set(
+    accessToken: 'owner-token',
+    userId: 'owner-profile',
+    expiresAt: DateTime.now().add(const Duration(hours: 1)),
+  );
 }
 
 http.Response _jsonResponse(Object value) {
@@ -382,6 +531,17 @@ final _rowsByTable = <String, List<Map<String, Object?>>>{
       'display_name': 'Mesa 1',
       'status': 'available',
       'is_active': true,
+    },
+  ],
+  'cash_register_sessions': [
+    {
+      'id': 'cash-session-remote',
+      'restaurant_id': 'restaurant-1',
+      'cashier_user_id': 'user-pos-1',
+      'business_date': '2026-06-30',
+      'opening_cash_amount': 500,
+      'counted_cash_amount': null,
+      'status': 'open',
     },
   ],
   'expense_categories': [

@@ -148,6 +148,18 @@ final class PosPaymentMethodSelected extends PosEvent {
   List<Object?> get props => [paymentMethodId];
 }
 
+/// Selects the current order sales type.
+final class PosSalesTypeSelected extends PosEvent {
+  /// Creates a sales type selected event.
+  const PosSalesTypeSelected(this.salesTypeId);
+
+  /// Sales type identifier.
+  final String salesTypeId;
+
+  @override
+  List<Object?> get props => [salesTypeId];
+}
+
 /// Selects the current table for the sale.
 final class PosTableSelected extends PosEvent {
   /// Creates a table selected event.

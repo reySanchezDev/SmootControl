@@ -10,6 +10,7 @@ import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/core/result/app_result.dart';
 import 'package:smoo_control/core/session/current_operator_service.dart';
 import 'package:smoo_control/features/payment_methods/domain/repositories/i_payment_methods_repository.dart';
+import 'package:smoo_control/features/sales/data/repositories/supabase_sales_admin_repository.dart';
 import 'package:smoo_control/features/sales/domain/entities/sale.dart';
 import 'package:smoo_control/features/sales/domain/entities/sale_item.dart';
 import 'package:smoo_control/features/sales/domain/repositories/i_sales_repository.dart';
@@ -17,6 +18,7 @@ import 'package:smoo_control/features/sales/domain/services/sale_invoice_pdf_ser
 import 'package:smoo_control/features/sales/presentation/bloc/sales_bloc.dart';
 import 'package:smoo_control/features/sales/presentation/bloc/sales_event.dart';
 import 'package:smoo_control/features/sales/presentation/bloc/sales_state.dart';
+import 'package:smoo_control/features/sales/presentation/pages/sale_detail_page.dart';
 import 'package:smoo_control/features/sales/presentation/widgets/sale_invoice_preview_dialog.dart';
 import 'package:smoo_control/features/sales/presentation/widgets/sales_date_selector.dart';
 import 'package:smoo_control/features/sales/presentation/widgets/sales_searchable_list.dart';
@@ -122,6 +124,7 @@ class _SalesPageState extends State<SalesPage> {
       ),
       SalesLoaded(:final sales) => SalesSearchableList(
         sales: sales,
+        onOpenDetails: _openDetail,
         onPreviewPdf: _previewPdf,
         onVoid: _voidSale,
       ),
@@ -145,7 +148,7 @@ class _SalesPageState extends State<SalesPage> {
 
   Future<void> _previewPdf(BuildContext context, Sale sale) async {
     final l10n = AppLocalizations.of(context);
-    final salesRepository = serviceLocator<ISalesRepository>();
+    final salesRepository = serviceLocator<SupabaseSalesAdminRepository>();
     final settingsRepository = serviceLocator<IBusinessSettingsRepository>();
     final paymentMethodsRepository =
         serviceLocator<IPaymentMethodsRepository>();
@@ -180,6 +183,16 @@ class _SalesPageState extends State<SalesPage> {
       builder: (_) => SaleInvoicePreviewDialog(
         bytes: bytes,
         filename: '${sale.invoiceNumber}.pdf',
+      ),
+    );
+  }
+
+  void _openDetail(BuildContext context, Sale sale) {
+    unawaited(
+      Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => SaleDetailPage(sale: sale),
+        ),
       ),
     );
   }

@@ -66,9 +66,9 @@ class PaymentMethodsPage extends StatelessWidget {
                       method: method,
                       onDeactivate: () => _deactivateMethod(context, method),
                       onEdit: () => _openEditDialog(context, method),
-                      onRemove: method.parentId == null
-                          ? null
-                          : () => _confirmRemoveLevel(context, method),
+                      onRemove: _canRemoveMethod(method, methods)
+                          ? () => _confirmRemoveLevel(context, method)
+                          : null,
                     ),
                   ),
               };
@@ -165,22 +165,39 @@ class PaymentMethodsPage extends StatelessWidget {
     return null;
   }
 
+  bool _canRemoveMethod(PaymentMethod method, List<PaymentMethod> methods) {
+    final hasChildren = methods.any((entry) => entry.parentId == method.id);
+    return method.parentId != null || !hasChildren;
+  }
+
   Future<void> _confirmRemoveLevel(
     BuildContext context,
     PaymentMethod method,
   ) async {
     final l10n = AppLocalizations.of(context);
+    final isRootLeaf = method.parentId == null;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(l10n.removePaymentLevelTitle),
+        title: Text(
+          isRootLeaf ? 'Eliminar metodo de pago' : l10n.removePaymentLevelTitle,
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(l10n.removePaymentLevelMessage(method.name)),
+            Text(
+              isRootLeaf
+                  ? 'Se eliminara el metodo "${method.name}".'
+                  : l10n.removePaymentLevelMessage(method.name),
+            ),
             const SizedBox(height: 12),
-            Text(l10n.removePaymentLevelWithChildrenMessage),
+            Text(
+              isRootLeaf
+                  ? 'Si ya fue usado en ventas, Supabase puede bloquear la '
+                        'eliminacion; en ese caso debes inactivarlo.'
+                  : l10n.removePaymentLevelWithChildrenMessage,
+            ),
           ],
         ),
         actions: [
@@ -190,7 +207,9 @@ class PaymentMethodsPage extends StatelessWidget {
           ),
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(l10n.removePaymentLevelConfirm),
+            child: Text(
+              isRootLeaf ? l10n.deleteAction : l10n.removePaymentLevelConfirm,
+            ),
           ),
         ],
       ),

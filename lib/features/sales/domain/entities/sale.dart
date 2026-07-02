@@ -40,6 +40,8 @@ final class Sale extends Equatable {
     this.tableId,
     this.tableAccountId,
     this.cashRegisterSessionId,
+    this.salesTypeId,
+    this.salesTypeName,
   });
 
   /// Unique sale identifier.
@@ -59,6 +61,12 @@ final class Sale extends Equatable {
 
   /// Payment method identifier.
   final String paymentMethodId;
+
+  /// Selected sales type identifier.
+  final String? salesTypeId;
+
+  /// Historical selected sales type name.
+  final String? salesTypeName;
 
   /// Optional payment reference.
   final String? paymentReference;
@@ -86,6 +94,8 @@ final class Sale extends Equatable {
     tableAccountId,
     cashRegisterSessionId,
     paymentMethodId,
+    salesTypeId,
+    salesTypeName,
     paymentReference,
     status,
     subtotalInCents,

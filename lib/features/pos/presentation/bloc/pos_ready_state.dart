@@ -14,8 +14,11 @@ final class PosReady extends PosState {
     this.splitAccountsByTable = const {},
     this.splitSourceLinesByTable = const {},
     this.tables = const [],
+    this.salesTypes = const [],
+    this.salesTypeIdByOrderKey = const {},
     this.selectedCategoryId,
     this.selectedTableId,
+    this.selectedSalesTypeId,
     this.selectedSplitAccountId,
     this.selectedPaymentMethodId,
     this.openCashRegisterSession,
@@ -34,6 +37,12 @@ final class PosReady extends PosState {
 
   /// Payment methods available for checkout.
   final List<PaymentMethod> paymentMethods;
+
+  /// Sales types available for the current order.
+  final List<SalesType> salesTypes;
+
+  /// Selected sales type by table/order key.
+  final Map<String, String> salesTypeIdByOrderKey;
 
   /// Reusable modifier groups and options.
   final ModifierCatalog modifierCatalog;
@@ -62,6 +71,9 @@ final class PosReady extends PosState {
   /// Selected child account identifier, when charging a split account.
   final String? selectedSplitAccountId;
 
+  /// Selected sales type for the active order.
+  final String? selectedSalesTypeId;
+
   /// Selected payment method identifier.
   final String? selectedPaymentMethodId;
 
@@ -81,6 +93,22 @@ final class PosReady extends PosState {
 
   /// Internal key used to store the active cart.
   String get activeCartKey => selectedTableId ?? '__no_table__';
+
+  /// Selected sales type for the active order.
+  SalesType? get selectedSalesType {
+    final selectedId =
+        selectedSalesTypeId ?? salesTypeIdByOrderKey[activeCartKey];
+    for (final type in salesTypes) {
+      if (type.id == selectedId) return type;
+    }
+    for (final type in salesTypes) {
+      if (type.isDefault && type.isActive) return type;
+    }
+    for (final type in salesTypes) {
+      if (type.isActive) return type;
+    }
+    return null;
+  }
 
   /// Whether the current cart was separated into named accounts.
   bool get hasSplitAccounts => splitAccounts.isNotEmpty;
@@ -185,6 +213,8 @@ final class PosReady extends PosState {
     List<ProductCategory>? categories,
     List<Product>? products,
     List<RestaurantTable>? tables,
+    List<SalesType>? salesTypes,
+    Map<String, String>? salesTypeIdByOrderKey,
     List<PaymentMethod>? paymentMethods,
     ModifierCatalog? modifierCatalog,
     List<PosCartLine>? cartLines,
@@ -194,6 +224,7 @@ final class PosReady extends PosState {
     Map<String, List<PosCartLine>>? splitSourceLinesByTable,
     String? selectedCategoryId,
     String? selectedTableId,
+    String? selectedSalesTypeId,
     String? selectedSplitAccountId,
     String? selectedPaymentMethodId,
     CashRegisterSession? openCashRegisterSession,
@@ -209,6 +240,9 @@ final class PosReady extends PosState {
       categories: categories ?? this.categories,
       products: products ?? this.products,
       tables: tables ?? this.tables,
+      salesTypes: salesTypes ?? this.salesTypes,
+      salesTypeIdByOrderKey:
+          salesTypeIdByOrderKey ?? this.salesTypeIdByOrderKey,
       paymentMethods: paymentMethods ?? this.paymentMethods,
       modifierCatalog: modifierCatalog ?? this.modifierCatalog,
       cartLines: cartLines ?? this.cartLines,
@@ -225,6 +259,7 @@ final class PosReady extends PosState {
       selectedTableId: clearSelectedTable
           ? null
           : selectedTableId ?? this.selectedTableId,
+      selectedSalesTypeId: selectedSalesTypeId ?? this.selectedSalesTypeId,
       selectedSplitAccountId: clearSelectedSplitAccount
           ? null
           : selectedSplitAccountId ?? this.selectedSplitAccountId,
@@ -246,6 +281,8 @@ final class PosReady extends PosState {
     categories,
     products,
     tables,
+    salesTypes,
+    salesTypeIdByOrderKey,
     paymentMethods,
     modifierCatalog,
     cartLines,
@@ -255,6 +292,7 @@ final class PosReady extends PosState {
     splitSourceLinesByTable,
     selectedCategoryId,
     selectedTableId,
+    selectedSalesTypeId,
     selectedSplitAccountId,
     selectedPaymentMethodId,
     openCashRegisterSession,

@@ -47,6 +47,41 @@ void main() {
       expect(pending.single.status, SyncQueueStatus.pending);
     });
 
+    test('does not keep local access-control seed rows pending', () async {
+      final enqueueResult = await repository.enqueue(
+        entityType: 'roles',
+        entityId: 'role-admin',
+        operation: SyncOperation.create,
+        payload: const {'name': 'Administrador'},
+      );
+      final newItem = (enqueueResult as AppSuccess<SyncQueueItem>).value;
+      expect(newItem.status, SyncQueueStatus.synced);
+      expect(await database.select(database.localSyncQueue).get(), isEmpty);
+
+      final now = DateTime(2026, 6, 30, 20, 9);
+      await database
+          .into(database.localSyncQueue)
+          .insert(
+            LocalSyncQueueCompanion.insert(
+              id: 'old-role-permissions',
+              entityType: 'role_permissions',
+              entityId: 'role-admin',
+              operation: SyncOperation.update.name,
+              payloadJson: '{}',
+              status: Value(SyncQueueStatus.error.name),
+              createdAt: now,
+              updatedAt: now,
+            ),
+          );
+
+      final pendingResult = await repository.getPendingItems();
+      final pending = (pendingResult as AppSuccess<List<SyncQueueItem>>).value;
+      final rows = await database.select(database.localSyncQueue).get();
+
+      expect(pending, isEmpty);
+      expect(rows.single.status, SyncQueueStatus.synced.name);
+    });
+
     test('updates queue item status locally', () async {
       final enqueueResult = await repository.enqueue(
         entityType: 'expense',

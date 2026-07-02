@@ -7,7 +7,18 @@ Future<void> _handleProductAdded(
 ) async {
   final current = bloc.state;
   if (current is! PosReady) return;
-  if (current.selectedTableId == null) return;
+  if (current.selectedTableId == null) {
+    emit(
+      const PosFailure(
+        AppFailure(
+          code: 'pos_table_required_for_product',
+          message: 'Selecciona una mesa antes de agregar productos al pedido.',
+        ),
+      ),
+    );
+    emit(current);
+    return;
+  }
   if (current.selectedSplitAccountId != null) return;
 
   final newLine = PosCartLine(
@@ -120,11 +131,15 @@ void _handleTableSelected(
   final current = bloc.state;
   if (current is! PosReady) return;
   final key = event.tableId ?? '__no_table__';
+  final selectedSalesTypeId =
+      current.salesTypeIdByOrderKey[key] ??
+      _defaultSalesTypeId(current.salesTypes);
 
   emit(
     current.copyWith(
       cartLines: current.cartLinesByTable[key] ?? const [],
       selectedTableId: event.tableId,
+      selectedSalesTypeId: selectedSalesTypeId,
       splitAccounts: event.tableId == null
           ? const []
           : current.splitAccountsByTable[event.tableId] ?? const [],
@@ -133,6 +148,36 @@ void _handleTableSelected(
       clearLastCompletedSale: true,
     ),
   );
+}
+
+Future<void> _handleSalesTypeSelected(
+  PosBloc bloc,
+  PosSalesTypeSelected event,
+  Emitter<PosState> emit,
+) async {
+  final current = bloc.state;
+  if (current is! PosReady) return;
+
+  final updatedByOrder = Map<String, String>.from(
+    current.salesTypeIdByOrderKey,
+  )..[current.activeCartKey] = event.salesTypeId;
+  final result = await bloc._openTicketRepository.saveOrderSalesType(
+    orderKey: current.activeCartKey,
+    salesTypeId: event.salesTypeId,
+  );
+  switch (result) {
+    case AppSuccess():
+      emit(
+        current.copyWith(
+          salesTypeIdByOrderKey: updatedByOrder,
+          selectedSalesTypeId: event.salesTypeId,
+          clearLastCompletedSale: true,
+        ),
+      );
+    case AppFailureResult(:final error):
+      emit(PosFailure(error));
+      emit(current);
+  }
 }
 
 void _handleSplitAccountSelected(

@@ -5,11 +5,15 @@ const _posForeignCurrencyCode = 'USD';
 class _TicketTotalBand extends StatelessWidget {
   const _TicketTotalBand({
     required this.lines,
+    required this.salesTypes,
     required this.productsVisible,
+    this.selectedSalesTypeId,
     this.onProductsVisibilityToggled,
   });
 
   final List<PosCartLine> lines;
+  final List<SalesType> salesTypes;
+  final String? selectedSalesTypeId;
   final bool productsVisible;
   final VoidCallback? onProductsVisibilityToggled;
 
@@ -25,80 +29,160 @@ class _TicketTotalBand extends StatelessWidget {
           return Container(
             color: colorScheme.primary,
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-            child: constraints.maxWidth < 560
-                ? Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Row(
-                        children: [
-                          Flexible(
-                            child: Align(
-                              alignment: Alignment.centerLeft,
-                              child: _ProductsVisibilityButton(
-                                onPressed: onProductsVisibilityToggled,
-                                productsVisible: productsVisible,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          _TotalAmountText(total: total),
-                        ],
-                      ),
-                      const SizedBox(height: 6),
-                      const Align(
-                        alignment: Alignment.centerRight,
-                        child: _ExchangeRateTodayText(compact: true),
-                      ),
-                    ],
-                  )
-                : Row(
-                    children: [
-                      _ProductsVisibilityButton(
-                        onPressed: onProductsVisibilityToggled,
-                        productsVisible: productsVisible,
-                      ),
-                      const Spacer(),
-                      const Flexible(
-                        child: Align(
-                          alignment: Alignment.centerRight,
-                          child: _ExchangeRateTodayText(compact: true),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Flexible(
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: _ProductsVisibilityButton(
+                          onPressed: onProductsVisibilityToggled,
+                          productsVisible: productsVisible,
                         ),
                       ),
-                      const SizedBox(width: 14),
-                      _TotalAmountText(total: total),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(width: 8),
+                    Flexible(child: _TotalAmountText(total: total)),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                _SalesTypeSelector(
+                  salesTypes: salesTypes,
+                  selectedSalesTypeId: selectedSalesTypeId,
+                ),
+                const SizedBox(height: 6),
+                const Align(
+                  alignment: Alignment.centerRight,
+                  child: _ExchangeRateTodayText(compact: true),
+                ),
+              ],
+            ),
           );
         }
 
         return Container(
           color: colorScheme.primary,
-          height: 48,
-          child: _TicketColumnRow(
-            description: Align(
-              alignment: Alignment.centerLeft,
-              child: _ProductsVisibilityButton(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+          child: Row(
+            children: [
+              _ProductsVisibilityButton(
                 onPressed: onProductsVisibilityToggled,
                 productsVisible: productsVisible,
               ),
-            ),
-            served: const SizedBox.shrink(),
-            quantity: const SizedBox.shrink(),
-            price: const _ExchangeRateTodayText(compact: true),
-            amount: Text(
-              MoneyFormatter.format(total),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: colorScheme.onPrimary,
+              const SizedBox(width: 14),
+              Expanded(
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: _SalesTypeSelector(
+                    salesTypes: salesTypes,
+                    selectedSalesTypeId: selectedSalesTypeId,
+                  ),
+                ),
               ),
-              textAlign: TextAlign.end,
-            ),
-            remove: const SizedBox.shrink(),
+              const SizedBox(width: 16),
+              const Flexible(
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: _ExchangeRateTodayText(compact: true),
+                ),
+              ),
+              const SizedBox(width: 18),
+              ConstrainedBox(
+                constraints: const BoxConstraints(minWidth: 128),
+                child: _TotalAmountText(total: total),
+              ),
+            ],
           ),
         );
       },
+    );
+  }
+}
+
+class _SalesTypeSelector extends StatelessWidget {
+  const _SalesTypeSelector({
+    required this.salesTypes,
+    required this.selectedSalesTypeId,
+  });
+
+  final List<SalesType> salesTypes;
+  final String? selectedSalesTypeId;
+
+  @override
+  Widget build(BuildContext context) {
+    final activeTypes = salesTypes.where((type) => type.isActive).toList();
+    if (activeTypes.isEmpty) return const SizedBox.shrink();
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Wrap(
+      alignment: WrapAlignment.end,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      spacing: 6,
+      runSpacing: 6,
+      children: [
+        Icon(
+          Icons.room_service_outlined,
+          color: colorScheme.onPrimary.withValues(alpha: .82),
+          size: 16,
+        ),
+        for (final type in activeTypes)
+          _SalesTypeChip(
+            label: type.name,
+            selected: type.id == selectedSalesTypeId,
+            onPressed: () {
+              context.read<PosBloc>().add(PosSalesTypeSelected(type.id));
+            },
+          ),
+      ],
+    );
+  }
+}
+
+class _SalesTypeChip extends StatelessWidget {
+  const _SalesTypeChip({
+    required this.label,
+    required this.selected,
+    required this.onPressed,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: 34, maxWidth: 170),
+      child: Material(
+        color: selected ? AppPalette.primaryDark : colorScheme.primary,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(6),
+          side: BorderSide(
+            color: colorScheme.onPrimary.withValues(alpha: selected ? .35 : .2),
+          ),
+        ),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(6),
+          onTap: selected ? null : onPressed,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                color: colorScheme.onPrimary,
+                fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

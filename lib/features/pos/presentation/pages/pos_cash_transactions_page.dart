@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:smoo_control/core/design_system/app_button.dart';
 import 'package:smoo_control/core/design_system/app_empty_state.dart';
 import 'package:smoo_control/core/design_system/app_loading_page.dart';
+import 'package:smoo_control/core/design_system/app_message_dialog.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
@@ -13,6 +14,7 @@ import 'package:smoo_control/features/payment_methods/domain/repositories/i_paym
 import 'package:smoo_control/features/roles/domain/services/access_control_service.dart';
 import 'package:smoo_control/features/sales/domain/entities/sale.dart';
 import 'package:smoo_control/features/sales/domain/repositories/i_sales_repository.dart';
+import 'package:smoo_control/features/sync/domain/repositories/i_sync_queue_repository.dart';
 import 'package:smoo_control/features/sync/domain/services/sync_scheduler_service.dart';
 import 'package:smoo_control/l10n/app_localizations.dart';
 
@@ -154,11 +156,66 @@ class _PosCashTransactionsPageState extends State<PosCashTransactionsPage> {
   }
 
   Future<void> _syncNow() async {
-    await serviceLocator<SyncSchedulerService>().runNow();
+    final result = await serviceLocator<SyncSchedulerService>().runNow();
     if (!mounted) return;
+
+    final message = switch (result) {
+      null =>
+        'Ya hay una sincronizacion en curso. Espera un momento y vuelve '
+            'a revisar.',
+      AppFailureResult(:final error) => error.message,
+      AppSuccess(:final value) when value.failed == 0 =>
+        'Sincronizacion completada. Procesadas: ${value.processed}. '
+            'Correctas: ${value.succeeded}. Fallidas: 0.',
+      AppSuccess(:final value) => await _syncErrorMessage(
+        processed: value.processed,
+        succeeded: value.succeeded,
+        failed: value.failed,
+      ),
+    };
+
     setState(() {
       _future = _load();
     });
+
+    if (!mounted) return;
+    await showAppMessageDialog(
+      context: context,
+      message: message,
+      title: 'Sincronizar ventas',
+    );
+  }
+
+  Future<String> _syncErrorMessage({
+    required int processed,
+    required int succeeded,
+    required int failed,
+  }) async {
+    final pendingResult = await serviceLocator<ISyncQueueRepository>()
+        .getPendingItems(limit: 10);
+    final lastError = pendingResult.when(
+      success: (items) {
+        for (final item in items) {
+          final error = item.lastError;
+          if (error != null && error.isNotEmpty) {
+            return '${item.entityType}: $error';
+          }
+        }
+        return null;
+      },
+      failure: (error) => error.message,
+    );
+    final detail = lastError == null
+        ? ''
+        : '\n\nDetalle: ${_shorten(lastError)}';
+    return 'Sincronizacion con errores. Procesadas: $processed. '
+        'Correctas: $succeeded. Fallidas: $failed.$detail';
+  }
+
+  String _shorten(String value) {
+    const maxLength = 360;
+    if (value.length <= maxLength) return value;
+    return '${value.substring(0, maxLength)}...';
   }
 }
 

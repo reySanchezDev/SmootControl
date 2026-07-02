@@ -8,8 +8,11 @@ import 'package:smoo_control/features/cash_register/domain/entities/cash_registe
 import 'package:smoo_control/features/cash_register/domain/repositories/i_cash_register_repository.dart';
 import 'package:smoo_control/features/catalog/domain/entities/product_category.dart';
 import 'package:smoo_control/features/catalog/domain/repositories/i_catalog_repository.dart';
+import 'package:smoo_control/features/inventory/domain/repositories/i_inventory_repository.dart';
 import 'package:smoo_control/features/modifiers/domain/entities/modifier_catalog.dart';
 import 'package:smoo_control/features/modifiers/domain/repositories/i_modifiers_repository.dart';
+import 'package:smoo_control/features/packaging/domain/entities/sales_type.dart';
+import 'package:smoo_control/features/packaging/domain/repositories/i_packaging_repository.dart';
 import 'package:smoo_control/features/payment_methods/domain/entities/payment_method.dart';
 import 'package:smoo_control/features/payment_methods/domain/repositories/i_payment_methods_repository.dart';
 import 'package:smoo_control/features/pos/domain/entities/account_split_draft.dart';
@@ -47,9 +50,11 @@ final class PosBloc extends Bloc<PosEvent, PosState> {
     required ICatalogRepository catalogRepository,
     required AccountSeparationService accountSeparationService,
     required IProductsRepository productsRepository,
+    required IInventoryRepository inventoryRepository,
     required IModifiersRepository modifiersRepository,
     required ITablesRepository tablesRepository,
     required IPaymentMethodsRepository paymentMethodsRepository,
+    required IPackagingRepository packagingRepository,
     required ISalesRepository salesRepository,
     required IBusinessSettingsRepository settingsRepository,
     required ICashRegisterRepository cashRegisterRepository,
@@ -59,9 +64,11 @@ final class PosBloc extends Bloc<PosEvent, PosState> {
   }) : _catalogRepository = catalogRepository,
        _accountSeparationService = accountSeparationService,
        _productsRepository = productsRepository,
+       _inventoryRepository = inventoryRepository,
        _modifiersRepository = modifiersRepository,
        _tablesRepository = tablesRepository,
        _paymentMethodsRepository = paymentMethodsRepository,
+       _packagingRepository = packagingRepository,
        _salesRepository = salesRepository,
        _settingsRepository = settingsRepository,
        _cashRegisterRepository = cashRegisterRepository,
@@ -94,6 +101,9 @@ final class PosBloc extends Bloc<PosEvent, PosState> {
     );
     on<PosModifierCatalogRefreshed>(_onModifierCatalogRefreshed);
     on<PosPaymentMethodSelected>(_onPaymentMethodSelected);
+    on<PosSalesTypeSelected>(
+      (event, emit) => _handleSalesTypeSelected(this, event, emit),
+    );
     on<PosTableSelected>(
       (event, emit) => _handleTableSelected(this, event, emit),
     );
@@ -119,9 +129,11 @@ final class PosBloc extends Bloc<PosEvent, PosState> {
   final ICatalogRepository _catalogRepository;
   final AccountSeparationService _accountSeparationService;
   final IProductsRepository _productsRepository;
+  final IInventoryRepository _inventoryRepository;
   final IModifiersRepository _modifiersRepository;
   final ITablesRepository _tablesRepository;
   final IPaymentMethodsRepository _paymentMethodsRepository;
+  final IPackagingRepository _packagingRepository;
   final ISalesRepository _salesRepository;
   final IBusinessSettingsRepository _settingsRepository;
   final ICashRegisterRepository _cashRegisterRepository;

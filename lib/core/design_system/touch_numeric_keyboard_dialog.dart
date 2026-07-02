@@ -64,12 +64,14 @@ class TouchNumericKeyboardDialog<T> extends StatefulWidget {
 class _TouchNumericKeyboardDialogState<T>
     extends State<TouchNumericKeyboardDialog<T>> {
   late String _value;
+  late bool _allSelected;
   String? _errorText;
 
   @override
   void initState() {
     super.initState();
     _value = widget.initialValue;
+    _allSelected = widget.initialValue.trim().isNotEmpty;
   }
 
   @override
@@ -91,6 +93,7 @@ class _TouchNumericKeyboardDialogState<T>
                 _KeyboardHeader(title: widget.title),
                 const SizedBox(height: 8),
                 _NumericDisplay(
+                  allSelected: _allSelected,
                   errorText: _errorText,
                   prefixText: widget.prefixText,
                   value: _value,
@@ -140,7 +143,8 @@ class _TouchNumericKeyboardDialogState<T>
   void _append(String text) {
     setState(() {
       _errorText = null;
-      _value += text;
+      _value = _allSelected ? text : _value + text;
+      _allSelected = false;
     });
   }
 
@@ -148,7 +152,12 @@ class _TouchNumericKeyboardDialogState<T>
     if (_value.isEmpty) return;
     setState(() {
       _errorText = null;
-      _value = _value.substring(0, _value.length - 1);
+      if (_allSelected) {
+        _value = '';
+      } else {
+        _value = _value.substring(0, _value.length - 1);
+      }
+      _allSelected = false;
     });
   }
 
@@ -156,6 +165,7 @@ class _TouchNumericKeyboardDialogState<T>
     setState(() {
       _errorText = null;
       _value = '';
+      _allSelected = false;
     });
   }
 
@@ -205,11 +215,13 @@ class _KeyboardHeader extends StatelessWidget {
 
 class _NumericDisplay extends StatelessWidget {
   const _NumericDisplay({
+    required this.allSelected,
     required this.value,
     this.errorText,
     this.prefixText,
   });
 
+  final bool allSelected;
   final String? errorText;
   final String? prefixText;
   final String value;
@@ -221,9 +233,20 @@ class _NumericDisplay extends StatelessWidget {
       decoration: InputDecoration(errorText: errorText, prefixText: prefixText),
       child: Align(
         alignment: Alignment.centerRight,
-        child: Text(
-          text,
-          style: Theme.of(context).textTheme.titleLarge,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: allSelected
+                ? Theme.of(context).colorScheme.primary.withValues(alpha: .18)
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            child: Text(
+              text,
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+          ),
         ),
       ),
     );

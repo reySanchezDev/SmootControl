@@ -27,7 +27,7 @@ void registerCartTests({
   );
 
   blocTest<PosBloc, PosState>(
-    'does not add products before selecting a table',
+    'shows a clear message before adding products without a table',
     build: buildBloc,
     seed: () => PosReady(
       products: [product],
@@ -36,7 +36,18 @@ void registerCartTests({
       selectedPaymentMethodId: method.id,
     ),
     act: (bloc) => bloc.add(PosProductAdded(product)),
-    expect: () => const <PosState>[],
+    expect: () => [
+      isA<PosFailure>().having(
+        (state) => state.failure.message,
+        'message',
+        'Selecciona una mesa antes de agregar productos al pedido.',
+      ),
+      isA<PosReady>().having(
+        (state) => state.cartLines,
+        'cart remains empty',
+        isEmpty,
+      ),
+    ],
   );
 
   blocTest<PosBloc, PosState>(

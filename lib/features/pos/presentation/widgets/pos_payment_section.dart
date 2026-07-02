@@ -25,6 +25,7 @@ class PosPaymentSection extends StatelessWidget {
     required this.onPaymentParentChanged,
     required this.paymentParentKey,
     required this.state,
+    this.onPaymentCompleted,
     super.key,
   });
 
@@ -36,6 +37,9 @@ class PosPaymentSection extends StatelessWidget {
 
   /// Current POS state.
   final PosReady state;
+
+  /// Optional callback invoked after a payment request is dispatched.
+  final VoidCallback? onPaymentCompleted;
 
   @override
   Widget build(BuildContext context) {
@@ -174,6 +178,7 @@ class PosPaymentSection extends StatelessWidget {
       bloc
         ..add(PosPaymentMethodSelected(method.id))
         ..add(const PosCheckoutRequested());
+      onPaymentCompleted?.call();
       return;
     }
 
@@ -185,12 +190,14 @@ class PosPaymentSection extends StatelessWidget {
       bloc
         ..add(PosPaymentMethodSelected(method.id))
         ..add(PosCheckoutRequested(paymentReference: reference));
+      onPaymentCompleted?.call();
       return;
     }
 
     bloc
       ..add(PosPaymentMethodSelected(method.id))
       ..add(const PosCheckoutRequested());
+    onPaymentCompleted?.call();
   }
 
   static const _missingExchangeRate = -1;

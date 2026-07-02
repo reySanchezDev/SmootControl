@@ -10,10 +10,17 @@ import 'package:smoo_control/features/cash_register/domain/entities/cash_registe
 import 'package:smoo_control/features/cash_register/domain/repositories/i_cash_register_repository.dart';
 import 'package:smoo_control/features/catalog/domain/entities/product_category.dart';
 import 'package:smoo_control/features/catalog/domain/repositories/i_catalog_repository.dart';
+import 'package:smoo_control/features/inventory/domain/entities/inventory_stock_item.dart';
+import 'package:smoo_control/features/inventory/domain/repositories/i_inventory_repository.dart';
 import 'package:smoo_control/features/modifiers/domain/entities/modifier_catalog.dart';
 import 'package:smoo_control/features/modifiers/domain/entities/modifier_group.dart';
 import 'package:smoo_control/features/modifiers/domain/entities/modifier_option.dart';
 import 'package:smoo_control/features/modifiers/domain/repositories/i_modifiers_repository.dart';
+import 'package:smoo_control/features/packaging/domain/entities/packaging_item.dart';
+import 'package:smoo_control/features/packaging/domain/entities/packaging_stock_item.dart';
+import 'package:smoo_control/features/packaging/domain/entities/product_packaging_rule.dart';
+import 'package:smoo_control/features/packaging/domain/entities/sales_type.dart';
+import 'package:smoo_control/features/packaging/domain/repositories/i_packaging_repository.dart';
 import 'package:smoo_control/features/payment_methods/domain/entities/payment_method.dart';
 import 'package:smoo_control/features/payment_methods/domain/repositories/i_payment_methods_repository.dart';
 import 'package:smoo_control/features/pos/domain/entities/account_split_draft.dart';
@@ -249,9 +256,11 @@ PosBloc _buildBloc() {
     catalogRepository: _CatalogFake(),
     accountSeparationService: const AccountSeparationService(),
     productsRepository: _ProductsFake(),
+    inventoryRepository: const _InventoryFake(),
     tablesRepository: _TablesFake(),
     paymentMethodsRepository: _PaymentMethodsFake(),
     modifiersRepository: const _ModifiersFake(),
+    packagingRepository: const _PackagingRepositoryFake(),
     salesRepository: _SalesFake(),
     settingsRepository: _SettingsFake(),
     cashRegisterRepository: _CashFake(session),

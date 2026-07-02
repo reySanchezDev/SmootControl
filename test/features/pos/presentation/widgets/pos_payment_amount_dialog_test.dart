@@ -87,6 +87,48 @@ void main() {
     expect(find.text('Amount Cordoba'), findsOneWidget);
     expect(find.text('OK'), findsOneWidget);
   });
+
+  testWidgets('replaces suggested amount when typing immediately', (
+    tester,
+  ) async {
+    int? received;
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: Builder(
+            builder: (context) => TextButton(
+              onPressed: () async {
+                received = await showDialog<int>(
+                  context: context,
+                  builder: (_) => const PosPaymentAmountDialog(
+                    methodName: 'Cordoba',
+                    totalInCents: 21000,
+                  ),
+                );
+              },
+              child: const Text('Open'),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Open'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('210.00'), findsOneWidget);
+
+    for (final digit in ['3', '0', '0']) {
+      await tester.tap(find.widgetWithText(OutlinedButton, digit));
+      await tester.pumpAndSettle();
+    }
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+
+    expect(received, 30000);
+  });
 }
 
 Future<void> _enterAmount(WidgetTester tester, String value) async {

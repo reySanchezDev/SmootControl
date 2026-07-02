@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:smoo_control/core/config/supabase_app_config.dart';
 import 'package:smoo_control/core/result/app_failure.dart';
 import 'package:smoo_control/core/result/app_result.dart';
+import 'package:smoo_control/core/session/current_remote_session_service.dart';
 import 'package:smoo_control/core/session/current_restaurant_service.dart';
 import 'package:smoo_control/core/utils/business_date_formatter.dart';
 import 'package:smoo_control/features/reports/domain/entities/report_period.dart';
@@ -18,20 +19,23 @@ final class SupabaseReportSummaryService
   SupabaseReportSummaryService({
     required SupabaseAppConfig config,
     required CurrentRestaurantService restaurantService,
+    required CurrentRemoteSessionService remoteSessionService,
     required http.Client client,
   }) : _config = config,
        _restaurantService = restaurantService,
+       _remoteSessionService = remoteSessionService,
        _client = client;
 
   final SupabaseAppConfig _config;
   final CurrentRestaurantService _restaurantService;
+  final CurrentRemoteSessionService _remoteSessionService;
   final http.Client _client;
 
-  String? _accessToken;
-  DateTime? _expiresAt;
-
   @override
-  bool get isConfigured => _config.isConfigured;
+  bool get isConfigured =>
+      _remoteSessionService.hasUsableToken &&
+      _config.isConfigured &&
+      _restaurantService.isConfigured;
 
   @override
   Future<AppResult<ReportSummary>> loadSummaryForRange(
@@ -386,44 +390,12 @@ final class SupabaseReportSummaryService
   }
 
   Future<String> _token() async {
-    final currentToken = _accessToken;
-    final expiration = _expiresAt;
-    final now = DateTime.now();
-    if (currentToken != null &&
-        expiration != null &&
-        expiration.isAfter(now.add(const Duration(minutes: 1)))) {
-      return currentToken;
-    }
+    final sessionToken = _remoteSessionService.accessToken;
+    if (sessionToken != null) return sessionToken;
 
-    final response = await _client.post(
-      _config.passwordGrantUri,
-      headers: {
-        'apikey': _config.publishableKey,
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode({
-        'email': _config.authEmail,
-        'password': _config.authPassword,
-      }),
+    throw StateError(
+      'La sesion remota expiro. Inicia sesion como administrador remoto.',
     );
-    _ensureSuccess(response, 'auth');
-
-    final decoded = jsonDecode(response.body);
-    if (decoded is! Map) {
-      throw StateError('Supabase auth response is invalid.');
-    }
-
-    final token = decoded['access_token']?.toString();
-    if (token == null || token.isEmpty) {
-      throw StateError('Supabase auth response did not include a token.');
-    }
-
-    final expiresIn = decoded['expires_in'] is num
-        ? (decoded['expires_in'] as num).toInt()
-        : 3600;
-    _accessToken = token;
-    _expiresAt = now.add(Duration(seconds: expiresIn));
-    return token;
   }
 
   void _ensureSuccess(http.Response response, String table) {
