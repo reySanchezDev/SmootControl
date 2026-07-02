@@ -41,6 +41,7 @@ abstract final class RouteAccess {
       AppRoutes.users => const ['usuarios.gestionar'],
       AppRoutes.audit => const ['auditoria.ver'],
       AppRoutes.sync => const ['sync.configurar'],
+      AppRoutes.systemMaintenance => const ['sistema.reiniciar_operacion'],
       _ => const <String>[],
     };
   }

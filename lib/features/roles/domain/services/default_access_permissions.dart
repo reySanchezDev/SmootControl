@@ -58,5 +58,9 @@ abstract final class DefaultAccessPermissions {
       code: 'dispositivo.inicializar',
       name: 'Inicializar dispositivo',
     ),
+    AccessPermission(
+      code: 'sistema.reiniciar_operacion',
+      name: 'Reiniciar operacion piloto',
+    ),
   ];
 }

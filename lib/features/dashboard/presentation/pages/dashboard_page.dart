@@ -245,6 +245,11 @@ class _DashboardContent extends StatelessWidget {
         label: l10n.moduleSync,
         route: AppRoutes.sync,
       ),
+      const _ModuleDefinition(
+        icon: Icons.cleaning_services_outlined,
+        label: 'Utilidades',
+        route: AppRoutes.systemMaintenance,
+      ),
     ];
   }
 }

@@ -82,6 +82,7 @@ import 'package:smoo_control/features/sync/domain/services/i_sync_remote_sender.
 import 'package:smoo_control/features/sync/domain/services/sync_queue_processor.dart';
 import 'package:smoo_control/features/sync/domain/services/sync_scheduler_service.dart';
 import 'package:smoo_control/features/sync/presentation/bloc/sync_bloc.dart';
+import 'package:smoo_control/features/system/data/services/pilot_operation_reset_service.dart';
 import 'package:smoo_control/features/tables/data/datasources/local_tables_datasource.dart';
 import 'package:smoo_control/features/tables/data/repositories/tables_repository.dart';
 import 'package:smoo_control/features/tables/domain/repositories/i_tables_repository.dart';
@@ -357,6 +358,15 @@ Future<void> configureDependencies() async {
       () => AuditLogBloc(serviceLocator<IAuditLogRepository>()),
     )
     ..registerLazySingleton<SaleInvoicePdfService>(SaleInvoicePdfService.new)
+    ..registerLazySingleton<PilotOperationResetService>(
+      () => PilotOperationResetService(
+        database: serviceLocator<AppDatabase>(),
+        config: serviceLocator<SupabaseAppConfig>(),
+        restaurantService: serviceLocator<CurrentRestaurantService>(),
+        remoteSessionService: serviceLocator<CurrentRemoteSessionService>(),
+        client: serviceLocator<http.Client>(),
+      ),
+    )
     ..registerLazySingleton<LocalSalesDataSource>(
       () => LocalSalesDataSource(
         serviceLocator<AppDatabase>(),

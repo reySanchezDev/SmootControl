@@ -18,6 +18,7 @@ import 'package:smoo_control/features/roles/presentation/pages/roles_page.dart';
 import 'package:smoo_control/features/sales/presentation/pages/sales_page.dart';
 import 'package:smoo_control/features/settings/presentation/pages/settings_page.dart';
 import 'package:smoo_control/features/sync/presentation/pages/sync_page.dart';
+import 'package:smoo_control/features/system/presentation/pages/pilot_operation_reset_page.dart';
 import 'package:smoo_control/features/tables/presentation/pages/tables_page.dart';
 import 'package:smoo_control/features/users/presentation/pages/users_page.dart';
 
@@ -49,6 +50,7 @@ Widget _guardedPage(String? routeName) {
     AppRoutes.users => const UsersPage(),
     AppRoutes.audit => const AuditLogPage(),
     AppRoutes.sync => const SyncPage(),
+    AppRoutes.systemMaintenance => const PilotOperationResetPage(),
     _ => const DashboardPage(),
   };
 
@@ -76,6 +78,7 @@ bool _requiresOnlineAdmin(String? routeName) {
     AppRoutes.roles ||
     AppRoutes.users ||
     AppRoutes.audit ||
+    AppRoutes.systemMaintenance ||
     AppRoutes.reports => true,
     _ => false,
   };

@@ -53,4 +53,7 @@ abstract final class AppRoutes {
 
   /// Sync route.
   static const sync = '/sync';
+
+  /// System maintenance utilities route.
+  static const systemMaintenance = '/system-maintenance';
 }
