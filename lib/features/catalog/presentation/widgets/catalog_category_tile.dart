@@ -106,8 +106,12 @@ class CatalogCategoryTile extends StatelessWidget {
     final groupLabel = hasChildren && category.parentId == null
         ? ' - ${isCollapsed ? l10n.collapsedStatus : l10n.expandedStatus}'
         : '';
-    if (path == null) return '$typeLabel - $statusLabel$groupLabel';
+    final positionLabel = 'Posicion ${category.sortOrder}';
+    if (path == null) {
+      return '$typeLabel - $positionLabel - $statusLabel$groupLabel';
+    }
 
-    return '$typeLabel - ${l10n.categoryInsideOf}: $path - $statusLabel';
+    return '$typeLabel - $positionLabel - '
+        '${l10n.categoryInsideOf}: $path - $statusLabel';
   }
 }

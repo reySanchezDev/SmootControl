@@ -16,6 +16,7 @@ void main() {
     expect(find.text('Sort order'), findsNothing);
     expect(find.text('Type'), findsNothing);
     expect(find.text('Place inside'), findsOneWidget);
+    expect(find.text('Posicion POS'), findsOneWidget);
   });
 
   testWidgets('creates nested category by selecting any active parent', (
@@ -59,6 +60,50 @@ void main() {
     expect(savedCategory?.name, '8 OZ');
     expect(savedCategory?.parentId, 'subcategory-1');
     expect(savedCategory?.sortOrder, 1);
+  });
+
+  testWidgets('saves the configured POS position', (tester) async {
+    ProductCategory? savedCategory;
+
+    await _pumpDialog(
+      tester,
+      onSaved: (category) => savedCategory = category,
+    );
+
+    await tester.tap(find.text('Open dialog'));
+    await tester.pumpAndSettle();
+
+    final fields = find.byType(TextField);
+    await tester.enterText(fields.at(0), 'Bebida');
+    await tester.enterText(fields.at(1), '2');
+
+    await tester.tap(find.text('Save'));
+    await tester.pumpAndSettle();
+
+    expect(savedCategory?.name, 'Bebida');
+    expect(savedCategory?.sortOrder, 2);
+  });
+
+  testWidgets('rejects invalid POS position', (tester) async {
+    ProductCategory? savedCategory;
+
+    await _pumpDialog(
+      tester,
+      onSaved: (category) => savedCategory = category,
+    );
+
+    await tester.tap(find.text('Open dialog'));
+    await tester.pumpAndSettle();
+
+    final fields = find.byType(TextField);
+    await tester.enterText(fields.at(0), 'Bebida');
+    await tester.enterText(fields.at(1), '0');
+
+    await tester.tap(find.text('Save'));
+    await tester.pumpAndSettle();
+
+    expect(savedCategory, isNull);
+    expect(find.text('Enter a valid number.'), findsOneWidget);
   });
 
   testWidgets('edits category keeping the same system id', (tester) async {

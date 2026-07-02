@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/core/session/current_operator_service.dart';
 import 'package:smoo_control/features/catalog/domain/entities/product_category.dart';
+import 'package:smoo_control/features/packaging/domain/entities/sales_type.dart';
 import 'package:smoo_control/features/payment_methods/domain/entities/payment_method.dart';
 import 'package:smoo_control/features/pos/domain/entities/pos_cart_line.dart';
 import 'package:smoo_control/features/pos/presentation/bloc/pos_state.dart';
@@ -43,6 +44,42 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(find.text('Cafe'), findsOneWidget);
     expect(find.text('Menu oculto'), findsNothing);
+  });
+
+  testWidgets(
+    'uses abbreviated sales type labels and hides exchange on phone',
+    (
+      tester,
+    ) async {
+      await tester.binding.setSurfaceSize(const Size(390, 820));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      await _pumpReadyView(tester, state: _mobileSalesTypeState);
+
+      expect(tester.takeException(), isNull);
+      expect(find.text('Aquí'), findsOneWidget);
+      expect(find.text('GO'), findsOneWidget);
+      expect(find.text('Comer aqui'), findsNothing);
+      expect(find.text('Para llevar'), findsNothing);
+      expect(find.byIcon(Icons.currency_exchange_outlined), findsNothing);
+    },
+  );
+
+  testWidgets('keeps tablet sales type buttons next to product visibility', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(800, 1280));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await _pumpReadyView(tester, state: _mobileSalesTypeState);
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('Comer aqui'), findsOneWidget);
+    expect(find.text('Para llevar'), findsOneWidget);
+
+    final hideRect = tester.getRect(find.text('Hide'));
+    final dineInRect = tester.getRect(find.text('Comer aqui'));
+    expect(dineInRect.left - hideRect.right, lessThan(140));
   });
 
   testWidgets('renders active empty categories in the POS category band', (
@@ -231,7 +268,9 @@ void main() {
 
     expect(tester.takeException(), isNull);
     expect(find.text('Pollo asado familiar'), findsAtLeastNWidgets(1));
-    expect(find.text('Mesa 3', skipOffstage: false), findsAtLeastNWidgets(1));
+    final tablesFinder = find.text('TABLES', skipOffstage: false);
+    expect(tablesFinder, findsAtLeastNWidgets(1));
+    expect(find.text('Mesa 3', skipOffstage: false), findsNothing);
 
     final optionsFinder = find.textContaining(
       RegExp('options|opciones', caseSensitive: false),
@@ -337,6 +376,24 @@ const _table = RestaurantTable(
   isActive: true,
 );
 
+const _dineInSalesType = SalesType(
+  id: 'sales-type-dine-in',
+  code: 'dine_in',
+  name: 'Comer aqui',
+  displayOrder: 1,
+  isDefault: true,
+  isActive: true,
+);
+
+const _toGoSalesType = SalesType(
+  id: 'sales-type-to-go',
+  code: 'to_go',
+  name: 'Para llevar',
+  displayOrder: 2,
+  isDefault: false,
+  isActive: true,
+);
+
 const _emptyCategory = ProductCategory(
   id: 'category-2',
   name: 'Almuerzos',
@@ -384,6 +441,18 @@ const _responsiveState = PosReady(
   paymentMethods: [_cashMethod],
   selectedCategoryId: 'category-1',
   selectedPaymentMethodId: 'cash',
+  selectedTableId: 'table-1',
+);
+
+const _mobileSalesTypeState = PosReady(
+  categories: [_category],
+  products: [_product],
+  tables: [_table],
+  paymentMethods: [_cashMethod],
+  salesTypes: [_dineInSalesType, _toGoSalesType],
+  selectedCategoryId: 'category-1',
+  selectedPaymentMethodId: 'cash',
+  selectedSalesTypeId: 'sales-type-dine-in',
   selectedTableId: 'table-1',
 );
 

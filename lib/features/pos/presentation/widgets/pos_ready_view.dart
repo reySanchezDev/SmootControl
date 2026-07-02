@@ -1,5 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smoo_control/features/catalog/domain/entities/product_category.dart';
+import 'package:smoo_control/features/pos/presentation/bloc/pos_bloc.dart';
 import 'package:smoo_control/features/pos/presentation/bloc/pos_state.dart';
 import 'package:smoo_control/features/pos/presentation/widgets/pos_actions_band.dart';
 import 'package:smoo_control/features/pos/presentation/widgets/pos_catalog_panel.dart';
@@ -8,6 +12,7 @@ import 'package:smoo_control/features/pos/presentation/widgets/pos_responsive_la
 import 'package:smoo_control/features/pos/presentation/widgets/pos_tables_band.dart';
 import 'package:smoo_control/features/pos/presentation/widgets/pos_ticket_panel.dart';
 import 'package:smoo_control/features/products/domain/entities/product.dart';
+import 'package:smoo_control/l10n/app_localizations.dart';
 
 /// Ready state content for the POS page.
 class PosReadyView extends StatefulWidget {
@@ -60,7 +65,10 @@ class _PosReadyViewState extends State<PosReadyView> {
           onCategorySelected: _showProducts,
           state: widget.state,
         );
-        final tableBand = PosTablesBand(state: widget.state);
+        final phoneLayout = layout.maxWidth < 560;
+        final tableBand = phoneLayout
+            ? _MobileTablesLauncher(state: widget.state)
+            : PosTablesBand(state: widget.state);
         final actionsBand = PosActionsBand(
           onPaymentParentChanged: (parentKey) {
             setState(() => _paymentParentKey = parentKey);
@@ -70,7 +78,7 @@ class _PosReadyViewState extends State<PosReadyView> {
         );
 
         if (layout.compact) {
-          if (layout.maxWidth < 560) {
+          if (phoneLayout) {
             return Column(
               children: [
                 Expanded(
@@ -83,6 +91,7 @@ class _PosReadyViewState extends State<PosReadyView> {
                         contentHeight: mobileConstraints.maxHeight,
                         includeActions: false,
                         layout: layout,
+                        phoneLayout: true,
                         tableBand: tableBand,
                         ticket: ticket,
                       );
@@ -102,6 +111,7 @@ class _PosReadyViewState extends State<PosReadyView> {
             contentHeight: constraints.maxHeight,
             includeActions: true,
             layout: layout,
+            phoneLayout: false,
             tableBand: tableBand,
             ticket: ticket,
           );
@@ -138,6 +148,7 @@ class _PosReadyViewState extends State<PosReadyView> {
     required Widget categoryBand,
     required bool includeActions,
     required PosResponsiveLayout layout,
+    required bool phoneLayout,
     required Widget tableBand,
     required Widget ticket,
     required double contentHeight,
@@ -152,7 +163,9 @@ class _PosReadyViewState extends State<PosReadyView> {
     final categoryHeight = layout.categoryBandHeight(
       _visibleRootCategoryCount(),
     );
-    final tableHeight = layout.tableBandHeight(_visibleTableEntryCount());
+    final tableHeight = phoneLayout
+        ? 68.0
+        : layout.tableBandHeight(_visibleTableEntryCount());
     final actionsHeight = includeActions ? layout.actionsHeight() : 0.0;
     final gapCount =
         1 + (_productsVisible ? 2 : 0) + 1 + (includeActions ? 1 : 0);
@@ -254,5 +267,145 @@ class _PosReadyViewState extends State<PosReadyView> {
 
   int _sortCategories(ProductCategory first, ProductCategory second) {
     return first.sortOrder.compareTo(second.sortOrder);
+  }
+}
+
+class _MobileTablesLauncher extends StatelessWidget {
+  const _MobileTablesLauncher({required this.state});
+
+  final PosReady state;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final colorScheme = Theme.of(context).colorScheme;
+    final selectedLabel = _selectedTableLabel();
+
+    return Material(
+      color: colorScheme.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(4),
+        side: BorderSide(color: colorScheme.outlineVariant),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(4),
+        onTap: state.tables.isEmpty ? null : () => _openTablesSheet(context),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          child: Row(
+            children: [
+              Icon(Icons.table_restaurant_outlined, color: colorScheme.primary),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.moduleTables.toUpperCase(),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                        color: colorScheme.onSurface,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    if (selectedLabel != null)
+                      Text(
+                        selectedLabel,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.labelMedium
+                            ?.copyWith(color: colorScheme.onSurfaceVariant),
+                      ),
+                  ],
+                ),
+              ),
+              Icon(Icons.keyboard_arrow_up, color: colorScheme.onSurface),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  String? _selectedTableLabel() {
+    final tableId = state.selectedTableId;
+    if (tableId == null) return null;
+
+    final splitAccountId = state.selectedSplitAccountId;
+    if (splitAccountId != null) {
+      final accounts = state.splitAccountsByTable[tableId] ?? const [];
+      for (final account in accounts) {
+        if (account.id == splitAccountId) return account.name;
+      }
+    }
+
+    for (final table in state.tables) {
+      if (table.id == tableId) return table.operationalName;
+    }
+    return null;
+  }
+
+  void _openTablesSheet(BuildContext context) {
+    final bloc = _maybePosBloc(context);
+    final l10n = AppLocalizations.of(context);
+    unawaited(
+      showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        useSafeArea: true,
+        builder: (sheetContext) {
+          final height = MediaQuery.sizeOf(sheetContext).height * .72;
+          final sheet = SafeArea(
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
+              child: SizedBox(
+                height: height,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            l10n.moduleTables,
+                            style: Theme.of(sheetContext).textTheme.titleMedium
+                                ?.copyWith(fontWeight: FontWeight.w800),
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close),
+                          onPressed: () => Navigator.of(sheetContext).pop(),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Expanded(
+                      child: PosTablesBand(
+                        onEntrySelected: () => Navigator.of(sheetContext).pop(),
+                        state: state,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+
+          if (bloc == null) return sheet;
+          return BlocProvider.value(value: bloc, child: sheet);
+        },
+      ),
+    );
+  }
+
+  PosBloc? _maybePosBloc(BuildContext context) {
+    try {
+      return context.read<PosBloc>();
+    } on ProviderNotFoundException {
+      return null;
+    }
   }
 }

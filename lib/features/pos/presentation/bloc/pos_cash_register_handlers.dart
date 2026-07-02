@@ -103,6 +103,14 @@ Future<void> _closeCashRegisterSession({
           'physicalClosingCashInCents': physicalClosingCashInCents,
         },
       );
+      final clearResult = await bloc._openTicketRepository.clearAllOpenOrders();
+      switch (clearResult) {
+        case AppSuccess():
+          break;
+        case AppFailureResult(:final error):
+          onFailure(error);
+          return;
+      }
       onSuccess();
     case AppFailureResult(:final error):
       onFailure(error);

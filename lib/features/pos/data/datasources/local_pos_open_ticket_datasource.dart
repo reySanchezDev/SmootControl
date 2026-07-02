@@ -50,6 +50,14 @@ final class LocalPosOpenTicketDataSource {
     )..where((context) => context.orderKey.equals(orderKey))).go();
   }
 
+  /// Clears every open ticket line and order context.
+  Future<void> clearAllOpenOrders() async {
+    await _database.transaction(() async {
+      await _database.delete(_database.localPosOpenTicketLines).go();
+      await _database.delete(_database.localPosOrderContexts).go();
+    });
+  }
+
   /// Replaces the stored ticket for a table.
   Future<void> replaceTableTicket({
     required String tableId,

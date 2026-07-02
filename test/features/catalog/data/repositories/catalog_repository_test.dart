@@ -58,6 +58,33 @@ void main() {
       expect(syncItem.operation, SyncOperation.create);
     });
 
+    test('returns categories ordered by POS position', () async {
+      const drink = ProductCategory(
+        id: 'category-drink',
+        name: 'Bebida',
+        sortOrder: 2,
+        isActive: true,
+      );
+      const food = ProductCategory(
+        id: 'category-food',
+        name: 'Comida',
+        sortOrder: 1,
+        isActive: true,
+      );
+
+      await repository.saveCategory(drink);
+      await repository.saveCategory(food);
+
+      final readResult = await repository.getCategories();
+
+      final categories =
+          (readResult as AppSuccess<List<ProductCategory>>).value;
+      expect(
+        categories.map((category) => category.name).toList(),
+        ['Comida', 'Bebida'],
+      );
+    });
+
     test('does not save local category when remote-first push fails', () async {
       final remoteFirstRepository = CatalogRepository(
         LocalCatalogDataSource(database),

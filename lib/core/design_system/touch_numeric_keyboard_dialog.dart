@@ -78,33 +78,44 @@ class _TouchNumericKeyboardDialogState<T>
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final colorScheme = Theme.of(context).colorScheme;
-    final maxHeight = MediaQuery.sizeOf(context).height * .92;
+    final mediaSize = MediaQuery.sizeOf(context);
+    final compact = mediaSize.width < 390;
+    final dialogWidth = (mediaSize.width * .94).clamp(300.0, 520.0);
+    final maxHeight = mediaSize.height * .92;
+    final padding = compact ? 10.0 : 14.0;
 
     return Dialog(
-      insetPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      insetPadding: EdgeInsets.symmetric(
+        horizontal: compact ? 8 : 12,
+        vertical: compact ? 8 : 12,
+      ),
       child: ConstrainedBox(
-        constraints: BoxConstraints(maxHeight: maxHeight, maxWidth: 620),
+        constraints: BoxConstraints(
+          maxHeight: maxHeight,
+          maxWidth: dialogWidth,
+        ),
         child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.all(14),
+            padding: EdgeInsets.all(padding),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                _KeyboardHeader(title: widget.title),
-                const SizedBox(height: 8),
+                _KeyboardHeader(title: widget.title, compact: compact),
+                SizedBox(height: compact ? 6 : 8),
                 _NumericDisplay(
                   allSelected: _allSelected,
+                  compact: compact,
                   errorText: _errorText,
                   prefixText: widget.prefixText,
                   value: _value,
                 ),
-                const SizedBox(height: 10),
+                SizedBox(height: compact ? 8 : 10),
                 _NumericKeypad(
                   onBackspace: _backspace,
                   onClear: _clear,
                   onKey: _append,
                 ),
-                const SizedBox(height: 10),
+                SizedBox(height: compact ? 8 : 10),
                 Row(
                   children: [
                     Expanded(
@@ -113,7 +124,7 @@ class _TouchNumericKeyboardDialogState<T>
                         style: FilledButton.styleFrom(
                           backgroundColor: colorScheme.tertiary,
                           foregroundColor: colorScheme.onTertiary,
-                          minimumSize: const Size.fromHeight(56),
+                          minimumSize: Size.fromHeight(compact ? 50 : 56),
                         ),
                         child: Text(l10n.okAction),
                       ),
@@ -125,7 +136,7 @@ class _TouchNumericKeyboardDialogState<T>
                         style: FilledButton.styleFrom(
                           backgroundColor: colorScheme.error,
                           foregroundColor: colorScheme.onError,
-                          minimumSize: const Size.fromHeight(56),
+                          minimumSize: Size.fromHeight(compact ? 50 : 56),
                         ),
                         child: Text(l10n.cancelAction),
                       ),
@@ -189,8 +200,9 @@ class _TouchNumericKeyboardDialogState<T>
 }
 
 class _KeyboardHeader extends StatelessWidget {
-  const _KeyboardHeader({required this.title});
+  const _KeyboardHeader({required this.compact, required this.title});
 
+  final bool compact;
   final String title;
 
   @override
@@ -199,7 +211,7 @@ class _KeyboardHeader extends StatelessWidget {
     return Container(
       alignment: Alignment.center,
       color: colorScheme.primary,
-      height: 52,
+      height: compact ? 48 : 52,
       child: Text(
         title,
         maxLines: 1,
@@ -216,12 +228,14 @@ class _KeyboardHeader extends StatelessWidget {
 class _NumericDisplay extends StatelessWidget {
   const _NumericDisplay({
     required this.allSelected,
+    required this.compact,
     required this.value,
     this.errorText,
     this.prefixText,
   });
 
   final bool allSelected;
+  final bool compact;
   final String? errorText;
   final String? prefixText;
   final String value;
@@ -244,7 +258,9 @@ class _NumericDisplay extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
             child: Text(
               text,
-              style: Theme.of(context).textTheme.titleLarge,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontSize: compact ? 22 : null,
+              ),
             ),
           ),
         ),
@@ -267,33 +283,64 @@ class _NumericKeypad extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const keys = ['7', '8', '9', '4', '5', '6', '1', '2', '3', ',', '0', '.'];
-    return GridView.count(
-      childAspectRatio: 2.5,
-      crossAxisCount: 4,
-      crossAxisSpacing: 6,
-      mainAxisSpacing: 6,
-      physics: const NeverScrollableScrollPhysics(),
-      shrinkWrap: true,
-      children: [
-        for (final key in keys)
-          _KeypadButton(label: key, onPressed: () => onKey(key)),
-        _KeypadButton(icon: Icons.backspace_outlined, onPressed: onBackspace),
-        _KeypadButton(label: '00', onPressed: () => onKey('00')),
-        _KeypadButton(label: '-', onPressed: () => onKey('-')),
-        _KeypadButton(label: 'C', onPressed: onClear),
-      ],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 390;
+        final gap = compact ? 5.0 : 6.0;
+        final keyHeight = compact ? 46.0 : 52.0;
+        final keyWidth = (constraints.maxWidth - (gap * 3)) / 4;
+
+        return GridView.count(
+          childAspectRatio: keyWidth / keyHeight,
+          crossAxisCount: 4,
+          crossAxisSpacing: gap,
+          mainAxisSpacing: gap,
+          physics: const NeverScrollableScrollPhysics(),
+          shrinkWrap: true,
+          children: [
+            for (final key in keys)
+              _KeypadButton(
+                keyHeight: keyHeight,
+                label: key,
+                onPressed: () => onKey(key),
+              ),
+            _KeypadButton(
+              icon: Icons.backspace_outlined,
+              keyHeight: keyHeight,
+              onPressed: onBackspace,
+            ),
+            _KeypadButton(
+              keyHeight: keyHeight,
+              label: '00',
+              onPressed: () => onKey('00'),
+            ),
+            _KeypadButton(
+              keyHeight: keyHeight,
+              label: '-',
+              onPressed: () => onKey('-'),
+            ),
+            _KeypadButton(
+              keyHeight: keyHeight,
+              label: 'C',
+              onPressed: onClear,
+            ),
+          ],
+        );
+      },
     );
   }
 }
 
 class _KeypadButton extends StatelessWidget {
   const _KeypadButton({
+    required this.keyHeight,
     required this.onPressed,
     this.icon,
     this.label,
   });
 
   final IconData? icon;
+  final double keyHeight;
   final String? label;
   final VoidCallback onPressed;
 
@@ -301,9 +348,15 @@ class _KeypadButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return OutlinedButton(
       onPressed: onPressed,
+      style: OutlinedButton.styleFrom(
+        minimumSize: Size(0, keyHeight),
+        padding: EdgeInsets.zero,
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        visualDensity: VisualDensity.compact,
+      ),
       child: icon == null
           ? Text(label!, style: Theme.of(context).textTheme.titleLarge)
-          : Icon(icon, size: 28),
+          : Icon(icon, size: keyHeight * .5),
     );
   }
 }

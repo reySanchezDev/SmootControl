@@ -348,6 +348,60 @@ void main() {
         );
       },
     );
+
+    test('downloads category display order for POS navigation', () async {
+      final service = SupabaseCatalogPullService(
+        database: database,
+        config: const SupabaseAppConfig(
+          supabaseUrl: 'https://smoo.test',
+          publishableKey: 'publishable-key',
+        ),
+        restaurantService: const CurrentRestaurantService(
+          restaurantId: 'restaurant-1',
+        ),
+        remoteSessionService: _remoteSession(),
+        client: _catalogMockClient(
+          overrides: {
+            'product_categories': [
+              {
+                'id': 'category-drink',
+                'restaurant_id': 'restaurant-1',
+                'parent_id': null,
+                'name': 'Bebida',
+                'display_order': 2,
+                'is_active': true,
+              },
+              {
+                'id': 'category-food',
+                'restaurant_id': 'restaurant-1',
+                'parent_id': null,
+                'name': 'Comida',
+                'display_order': 1,
+                'is_active': true,
+              },
+            ],
+          },
+        ),
+      );
+
+      final summary = await service.pullScopes({CatalogPullScope.catalog});
+
+      expect(summary.categories, 2);
+      final query = database.select(database.localProductCategories)
+        ..orderBy([
+          (category) => OrderingTerm.asc(category.sortOrder),
+          (category) => OrderingTerm.asc(category.name),
+        ]);
+      final categories = await query.get();
+      expect(
+        categories.map((category) => category.name).toList(),
+        ['Comida', 'Bebida'],
+      );
+      expect(
+        categories.map((category) => category.sortOrder).toList(),
+        [1, 2],
+      );
+    });
   });
 }
 

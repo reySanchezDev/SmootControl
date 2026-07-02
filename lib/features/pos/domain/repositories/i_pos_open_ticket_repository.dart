@@ -19,6 +19,9 @@ abstract interface class IPosOpenTicketRepository {
   /// Clears persisted metadata for one open order.
   Future<AppResult<void>> clearOrderContext(String orderKey);
 
+  /// Clears every locally open order and its persisted metadata.
+  Future<AppResult<void>> clearAllOpenOrders();
+
   /// Replaces the currently stored ticket for one table.
   Future<AppResult<void>> saveTableTicket({
     required String tableId,

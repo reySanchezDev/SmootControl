@@ -63,34 +63,46 @@ class _TouchTextKeyboardDialogState extends State<TouchTextKeyboardDialog> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final colorScheme = Theme.of(context).colorScheme;
-    final maxHeight = MediaQuery.sizeOf(context).height * .92;
+    final mediaSize = MediaQuery.sizeOf(context);
+    final compact = mediaSize.width < 390;
+    final dialogWidth = (mediaSize.width * .94).clamp(300.0, 620.0);
+    final maxHeight = mediaSize.height * .92;
+    final padding = compact ? 10.0 : 14.0;
 
     return Dialog(
-      insetPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      insetPadding: EdgeInsets.symmetric(
+        horizontal: compact ? 8 : 12,
+        vertical: compact ? 8 : 12,
+      ),
       child: ConstrainedBox(
-        constraints: BoxConstraints(maxHeight: maxHeight, maxWidth: 860),
+        constraints: BoxConstraints(
+          maxHeight: maxHeight,
+          maxWidth: dialogWidth,
+        ),
         child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.all(14),
+            padding: EdgeInsets.all(padding),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                _TextKeyboardHeader(title: widget.title),
-                const SizedBox(height: 8),
+                _TextKeyboardHeader(title: widget.title, compact: compact),
+                SizedBox(height: compact ? 6 : 8),
                 _TextDisplay(
                   hintText: widget.hintText,
                   label: widget.label,
+                  compact: compact,
                   value: _value,
                 ),
-                const SizedBox(height: 10),
+                SizedBox(height: compact ? 8 : 10),
                 TouchTextKeyboardPad(
                   onBackspace: _backspace,
                   onClear: _clear,
                   onKey: _append,
                   onSpace: () => _append(' '),
                 ),
-                const SizedBox(height: 10),
+                SizedBox(height: compact ? 8 : 10),
                 _TextKeyboardActions(
+                  compact: compact,
                   colorScheme: colorScheme,
                   onCancel: () => Navigator.of(context).pop(),
                   onConfirm: _confirm,
@@ -126,6 +138,7 @@ class _TouchTextKeyboardDialogState extends State<TouchTextKeyboardDialog> {
 class _TextKeyboardActions extends StatelessWidget {
   const _TextKeyboardActions({
     required this.cancelLabel,
+    required this.compact,
     required this.colorScheme,
     required this.okLabel,
     required this.onCancel,
@@ -133,6 +146,7 @@ class _TextKeyboardActions extends StatelessWidget {
   });
 
   final String cancelLabel;
+  final bool compact;
   final ColorScheme colorScheme;
   final String okLabel;
   final VoidCallback onCancel;
@@ -148,7 +162,7 @@ class _TextKeyboardActions extends StatelessWidget {
             style: FilledButton.styleFrom(
               backgroundColor: colorScheme.tertiary,
               foregroundColor: colorScheme.onTertiary,
-              minimumSize: const Size.fromHeight(56),
+              minimumSize: Size.fromHeight(compact ? 50 : 56),
             ),
             child: Text(okLabel),
           ),
@@ -160,7 +174,7 @@ class _TextKeyboardActions extends StatelessWidget {
             style: FilledButton.styleFrom(
               backgroundColor: colorScheme.error,
               foregroundColor: colorScheme.onError,
-              minimumSize: const Size.fromHeight(56),
+              minimumSize: Size.fromHeight(compact ? 50 : 56),
             ),
             child: Text(cancelLabel),
           ),
@@ -171,8 +185,9 @@ class _TextKeyboardActions extends StatelessWidget {
 }
 
 class _TextKeyboardHeader extends StatelessWidget {
-  const _TextKeyboardHeader({required this.title});
+  const _TextKeyboardHeader({required this.compact, required this.title});
 
+  final bool compact;
   final String title;
 
   @override
@@ -181,7 +196,7 @@ class _TextKeyboardHeader extends StatelessWidget {
     return Container(
       alignment: Alignment.center,
       color: colorScheme.primary,
-      height: 52,
+      height: compact ? 48 : 52,
       child: Text(
         title,
         maxLines: 1,
@@ -197,11 +212,13 @@ class _TextKeyboardHeader extends StatelessWidget {
 
 class _TextDisplay extends StatelessWidget {
   const _TextDisplay({
+    required this.compact,
     required this.value,
     this.hintText,
     this.label,
   });
 
+  final bool compact;
   final String? hintText;
   final String? label;
   final String value;
@@ -221,6 +238,7 @@ class _TextDisplay extends StatelessWidget {
             color: value.isEmpty
                 ? colorScheme.onSurfaceVariant
                 : colorScheme.onSurface,
+            fontSize: compact ? 24 : null,
           ),
         ),
       ),

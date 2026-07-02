@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:smoo_control/core/config/app_build_info.dart';
 import 'package:smoo_control/core/design_system/app_button.dart';
 import 'package:smoo_control/core/design_system/app_input.dart';
 import 'package:smoo_control/core/design_system/app_message_dialog.dart';
@@ -140,17 +139,6 @@ class _RemoteInitialAdminSetupPageState
                         const SizedBox(height: 16),
                         const Center(child: CircularProgressIndicator()),
                       ],
-                      const SizedBox(height: 16),
-                      const AppText(
-                        AppBuildInfo.visibleLabel,
-                        maxLines: 1,
-                        textAlign: TextAlign.center,
-                        variant: AppTextVariant.label,
-                        style: TextStyle(
-                          color: AppPalette.textSecondary,
-                          fontSize: 11,
-                        ),
-                      ),
                     ],
                   ),
                 ),

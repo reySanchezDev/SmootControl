@@ -270,6 +270,61 @@ void main() {
       ],
     );
 
+    late _PosOpenTicketRepositoryFake staleOpenTickets;
+    blocTest<PosBloc, PosState>(
+      'clears stale open table tickets after closing a previous cash register',
+      build: () {
+        final previousSession = CashRegisterSession(
+          id: 'cash-session-yesterday',
+          cashierId: 'cashier-1',
+          businessDate: DateTime(2026),
+          openingCashInCents: 10000,
+          status: CashRegisterStatus.open,
+        );
+        staleOpenTickets = _PosOpenTicketRepositoryFake(
+          tickets: [
+            const PosOpenTicketLine(
+              lineKey: 'product-1',
+              tableId: 'table-1',
+              productId: 'product-1',
+              quantity: 2,
+            ),
+          ],
+        );
+        return buildBloc(
+          cashRegisterRepository: _CashRegisterRepositoryFake(
+            previousSession,
+          ),
+          openTicketRepository: staleOpenTickets,
+        );
+      },
+      seed: () => PosStaleCashRegisterRequired(
+        CashRegisterSession(
+          id: 'cash-session-yesterday',
+          cashierId: 'cashier-1',
+          businessDate: DateTime(2026),
+          openingCashInCents: 10000,
+          status: CashRegisterStatus.open,
+        ),
+      ),
+      act: (bloc) => bloc.add(
+        const PosCashRegisterClosed(physicalClosingCashInCents: 10000),
+      ),
+      expect: () => [
+        const PosLoading(),
+        const PosCashRegisterRequired(),
+      ],
+      verify: (_) async {
+        final result = await staleOpenTickets.getOpenTickets();
+        switch (result) {
+          case AppSuccess(:final value):
+            expect(value, isEmpty);
+          case AppFailureResult():
+            fail('Open tickets should be readable in this test.');
+        }
+      },
+    );
+
     blocTest<PosBloc, PosState>(
       'shows subcategories and direct products when category is selected',
       build: buildBloc,

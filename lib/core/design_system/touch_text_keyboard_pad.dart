@@ -25,58 +25,96 @@ class TouchTextKeyboardPad extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        _KeyboardRow(
-          keys: const ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'],
-          onKey: onKey,
-        ),
-        const SizedBox(height: 6),
-        _KeyboardRow(
-          keys: const ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
-          onKey: onKey,
-        ),
-        const SizedBox(height: 6),
-        _KeyboardRow(
-          keys: const ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'N'],
-          onKey: onKey,
-        ),
-        const SizedBox(height: 6),
-        _KeyboardRow(
-          keys: const ['Z', 'X', 'C', 'V', 'B', 'N', 'M', '-', '.', '/'],
-          onKey: onKey,
-        ),
-        const SizedBox(height: 6),
-        Row(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 390;
+        final gap = compact ? 4.0 : 6.0;
+        final keyHeight = compact ? 42.0 : 48.0;
+        final fontSize = compact ? 16.0 : 18.0;
+
+        return Column(
           children: [
-            Expanded(
-              child: _KeyboardButton(
-                icon: Icons.backspace_outlined,
-                onPressed: onBackspace,
-              ),
+            _KeyboardRow(
+              keys: const ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'],
+              gap: gap,
+              keyHeight: keyHeight,
+              fontSize: fontSize,
+              onKey: onKey,
             ),
-            const SizedBox(width: 6),
-            Expanded(
-              flex: 4,
-              child: _KeyboardButton(label: 'ESPACIO', onPressed: onSpace),
+            SizedBox(height: gap),
+            _KeyboardRow(
+              keys: const ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
+              gap: gap,
+              keyHeight: keyHeight,
+              fontSize: fontSize,
+              onKey: onKey,
             ),
-            const SizedBox(width: 6),
-            Expanded(
-              child: _KeyboardButton(label: 'C', onPressed: onClear),
+            SizedBox(height: gap),
+            _KeyboardRow(
+              keys: const ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'N'],
+              gap: gap,
+              keyHeight: keyHeight,
+              fontSize: fontSize,
+              onKey: onKey,
+            ),
+            SizedBox(height: gap),
+            _KeyboardRow(
+              keys: const ['Z', 'X', 'C', 'V', 'B', 'N', 'M', '-', '.', '/'],
+              gap: gap,
+              keyHeight: keyHeight,
+              fontSize: fontSize,
+              onKey: onKey,
+            ),
+            SizedBox(height: gap),
+            Row(
+              children: [
+                Expanded(
+                  child: _KeyboardButton(
+                    icon: Icons.backspace_outlined,
+                    keyHeight: keyHeight,
+                    onPressed: onBackspace,
+                  ),
+                ),
+                SizedBox(width: gap),
+                Expanded(
+                  flex: 4,
+                  child: _KeyboardButton(
+                    label: 'ESPACIO',
+                    keyHeight: keyHeight,
+                    fontSize: fontSize,
+                    onPressed: onSpace,
+                  ),
+                ),
+                SizedBox(width: gap),
+                Expanded(
+                  child: _KeyboardButton(
+                    label: 'C',
+                    keyHeight: keyHeight,
+                    fontSize: fontSize,
+                    onPressed: onClear,
+                  ),
+                ),
+              ],
             ),
           ],
-        ),
-      ],
+        );
+      },
     );
   }
 }
 
 class _KeyboardRow extends StatelessWidget {
   const _KeyboardRow({
+    required this.fontSize,
+    required this.gap,
+    required this.keyHeight,
     required this.keys,
     required this.onKey,
   });
 
+  final double fontSize;
+  final double gap;
+  final double keyHeight;
   final List<String> keys;
   final ValueChanged<String> onKey;
 
@@ -86,9 +124,14 @@ class _KeyboardRow extends StatelessWidget {
       children: [
         for (final key in keys) ...[
           Expanded(
-            child: _KeyboardButton(label: key, onPressed: () => onKey(key)),
+            child: _KeyboardButton(
+              label: key,
+              keyHeight: keyHeight,
+              fontSize: fontSize,
+              onPressed: () => onKey(key),
+            ),
           ),
-          if (key != keys.last) const SizedBox(width: 6),
+          if (key != keys.last) SizedBox(width: gap),
         ],
       ],
     );
@@ -97,12 +140,16 @@ class _KeyboardRow extends StatelessWidget {
 
 class _KeyboardButton extends StatelessWidget {
   const _KeyboardButton({
+    required this.keyHeight,
     required this.onPressed,
+    this.fontSize,
     this.icon,
     this.label,
   });
 
+  final double? fontSize;
   final IconData? icon;
+  final double keyHeight;
   final String? label;
   final VoidCallback onPressed;
 
@@ -110,10 +157,22 @@ class _KeyboardButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return OutlinedButton(
       onPressed: onPressed,
-      style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(48)),
+      style: OutlinedButton.styleFrom(
+        minimumSize: Size(0, keyHeight),
+        padding: EdgeInsets.zero,
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        visualDensity: VisualDensity.compact,
+      ),
       child: icon == null
-          ? Text(label!, maxLines: 1, overflow: TextOverflow.ellipsis)
-          : Icon(icon, size: 24),
+          ? Text(
+              label!,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontSize: fontSize,
+              ),
+            )
+          : Icon(icon, size: keyHeight * .48),
     );
   }
 }

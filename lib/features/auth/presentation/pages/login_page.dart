@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:smoo_control/core/config/app_build_info.dart';
 import 'package:smoo_control/core/design_system/app_button.dart';
 import 'package:smoo_control/core/design_system/app_input.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
@@ -168,17 +167,6 @@ class _LoginPageState extends State<LoginPage> {
                             ? 'Entrar como administrador'
                             : l10n.loginAction,
                         onPressed: _submit,
-                      ),
-                      const SizedBox(height: 16),
-                      const AppText(
-                        AppBuildInfo.visibleLabel,
-                        maxLines: 1,
-                        textAlign: TextAlign.center,
-                        variant: AppTextVariant.label,
-                        style: TextStyle(
-                          color: AppPalette.textSecondary,
-                          fontSize: 11,
-                        ),
                       ),
                     ],
                   ),

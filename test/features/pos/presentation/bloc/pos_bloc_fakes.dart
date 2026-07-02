@@ -345,6 +345,13 @@ final class _PosOpenTicketRepositoryFake implements IPosOpenTicketRepository {
   }
 
   @override
+  Future<AppResult<void>> clearAllOpenOrders() async {
+    _tickets.clear();
+    _salesTypeIdsByOrder.clear();
+    return const AppSuccess<void>(null);
+  }
+
+  @override
   Future<AppResult<List<PosOpenTicketLine>>> getOpenTickets() async {
     return AppSuccess([..._tickets]);
   }

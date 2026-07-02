@@ -79,6 +79,21 @@ final class PosOpenTicketRepository implements IPosOpenTicketRepository {
   }
 
   @override
+  Future<AppResult<void>> clearAllOpenOrders() async {
+    try {
+      await _localDataSource.clearAllOpenOrders();
+      return const AppSuccess<void>(null);
+    } on Object {
+      return const AppFailureResult(
+        AppFailure(
+          code: 'pos_open_orders_clear_failed',
+          message: 'No se pudieron limpiar los pedidos abiertos del POS.',
+        ),
+      );
+    }
+  }
+
+  @override
   Future<AppResult<void>> saveTableTicket({
     required String tableId,
     required List<PosCartLine> lines,

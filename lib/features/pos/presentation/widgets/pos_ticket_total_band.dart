@@ -26,38 +26,53 @@ class _TicketTotalBand extends StatelessWidget {
       builder: (context, constraints) {
         final compact = constraints.maxWidth < _ticketMinWidth;
         if (compact) {
+          final phoneLayout = constraints.maxWidth < 560;
+          if (phoneLayout) {
+            return Container(
+              color: colorScheme.primary,
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              child: _MobileTicketTotalBand(
+                onProductsVisibilityToggled: onProductsVisibilityToggled,
+                productsVisible: productsVisible,
+                salesTypes: salesTypes,
+                selectedSalesTypeId: selectedSalesTypeId,
+                total: total,
+              ),
+            );
+          }
+
           return Container(
             color: colorScheme.primary,
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+            child: Row(
               children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Flexible(
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: _ProductsVisibilityButton(
-                          onPressed: onProductsVisibilityToggled,
-                          productsVisible: productsVisible,
-                        ),
-                      ),
+                _ProductsVisibilityButton(
+                  onPressed: onProductsVisibilityToggled,
+                  productsVisible: productsVisible,
+                ),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: _SalesTypeSelector(
+                      salesTypes: salesTypes,
+                      selectedSalesTypeId: selectedSalesTypeId,
+                      alignment: WrapAlignment.start,
                     ),
-                    const SizedBox(width: 8),
-                    Flexible(child: _TotalAmountText(total: total)),
-                  ],
+                  ),
                 ),
-                const SizedBox(height: 8),
-                _SalesTypeSelector(
-                  salesTypes: salesTypes,
-                  selectedSalesTypeId: selectedSalesTypeId,
+                const Spacer(),
+                const SizedBox(width: 10),
+                const Flexible(
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: _ExchangeRateTodayText(compact: true),
+                  ),
                 ),
-                const SizedBox(height: 6),
-                const Align(
-                  alignment: Alignment.centerRight,
-                  child: _ExchangeRateTodayText(compact: true),
+                const SizedBox(width: 14),
+                ConstrainedBox(
+                  constraints: const BoxConstraints(minWidth: 112),
+                  child: _TotalAmountText(total: total),
                 ),
               ],
             ),
@@ -80,6 +95,7 @@ class _TicketTotalBand extends StatelessWidget {
                   child: _SalesTypeSelector(
                     salesTypes: salesTypes,
                     selectedSalesTypeId: selectedSalesTypeId,
+                    alignment: WrapAlignment.end,
                   ),
                 ),
               ),
@@ -103,32 +119,96 @@ class _TicketTotalBand extends StatelessWidget {
   }
 }
 
+class _MobileTicketTotalBand extends StatelessWidget {
+  const _MobileTicketTotalBand({
+    required this.productsVisible,
+    required this.salesTypes,
+    required this.total,
+    this.onProductsVisibilityToggled,
+    this.selectedSalesTypeId,
+  });
+
+  final bool productsVisible;
+  final List<SalesType> salesTypes;
+  final VoidCallback? onProductsVisibilityToggled;
+  final String? selectedSalesTypeId;
+  final int total;
+
+  @override
+  Widget build(BuildContext context) {
+    final activeTypes = salesTypes.where((type) => type.isActive).toList();
+
+    return Row(
+      children: [
+        _ProductsVisibilityButton(
+          onPressed: onProductsVisibilityToggled,
+          productsVisible: productsVisible,
+        ),
+        if (activeTypes.isNotEmpty) ...[
+          const SizedBox(width: 6),
+          Flexible(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  for (final type in activeTypes) ...[
+                    _SalesTypeChip(
+                      label: _mobileSalesTypeLabel(type),
+                      selected: type.id == selectedSalesTypeId,
+                      onPressed: () {
+                        context.read<PosBloc>().add(
+                          PosSalesTypeSelected(type.id),
+                        );
+                      },
+                    ),
+                    if (type != activeTypes.last) const SizedBox(width: 5),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ],
+        const SizedBox(width: 6),
+        Expanded(child: _TotalAmountText(total: total)),
+      ],
+    );
+  }
+}
+
+String _mobileSalesTypeLabel(SalesType type) {
+  final normalized = type.code.trim().toLowerCase();
+  if (normalized == 'dine_in' || normalized == 'eat_here') return 'Aquí';
+  if (normalized == 'to_go' || normalized == 'takeout') return 'GO';
+
+  final name = type.name.trim().toLowerCase();
+  if (name == 'comer aqui' || name == 'aqui') return 'Aquí';
+  if (name == 'para llevar' || name == 'llevar') return 'GO';
+  return type.name;
+}
+
 class _SalesTypeSelector extends StatelessWidget {
   const _SalesTypeSelector({
     required this.salesTypes,
     required this.selectedSalesTypeId,
+    required this.alignment,
   });
 
   final List<SalesType> salesTypes;
   final String? selectedSalesTypeId;
+  final WrapAlignment alignment;
 
   @override
   Widget build(BuildContext context) {
     final activeTypes = salesTypes.where((type) => type.isActive).toList();
     if (activeTypes.isEmpty) return const SizedBox.shrink();
-    final colorScheme = Theme.of(context).colorScheme;
 
     return Wrap(
-      alignment: WrapAlignment.end,
+      alignment: alignment,
       crossAxisAlignment: WrapCrossAlignment.center,
       spacing: 6,
       runSpacing: 6,
       children: [
-        Icon(
-          Icons.room_service_outlined,
-          color: colorScheme.onPrimary.withValues(alpha: .82),
-          size: 16,
-        ),
         for (final type in activeTypes)
           _SalesTypeChip(
             label: type.name,

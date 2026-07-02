@@ -13,10 +13,17 @@ import 'package:smoo_control/l10n/app_localizations.dart';
 /// Dynamic table selector band for tablet POS.
 class PosTablesBand extends StatelessWidget {
   /// Creates the table band.
-  const PosTablesBand({required this.state, super.key});
+  const PosTablesBand({
+    required this.state,
+    this.onEntrySelected,
+    super.key,
+  });
 
   /// Current POS state.
   final PosReady state;
+
+  /// Called after the operator selects a table or split account.
+  final VoidCallback? onEntrySelected;
 
   @override
   Widget build(BuildContext context) {
@@ -66,6 +73,7 @@ class PosTablesBand extends StatelessWidget {
             itemBuilder: (context, index) {
               return _TableEntryButton(
                 entry: entries[index],
+                onEntrySelected: onEntrySelected,
                 state: state,
                 onRename: _renameTable,
               );
@@ -83,6 +91,7 @@ class PosTablesBand extends StatelessWidget {
               width: 150,
               child: _TableEntryButton(
                 entry: entries[index],
+                onEntrySelected: onEntrySelected,
                 state: state,
                 onRename: _renameTable,
               ),
@@ -184,9 +193,11 @@ class _TableEntryButton extends StatelessWidget {
     required this.entry,
     required this.onRename,
     required this.state,
+    this.onEntrySelected,
   });
 
   final _TableBandEntry entry;
+  final VoidCallback? onEntrySelected;
   final Future<void> Function(BuildContext context, String tableId) onRename;
   final PosReady state;
 
@@ -213,6 +224,7 @@ class _TableEntryButton extends StatelessWidget {
             ),
           );
         }
+        onEntrySelected?.call();
       },
     );
   }

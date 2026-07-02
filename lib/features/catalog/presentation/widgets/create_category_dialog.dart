@@ -29,6 +29,7 @@ class _CreateCategoryDialogState extends State<CreateCategoryDialog> {
   static const _rootParentValue = '__root__';
 
   final _nameController = TextEditingController();
+  final _positionController = TextEditingController();
   bool _isActive = true;
   String? _error;
   String? _selectedParentId;
@@ -42,13 +43,23 @@ class _CreateCategoryDialogState extends State<CreateCategoryDialog> {
     }
 
     _nameController.text = category.name;
+    _positionController.text = category.sortOrder.toString();
     _isActive = category.isActive;
     _selectedParentId = category.parentId;
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (widget.category == null && _positionController.text.isEmpty) {
+      _positionController.text = _nextSortOrder(_selectedParentId).toString();
+    }
+  }
+
+  @override
   void dispose() {
     _nameController.dispose();
+    _positionController.dispose();
     super.dispose();
   }
 
@@ -70,6 +81,12 @@ class _CreateCategoryDialogState extends State<CreateCategoryDialog> {
           mainAxisSize: MainAxisSize.min,
           children: [
             AppInput(label: l10n.nameField, controller: _nameController),
+            const SizedBox(height: 12),
+            AppInput(
+              label: 'Posicion POS',
+              controller: _positionController,
+              keyboardType: TextInputType.number,
+            ),
             const SizedBox(height: 12),
             DropdownButtonFormField<String>(
               decoration: InputDecoration(labelText: l10n.catalogParentField),
@@ -93,6 +110,9 @@ class _CreateCategoryDialogState extends State<CreateCategoryDialog> {
                 if (value == null) return;
                 setState(() {
                   _selectedParentId = value == _rootParentValue ? null : value;
+                  _positionController.text = _sortOrderFor(
+                    _selectedParentId,
+                  ).toString();
                   _error = null;
                 });
               },
@@ -123,9 +143,15 @@ class _CreateCategoryDialogState extends State<CreateCategoryDialog> {
     final l10n = AppLocalizations.of(context);
     final name = _nameController.text.trim();
     final parentId = _selectedParentId;
+    final position = int.tryParse(_positionController.text.trim());
 
-    if (name.isEmpty) {
+    if (name.isEmpty || _positionController.text.trim().isEmpty) {
       setState(() => _error = l10n.fieldRequiredError);
+      return;
+    }
+
+    if (position == null || position < 1) {
+      setState(() => _error = l10n.numericFieldError);
       return;
     }
 
@@ -134,7 +160,7 @@ class _CreateCategoryDialogState extends State<CreateCategoryDialog> {
         id: widget.category?.id ?? const Uuid().v4(),
         name: name,
         parentId: parentId,
-        sortOrder: _sortOrderFor(parentId),
+        sortOrder: position,
         isActive: _isActive,
       ),
     );
