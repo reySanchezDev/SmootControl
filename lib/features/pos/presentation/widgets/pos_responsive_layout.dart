@@ -116,7 +116,7 @@ final class PosResponsiveLayout {
     const horizontalPadding = 20.0;
     final availableWidth = (maxWidth - horizontalPadding).clamp(1.0, maxWidth);
     final maxTileWidth = maxWidth < 520 ? 190.0 : 300.0;
-    return (availableWidth / maxTileWidth).ceil().clamp(1, 8);
+    return (availableWidth / maxTileWidth).floor().clamp(1, 8);
   }
 
   /// Table selector columns estimated from available width.
@@ -133,8 +133,10 @@ final class PosResponsiveLayout {
       maxWidth,
     );
     final tileWidth = availableWidth / columns;
-    final aspectRatio = maxWidth < 520 ? 1.65 : 2.85;
-    return (tileWidth / aspectRatio).clamp(72.0, 118.0);
+    final aspectRatio = maxWidth < 520 ? 1.35 : 2.85;
+    final minimum = maxWidth < 520 ? 104.0 : 72.0;
+    final maximum = maxWidth < 520 ? 132.0 : 118.0;
+    return (tileWidth / aspectRatio).clamp(minimum, maximum);
   }
 
   /// Table selector tile height for compact grids.

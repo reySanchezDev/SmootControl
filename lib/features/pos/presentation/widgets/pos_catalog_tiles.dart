@@ -86,13 +86,19 @@ class PosMenuGrid extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final compact = constraints.maxWidth < 520;
+        final columns = _columnsFor(constraints.maxWidth, compact: compact);
+        final aspectRatio = _aspectRatioFor(
+          constraints.maxWidth,
+          columns: columns,
+          compact: compact,
+        );
         return GridView.builder(
           padding: const EdgeInsets.all(10),
-          gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-            childAspectRatio: compact ? 1.65 : 2.85,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            childAspectRatio: aspectRatio,
+            crossAxisCount: columns,
             crossAxisSpacing: 8,
             mainAxisSpacing: 8,
-            maxCrossAxisExtent: compact ? 190 : 300,
           ),
           itemBuilder: (context, index) {
             if (index < categories.length) {
@@ -107,6 +113,31 @@ class PosMenuGrid extends StatelessWidget {
         );
       },
     );
+  }
+
+  int _columnsFor(double maxWidth, {required bool compact}) {
+    const horizontalPadding = 20.0;
+    final targetTileWidth = compact ? 190.0 : 300.0;
+    final availableWidth = (maxWidth - horizontalPadding).clamp(1.0, maxWidth);
+    return (availableWidth / targetTileWidth).floor().clamp(1, 8);
+  }
+
+  double _aspectRatioFor(
+    double maxWidth, {
+    required int columns,
+    required bool compact,
+  }) {
+    const horizontalPadding = 20.0;
+    const spacing = 8.0;
+    final availableWidth =
+        (maxWidth - horizontalPadding - (columns - 1) * spacing).clamp(
+          1.0,
+          maxWidth,
+        );
+    final tileWidth = availableWidth / columns;
+    if (!compact) return 2.85;
+    final tileHeight = (tileWidth / 1.35).clamp(104.0, 132.0);
+    return tileWidth / tileHeight;
   }
 }
 

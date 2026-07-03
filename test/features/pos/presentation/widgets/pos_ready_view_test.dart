@@ -229,6 +229,23 @@ void main() {
     expect(rootCategoryRect.top - subcategoryRect.bottom, lessThan(120));
   });
 
+  testWidgets('shows long subcategory names fully on phone catalog tiles', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(489, 900));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await _pumpReadyView(tester, state: _phoneLongSubcategoryState);
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('COMBOS POLLO'), findsOneWidget);
+
+    final labelRect = tester.getRect(find.text('COMBOS POLLO'));
+    final categoryBandRect = tester.getRect(find.text('Comidas'));
+    expect(labelRect.height, greaterThan(42));
+    expect(labelRect.bottom, lessThan(categoryBandRect.top));
+  });
+
   testWidgets('renders dense POS content across constrained surfaces', (
     tester,
   ) async {
@@ -423,6 +440,22 @@ const _grilledSubcategory = ProductCategory(
   isActive: true,
 );
 
+const _buffetSubcategory = ProductCategory(
+  id: 'buffet-subcategory',
+  name: 'BUFETE',
+  parentId: 'food-root',
+  sortOrder: 2,
+  isActive: true,
+);
+
+const _comboChickenSubcategory = ProductCategory(
+  id: 'combo-chicken-subcategory',
+  name: 'COMBOS POLLO',
+  parentId: 'food-root',
+  sortOrder: 3,
+  isActive: true,
+);
+
 PosReady _state(String selectedMethodId) {
   return PosReady(
     products: const [_product],
@@ -474,6 +507,21 @@ const _tabletPortraitCatalogState = PosReady(
       isActive: true,
     ),
   ],
+  paymentMethods: [_cashMethod],
+  selectedCategoryId: 'food-root',
+  selectedPaymentMethodId: 'cash',
+  selectedTableId: 'table-1',
+);
+
+const _phoneLongSubcategoryState = PosReady(
+  categories: [
+    _foodRootCategory,
+    _grilledSubcategory,
+    _buffetSubcategory,
+    _comboChickenSubcategory,
+  ],
+  products: [],
+  tables: [_table],
   paymentMethods: [_cashMethod],
   selectedCategoryId: 'food-root',
   selectedPaymentMethodId: 'cash',
