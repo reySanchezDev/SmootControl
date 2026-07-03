@@ -7,12 +7,14 @@ class _TicketTotalBand extends StatelessWidget {
     required this.lines,
     required this.salesTypes,
     required this.productsVisible,
+    this.hideTotalOnPhone = false,
     this.selectedSalesTypeId,
     this.onProductsVisibilityToggled,
   });
 
   final List<PosCartLine> lines;
   final List<SalesType> salesTypes;
+  final bool hideTotalOnPhone;
   final String? selectedSalesTypeId;
   final bool productsVisible;
   final VoidCallback? onProductsVisibilityToggled;
@@ -33,6 +35,7 @@ class _TicketTotalBand extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
               child: _MobileTicketTotalBand(
                 onProductsVisibilityToggled: onProductsVisibilityToggled,
+                hideTotal: hideTotalOnPhone,
                 productsVisible: productsVisible,
                 salesTypes: salesTypes,
                 selectedSalesTypeId: selectedSalesTypeId,
@@ -121,6 +124,7 @@ class _TicketTotalBand extends StatelessWidget {
 
 class _MobileTicketTotalBand extends StatelessWidget {
   const _MobileTicketTotalBand({
+    required this.hideTotal,
     required this.productsVisible,
     required this.salesTypes,
     required this.total,
@@ -128,6 +132,7 @@ class _MobileTicketTotalBand extends StatelessWidget {
     this.selectedSalesTypeId,
   });
 
+  final bool hideTotal;
   final bool productsVisible;
   final List<SalesType> salesTypes;
   final VoidCallback? onProductsVisibilityToggled;
@@ -145,7 +150,7 @@ class _MobileTicketTotalBand extends StatelessWidget {
           productsVisible: productsVisible,
         ),
         if (activeTypes.isNotEmpty) ...[
-          const SizedBox(width: 6),
+          const SizedBox(width: 12),
           Flexible(
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
@@ -162,15 +167,15 @@ class _MobileTicketTotalBand extends StatelessWidget {
                         );
                       },
                     ),
-                    if (type != activeTypes.last) const SizedBox(width: 5),
+                    if (type != activeTypes.last) const SizedBox(width: 9),
                   ],
                 ],
               ),
             ),
           ),
         ],
-        const SizedBox(width: 6),
-        Expanded(child: _TotalAmountText(total: total)),
+        const SizedBox(width: 12),
+        if (!hideTotal) Expanded(child: _TotalAmountText(total: total)),
       ],
     );
   }

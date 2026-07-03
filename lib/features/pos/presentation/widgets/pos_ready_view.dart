@@ -87,6 +87,7 @@ class PosReadyView extends StatefulWidget {
 class _PosReadyViewState extends State<PosReadyView> {
   String? _paymentParentKey;
   bool _productsVisible = true;
+  bool _mobileCatalogMode = false;
 
   @override
   void didUpdateWidget(covariant PosReadyView oldWidget) {
@@ -109,23 +110,26 @@ class _PosReadyViewState extends State<PosReadyView> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final layout = PosResponsiveLayout.fromConstraints(constraints);
+        final phoneLayout = layout.maxWidth < 560;
         final catalog = PosCatalogPanel(state: widget.state);
         final ticket = PosTicketPanel(
           lines: widget.state.cartLines,
           salesTypes: widget.state.salesTypes,
           selectedSalesTypeId: widget.state.selectedSalesType?.id,
-          onProductsVisibilityToggled: () {
-            setState(() => _productsVisible = !_productsVisible);
-          },
+          mobileCatalogMode: phoneLayout && _mobileCatalogMode,
+          onProductsVisibilityToggled: _toggleProductsVisibility,
           productsVisible: _productsVisible,
         );
         final categoryBand = PosCategoryBand(
           onCategorySelected: _showProducts,
           state: widget.state,
         );
-        final phoneLayout = layout.maxWidth < 560;
         final tableBand = phoneLayout
-            ? _MobileTablesLauncher(state: widget.state)
+            ? _MobileTablesLauncher(
+                catalogMode: _mobileCatalogMode,
+                onCatalogModeToggled: _toggleMobileCatalogMode,
+                state: widget.state,
+              )
             : PosTablesBand(state: widget.state);
         final actionsBand = PosActionsBand(
           onPaymentParentChanged: (parentKey) {
@@ -141,6 +145,7 @@ class _PosReadyViewState extends State<PosReadyView> {
               actionsBand: actionsBand,
               catalog: catalog,
               categoryBand: categoryBand,
+              mobileCatalogMode: _mobileCatalogMode,
               productsVisible: _productsVisible,
               tableBand: tableBand,
               ticket: ticket,
@@ -267,6 +272,20 @@ class _PosReadyViewState extends State<PosReadyView> {
     setState(() => _productsVisible = true);
   }
 
+  void _toggleProductsVisibility() {
+    if (_mobileCatalogMode) return;
+    setState(() => _productsVisible = !_productsVisible);
+  }
+
+  void _toggleMobileCatalogMode() {
+    setState(() {
+      _mobileCatalogMode = !_mobileCatalogMode;
+      if (_mobileCatalogMode) {
+        _productsVisible = true;
+      }
+    });
+  }
+
   int _visibleCatalogItemCount() {
     final categoryId = _activeCategoryId();
     return _categoriesFor(categoryId).length + _productsFor(categoryId);
@@ -335,6 +354,7 @@ class _PosMobileLayout extends StatelessWidget {
     required this.actionsBand,
     required this.catalog,
     required this.categoryBand,
+    required this.mobileCatalogMode,
     required this.productsVisible,
     required this.tableBand,
     required this.ticket,
@@ -347,6 +367,7 @@ class _PosMobileLayout extends StatelessWidget {
   final Widget actionsBand;
   final Widget catalog;
   final Widget categoryBand;
+  final bool mobileCatalogMode;
   final bool productsVisible;
   final Widget tableBand;
   final Widget ticket;
@@ -355,16 +376,22 @@ class _PosMobileLayout extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Expanded(
-          flex: productsVisible ? 5 : 1,
-          child: Padding(
+        if (mobileCatalogMode)
+          Padding(
             padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
             child: ticket,
+          )
+        else
+          Expanded(
+            flex: productsVisible ? 5 : 1,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
+              child: ticket,
+            ),
           ),
-        ),
         if (productsVisible)
-          Flexible(
-            flex: 3,
+          Expanded(
+            flex: mobileCatalogMode ? 1 : 3,
             child: Padding(
               padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
               child: catalog,
@@ -388,8 +415,14 @@ class _PosMobileLayout extends StatelessWidget {
 }
 
 class _MobileTablesLauncher extends StatelessWidget {
-  const _MobileTablesLauncher({required this.state});
+  const _MobileTablesLauncher({
+    required this.catalogMode,
+    required this.onCatalogModeToggled,
+    required this.state,
+  });
 
+  final bool catalogMode;
+  final VoidCallback onCatalogModeToggled;
   final PosReady state;
 
   @override
@@ -413,73 +446,78 @@ class _MobileTablesLauncher extends StatelessWidget {
           borderRadius: BorderRadius.circular(4),
           side: BorderSide(color: colorScheme.outlineVariant),
         ),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(4),
-          onTap: state.tables.isEmpty ? null : () => _openTablesSheet(context),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            child: Row(
-              children: [
-                Icon(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          child: Row(
+            children: [
+              _MobileCatalogModeButton(
+                active: catalogMode,
+                onPressed: onCatalogModeToggled,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 180),
+                  reverseDuration: const Duration(milliseconds: 140),
+                  transitionBuilder: (child, animation) {
+                    final offsetAnimation =
+                        Tween<Offset>(
+                          begin: const Offset(.12, 0),
+                          end: Offset.zero,
+                        ).animate(
+                          CurvedAnimation(
+                            parent: animation,
+                            curve: Curves.easeOutCubic,
+                          ),
+                        );
+                    return FadeTransition(
+                      opacity: animation,
+                      child: SlideTransition(
+                        position: offsetAnimation,
+                        child: child,
+                      ),
+                    );
+                  },
+                  child: _MobileTableSelectionLabel(
+                    key: ValueKey(selected?.id ?? selectedLabel ?? 'none'),
+                    selectedLabel: selectedLabel,
+                    title: l10n.moduleTables.toUpperCase(),
+                  ),
+                ),
+              ),
+              if (selectedOccupied) ...[
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(999),
+                    color: colorScheme.error,
+                  ),
+                  child: Text(
+                    l10n.tableOccupiedLabel,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: colorScheme.onError,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+              ],
+              IconButton(
+                tooltip: l10n.moduleTables,
+                icon: Icon(
                   Icons.table_restaurant_outlined,
                   color: colorScheme.primary,
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 180),
-                    reverseDuration: const Duration(milliseconds: 140),
-                    transitionBuilder: (child, animation) {
-                      final offsetAnimation =
-                          Tween<Offset>(
-                            begin: const Offset(.12, 0),
-                            end: Offset.zero,
-                          ).animate(
-                            CurvedAnimation(
-                              parent: animation,
-                              curve: Curves.easeOutCubic,
-                            ),
-                          );
-                      return FadeTransition(
-                        opacity: animation,
-                        child: SlideTransition(
-                          position: offsetAnimation,
-                          child: child,
-                        ),
-                      );
-                    },
-                    child: _MobileTableSelectionLabel(
-                      key: ValueKey(selected?.id ?? selectedLabel ?? 'none'),
-                      selectedLabel: selectedLabel,
-                      title: l10n.moduleTables.toUpperCase(),
-                    ),
-                  ),
-                ),
-                if (selectedOccupied) ...[
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 2,
-                    ),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(999),
-                      color: colorScheme.error,
-                    ),
-                    child: Text(
-                      l10n.tableOccupiedLabel,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: colorScheme.onError,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                ],
-                Icon(Icons.keyboard_arrow_up, color: colorScheme.onSurface),
-              ],
-            ),
+                onPressed: state.tables.isEmpty
+                    ? null
+                    : () => _openTablesSheet(context),
+              ),
+            ],
           ),
         ),
       ),
@@ -613,6 +651,43 @@ class _MobileTablesLauncher extends StatelessWidget {
     } on ProviderNotFoundException {
       return null;
     }
+  }
+}
+
+class _MobileCatalogModeButton extends StatelessWidget {
+  const _MobileCatalogModeButton({
+    required this.active,
+    required this.onPressed,
+  });
+
+  final bool active;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Tooltip(
+      message: active ? 'Mostrar detalle' : 'Modo carrito',
+      child: Material(
+        color: active ? colorScheme.primary : colorScheme.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(6),
+          side: BorderSide(color: colorScheme.primary.withValues(alpha: .45)),
+        ),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(6),
+          onTap: onPressed,
+          child: Padding(
+            padding: const EdgeInsets.all(8),
+            child: Icon(
+              Icons.shopping_cart_outlined,
+              color: active ? colorScheme.onPrimary : colorScheme.primary,
+              size: 20,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 

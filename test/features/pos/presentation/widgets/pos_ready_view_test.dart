@@ -326,6 +326,38 @@ void main() {
     },
   );
 
+  testWidgets('toggles phone cart mode without exposing the ticket total', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(393, 852));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await _pumpReadyView(tester, state: _mobileSalesTypeState);
+
+    expect(tester.takeException(), isNull);
+    expect(find.text(r'C$ 0.00'), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.shopping_cart_outlined));
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.text(r'C$ 0.00'), findsNothing);
+    expect(find.text('Cafe'), findsOneWidget);
+    expect(find.byType(PosCategoryBand), findsOneWidget);
+
+    await tester.tap(find.text('Hide'));
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('Cafe'), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.shopping_cart_outlined));
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.text(r'C$ 0.00'), findsOneWidget);
+  });
+
   test('orders phone table navigation with occupied tables first', () {
     final ordered = orderMobilePosTables(
       cartLinesByTable: const {
