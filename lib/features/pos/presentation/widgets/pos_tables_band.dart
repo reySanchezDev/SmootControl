@@ -140,7 +140,10 @@ class PosTablesBand extends StatelessWidget {
     final hasCart = state.cartLinesByTable[tableId]?.isNotEmpty ?? false;
     final hasSplitAccounts =
         state.splitAccountsByTable[tableId]?.isNotEmpty ?? false;
-    return hasCart || hasSplitAccounts;
+    final tableStatus = _tableById(tableId)?.status;
+    return hasCart ||
+        hasSplitAccounts ||
+        tableStatus == RestaurantTableStatus.occupied;
   }
 
   int _compareTableNames(RestaurantTable first, RestaurantTable second) {

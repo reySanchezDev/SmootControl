@@ -136,10 +136,10 @@ class PosMoreOptionsPanel extends StatelessWidget {
                     _CompactSectionTitle(label: l10n.moreOptionsAction),
                   ],
                   _MoreOptionButton(
-                    label: l10n.posViewTransactionsAction,
+                    label: 'Modificadores Disponibles',
                     tone: _MoreOptionButtonTone.neutral,
                     onPressed: () => Navigator.of(dialogContext).pop(
-                      _MoreOptionAction.viewTransactions,
+                      _MoreOptionAction.modifierAvailability,
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -152,18 +152,18 @@ class PosMoreOptionsPanel extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   _MoreOptionButton(
-                    label: 'Modificadores Disponibles',
-                    tone: _MoreOptionButtonTone.neutral,
-                    onPressed: () => Navigator.of(dialogContext).pop(
-                      _MoreOptionAction.modifierAvailability,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  _MoreOptionButton(
                     label: 'Sincronizar datos',
                     tone: _MoreOptionButtonTone.neutral,
                     onPressed: () => Navigator.of(dialogContext).pop(
                       _MoreOptionAction.syncData,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  _MoreOptionButton(
+                    label: l10n.posViewTransactionsAction,
+                    tone: _MoreOptionButtonTone.neutral,
+                    onPressed: () => Navigator.of(dialogContext).pop(
+                      _MoreOptionAction.viewTransactions,
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -461,6 +461,7 @@ class _MoreOptionButton extends StatelessWidget {
         onPressed: onPressed,
         child: AppText(
           label,
+          style: TextStyle(color: colors.foreground),
           textAlign: TextAlign.center,
           variant: AppTextVariant.label,
         ),

@@ -134,9 +134,9 @@ final class PosResponsiveLayout {
       maxWidth,
     );
     final tileWidth = availableWidth / columns;
-    final aspectRatio = maxWidth < 520 ? 1.35 : 2.85;
-    final minimum = maxWidth < 520 ? 104.0 : 72.0;
-    final maximum = maxWidth < 520 ? 132.0 : 118.0;
+    final aspectRatio = maxWidth < 520 ? 2.1 : 2.85;
+    final minimum = maxWidth < 520 ? 76.0 : 72.0;
+    final maximum = maxWidth < 520 ? 92.0 : 118.0;
     return (tileWidth / aspectRatio).clamp(minimum, maximum);
   }
 

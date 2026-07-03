@@ -242,7 +242,7 @@ void main() {
 
     final labelRect = tester.getRect(find.text('COMBOS POLLO'));
     final categoryBandRect = tester.getRect(find.text('Comidas'));
-    expect(labelRect.height, greaterThan(42));
+    expect(labelRect.height, greaterThan(14));
     expect(labelRect.bottom, lessThan(categoryBandRect.top));
   });
 
@@ -262,6 +262,37 @@ void main() {
     expect((firstRect.top - secondRect.top).abs(), lessThan(8));
     expect(secondRect.left, greaterThan(firstRect.right));
     expect(thirdRect.top, greaterThan(firstRect.bottom));
+  });
+
+  test('orders phone table navigation with occupied tables first', () {
+    final ordered = orderMobilePosTables(
+      cartLinesByTable: const {
+        'table-2': [PosCartLine(product: _product, quantity: 1)],
+      },
+      splitAccountsByTable: const {},
+      tables: const [
+        RestaurantTable(
+          id: 'table-1',
+          name: 'Mesa 1',
+          status: RestaurantTableStatus.available,
+          isActive: true,
+        ),
+        RestaurantTable(
+          id: 'table-3',
+          name: 'Mesa 3',
+          status: RestaurantTableStatus.occupied,
+          isActive: true,
+        ),
+        RestaurantTable(
+          id: 'table-2',
+          name: 'Mesa 2',
+          status: RestaurantTableStatus.available,
+          isActive: true,
+        ),
+      ],
+    );
+
+    expect(ordered.map((table) => table.name), ['Mesa 2', 'Mesa 3', 'Mesa 1']);
   });
 
   testWidgets('renders dense POS content across constrained surfaces', (
@@ -325,6 +356,65 @@ void main() {
     expect(
       find.textContaining(RegExp('cash|efectivo', caseSensitive: false)),
       findsAtLeastNWidgets(1),
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('keeps phone table launcher visible after adding products', (
+    tester,
+  ) async {
+    tester.view
+      ..devicePixelRatio = 1
+      ..physicalSize = const Size(393, 852);
+    addTearDown(() {
+      tester.view
+        ..resetDevicePixelRatio()
+        ..resetPhysicalSize();
+    });
+
+    final updateState = await _pumpReadyView(tester, state: _responsiveState);
+    updateState(_veryDenseResponsiveState);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Cafe caliente'), findsOneWidget);
+    expect(find.text('TABLES'), findsOneWidget);
+    expect(find.text('Mesa 1'), findsOneWidget);
+    expect(find.text('More options'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('orders compact more options by operational priority', (
+    tester,
+  ) async {
+    tester.view
+      ..devicePixelRatio = 1
+      ..physicalSize = const Size(393, 852);
+    addTearDown(() {
+      tester.view
+        ..resetDevicePixelRatio()
+        ..resetPhysicalSize();
+    });
+
+    await _pumpReadyView(tester, state: _veryDenseResponsiveState);
+
+    await tester.tap(find.text('More options'));
+    await tester.pumpAndSettle();
+
+    final modifiersRect = tester.getRect(
+      find.text('Modificadores Disponibles'),
+    );
+    final expenseRect = tester.getRect(find.text('Register Expense'));
+    final syncRect = tester.getRect(find.text('Sincronizar datos'));
+    final transactionsRect = tester.getRect(find.text('View Transactions'));
+    final clearText = tester.widget<Text>(find.text('Clear'));
+    final clearContext = tester.element(find.text('Clear'));
+
+    expect(modifiersRect.top, lessThan(expenseRect.top));
+    expect(expenseRect.top, lessThan(syncRect.top));
+    expect(syncRect.top, lessThan(transactionsRect.top));
+    expect(
+      clearText.style?.color,
+      Theme.of(clearContext).colorScheme.onError,
     );
     expect(tester.takeException(), isNull);
   });

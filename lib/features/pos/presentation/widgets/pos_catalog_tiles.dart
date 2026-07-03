@@ -102,10 +102,14 @@ class PosMenuGrid extends StatelessWidget {
           ),
           itemBuilder: (context, index) {
             if (index < categories.length) {
-              return _CategoryTile(category: categories[index]);
+              return _CategoryTile(
+                category: categories[index],
+                compact: compact,
+              );
             }
             return _ProductTile(
               canAdd: canAddProducts,
+              compact: compact,
               product: products[index - categories.length],
             );
           },
@@ -137,7 +141,7 @@ class PosMenuGrid extends StatelessWidget {
         );
     final tileWidth = availableWidth / columns;
     if (!compact) return 2.85;
-    final tileHeight = (tileWidth / 1.35).clamp(104.0, 132.0);
+    final tileHeight = (tileWidth / 2.1).clamp(76.0, 92.0);
     return tileWidth / tileHeight;
   }
 }
@@ -193,13 +197,18 @@ class _CategoryRailButton extends StatelessWidget {
 }
 
 class _CategoryTile extends StatelessWidget {
-  const _CategoryTile({required this.category});
+  const _CategoryTile({
+    required this.category,
+    required this.compact,
+  });
 
   final ProductCategory category;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
     return _MenuTile(
+      compact: compact,
       icon: Icons.folder_outlined,
       label: category.name,
       onTap: () {
@@ -212,15 +221,18 @@ class _CategoryTile extends StatelessWidget {
 class _ProductTile extends StatelessWidget {
   const _ProductTile({
     required this.canAdd,
+    required this.compact,
     required this.product,
   });
 
   final bool canAdd;
+  final bool compact;
   final Product product;
 
   @override
   Widget build(BuildContext context) {
     return _MenuTile(
+      compact: compact,
       label: product.name,
       onTap: canAdd ? () => _addProduct(context) : null,
       price: MoneyFormatter.format(product.priceInCents),
@@ -254,6 +266,7 @@ class _ProductTile extends StatelessWidget {
 
 class _MenuTile extends StatelessWidget {
   const _MenuTile({
+    required this.compact,
     required this.label,
     required this.onTap,
     this.icon,
@@ -261,6 +274,7 @@ class _MenuTile extends StatelessWidget {
     this.product = false,
   });
 
+  final bool compact;
   final IconData? icon;
   final String label;
   final VoidCallback? onTap;
@@ -270,6 +284,13 @@ class _MenuTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final labelVariant = compact
+        ? AppTextVariant.label
+        : AppTextVariant.titleMedium;
+    final labelStyle = compact
+        ? const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)
+        : null;
+    final priceStyle = compact ? const TextStyle(fontSize: 12) : null;
     return Material(
       borderRadius: BorderRadius.circular(4),
       color: _backgroundColor(colorScheme),
@@ -277,13 +298,13 @@ class _MenuTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(4),
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.all(10),
+          padding: EdgeInsets.all(compact ? 8 : 10),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               if (icon != null) ...[
-                Icon(icon),
-                const SizedBox(height: 8),
+                Icon(icon, size: compact ? 20 : 24),
+                SizedBox(height: compact ? 4 : 8),
               ],
               Flexible(
                 child: AppText(
@@ -291,12 +312,17 @@ class _MenuTile extends StatelessWidget {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
-                  variant: AppTextVariant.titleMedium,
+                  style: labelStyle,
+                  variant: labelVariant,
                 ),
               ),
               if (price != null) ...[
-                const SizedBox(height: 4),
-                AppText(price!, variant: AppTextVariant.label),
+                SizedBox(height: compact ? 2 : 4),
+                AppText(
+                  price!,
+                  style: priceStyle,
+                  variant: AppTextVariant.label,
+                ),
               ],
             ],
           ),

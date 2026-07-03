@@ -3,7 +3,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smoo_control/features/catalog/domain/entities/product_category.dart';
+import 'package:smoo_control/features/pos/domain/entities/account_split_draft.dart';
+import 'package:smoo_control/features/pos/domain/entities/pos_cart_line.dart';
 import 'package:smoo_control/features/pos/presentation/bloc/pos_bloc.dart';
+import 'package:smoo_control/features/pos/presentation/bloc/pos_event.dart';
 import 'package:smoo_control/features/pos/presentation/bloc/pos_state.dart';
 import 'package:smoo_control/features/pos/presentation/widgets/pos_actions_band.dart';
 import 'package:smoo_control/features/pos/presentation/widgets/pos_catalog_panel.dart';
@@ -12,7 +15,62 @@ import 'package:smoo_control/features/pos/presentation/widgets/pos_responsive_la
 import 'package:smoo_control/features/pos/presentation/widgets/pos_tables_band.dart';
 import 'package:smoo_control/features/pos/presentation/widgets/pos_ticket_panel.dart';
 import 'package:smoo_control/features/products/domain/entities/product.dart';
+import 'package:smoo_control/features/tables/domain/entities/restaurant_table.dart';
 import 'package:smoo_control/l10n/app_localizations.dart';
+
+/// Orders mobile POS table navigation with occupied tables first.
+List<RestaurantTable> orderMobilePosTables({
+  required Map<String, List<PosCartLine>> cartLinesByTable,
+  required Map<String, List<AccountSplitDraft>> splitAccountsByTable,
+  required List<RestaurantTable> tables,
+}) {
+  final occupied = <RestaurantTable>[];
+  final free = <RestaurantTable>[];
+
+  for (final table in tables) {
+    if (_isMobileTableOccupied(
+      cartLinesByTable: cartLinesByTable,
+      splitAccountsByTable: splitAccountsByTable,
+      table: table,
+    )) {
+      occupied.add(table);
+    } else {
+      free.add(table);
+    }
+  }
+
+  occupied.sort(_compareMobileTableNames);
+  free.sort(_compareMobileTableNames);
+
+  return [...occupied, ...free];
+}
+
+bool _isMobileTableOccupied({
+  required Map<String, List<PosCartLine>> cartLinesByTable,
+  required Map<String, List<AccountSplitDraft>> splitAccountsByTable,
+  required RestaurantTable table,
+}) {
+  final hasCart = cartLinesByTable[table.id]?.isNotEmpty ?? false;
+  final hasSplitAccounts = splitAccountsByTable[table.id]?.isNotEmpty ?? false;
+  return hasCart ||
+      hasSplitAccounts ||
+      table.status == RestaurantTableStatus.occupied;
+}
+
+int _compareMobileTableNames(RestaurantTable first, RestaurantTable second) {
+  final firstNumber = _firstNumber(first.name);
+  final secondNumber = _firstNumber(second.name);
+  if (firstNumber != null && secondNumber != null) {
+    final numberOrder = firstNumber.compareTo(secondNumber);
+    if (numberOrder != 0) return numberOrder;
+  }
+  return first.name.compareTo(second.name);
+}
+
+int? _firstNumber(String value) {
+  final match = RegExp(r'\d+').firstMatch(value);
+  return match == null ? null : int.tryParse(match.group(0)!);
+}
 
 /// Ready state content for the POS page.
 class PosReadyView extends StatefulWidget {
@@ -90,12 +148,29 @@ class _PosReadyViewState extends State<PosReadyView> {
                         categoryBand: categoryBand,
                         contentHeight: mobileConstraints.maxHeight,
                         includeActions: false,
+                        includeCategories: false,
+                        includeTables: false,
                         layout: layout,
                         phoneLayout: true,
                         tableBand: tableBand,
                         ticket: ticket,
                       );
                     },
+                  ),
+                ),
+                const Divider(height: 1),
+                SizedBox(
+                  height: layout.categoryBandHeight(
+                    _visibleRootCategoryCount(),
+                  ),
+                  child: categoryBand,
+                ),
+                const Divider(height: 1),
+                SizedBox(
+                  height: 68,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    child: tableBand,
                   ),
                 ),
                 const Divider(height: 1),
@@ -110,6 +185,8 @@ class _PosReadyViewState extends State<PosReadyView> {
             categoryBand: categoryBand,
             contentHeight: constraints.maxHeight,
             includeActions: true,
+            includeCategories: true,
+            includeTables: true,
             layout: layout,
             phoneLayout: false,
             tableBand: tableBand,
@@ -147,6 +224,8 @@ class _PosReadyViewState extends State<PosReadyView> {
     required Widget catalog,
     required Widget categoryBand,
     required bool includeActions,
+    required bool includeCategories,
+    required bool includeTables,
     required PosResponsiveLayout layout,
     required bool phoneLayout,
     required Widget tableBand,
@@ -168,7 +247,11 @@ class _PosReadyViewState extends State<PosReadyView> {
         : layout.tableBandHeight(_visibleTableEntryCount());
     final actionsHeight = includeActions ? layout.actionsHeight() : 0.0;
     final gapCount =
-        1 + (_productsVisible ? 2 : 0) + 1 + (includeActions ? 1 : 0);
+        1 +
+        (_productsVisible ? 2 : 0) +
+        (includeCategories ? 1 : 0) +
+        (includeTables ? 1 : 0) +
+        (includeActions ? 1 : 0);
     final gapHeight = gapCount * 10.0;
     final naturalHeight =
         ticketHeight +
@@ -191,9 +274,12 @@ class _PosReadyViewState extends State<PosReadyView> {
           SizedBox(height: catalogHeight, child: catalog),
           const SizedBox(height: 10),
         ],
-        SizedBox(height: categoryHeight, child: categoryBand),
-        const SizedBox(height: 10),
-        SizedBox(height: tableHeight, child: tableBand),
+        if (includeCategories)
+          SizedBox(height: categoryHeight, child: categoryBand),
+        if (includeTables) ...[
+          const SizedBox(height: 10),
+          SizedBox(height: tableHeight, child: tableBand),
+        ],
         if (includeActions) ...[
           const SizedBox(height: 10),
           SizedBox(height: actionsHeight, child: actionsBand),
@@ -279,54 +365,143 @@ class _MobileTablesLauncher extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final colorScheme = Theme.of(context).colorScheme;
-    final selectedLabel = _selectedTableLabel();
+    final options = _orderedTableOptions();
+    final selected = _selectedTableOption(options);
+    final selectedLabel = selected?.label ?? _selectedTableLabel();
+    final selectedOccupied = selected?.isOccupied ?? false;
+    final canSwipe = options.length > 1;
 
-    return Material(
-      color: colorScheme.surface,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(4),
-        side: BorderSide(color: colorScheme.outlineVariant),
-      ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(4),
-        onTap: state.tables.isEmpty ? null : () => _openTablesSheet(context),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          child: Row(
-            children: [
-              Icon(Icons.table_restaurant_outlined, color: colorScheme.primary),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n.moduleTables.toUpperCase(),
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onHorizontalDragEnd: !canSwipe
+          ? null
+          : (details) => _handleHorizontalSwipe(context, options, details),
+      child: Material(
+        color: colorScheme.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(4),
+          side: BorderSide(color: colorScheme.outlineVariant),
+        ),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(4),
+          onTap: state.tables.isEmpty ? null : () => _openTablesSheet(context),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.table_restaurant_outlined,
+                  color: colorScheme.primary,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 180),
+                    reverseDuration: const Duration(milliseconds: 140),
+                    transitionBuilder: (child, animation) {
+                      final offsetAnimation =
+                          Tween<Offset>(
+                            begin: const Offset(.12, 0),
+                            end: Offset.zero,
+                          ).animate(
+                            CurvedAnimation(
+                              parent: animation,
+                              curve: Curves.easeOutCubic,
+                            ),
+                          );
+                      return FadeTransition(
+                        opacity: animation,
+                        child: SlideTransition(
+                          position: offsetAnimation,
+                          child: child,
+                        ),
+                      );
+                    },
+                    child: _MobileTableSelectionLabel(
+                      key: ValueKey(selected?.id ?? selectedLabel ?? 'none'),
+                      selectedLabel: selectedLabel,
+                      title: l10n.moduleTables.toUpperCase(),
+                    ),
+                  ),
+                ),
+                if (selectedOccupied) ...[
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(999),
+                      color: colorScheme.error,
+                    ),
+                    child: Text(
+                      l10n.tableOccupiedLabel,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                        color: colorScheme.onSurface,
-                        fontWeight: FontWeight.w800,
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: colorScheme.onError,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
-                    if (selectedLabel != null)
-                      Text(
-                        selectedLabel,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.labelMedium
-                            ?.copyWith(color: colorScheme.onSurfaceVariant),
-                      ),
-                  ],
-                ),
-              ),
-              Icon(Icons.keyboard_arrow_up, color: colorScheme.onSurface),
-            ],
+                  ),
+                  const SizedBox(width: 8),
+                ],
+                Icon(Icons.keyboard_arrow_up, color: colorScheme.onSurface),
+              ],
+            ),
           ),
         ),
       ),
     );
+  }
+
+  void _handleHorizontalSwipe(
+    BuildContext context,
+    List<_MobileTableOption> options,
+    DragEndDetails details,
+  ) {
+    final velocity = details.primaryVelocity ?? 0;
+    if (velocity.abs() < 120) return;
+
+    final selectedIndex = _selectedTableIndex(options);
+    final direction = velocity < 0 ? 1 : -1;
+    final nextIndex = (selectedIndex + direction) % options.length;
+    final normalizedIndex = nextIndex < 0 ? options.length - 1 : nextIndex;
+    context.read<PosBloc>().add(PosTableSelected(options[normalizedIndex].id));
+  }
+
+  int _selectedTableIndex(List<_MobileTableOption> options) {
+    final tableId = state.selectedTableId;
+    if (tableId == null) return 0;
+
+    final index = options.indexWhere((option) => option.id == tableId);
+    if (index < 0) return 0;
+    return index;
+  }
+
+  _MobileTableOption? _selectedTableOption(List<_MobileTableOption> options) {
+    if (options.isEmpty) return null;
+    return options[_selectedTableIndex(options)];
+  }
+
+  List<_MobileTableOption> _orderedTableOptions() {
+    final orderedTables = orderMobilePosTables(
+      cartLinesByTable: state.cartLinesByTable,
+      splitAccountsByTable: state.splitAccountsByTable,
+      tables: state.tables,
+    );
+    return [
+      for (final table in orderedTables)
+        _MobileTableOption(
+          id: table.id,
+          isOccupied: _isMobileTableOccupied(
+            cartLinesByTable: state.cartLinesByTable,
+            splitAccountsByTable: state.splitAccountsByTable,
+            table: table,
+          ),
+          label: table.operationalName,
+        ),
+    ];
   }
 
   String? _selectedTableLabel() {
@@ -408,4 +583,56 @@ class _MobileTablesLauncher extends StatelessWidget {
       return null;
     }
   }
+}
+
+class _MobileTableSelectionLabel extends StatelessWidget {
+  const _MobileTableSelectionLabel({
+    required this.selectedLabel,
+    required this.title,
+    super.key,
+  });
+
+  final String? selectedLabel;
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+            color: colorScheme.onSurface,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        if (selectedLabel != null)
+          Text(
+            selectedLabel!,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _MobileTableOption {
+  const _MobileTableOption({
+    required this.id,
+    required this.isOccupied,
+    required this.label,
+  });
+
+  final String id;
+  final bool isOccupied;
+  final String label;
 }
