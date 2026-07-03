@@ -58,6 +58,12 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(find.text('Monto Cordoba'), findsOneWidget);
     expect(find.text('180.00'), findsOneWidget);
+    expect(find.widgetWithText(OutlinedButton, ','), findsNothing);
+    expect(find.widgetWithText(OutlinedButton, '-'), findsNothing);
+    expect(find.widgetWithText(OutlinedButton, '50'), findsOneWidget);
+    expect(find.widgetWithText(OutlinedButton, '1000'), findsOneWidget);
+    expect(find.widgetWithText(OutlinedButton, '00'), findsOneWidget);
+    expect(find.widgetWithText(OutlinedButton, '000'), findsOneWidget);
     expect(find.text('OK'), findsOneWidget);
 
     final firstKeyRect = tester.getRect(

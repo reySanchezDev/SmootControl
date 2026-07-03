@@ -282,7 +282,28 @@ class _NumericKeypad extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const keys = ['7', '8', '9', '4', '5', '6', '1', '2', '3', ',', '0', '.'];
+    const keys = [
+      '50',
+      '100',
+      '200',
+      '500',
+      '7',
+      '8',
+      '9',
+      '4',
+      '5',
+      '6',
+      '1',
+      '2',
+      '3',
+      '.',
+      '0',
+      'backspace',
+      '00',
+      '000',
+      'C',
+      '1000',
+    ];
     return LayoutBuilder(
       builder: (context, constraints) {
         final compact = constraints.maxWidth < 390;
@@ -290,43 +311,45 @@ class _NumericKeypad extends StatelessWidget {
         final keyHeight = compact ? 46.0 : 52.0;
         final keyWidth = (constraints.maxWidth - (gap * 3)) / 4;
 
-        return GridView.count(
-          childAspectRatio: keyWidth / keyHeight,
-          crossAxisCount: 4,
-          crossAxisSpacing: gap,
-          mainAxisSpacing: gap,
-          physics: const NeverScrollableScrollPhysics(),
-          shrinkWrap: true,
+        return Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            for (final key in keys)
-              _KeypadButton(
-                keyHeight: keyHeight,
-                label: key,
-                onPressed: () => onKey(key),
-              ),
-            _KeypadButton(
-              icon: Icons.backspace_outlined,
-              keyHeight: keyHeight,
-              onPressed: onBackspace,
-            ),
-            _KeypadButton(
-              keyHeight: keyHeight,
-              label: '00',
-              onPressed: () => onKey('00'),
-            ),
-            _KeypadButton(
-              keyHeight: keyHeight,
-              label: '-',
-              onPressed: () => onKey('-'),
-            ),
-            _KeypadButton(
-              keyHeight: keyHeight,
-              label: 'C',
-              onPressed: onClear,
+            GridView.count(
+              childAspectRatio: keyWidth / keyHeight,
+              crossAxisCount: 4,
+              crossAxisSpacing: gap,
+              mainAxisSpacing: gap,
+              physics: const NeverScrollableScrollPhysics(),
+              shrinkWrap: true,
+              children: [
+                for (final key in keys) _buildKey(key, keyHeight),
+              ],
             ),
           ],
         );
       },
+    );
+  }
+
+  Widget _buildKey(String key, double keyHeight) {
+    if (key == 'backspace') {
+      return _KeypadButton(
+        icon: Icons.backspace_outlined,
+        keyHeight: keyHeight,
+        onPressed: onBackspace,
+      );
+    }
+    if (key == 'C') {
+      return _KeypadButton(
+        keyHeight: keyHeight,
+        label: key,
+        onPressed: onClear,
+      );
+    }
+    return _KeypadButton(
+      keyHeight: keyHeight,
+      label: key,
+      onPressed: () => onKey(key),
     );
   }
 }
@@ -355,7 +378,12 @@ class _KeypadButton extends StatelessWidget {
         visualDensity: VisualDensity.compact,
       ),
       child: icon == null
-          ? Text(label!, style: Theme.of(context).textTheme.titleLarge)
+          ? Text(
+              label!,
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
+            )
           : Icon(icon, size: keyHeight * .5),
     );
   }
