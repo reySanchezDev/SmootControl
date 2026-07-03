@@ -7,7 +7,9 @@ import 'package:smoo_control/features/packaging/domain/entities/sales_type.dart'
 import 'package:smoo_control/features/payment_methods/domain/entities/payment_method.dart';
 import 'package:smoo_control/features/pos/domain/entities/pos_cart_line.dart';
 import 'package:smoo_control/features/pos/presentation/bloc/pos_state.dart';
+import 'package:smoo_control/features/pos/presentation/widgets/pos_category_band.dart';
 import 'package:smoo_control/features/pos/presentation/widgets/pos_ready_view.dart';
+import 'package:smoo_control/features/pos/presentation/widgets/pos_ticket_panel.dart';
 import 'package:smoo_control/features/products/domain/entities/product.dart';
 import 'package:smoo_control/features/tables/domain/entities/restaurant_table.dart';
 import 'package:smoo_control/l10n/app_localizations.dart';
@@ -241,7 +243,7 @@ void main() {
     expect(find.text('COMBOS POLLO'), findsOneWidget);
 
     final labelRect = tester.getRect(find.text('COMBOS POLLO'));
-    final categoryBandRect = tester.getRect(find.text('Comidas'));
+    final categoryBandRect = tester.getRect(find.byType(PosCategoryBand));
     expect(labelRect.height, greaterThan(14));
     expect(labelRect.bottom, lessThan(categoryBandRect.top));
   });
@@ -263,6 +265,66 @@ void main() {
     expect(secondRect.left, greaterThan(firstRect.right));
     expect(thirdRect.top, greaterThan(firstRect.bottom));
   });
+
+  testWidgets('keeps phone categories separated from catalog content', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(393, 852));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await _pumpReadyView(tester, state: _phoneCatalogProductsState);
+
+    expect(tester.takeException(), isNull);
+    final lastVisibleProductRect = tester.getRect(find.text(r'C$ 120.00'));
+    final categoryBandRect = tester.getRect(find.byType(PosCategoryBand));
+
+    expect(categoryBandRect.top, greaterThan(lastVisibleProductRect.bottom));
+  });
+
+  testWidgets('hides phone catalog without hiding category controls', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(393, 852));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await _pumpReadyView(tester, state: _phoneCatalogProductsState);
+
+    await tester.tap(find.text('Hide'));
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('Show'), findsOneWidget);
+    expect(find.text('ENCHILADAS'), findsNothing);
+    expect(find.text('Cafe caliente'), findsOneWidget);
+
+    await tester.tap(find.text('Show'));
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('Hide'), findsOneWidget);
+    expect(find.text('ENCHILADAS'), findsOneWidget);
+  });
+
+  testWidgets(
+    'keeps phone total band from overlapping categories when catalog is hidden',
+    (
+      tester,
+    ) async {
+      await tester.binding.setSurfaceSize(const Size(393, 852));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      await _pumpReadyView(tester, state: _veryDenseResponsiveState);
+
+      await tester.tap(find.text('Hide'));
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      final ticketRect = tester.getRect(find.byType(PosTicketPanel));
+      final categoryBandRect = tester.getRect(find.byType(PosCategoryBand));
+
+      expect(categoryBandRect.top - ticketRect.bottom, lessThan(8));
+    },
+  );
 
   test('orders phone table navigation with occupied tables first', () {
     final ordered = orderMobilePosTables(
@@ -632,6 +694,49 @@ const _phoneLongSubcategoryState = PosReady(
   tables: [_table],
   paymentMethods: [_cashMethod],
   selectedCategoryId: 'food-root',
+  selectedPaymentMethodId: 'cash',
+  selectedTableId: 'table-1',
+);
+
+const _phoneCatalogProductsState = PosReady(
+  categories: [_category, _emptyCategory, _thirdEmptyCategory],
+  products: [
+    Product(
+      id: 'phone-product-1',
+      categoryId: 'category-1',
+      name: 'ENCHILADAS',
+      priceInCents: 6000,
+      costInCents: 3000,
+      isActive: true,
+    ),
+    Product(
+      id: 'phone-product-2',
+      categoryId: 'category-1',
+      name: 'MADURO + QUESO',
+      priceInCents: 8000,
+      costInCents: 4000,
+      isActive: true,
+    ),
+    Product(
+      id: 'phone-product-3',
+      categoryId: 'category-1',
+      name: 'ORDEN TACOS',
+      priceInCents: 12000,
+      costInCents: 6000,
+      isActive: true,
+    ),
+    Product(
+      id: 'phone-product-4',
+      categoryId: 'category-1',
+      name: 'TAJADAS CON QUESO',
+      priceInCents: 6000,
+      costInCents: 3000,
+      isActive: true,
+    ),
+  ],
+  tables: [_table],
+  paymentMethods: [_cashMethod],
+  selectedCategoryId: 'category-1',
   selectedPaymentMethodId: 'cash',
   selectedTableId: 'table-1',
 );

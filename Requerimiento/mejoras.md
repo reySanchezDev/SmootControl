@@ -90,3 +90,18 @@ MEJORAS:
 3. cuando se presiona "Sincronizar datos" desde el pos en mas opciones, los metodos de pagos no se estan acutalizando o sincronizando, ejemplo agregue uno nuevo y quite un metodo de pago y sigue igual en el pos.
 
 4. cuando se presiona "Sincronizar datos" desde el pos en mas opciones, NO se esta sincronizando el catalogo de gastos, agregue gastos y sincronice y no aparecen.
+
+
+5. tengo un caso, yo cree un usuario POS y en la web abri caja y tengo unas ventas, y ahora que entro a desde el movil con el mismo usuario , me sale que tengo que abrir caja, eso esta mal, deberia de reconocer el usuario y saber que tiene caja abierta y traerse en este caso su caja aperturada. o no? tambien miro que da error al sincronzar las ventas, y ese boton de sincronizar en el pos no da ningun mensaje como para saber por que.
+
+
+
+refinamiento POS Movil
+1. El alto en la fila de los productos no se esta ajustando responsivamente, pareciera que quedo con un alto establecido.
+
+2. al olcultar productos, la franja de los productos no reduce el alto, solo oculta a los productos pero el alto ahi queda, lo que provica un vacio en blanco.
+
+3. tambien ocurre que si hay productos agregado al detalle y oculto productos , la franja que contiene al boton ocultar producto se queda por debajo de productos.
+
+
+

@@ -137,45 +137,13 @@ class _PosReadyViewState extends State<PosReadyView> {
 
         if (layout.compact) {
           if (phoneLayout) {
-            return Column(
-              children: [
-                Expanded(
-                  child: LayoutBuilder(
-                    builder: (context, mobileConstraints) {
-                      return _buildCompactScrollContent(
-                        actionsBand: actionsBand,
-                        catalog: catalog,
-                        categoryBand: categoryBand,
-                        contentHeight: mobileConstraints.maxHeight,
-                        includeActions: false,
-                        includeCategories: false,
-                        includeTables: false,
-                        layout: layout,
-                        phoneLayout: true,
-                        tableBand: tableBand,
-                        ticket: ticket,
-                      );
-                    },
-                  ),
-                ),
-                const Divider(height: 1),
-                SizedBox(
-                  height: layout.categoryBandHeight(
-                    _visibleRootCategoryCount(),
-                  ),
-                  child: categoryBand,
-                ),
-                const Divider(height: 1),
-                SizedBox(
-                  height: 68,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    child: tableBand,
-                  ),
-                ),
-                const Divider(height: 1),
-                SizedBox(height: layout.actionsHeight(), child: actionsBand),
-              ],
+            return _PosMobileLayout(
+              actionsBand: actionsBand,
+              catalog: catalog,
+              categoryBand: categoryBand,
+              productsVisible: _productsVisible,
+              tableBand: tableBand,
+              ticket: ticket,
             );
           }
 
@@ -245,9 +213,10 @@ class _PosReadyViewState extends State<PosReadyView> {
     final tableHeight = phoneLayout
         ? 68.0
         : layout.tableBandHeight(_visibleTableEntryCount());
+    final renderedCategoryHeight = includeCategories ? categoryHeight : 0.0;
+    final renderedTableHeight = includeTables ? tableHeight : 0.0;
     final actionsHeight = includeActions ? layout.actionsHeight() : 0.0;
     final gapCount =
-        1 +
         (_productsVisible ? 2 : 0) +
         (includeCategories ? 1 : 0) +
         (includeTables ? 1 : 0) +
@@ -256,17 +225,22 @@ class _PosReadyViewState extends State<PosReadyView> {
     final naturalHeight =
         ticketHeight +
         catalogHeight +
-        categoryHeight +
-        tableHeight +
+        renderedCategoryHeight +
+        renderedTableHeight +
         actionsHeight +
         gapHeight;
-    final expandedTicketHeight = naturalHeight < contentHeight
-        ? ticketHeight + (contentHeight - naturalHeight)
+    final verticalPadding = phoneLayout ? 10.0 : 20.0;
+    final availableContentHeight = (contentHeight - verticalPadding).clamp(
+      0.0,
+      double.infinity,
+    );
+    final expandedTicketHeight = naturalHeight < availableContentHeight
+        ? ticketHeight + (availableContentHeight - naturalHeight)
         : ticketHeight;
 
     return ListView(
       key: const ValueKey('pos-compact-scroll'),
-      padding: const EdgeInsets.all(10),
+      padding: EdgeInsets.fromLTRB(10, 10, 10, phoneLayout ? 0 : 10),
       children: [
         SizedBox(height: expandedTicketHeight, child: ticket),
         if (_productsVisible) ...[
@@ -353,6 +327,63 @@ class _PosReadyViewState extends State<PosReadyView> {
 
   int _sortCategories(ProductCategory first, ProductCategory second) {
     return first.sortOrder.compareTo(second.sortOrder);
+  }
+}
+
+class _PosMobileLayout extends StatelessWidget {
+  const _PosMobileLayout({
+    required this.actionsBand,
+    required this.catalog,
+    required this.categoryBand,
+    required this.productsVisible,
+    required this.tableBand,
+    required this.ticket,
+  });
+
+  static const double _categoryBandHeight = 132;
+  static const double _tableBandHeight = 68;
+  static const double _actionsBandHeight = 76;
+
+  final Widget actionsBand;
+  final Widget catalog;
+  final Widget categoryBand;
+  final bool productsVisible;
+  final Widget tableBand;
+  final Widget ticket;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Expanded(
+          flex: productsVisible ? 5 : 1,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
+            child: ticket,
+          ),
+        ),
+        if (productsVisible)
+          Flexible(
+            flex: 3,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
+              child: catalog,
+            ),
+          ),
+        const Divider(height: 1),
+        SizedBox(height: _categoryBandHeight, child: categoryBand),
+        const Divider(height: 1),
+        SizedBox(
+          height: _tableBandHeight,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            child: tableBand,
+          ),
+        ),
+        const Divider(height: 1),
+        SizedBox(height: _actionsBandHeight, child: actionsBand),
+      ],
+    );
   }
 }
 
