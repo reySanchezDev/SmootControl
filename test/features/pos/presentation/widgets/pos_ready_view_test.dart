@@ -342,20 +342,16 @@ void main() {
 
     expect(tester.takeException(), isNull);
     expect(find.text(r'C$ 0.00'), findsNothing);
+    expect(find.text('Hide'), findsNothing);
     expect(find.text('Cafe'), findsOneWidget);
     expect(find.byType(PosCategoryBand), findsOneWidget);
-
-    await tester.tap(find.text('Hide'));
-    await tester.pumpAndSettle();
-
-    expect(tester.takeException(), isNull);
-    expect(find.text('Cafe'), findsOneWidget);
 
     await tester.tap(find.byIcon(Icons.shopping_cart_outlined));
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
     expect(find.text(r'C$ 0.00'), findsOneWidget);
+    expect(find.text('Hide'), findsOneWidget);
   });
 
   test('orders phone table navigation with occupied tables first', () {

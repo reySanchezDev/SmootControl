@@ -7,6 +7,7 @@ class _TicketTotalBand extends StatelessWidget {
     required this.lines,
     required this.salesTypes,
     required this.productsVisible,
+    this.hideProductsVisibilityButtonOnPhone = false,
     this.hideTotalOnPhone = false,
     this.selectedSalesTypeId,
     this.onProductsVisibilityToggled,
@@ -14,6 +15,7 @@ class _TicketTotalBand extends StatelessWidget {
 
   final List<PosCartLine> lines;
   final List<SalesType> salesTypes;
+  final bool hideProductsVisibilityButtonOnPhone;
   final bool hideTotalOnPhone;
   final String? selectedSalesTypeId;
   final bool productsVisible;
@@ -35,6 +37,8 @@ class _TicketTotalBand extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
               child: _MobileTicketTotalBand(
                 onProductsVisibilityToggled: onProductsVisibilityToggled,
+                hideProductsVisibilityButton:
+                    hideProductsVisibilityButtonOnPhone,
                 hideTotal: hideTotalOnPhone,
                 productsVisible: productsVisible,
                 salesTypes: salesTypes,
@@ -124,6 +128,7 @@ class _TicketTotalBand extends StatelessWidget {
 
 class _MobileTicketTotalBand extends StatelessWidget {
   const _MobileTicketTotalBand({
+    required this.hideProductsVisibilityButton,
     required this.hideTotal,
     required this.productsVisible,
     required this.salesTypes,
@@ -132,6 +137,7 @@ class _MobileTicketTotalBand extends StatelessWidget {
     this.selectedSalesTypeId,
   });
 
+  final bool hideProductsVisibilityButton;
   final bool hideTotal;
   final bool productsVisible;
   final List<SalesType> salesTypes;
@@ -145,13 +151,15 @@ class _MobileTicketTotalBand extends StatelessWidget {
 
     return Row(
       children: [
-        _ProductsVisibilityButton(
-          onPressed: onProductsVisibilityToggled,
-          productsVisible: productsVisible,
-        ),
+        if (!hideProductsVisibilityButton)
+          _ProductsVisibilityButton(
+            onPressed: onProductsVisibilityToggled,
+            productsVisible: productsVisible,
+          ),
         if (activeTypes.isNotEmpty) ...[
-          const SizedBox(width: 12),
-          Flexible(
+          SizedBox(width: hideProductsVisibilityButton ? 0 : 14),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 122),
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
@@ -159,6 +167,7 @@ class _MobileTicketTotalBand extends StatelessWidget {
                 children: [
                   for (final type in activeTypes) ...[
                     _SalesTypeChip(
+                      compact: true,
                       label: _mobileSalesTypeLabel(type),
                       selected: type.id == selectedSalesTypeId,
                       onPressed: () {
@@ -167,7 +176,7 @@ class _MobileTicketTotalBand extends StatelessWidget {
                         );
                       },
                     ),
-                    if (type != activeTypes.last) const SizedBox(width: 9),
+                    if (type != activeTypes.last) const SizedBox(width: 8),
                   ],
                 ],
               ),
@@ -232,8 +241,10 @@ class _SalesTypeChip extends StatelessWidget {
     required this.label,
     required this.selected,
     required this.onPressed,
+    this.compact = false,
   });
 
+  final bool compact;
   final String label;
   final bool selected;
   final VoidCallback onPressed;
@@ -242,7 +253,11 @@ class _SalesTypeChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     return ConstrainedBox(
-      constraints: const BoxConstraints(minHeight: 34, maxWidth: 170),
+      constraints: BoxConstraints(
+        minWidth: compact ? 54 : 72,
+        minHeight: 38,
+        maxWidth: compact ? 80 : 180,
+      ),
       child: Material(
         color: selected ? AppPalette.primaryDark : colorScheme.primary,
         shape: RoundedRectangleBorder(
@@ -255,7 +270,10 @@ class _SalesTypeChip extends StatelessWidget {
           borderRadius: BorderRadius.circular(6),
           onTap: selected ? null : onPressed,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+            padding: EdgeInsets.symmetric(
+              horizontal: compact ? 10 : 13,
+              vertical: 9,
+            ),
             child: Text(
               label,
               maxLines: 1,
@@ -318,7 +336,7 @@ class _ProductsVisibilityButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(6),
         onTap: onPressed,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
