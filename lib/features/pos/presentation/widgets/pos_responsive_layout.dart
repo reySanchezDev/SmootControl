@@ -116,7 +116,8 @@ final class PosResponsiveLayout {
     const horizontalPadding = 20.0;
     final availableWidth = (maxWidth - horizontalPadding).clamp(1.0, maxWidth);
     final maxTileWidth = maxWidth < 520 ? 190.0 : 300.0;
-    return (availableWidth / maxTileWidth).floor().clamp(1, 8);
+    final minColumns = maxWidth < 520 ? 2 : 1;
+    return (availableWidth / maxTileWidth).floor().clamp(minColumns, 8);
   }
 
   /// Table selector columns estimated from available width.

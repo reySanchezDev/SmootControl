@@ -110,6 +110,37 @@ Si una tableta fue inicializada antes de existir esta credencial, debe
 restaurarse nuevamente desde Supabase para activar la sincronizacion POS por
 dispositivo.
 
+### Bajada De Catalogo POS Por Dispositivo
+
+El boton **Sincronizar datos** del POS no debe requerir una sesion activa de
+administrador remoto. Una vez inicializado el dispositivo, la descarga operativa
+usa la credencial local `syncDeviceId`/`syncDeviceSecret` contra el RPC:
+
+- `pos_pull_operational_catalog`
+
+Este RPC valida `assert_pos_device` y devuelve un snapshot de datos necesarios
+para operar el POS:
+
+- restaurante y numeracion;
+- usuarios POS, roles, permisos y PIN hash;
+- categorias, subcategorias, productos y modificadores;
+- inventario de productos;
+- tipos de venta, empaques, reglas y stock de empaque;
+- metodos de pago;
+- mesas;
+- categorias de gasto;
+- tasas de cambio;
+- cajas remotas.
+
+Reglas obligatorias:
+
+- Si el POS ya fue inicializado, **Sincronizar datos** debe funcionar aunque el
+  administrador no haya iniciado sesion.
+- Si no existe credencial de dispositivo, debe indicar que el dispositivo debe
+  inicializarse/restaurarse desde Supabase.
+- La descarga preserva movimientos locales pendientes aplicando los deltas
+  locales sobre el stock remoto para no borrar ventas offline aun no subidas.
+
 ### Incidente Documentado: `pgcrypto.digest` En RPC De Dispositivo
 
 El 2026-07-01 la inicializacion Web/APK validaba correctamente el administrador

@@ -66,13 +66,15 @@ Debe confirmarse:
 2. Iniciar sesion con un usuario autorizado.
 3. Ejecutar **Mas opciones > Sincronizar datos** desde el POS.
 4. Confirmar que el dialogo indica que el POS esta listo para operar.
-5. Abrir caja.
-6. Crear una venta con productos y modificadores.
-7. Cobrar en efectivo.
-8. Verificar que la mesa se libera.
-9. Verificar que la venta aparece en **Ver Transacciones**.
-10. Confirmar que la venta sube a Supabase.
-11. Confirmar que reportes administrativos muestran la venta sincronizada.
+5. Confirmar que **Sincronizar datos** funciona sin una sesion activa de
+   administrador remoto cuando la tableta ya esta inicializada.
+6. Abrir caja.
+7. Crear una venta con productos y modificadores.
+8. Cobrar en efectivo.
+9. Verificar que la mesa se libera.
+10. Verificar que la venta aparece en **Ver Transacciones**.
+11. Confirmar que la venta sube a Supabase.
+12. Confirmar que reportes administrativos muestran la venta sincronizada.
 
 ## Prueba Offline Obligatoria
 

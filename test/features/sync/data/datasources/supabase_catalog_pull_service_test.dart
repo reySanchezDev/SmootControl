@@ -169,6 +169,67 @@ void main() {
     );
 
     test(
+      'downloads POS catalog with device credentials without admin session',
+      () async {
+        final now = DateTime(2026, 7);
+        await database
+            .into(database.localDeviceState)
+            .insert(
+              LocalDeviceStateCompanion.insert(
+                deviceId: 'device-1',
+                restaurantId: 'restaurant-1',
+                initializedByUserId: 'user-pos-1',
+                initializedAt: now,
+                lastFullRestoreAt: now,
+                lastRestoreStatus: 'completed',
+                syncDeviceId: const Value('device-1'),
+                syncDeviceSecret: const Value('device-secret'),
+              ),
+            );
+        final requests = <http.Request>[];
+        final service = SupabaseCatalogPullService(
+          database: database,
+          config: const SupabaseAppConfig(
+            supabaseUrl: 'https://smoo.test',
+            publishableKey: 'publishable-key',
+          ),
+          restaurantService: const CurrentRestaurantService(
+            restaurantId: 'restaurant-1',
+          ),
+          remoteSessionService: CurrentRemoteSessionService(),
+          client: MockClient((request) async {
+            requests.add(request);
+            if (request.url.path ==
+                '/rest/v1/rpc/pos_pull_operational_catalog') {
+              return _jsonResponse(_rowsByTable);
+            }
+            return http.Response('unexpected REST request', 500);
+          }),
+        );
+
+        final summary = await service.pullOperationalCatalog();
+
+        expect(summary.isReadyForPos, isTrue);
+        expect(requests, hasLength(1));
+        expect(
+          requests.single.url.path,
+          '/rest/v1/rpc/pos_pull_operational_catalog',
+        );
+        expect(requests.single.headers['authorization'], null);
+        final requestBody =
+            jsonDecode(requests.single.body) as Map<String, Object?>;
+        expect(requestBody['p_restaurant_id'], 'restaurant-1');
+        expect(requestBody['p_device_id'], 'device-1');
+        expect(requestBody['p_device_secret'], 'device-secret');
+
+        final products = await database.select(database.localProducts).get();
+        expect(products.single.name, 'Pollo');
+        final users = await database.select(database.localUserProfiles).get();
+        expect(users.single.email, 'pos@smoo.test');
+      },
+    );
+
+    test(
       'reports missing operational data after an incomplete restore',
       () async {
         final service = SupabaseCatalogPullService(

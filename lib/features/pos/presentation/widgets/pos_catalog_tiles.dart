@@ -119,7 +119,8 @@ class PosMenuGrid extends StatelessWidget {
     const horizontalPadding = 20.0;
     final targetTileWidth = compact ? 190.0 : 300.0;
     final availableWidth = (maxWidth - horizontalPadding).clamp(1.0, maxWidth);
-    return (availableWidth / targetTileWidth).floor().clamp(1, 8);
+    final minColumns = compact ? 2 : 1;
+    return (availableWidth / targetTileWidth).floor().clamp(minColumns, 8);
   }
 
   double _aspectRatioFor(

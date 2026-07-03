@@ -246,6 +246,24 @@ void main() {
     expect(labelRect.bottom, lessThan(categoryBandRect.top));
   });
 
+  testWidgets('uses two catalog columns on phone surfaces', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(393, 852));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await _pumpReadyView(tester, state: _phoneLongSubcategoryState);
+
+    expect(tester.takeException(), isNull);
+    final firstRect = tester.getRect(find.text('ASADOS'));
+    final secondRect = tester.getRect(find.text('BUFETE'));
+    final thirdRect = tester.getRect(find.text('COMBOS POLLO'));
+
+    expect((firstRect.top - secondRect.top).abs(), lessThan(8));
+    expect(secondRect.left, greaterThan(firstRect.right));
+    expect(thirdRect.top, greaterThan(firstRect.bottom));
+  });
+
   testWidgets('renders dense POS content across constrained surfaces', (
     tester,
   ) async {

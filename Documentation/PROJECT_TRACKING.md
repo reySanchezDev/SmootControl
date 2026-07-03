@@ -909,6 +909,9 @@
 | 2026-06-30 | Supabase inventario endurecido | Migracion `006_harden_inventory_sync.sql` valida restaurante, producto, tipo y cantidad dentro de la RPC `apply_inventory_movement`. |
 | 2026-06-30 | Validacion auditoria inventario | `flutter analyze --no-pub` sin issues, `flutter test --reporter=compact` con 196 tests correctos, build Web release correcto y `supabase db lint --linked --schema public` sin errores. |
 | 2026-07-01 | Incidente APK release sin internet | Documentada causa raiz: permiso `android.permission.INTERNET` faltaba en `android/app/src/main/AndroidManifest.xml`; checklist exige validar permisos del APK final con `aapt dump permissions`. |
+| 2026-07-02 | Sync POS por dispositivo | `Sincronizar datos` desde POS baja catalogo por RPC `pos_pull_operational_catalog` usando `syncDeviceId`/`syncDeviceSecret`; ya no depende de sesion activa de administrador remoto. |
+| 2026-07-02 | Catalogo POS movil | Subcategorias y productos usan minimo dos columnas en superficies de telefono para evitar una sola columna y mejorar navegacion tactil. |
+| 2026-07-02 | Validacion sync/catalogo POS | `flutter analyze`, `supabase_catalog_pull_service_test`, `supabase_sync_remote_sender_test`, `device_initialization_service_test` y `pos_ready_view_test` pasan despues de los ajustes. |
 
 ## Riesgos Activos
 

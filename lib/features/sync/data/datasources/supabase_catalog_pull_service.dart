@@ -35,6 +35,7 @@ final class SupabaseCatalogPullService implements ICatalogPullService {
   String? _accessToken;
   DateTime? _expiresAt;
   bool _temporaryTokenOnly = false;
+  Map<String, List<Map<String, Object?>>>? _deviceCatalogRows;
 
   @override
   Future<CatalogPullSummary> pullOperationalCatalog() {
@@ -62,9 +63,12 @@ final class SupabaseCatalogPullService implements ICatalogPullService {
 
   @override
   Future<CatalogPullSummary> pullScopes(Set<CatalogPullScope> scopes) async {
-    _ensureConfigured();
+    await _ensureCanPull();
 
     if (scopes.isEmpty) return const CatalogPullSummary.empty();
+
+    _deviceCatalogRows = null;
+    await _prepareDeviceCatalogIfNeeded();
 
     final effectiveScopes = {...scopes};
     if (effectiveScopes.contains(CatalogPullScope.products)) {
@@ -156,7 +160,7 @@ final class SupabaseCatalogPullService implements ICatalogPullService {
     final inventoryStock = shouldRefreshProducts
         ? await _getRows('inventory_stock')
         : const <Map<String, Object?>>[];
-    if (shouldRefreshPackaging) {
+    if (shouldRefreshPackaging && _deviceCatalogRows == null) {
       await _ensureDefaultSalesTypes();
     }
     final salesTypes = shouldRefreshPackaging
@@ -1366,6 +1370,11 @@ final class SupabaseCatalogPullService implements ICatalogPullService {
     String table,
     Map<String, String> query,
   ) async {
+    final deviceRows = _deviceCatalogRows;
+    if (deviceRows != null) {
+      return _rowsFromDeviceCatalog(deviceRows, table, query);
+    }
+
     final response = await _client.get(
       _config.restUri(table, query),
       headers: await _headers(),
@@ -1383,6 +1392,119 @@ final class SupabaseCatalogPullService implements ICatalogPullService {
     }
 
     return decoded.map(_mapRow).toList();
+  }
+
+  Future<void> _prepareDeviceCatalogIfNeeded() async {
+    if (_hasRemoteCatalogToken) return;
+    _deviceCatalogRows = await _pullOperationalCatalogWithDevice();
+  }
+
+  Future<Map<String, List<Map<String, Object?>>>>
+  _pullOperationalCatalogWithDevice() async {
+    final credentials = await _deviceCredentials();
+    final response = await _client.post(
+      _config.rpcUri('pos_pull_operational_catalog'),
+      headers: {
+        'apikey': _config.publishableKey,
+        'content-type': 'application/json',
+        'accept': 'application/json',
+      },
+      body: jsonEncode({
+        'p_restaurant_id': _restaurantService.restaurantId,
+        'p_device_id': credentials.deviceId,
+        'p_device_secret': credentials.deviceSecret,
+      }),
+    );
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw StateError(
+        'Supabase rechazo descarga POS (${response.statusCode}): '
+        '${response.body}',
+      );
+    }
+
+    final decoded = jsonDecode(response.body);
+    if (decoded is! Map) {
+      throw StateError('Respuesta invalida descargando catalogo POS.');
+    }
+
+    return decoded.map((key, value) {
+      final rows = value is List
+          ? value.map(_mapRow).toList(growable: false)
+          : <Map<String, Object?>>[];
+      return MapEntry(key.toString(), rows);
+    });
+  }
+
+  List<Map<String, Object?>> _rowsFromDeviceCatalog(
+    Map<String, List<Map<String, Object?>>> snapshot,
+    String table,
+    Map<String, String> query,
+  ) {
+    Iterable<Map<String, Object?>> rows = snapshot[table] ?? const [];
+
+    for (final entry in query.entries) {
+      final key = entry.key;
+      final value = entry.value;
+      if (key == 'select' || key == 'limit') continue;
+      if (key == 'or') {
+        rows = _applyDeviceOrFilter(rows, value);
+        continue;
+      }
+      rows = _applyDeviceFilter(rows, key, value);
+    }
+
+    final limit = int.tryParse(query['limit'] ?? '');
+    if (limit != null && limit >= 0) rows = rows.take(limit);
+    return rows.toList();
+  }
+
+  Iterable<Map<String, Object?>> _applyDeviceFilter(
+    Iterable<Map<String, Object?>> rows,
+    String key,
+    String expression,
+  ) {
+    if (expression.startsWith('eq.')) {
+      final expected = expression.substring(3);
+      return rows.where((row) => _optionalText(row[key]) == expected);
+    }
+    if (expression == 'is.null') {
+      return rows.where((row) => _optionalText(row[key]) == null);
+    }
+    return rows;
+  }
+
+  Iterable<Map<String, Object?>> _applyDeviceOrFilter(
+    Iterable<Map<String, Object?>> rows,
+    String expression,
+  ) {
+    final normalized = expression.trim();
+    if (!normalized.startsWith('(') || !normalized.endsWith(')')) {
+      return rows;
+    }
+    final clauses = normalized
+        .substring(1, normalized.length - 1)
+        .split(',')
+        .map((clause) => clause.trim())
+        .where((clause) => clause.isNotEmpty)
+        .toList();
+    if (clauses.isEmpty) return rows;
+
+    return rows.where((row) {
+      for (final clause in clauses) {
+        final isNullParts = clause.split('.is.');
+        if (isNullParts.length == 2 && isNullParts[1] == 'null') {
+          if (_optionalText(row[isNullParts[0]]) == null) return true;
+          continue;
+        }
+
+        final eqParts = clause.split('.eq.');
+        if (eqParts.length == 2 &&
+            _optionalText(row[eqParts[0]]) == eqParts[1]) {
+          return true;
+        }
+      }
+      return false;
+    });
   }
 
   Future<void> _ensureDefaultSalesTypes() async {
@@ -1423,15 +1545,20 @@ final class SupabaseCatalogPullService implements ICatalogPullService {
     });
   }
 
-  void _ensureConfigured() {
-    final hasTemporaryToken = _accessToken != null && _accessToken!.isNotEmpty;
-    if (!((hasTemporaryToken || _remoteSessionService.hasUsableToken) &&
-        _config.isConfigured &&
-        _restaurantService.isConfigured)) {
-      throw StateError(
-        'Inicia sesion como administrador remoto para descargar datos.',
-      );
+  Future<void> _ensureCanPull() async {
+    if (!_config.isConfigured || !_restaurantService.isConfigured) {
+      throw StateError('Supabase no esta configurado para descargar datos.');
     }
+    if (_hasRemoteCatalogToken || await _hasDeviceCredentials()) return;
+    throw StateError(
+      'Inicializa este dispositivo o inicia sesion como administrador remoto '
+      'para descargar datos.',
+    );
+  }
+
+  bool get _hasRemoteCatalogToken {
+    return (_accessToken != null && _accessToken!.isNotEmpty) ||
+        _remoteSessionService.hasUsableToken;
   }
 
   Future<Map<String, String>> _headers() async {
@@ -1463,6 +1590,33 @@ final class SupabaseCatalogPullService implements ICatalogPullService {
     throw StateError(
       'La sesion remota expiro. Inicia sesion como administrador remoto.',
     );
+  }
+
+  Future<_DeviceCatalogCredentials> _deviceCredentials() async {
+    final state = await (_database.select(
+      _database.localDeviceState,
+    )..where((row) => row.id.equals('default'))).getSingleOrNull();
+    final deviceId = _optionalText(state?.syncDeviceId ?? state?.deviceId);
+    final deviceSecret = _optionalText(state?.syncDeviceSecret);
+    if (deviceId == null || deviceSecret == null) {
+      throw StateError(
+        'Este dispositivo no tiene credencial de sincronizacion POS. '
+        'Inicializa la tableta desde Supabase nuevamente.',
+      );
+    }
+    return _DeviceCatalogCredentials(
+      deviceId: deviceId,
+      deviceSecret: deviceSecret,
+    );
+  }
+
+  Future<bool> _hasDeviceCredentials() async {
+    final state = await (_database.select(
+      _database.localDeviceState,
+    )..where((row) => row.id.equals('default'))).getSingleOrNull();
+    final deviceId = _optionalText(state?.syncDeviceId ?? state?.deviceId);
+    final deviceSecret = _optionalText(state?.syncDeviceSecret);
+    return deviceId != null && deviceSecret != null;
   }
 
   Map<String, Object?> _mapRow(Object? value) {
@@ -1545,4 +1699,14 @@ final class _ProductModifierLink {
 
   final String groupId;
   final int order;
+}
+
+final class _DeviceCatalogCredentials {
+  const _DeviceCatalogCredentials({
+    required this.deviceId,
+    required this.deviceSecret,
+  });
+
+  final String deviceId;
+  final String deviceSecret;
 }
