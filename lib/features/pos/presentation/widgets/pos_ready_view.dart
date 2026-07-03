@@ -607,29 +607,34 @@ class _MobileTablesLauncher extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
               child: SizedBox(
                 height: height,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                child: Stack(
                   children: [
-                    Row(
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Expanded(
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(2, 2, 64, 0),
                           child: Text(
                             l10n.moduleTables,
                             style: Theme.of(sheetContext).textTheme.titleMedium
                                 ?.copyWith(fontWeight: FontWeight.w800),
                           ),
                         ),
-                        IconButton(
-                          icon: const Icon(Icons.close),
-                          onPressed: () => Navigator.of(sheetContext).pop(),
+                        const SizedBox(height: 14),
+                        Expanded(
+                          child: PosTablesBand(
+                            onEntrySelected: () =>
+                                Navigator.of(sheetContext).pop(),
+                            state: state,
+                          ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8),
-                    Expanded(
-                      child: PosTablesBand(
-                        onEntrySelected: () => Navigator.of(sheetContext).pop(),
-                        state: state,
+                    Positioned(
+                      right: 2,
+                      bottom: 10,
+                      child: _FloatingSheetCloseButton(
+                        onPressed: () => Navigator.of(sheetContext).pop(),
                       ),
                     ),
                   ],
@@ -651,6 +656,32 @@ class _MobileTablesLauncher extends StatelessWidget {
     } on ProviderNotFoundException {
       return null;
     }
+  }
+}
+
+class _FloatingSheetCloseButton extends StatelessWidget {
+  const _FloatingSheetCloseButton({required this.onPressed});
+
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Material(
+      color: colorScheme.errorContainer,
+      elevation: 6,
+      shadowColor: colorScheme.error.withValues(alpha: .24),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(18),
+        onTap: onPressed,
+        child: SizedBox(
+          height: 56,
+          width: 56,
+          child: Icon(Icons.close, color: colorScheme.onErrorContainer),
+        ),
+      ),
+    );
   }
 }
 

@@ -7,19 +7,32 @@ final class MoneyFormatter {
 
   /// Formats cents as a visible currency amount.
   static String format(int cents) {
-    return '$symbol ${(cents / 100).toStringAsFixed(2)}';
+    final sign = cents < 0 ? '-' : '';
+    final absoluteCents = cents.abs();
+    final whole = absoluteCents ~/ 100;
+    final decimals = (absoluteCents % 100).toString().padLeft(2, '0');
+    return '$symbol $sign${_formatThousands(whole)}.$decimals';
   }
 
   /// Parses a decimal currency input into cents.
   static int? parseToCents(String value) {
-    final normalized = value
-        .trim()
-        .replaceAll(symbol, '')
-        .replaceAll(',', '.')
-        .replaceAll(' ', '');
+    var normalized = value.trim().replaceAll(symbol, '').replaceAll(' ', '');
 
     if (normalized.isEmpty) {
       return null;
+    }
+
+    final negative = normalized.startsWith('-');
+    if (negative) {
+      normalized = normalized.substring(1);
+    }
+
+    if (normalized.contains(',') && normalized.contains('.')) {
+      normalized = normalized.replaceAll(',', '');
+    } else if (normalized.contains(',')) {
+      normalized = _looksLikeThousands(normalized)
+          ? normalized.replaceAll(',', '')
+          : normalized.replaceAll(',', '.');
     }
 
     final parts = normalized.split('.');
@@ -37,6 +50,24 @@ final class MoneyFormatter {
       return null;
     }
 
-    return whole * 100 + int.parse(decimal.padRight(2, '0'));
+    final cents = whole * 100 + int.parse(decimal.padRight(2, '0'));
+    return negative ? -cents : cents;
+  }
+
+  static String _formatThousands(int value) {
+    final digits = value.toString();
+    final buffer = StringBuffer();
+    for (var index = 0; index < digits.length; index++) {
+      final fromRight = digits.length - index;
+      buffer.write(digits[index]);
+      if (fromRight > 1 && fromRight % 3 == 1) {
+        buffer.write(',');
+      }
+    }
+    return buffer.toString();
+  }
+
+  static bool _looksLikeThousands(String value) {
+    return RegExp(r'^\d{1,3}(,\d{3})+$').hasMatch(value);
   }
 }

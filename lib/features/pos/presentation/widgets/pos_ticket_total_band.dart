@@ -297,14 +297,17 @@ class _TotalAmountText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      MoneyFormatter.format(total),
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
-      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-        color: Theme.of(context).colorScheme.onPrimary,
+    return FittedBox(
+      alignment: Alignment.centerRight,
+      fit: BoxFit.scaleDown,
+      child: Text(
+        MoneyFormatter.format(total),
+        maxLines: 1,
+        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+          color: Theme.of(context).colorScheme.onPrimary,
+        ),
+        textAlign: TextAlign.end,
       ),
-      textAlign: TextAlign.end,
     );
   }
 }
@@ -336,28 +339,15 @@ class _ProductsVisibilityButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(6),
         onTap: onPressed,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                productsVisible
-                    ? Icons.visibility_off_outlined
-                    : Icons.visibility_outlined,
-                color: colorScheme.onPrimary,
-                size: 17,
-              ),
-              const SizedBox(width: 6),
-              Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                  color: colorScheme.onPrimary,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+              color: colorScheme.onPrimary,
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ),
       ),
