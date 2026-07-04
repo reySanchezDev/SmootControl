@@ -540,6 +540,9 @@ final class SupabaseCatalogPullService implements ICatalogPullService {
       final id = _requiredText(row['id'], table: 'modifier_options');
       final groupId = _optionalText(row['group_id']);
       if (groupId == null) continue;
+      final local = await (_database.select(
+        _database.localModifierOptions,
+      )..where((option) => option.id.equals(id))).getSingleOrNull();
       remoteIds.add(id);
       await _database
           .into(_database.localModifierOptions)
@@ -552,7 +555,8 @@ final class SupabaseCatalogPullService implements ICatalogPullService {
               displayOrder: Value(_int(row['display_order'])),
               isActive: Value(_bool(row['is_active'], defaultValue: true)),
               isAvailableInPos: Value(
-                _bool(row['is_available_in_pos'], defaultValue: true),
+                local?.isAvailableInPos ??
+                    _bool(row['is_available_in_pos'], defaultValue: true),
               ),
               remoteId: Value(id),
               syncStatus: const Value('synced'),

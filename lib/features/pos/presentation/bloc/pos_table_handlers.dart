@@ -56,7 +56,7 @@ Future<RestaurantTable?> _saveTable(
   RestaurantTable table,
   Emitter<PosState> emit,
 ) async {
-  final result = await bloc._tablesRepository.saveTable(table);
+  final result = await bloc._tablesRepository.saveTableDisplayName(table);
   switch (result) {
     case AppSuccess(:final value):
       return value;

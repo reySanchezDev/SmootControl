@@ -237,7 +237,10 @@ final class SupabaseSyncRemoteSender implements ISyncRemoteSender {
     await _upsert('products', _productPayload(item));
 
     final groupIds = _stringList(item.payload['modifierGroupIds']);
-    if (groupIds.isEmpty) return;
+    await _deleteWhere(
+      'product_modifier_groups',
+      {'product_id': 'eq.${item.entityId}'},
+    );
 
     var displayOrder = 0;
     for (final groupId in groupIds) {
@@ -938,6 +941,17 @@ final class SupabaseSyncRemoteSender implements ISyncRemoteSender {
   Future<void> _deleteById(String table, String id) async {
     final response = await _client.delete(
       _config.restUri(table, {'id': 'eq.$id'}),
+      headers: await _headers(prefer: 'return=minimal'),
+    );
+    _ensureSuccess(response, table);
+  }
+
+  Future<void> _deleteWhere(
+    String table,
+    Map<String, String> query,
+  ) async {
+    final response = await _client.delete(
+      _config.restUri(table, query),
       headers: await _headers(prefer: 'return=minimal'),
     );
     _ensureSuccess(response, table);

@@ -244,6 +244,121 @@ void main() {
     });
 
     test(
+      'replaces product modifier group assignments on remote save',
+      () async {
+        final requests = <http.Request>[];
+        final sender = SupabaseSyncRemoteSender(
+          database: _testDatabase(),
+          config: const SupabaseAppConfig(
+            supabaseUrl: 'https://smoo.test',
+            publishableKey: 'publishable-key',
+          ),
+          restaurantService: const CurrentRestaurantService(
+            restaurantId: 'restaurant-1',
+          ),
+          remoteSessionService: _remoteSession(),
+          client: MockClient((request) async {
+            requests.add(request);
+            return http.Response('', 204);
+          }),
+        );
+
+        await sender.push(
+          SyncQueueItem(
+            id: 'queue-product',
+            entityType: 'products',
+            entityId: 'product-chicken',
+            operation: SyncOperation.create,
+            payload: const {
+              'id': 'product-chicken',
+              'categoryId': 'category-food',
+              'name': 'Pollo',
+              'priceInCents': 18000,
+              'costInCents': 9500,
+              'isActive': true,
+              'isAvailableInPos': true,
+              'tracksInventory': false,
+              'optionGroups': [],
+              'modifierGroupIds': ['modifier-group-sides'],
+            },
+            status: SyncQueueStatus.pending,
+            retryCount: 0,
+            createdAt: DateTime(2026, 7),
+            updatedAt: DateTime(2026, 7),
+          ),
+        );
+
+        expect(requests.map((request) => request.method), [
+          'POST',
+          'DELETE',
+          'POST',
+        ]);
+        expect(requests[0].url.path, '/rest/v1/products');
+        expect(requests[1].url.path, '/rest/v1/product_modifier_groups');
+        expect(
+          requests[1].url.queryParameters['product_id'],
+          'eq.product-chicken',
+        );
+        expect(requests[2].url.path, '/rest/v1/product_modifier_groups');
+      },
+    );
+
+    test(
+      'removes all product modifier group assignments when none are selected',
+      () async {
+        final requests = <http.Request>[];
+        final sender = SupabaseSyncRemoteSender(
+          database: _testDatabase(),
+          config: const SupabaseAppConfig(
+            supabaseUrl: 'https://smoo.test',
+            publishableKey: 'publishable-key',
+          ),
+          restaurantService: const CurrentRestaurantService(
+            restaurantId: 'restaurant-1',
+          ),
+          remoteSessionService: _remoteSession(),
+          client: MockClient((request) async {
+            requests.add(request);
+            return http.Response('', 204);
+          }),
+        );
+
+        await sender.push(
+          SyncQueueItem(
+            id: 'queue-product',
+            entityType: 'products',
+            entityId: 'product-chicken',
+            operation: SyncOperation.create,
+            payload: const {
+              'id': 'product-chicken',
+              'categoryId': 'category-food',
+              'name': 'Pollo',
+              'priceInCents': 18000,
+              'costInCents': 9500,
+              'isActive': true,
+              'isAvailableInPos': true,
+              'tracksInventory': false,
+              'optionGroups': [],
+              'modifierGroupIds': [],
+            },
+            status: SyncQueueStatus.pending,
+            retryCount: 0,
+            createdAt: DateTime(2026, 7),
+            updatedAt: DateTime(2026, 7),
+          ),
+        );
+
+        expect(requests.map((request) => request.method), ['POST', 'DELETE']);
+        expect(requests[0].url.path, '/rest/v1/products');
+        expect(requests[1].url.path, '/rest/v1/product_modifier_groups');
+        expect(
+          requests[1].url.queryParameters['product_id'],
+          'eq.product-chicken',
+        );
+      },
+    );
+
+    test(
       'uses the current remote admin session when technical auth is absent',
       () async {
         final requests = <http.Request>[];

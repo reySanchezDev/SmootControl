@@ -5,7 +5,9 @@ import 'package:smoo_control/core/result/app_result.dart';
 import 'package:smoo_control/features/sync/data/datasources/local_sync_queue_datasource.dart';
 import 'package:smoo_control/features/sync/data/repositories/sync_queue_repository.dart';
 import 'package:smoo_control/features/sync/domain/entities/sync_queue_item.dart';
+import 'package:smoo_control/features/sync/domain/services/i_sync_remote_sender.dart';
 import 'package:smoo_control/features/tables/data/datasources/local_tables_datasource.dart';
+import 'package:smoo_control/features/tables/data/models/restaurant_table_model.dart';
 import 'package:smoo_control/features/tables/data/repositories/tables_repository.dart';
 import 'package:smoo_control/features/tables/domain/entities/restaurant_table.dart';
 import 'package:smoo_control/features/tables/domain/entities/table_account.dart';
@@ -77,5 +79,57 @@ void main() {
       expect(syncItem.entityType, 'table_accounts');
       expect(syncItem.entityId, account.id);
     });
+
+    test(
+      'saves POS display name locally without remote sync',
+      () async {
+        const table = RestaurantTable(
+          id: 'table-1',
+          name: 'Mesa 1',
+          status: RestaurantTableStatus.available,
+          isActive: true,
+        );
+        final remoteFirstRepository = TablesRepository(
+          LocalTablesDataSource(database),
+          syncQueueRepository: syncQueueRepository,
+          remoteSender: const _FailingRemoteSender(),
+        );
+        await LocalTablesDataSource(database).saveTable(
+          RestaurantTableModel.fromEntity(table),
+        );
+
+        const renamed = RestaurantTable(
+          id: 'table-1',
+          name: 'Mesa 1',
+          displayName: 'JOSE',
+          status: RestaurantTableStatus.available,
+          isActive: true,
+        );
+        final saveResult = await remoteFirstRepository.saveTableDisplayName(
+          renamed,
+        );
+        final readResult = await remoteFirstRepository.getTables();
+        final syncResult = await syncQueueRepository.getPendingItems();
+
+        expect(saveResult, isA<AppSuccess<RestaurantTable>>());
+        expect(
+          (readResult as AppSuccess<List<RestaurantTable>>)
+              .value
+              .single
+              .displayName,
+          'JOSE',
+        );
+        expect((syncResult as AppSuccess<List<SyncQueueItem>>).value, isEmpty);
+      },
+    );
   });
+}
+
+final class _FailingRemoteSender implements ISyncRemoteSender {
+  const _FailingRemoteSender();
+
+  @override
+  Future<void> push(SyncQueueItem item) {
+    throw StateError('remote failed');
+  }
 }

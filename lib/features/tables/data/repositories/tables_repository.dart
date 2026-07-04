@@ -64,6 +64,26 @@ final class TablesRepository implements ITablesRepository {
   }
 
   @override
+  Future<AppResult<RestaurantTable>> saveTableDisplayName(
+    RestaurantTable table,
+  ) async {
+    try {
+      final saved = await _localDataSource.saveTableDisplayName(
+        RestaurantTableModel.fromEntity(table),
+      );
+      return AppSuccess(saved.toEntity());
+    } on Object catch (error) {
+      return AppFailureResult(
+        AppFailure(
+          code: 'table_display_name_save_failed',
+          message: 'No se pudo guardar el nombre visible de la mesa.',
+          cause: error,
+        ),
+      );
+    }
+  }
+
+  @override
   Future<AppResult<List<TableAccount>>> getTableAccounts(String tableId) async {
     try {
       final accounts = await _localDataSource.getTableAccounts(tableId);

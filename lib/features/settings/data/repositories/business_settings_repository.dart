@@ -6,6 +6,7 @@ import 'package:smoo_control/features/settings/domain/entities/business_settings
 import 'package:smoo_control/features/settings/domain/repositories/i_business_settings_repository.dart';
 import 'package:smoo_control/features/sync/domain/entities/sync_queue_item.dart';
 import 'package:smoo_control/features/sync/domain/repositories/i_sync_queue_repository.dart';
+import 'package:smoo_control/features/sync/domain/services/i_sync_remote_sender.dart';
 
 /// Business settings repository backed by the local offline database.
 final class BusinessSettingsRepository implements IBusinessSettingsRepository {
@@ -13,10 +14,13 @@ final class BusinessSettingsRepository implements IBusinessSettingsRepository {
   const BusinessSettingsRepository(
     this._localDataSource, {
     ISyncQueueRepository? syncQueueRepository,
-  }) : _syncQueueRepository = syncQueueRepository;
+    ISyncRemoteSender? remoteSender,
+  }) : _syncQueueRepository = syncQueueRepository,
+       _remoteSender = remoteSender;
 
   final LocalBusinessSettingsDataSource _localDataSource;
   final ISyncQueueRepository? _syncQueueRepository;
+  final ISyncRemoteSender? _remoteSender;
 
   @override
   Future<AppResult<BusinessSettings>> getSettings() async {
@@ -41,9 +45,12 @@ final class BusinessSettingsRepository implements IBusinessSettingsRepository {
   }) async {
     try {
       final model = BusinessSettingsModel.fromEntity(settings);
+      if (syncRemote) {
+        await _pushSettingsRemote(settings);
+      }
       final saved = await _localDataSource.saveSettings(model);
       final entity = saved.toEntity();
-      if (syncRemote) {
+      if (syncRemote && _remoteSender == null) {
         await _enqueueSettings(entity);
       }
 
@@ -64,17 +71,41 @@ final class BusinessSettingsRepository implements IBusinessSettingsRepository {
       entityType: 'business_settings',
       entityId: 'default',
       operation: SyncOperation.update,
-      payload: {
-        'businessName': settings.businessName,
-        'legalName': settings.legalName,
-        'taxNumber': settings.taxNumber,
-        'phone': settings.phone,
-        'address': settings.address,
-        'showCompanyInfoOnReceipts': settings.showCompanyInfoOnReceipts,
-        'invoicePrefix': settings.invoicePrefix,
-        'initialInvoiceNumber': settings.initialInvoiceNumber,
-        'nextInvoiceNumber': settings.nextInvoiceNumber,
-      },
+      payload: _settingsPayload(settings),
     );
+  }
+
+  Future<void> _pushSettingsRemote(BusinessSettings settings) async {
+    final remoteSender = _remoteSender;
+    if (remoteSender == null) return;
+
+    final now = DateTime.now();
+    await remoteSender.push(
+      SyncQueueItem(
+        id: 'admin-direct-business_settings-default',
+        entityType: 'business_settings',
+        entityId: 'default',
+        operation: SyncOperation.update,
+        payload: _settingsPayload(settings),
+        status: SyncQueueStatus.pending,
+        retryCount: 0,
+        createdAt: now,
+        updatedAt: now,
+      ),
+    );
+  }
+
+  Map<String, Object?> _settingsPayload(BusinessSettings settings) {
+    return {
+      'businessName': settings.businessName,
+      'legalName': settings.legalName,
+      'taxNumber': settings.taxNumber,
+      'phone': settings.phone,
+      'address': settings.address,
+      'showCompanyInfoOnReceipts': settings.showCompanyInfoOnReceipts,
+      'invoicePrefix': settings.invoicePrefix,
+      'initialInvoiceNumber': settings.initialInvoiceNumber,
+      'nextInvoiceNumber': settings.nextInvoiceNumber,
+    };
   }
 }

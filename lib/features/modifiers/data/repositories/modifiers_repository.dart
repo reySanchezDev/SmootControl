@@ -111,6 +111,26 @@ final class ModifiersRepository implements IModifiersRepository {
     }
   }
 
+  @override
+  Future<AppResult<ModifierOption>> saveOptionAvailability(
+    ModifierOption option,
+  ) async {
+    try {
+      final saved = await _localDataSource.saveOption(
+        ModifierOptionModel.fromEntity(option),
+      );
+      return AppSuccess(saved.toEntity());
+    } on Object catch (error) {
+      return AppFailureResult(
+        AppFailure(
+          code: 'modifier_option_availability_save_failed',
+          message: 'No se pudo guardar la disponibilidad del modificador.',
+          cause: error,
+        ),
+      );
+    }
+  }
+
   Map<String, Object?> _groupPayload(ModifierGroup group) {
     return {
       'id': group.id,

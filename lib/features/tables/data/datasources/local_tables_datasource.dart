@@ -40,6 +40,24 @@ final class LocalTablesDataSource {
     return table;
   }
 
+  /// Updates only the local operational display name of a table.
+  Future<RestaurantTableModel> saveTableDisplayName(
+    RestaurantTableModel table,
+  ) async {
+    final now = DateTime.now();
+
+    await (_database.update(
+      _database.localRestaurantTables,
+    )..where((row) => row.id.equals(table.id))).write(
+      LocalRestaurantTablesCompanion(
+        displayName: Value(table.displayName),
+        updatedAt: Value(now),
+      ),
+    );
+
+    return table;
+  }
+
   /// Returns named accounts for a table.
   Future<List<TableAccountModel>> getTableAccounts(String tableId) async {
     final query = _database.select(_database.localTableAccounts)

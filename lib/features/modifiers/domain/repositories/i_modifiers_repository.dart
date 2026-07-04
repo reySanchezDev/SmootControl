@@ -13,4 +13,9 @@ abstract interface class IModifiersRepository {
 
   /// Saves a modifier option.
   Future<AppResult<ModifierOption>> saveOption(ModifierOption option);
+
+  /// Saves only the local POS availability for a modifier option.
+  Future<AppResult<ModifierOption>> saveOptionAvailability(
+    ModifierOption option,
+  );
 }

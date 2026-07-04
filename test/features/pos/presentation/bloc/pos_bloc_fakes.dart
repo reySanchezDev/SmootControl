@@ -80,6 +80,13 @@ final class _TablesRepositoryFake implements ITablesRepository {
   }
 
   @override
+  Future<AppResult<RestaurantTable>> saveTableDisplayName(
+    RestaurantTable table,
+  ) async {
+    return AppSuccess(table);
+  }
+
+  @override
   Future<AppResult<List<TableAccount>>> getTableAccounts(String tableId) async {
     return const AppSuccess([]);
   }
@@ -132,6 +139,13 @@ final class _ModifiersRepositoryFake implements IModifiersRepository {
 
   @override
   Future<AppResult<ModifierOption>> saveOption(ModifierOption option) async {
+    return AppSuccess(option);
+  }
+
+  @override
+  Future<AppResult<ModifierOption>> saveOptionAvailability(
+    ModifierOption option,
+  ) async {
     return AppSuccess(option);
   }
 }

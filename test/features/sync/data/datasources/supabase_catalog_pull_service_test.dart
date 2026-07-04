@@ -230,6 +230,55 @@ void main() {
     );
 
     test(
+      'preserves local modifier POS availability when catalog refreshes',
+      () async {
+        final now = DateTime(2026, 7);
+        await database
+            .into(database.localModifierGroups)
+            .insert(
+              LocalModifierGroupsCompanion.insert(
+                id: 'modifier-group-sides',
+                name: 'Guarniciones',
+                createdAt: now,
+                updatedAt: now,
+              ),
+            );
+        await database
+            .into(database.localModifierOptions)
+            .insert(
+              LocalModifierOptionsCompanion.insert(
+                id: 'modifier-option-beans',
+                groupId: 'modifier-group-sides',
+                name: 'Frijoles fritos',
+                isAvailableInPos: const Value(false),
+                createdAt: now,
+                updatedAt: now,
+              ),
+            );
+        final service = SupabaseCatalogPullService(
+          database: database,
+          config: const SupabaseAppConfig(
+            supabaseUrl: 'https://smoo.test',
+            publishableKey: 'publishable-key',
+          ),
+          restaurantService: const CurrentRestaurantService(
+            restaurantId: 'restaurant-1',
+          ),
+          remoteSessionService: _remoteSession(),
+          client: _catalogMockClient(),
+        );
+
+        await service.pullScopes({CatalogPullScope.modifiers});
+
+        final option = await database
+            .select(database.localModifierOptions)
+            .getSingle();
+        expect(option.isActive, isTrue);
+        expect(option.isAvailableInPos, isFalse);
+      },
+    );
+
+    test(
       'reports missing operational data after an incomplete restore',
       () async {
         final service = SupabaseCatalogPullService(

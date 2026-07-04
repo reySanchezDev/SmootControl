@@ -10,6 +10,11 @@ abstract interface class ITablesRepository {
   /// Saves a restaurant table.
   Future<AppResult<RestaurantTable>> saveTable(RestaurantTable table);
 
+  /// Saves only the local operational display name used by the POS.
+  Future<AppResult<RestaurantTable>> saveTableDisplayName(
+    RestaurantTable table,
+  );
+
   /// Returns named accounts for a table.
   Future<AppResult<List<TableAccount>>> getTableAccounts(String tableId);
 

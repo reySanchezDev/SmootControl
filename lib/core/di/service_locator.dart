@@ -296,6 +296,7 @@ Future<void> configureDependencies() async {
       () => BusinessSettingsRepository(
         serviceLocator<LocalBusinessSettingsDataSource>(),
         syncQueueRepository: serviceLocator<ISyncQueueRepository>(),
+        remoteSender: serviceLocator<ISyncRemoteSender>(),
       ),
     )
     ..registerFactory<BusinessSettingsBloc>(

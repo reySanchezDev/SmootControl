@@ -109,9 +109,8 @@ class _PosModifierAvailabilityPageState
       isActive: option.isActive,
       isAvailableInPos: available,
     );
-    final result = await serviceLocator<IModifiersRepository>().saveOption(
-      updated,
-    );
+    final result = await serviceLocator<IModifiersRepository>()
+        .saveOptionAvailability(updated);
 
     if (!mounted) return;
 

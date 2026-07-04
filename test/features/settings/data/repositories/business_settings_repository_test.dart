@@ -8,6 +8,7 @@ import 'package:smoo_control/features/settings/domain/entities/business_settings
 import 'package:smoo_control/features/sync/data/datasources/local_sync_queue_datasource.dart';
 import 'package:smoo_control/features/sync/data/repositories/sync_queue_repository.dart';
 import 'package:smoo_control/features/sync/domain/entities/sync_queue_item.dart';
+import 'package:smoo_control/features/sync/domain/services/i_sync_remote_sender.dart';
 
 void main() {
   group('BusinessSettingsRepository', () {
@@ -87,5 +88,40 @@ void main() {
       expect((readResult as AppSuccess<BusinessSettings>).value, settings);
       expect((syncResult as AppSuccess<List<SyncQueueItem>>).value, isEmpty);
     });
+
+    test('does not save local settings when remote-first push fails', () async {
+      repository = BusinessSettingsRepository(
+        LocalBusinessSettingsDataSource(database),
+        syncQueueRepository: syncQueueRepository,
+        remoteSender: const _FailingRemoteSender(),
+      );
+      const settings = BusinessSettings(
+        businessName: 'Casa del Cafe',
+        showCompanyInfoOnReceipts: true,
+        invoicePrefix: 'F',
+        initialInvoiceNumber: 1,
+        nextInvoiceNumber: 1,
+      );
+
+      final saveResult = await repository.saveSettings(settings);
+      final readResult = await repository.getSettings();
+      final syncResult = await syncQueueRepository.getPendingItems();
+
+      expect(saveResult, isA<AppFailureResult<BusinessSettings>>());
+      expect(
+        (readResult as AppSuccess<BusinessSettings>).value,
+        BusinessSettings.empty,
+      );
+      expect((syncResult as AppSuccess<List<SyncQueueItem>>).value, isEmpty);
+    });
   });
+}
+
+final class _FailingRemoteSender implements ISyncRemoteSender {
+  const _FailingRemoteSender();
+
+  @override
+  Future<void> push(SyncQueueItem item) {
+    throw StateError('remote failed');
+  }
 }

@@ -101,6 +101,13 @@ final class _TablesRepositoryFake implements ITablesRepository {
   }
 
   @override
+  Future<AppResult<RestaurantTable>> saveTableDisplayName(
+    RestaurantTable table,
+  ) async {
+    return AppSuccess(table);
+  }
+
+  @override
   Future<AppResult<List<TableAccount>>> getTableAccounts(String tableId) async {
     return const AppSuccess([]);
   }
