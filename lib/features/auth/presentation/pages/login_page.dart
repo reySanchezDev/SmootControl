@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smoo_control/core/design_system/app_button.dart';
 import 'package:smoo_control/core/design_system/app_input.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
@@ -28,12 +31,22 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  static const _rememberPosEmailKey = 'auth.remember_pos_email';
+  static const _rememberedPosEmailKey = 'auth.remembered_pos_email';
+
   final _displayNameController = TextEditingController();
   final _emailController = TextEditingController();
   final _pinController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _remoteAdminMode = false;
+  bool _rememberPosEmail = false;
   String? _localError;
+
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_loadRememberedPosEmail());
+  }
 
   @override
   void dispose() {
@@ -125,6 +138,23 @@ class _LoginPageState extends State<LoginPage> {
                           controller: _displayNameController,
                         ),
                         const SizedBox(height: 12),
+                      ],
+                      if (!widget.setupRequired && !_remoteAdminMode) ...[
+                        CheckboxListTile(
+                          contentPadding: EdgeInsets.zero,
+                          controlAffinity: ListTileControlAffinity.leading,
+                          dense: true,
+                          title: const Text('Recordar correo'),
+                          value: _rememberPosEmail,
+                          onChanged: (value) {
+                            final enabled = value ?? false;
+                            setState(() => _rememberPosEmail = enabled);
+                            if (!enabled) {
+                              unawaited(_clearRememberedPosEmail());
+                            }
+                          },
+                        ),
+                        const SizedBox(height: 4),
                       ],
                       AppInput(
                         label: l10n.emailField,
@@ -220,5 +250,40 @@ class _LoginPageState extends State<LoginPage> {
     context.read<AuthBloc>().add(
       AuthPinSignInRequested(email: email, pin: pin),
     );
+    unawaited(_persistRememberedPosEmail(email));
+  }
+
+  Future<void> _loadRememberedPosEmail() async {
+    final preferences = await SharedPreferences.getInstance();
+    if (!mounted) return;
+    final shouldRemember = preferences.getBool(_rememberPosEmailKey) ?? false;
+    final rememberedEmail = preferences.getString(_rememberedPosEmailKey);
+    setState(() {
+      _rememberPosEmail = shouldRemember;
+      if (shouldRemember &&
+          rememberedEmail != null &&
+          rememberedEmail.trim().isNotEmpty &&
+          _emailController.text.trim().isEmpty) {
+        _emailController.text = rememberedEmail;
+      }
+    });
+  }
+
+  Future<void> _persistRememberedPosEmail(String email) async {
+    final preferences = await SharedPreferences.getInstance();
+    if (_rememberPosEmail) {
+      await preferences.setBool(_rememberPosEmailKey, true);
+      await preferences.setString(_rememberedPosEmailKey, email);
+      return;
+    }
+
+    await preferences.setBool(_rememberPosEmailKey, false);
+    await preferences.remove(_rememberedPosEmailKey);
+  }
+
+  Future<void> _clearRememberedPosEmail() async {
+    final preferences = await SharedPreferences.getInstance();
+    await preferences.setBool(_rememberPosEmailKey, false);
+    await preferences.remove(_rememberedPosEmailKey);
   }
 }

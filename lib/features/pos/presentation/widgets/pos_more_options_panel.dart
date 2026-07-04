@@ -75,115 +75,119 @@ class PosMoreOptionsPanel extends StatelessWidget {
       builder: (dialogContext) {
         final dialog = StatefulBuilder(
           builder: (dialogContext, setDialogState) {
-            return ResponsiveTouchDialogFrame(
-              maxWidth: compactOperationalMode ? 540 : 420,
-              title: Row(
-                children: [
-                  Expanded(
-                    child: AppText(
-                      l10n.moreOptionsAction,
-                      variant: AppTextVariant.titleMedium,
+            return Stack(
+              children: [
+                ResponsiveTouchDialogFrame(
+                  maxWidth: compactOperationalMode ? 540 : 420,
+                  title: AppText(
+                    l10n.moreOptionsAction,
+                    variant: AppTextVariant.titleMedium,
+                  ),
+                  content: Padding(
+                    padding: EdgeInsets.only(
+                      bottom: compactOperationalMode ? 74 : 0,
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (compactOperationalMode) ...[
+                          _CompactSectionTitle(label: l10n.paymentMethodField),
+                          SizedBox(
+                            height: 168,
+                            child: PosPaymentSection(
+                              onPaymentCompleted: () {
+                                Navigator.of(dialogContext).pop();
+                              },
+                              onPaymentParentChanged: (parentKey) {
+                                setDialogState(() {
+                                  dialogPaymentParentKey = parentKey;
+                                });
+                                onPaymentParentChanged?.call(parentKey);
+                              },
+                              paymentParentKey: dialogPaymentParentKey,
+                              state: state,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          _CompactSectionTitle(label: l10n.splitAccountsAction),
+                          _MoreOptionButton(
+                            label: l10n.splitAccountsAction,
+                            tone: _MoreOptionButtonTone.neutral,
+                            onPressed: () => Navigator.of(dialogContext).pop(
+                              _MoreOptionAction.splitAccounts,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          _MoreOptionButton(
+                            label: l10n.clearCartAction,
+                            tone: _MoreOptionButtonTone.danger,
+                            onPressed: () => Navigator.of(dialogContext).pop(
+                              _MoreOptionAction.clearCart,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          _CompactSectionTitle(label: l10n.moreOptionsAction),
+                        ],
+                        _MoreOptionButton(
+                          label: 'Modificadores Disponibles',
+                          tone: _MoreOptionButtonTone.neutral,
+                          onPressed: () => Navigator.of(dialogContext).pop(
+                            _MoreOptionAction.modifierAvailability,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        _MoreOptionButton(
+                          label: l10n.posRegisterExpenseAction,
+                          tone: _MoreOptionButtonTone.neutral,
+                          onPressed: () => Navigator.of(dialogContext).pop(
+                            _MoreOptionAction.registerExpense,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        _MoreOptionButton(
+                          label: 'Sincronizar datos',
+                          tone: _MoreOptionButtonTone.neutral,
+                          onPressed: () => Navigator.of(dialogContext).pop(
+                            _MoreOptionAction.syncData,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        _MoreOptionButton(
+                          label: l10n.posViewTransactionsAction,
+                          tone: _MoreOptionButtonTone.neutral,
+                          onPressed: () => Navigator.of(dialogContext).pop(
+                            _MoreOptionAction.viewTransactions,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        _MoreOptionButton(
+                          label: l10n.posCloseCashRegisterAction,
+                          tone: _MoreOptionButtonTone.danger,
+                          onPressed: () => Navigator.of(dialogContext).pop(
+                            _MoreOptionAction.closeCashRegister,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        _MoreOptionButton(
+                          label: l10n.posExitAction,
+                          tone: _MoreOptionButtonTone.neutral,
+                          onPressed: () => Navigator.of(dialogContext).pop(
+                            _MoreOptionAction.exit,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () => Navigator.of(dialogContext).pop(),
-                    tooltip: MaterialLocalizations.of(
-                      dialogContext,
-                    ).closeButtonTooltip,
-                  ),
-                ],
-              ),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (compactOperationalMode) ...[
-                    _CompactSectionTitle(label: l10n.paymentMethodField),
-                    SizedBox(
-                      height: 168,
-                      child: PosPaymentSection(
-                        onPaymentCompleted: () {
-                          Navigator.of(dialogContext).pop();
-                        },
-                        onPaymentParentChanged: (parentKey) {
-                          setDialogState(() {
-                            dialogPaymentParentKey = parentKey;
-                          });
-                          onPaymentParentChanged?.call(parentKey);
-                        },
-                        paymentParentKey: dialogPaymentParentKey,
-                        state: state,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    _CompactSectionTitle(label: l10n.splitAccountsAction),
-                    _MoreOptionButton(
-                      label: l10n.splitAccountsAction,
-                      tone: _MoreOptionButtonTone.neutral,
-                      onPressed: () => Navigator.of(dialogContext).pop(
-                        _MoreOptionAction.splitAccounts,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    _MoreOptionButton(
-                      label: l10n.clearCartAction,
-                      tone: _MoreOptionButtonTone.danger,
-                      onPressed: () => Navigator.of(dialogContext).pop(
-                        _MoreOptionAction.clearCart,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    _CompactSectionTitle(label: l10n.moreOptionsAction),
-                  ],
-                  _MoreOptionButton(
-                    label: 'Modificadores Disponibles',
-                    tone: _MoreOptionButtonTone.neutral,
-                    onPressed: () => Navigator.of(dialogContext).pop(
-                      _MoreOptionAction.modifierAvailability,
+                ),
+                if (compactOperationalMode)
+                  Positioned(
+                    right: 24,
+                    bottom: 24,
+                    child: _FloatingMoreOptionsCloseButton(
+                      onPressed: () => Navigator.of(dialogContext).pop(),
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  _MoreOptionButton(
-                    label: l10n.posRegisterExpenseAction,
-                    tone: _MoreOptionButtonTone.neutral,
-                    onPressed: () => Navigator.of(dialogContext).pop(
-                      _MoreOptionAction.registerExpense,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  _MoreOptionButton(
-                    label: 'Sincronizar datos',
-                    tone: _MoreOptionButtonTone.neutral,
-                    onPressed: () => Navigator.of(dialogContext).pop(
-                      _MoreOptionAction.syncData,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  _MoreOptionButton(
-                    label: l10n.posViewTransactionsAction,
-                    tone: _MoreOptionButtonTone.neutral,
-                    onPressed: () => Navigator.of(dialogContext).pop(
-                      _MoreOptionAction.viewTransactions,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  _MoreOptionButton(
-                    label: l10n.posCloseCashRegisterAction,
-                    tone: _MoreOptionButtonTone.danger,
-                    onPressed: () => Navigator.of(dialogContext).pop(
-                      _MoreOptionAction.closeCashRegister,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  _MoreOptionButton(
-                    label: l10n.posExitAction,
-                    tone: _MoreOptionButtonTone.neutral,
-                    onPressed: () => Navigator.of(dialogContext).pop(
-                      _MoreOptionAction.exit,
-                    ),
-                  ),
-                ],
-              ),
+              ],
             );
           },
         );
@@ -464,6 +468,32 @@ class _MoreOptionButton extends StatelessWidget {
           style: TextStyle(color: colors.foreground),
           textAlign: TextAlign.center,
           variant: AppTextVariant.label,
+        ),
+      ),
+    );
+  }
+}
+
+class _FloatingMoreOptionsCloseButton extends StatelessWidget {
+  const _FloatingMoreOptionsCloseButton({required this.onPressed});
+
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Material(
+      color: colorScheme.errorContainer,
+      elevation: 6,
+      shadowColor: colorScheme.error.withValues(alpha: 0.24),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(18),
+        onTap: onPressed,
+        child: SizedBox(
+          height: 56,
+          width: 56,
+          child: Icon(Icons.close, color: colorScheme.onErrorContainer),
         ),
       ),
     );

@@ -46,11 +46,7 @@ void main() {
 
       expect(saveResult, isA<AppSuccess<AppUserProfile>>());
       expect((readResult as AppSuccess<List<AppUserProfile>>).value, [user]);
-      final syncItem =
-          (syncResult as AppSuccess<List<SyncQueueItem>>).value.single;
-      expect(syncItem.entityType, 'profiles');
-      expect(syncItem.entityId, user.id);
-      expect(syncItem.payload['roleId'], user.roleId);
+      expect((syncResult as AppSuccess<List<SyncQueueItem>>).value, isEmpty);
     });
   });
 }

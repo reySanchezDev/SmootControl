@@ -513,6 +513,8 @@ void main() {
     await tester.tap(find.text('More options'));
     await tester.pumpAndSettle();
 
+    expect(find.byIcon(Icons.close), findsOneWidget);
+
     final modifiersRect = tester.getRect(
       find.text('Modificadores Disponibles'),
     );
@@ -529,6 +531,11 @@ void main() {
       clearText.style?.color,
       Theme.of(clearContext).colorScheme.onError,
     );
+
+    await tester.tap(find.byIcon(Icons.close));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Modificadores Disponibles'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 }

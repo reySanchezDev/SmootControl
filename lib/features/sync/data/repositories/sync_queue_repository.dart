@@ -174,7 +174,8 @@ final class SyncQueueRepository implements ISyncQueueRepository {
   }
 
   bool _isLocalOnlyAccessControlEntity(String entityType) {
-    return entityType == 'permissions' ||
+    return entityType == 'profiles' ||
+        entityType == 'permissions' ||
         entityType == 'roles' ||
         entityType == 'role_permissions';
   }
