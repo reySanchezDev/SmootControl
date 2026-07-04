@@ -46,7 +46,11 @@ void main() {
 
       expect(saveResult, isA<AppSuccess<AppUserProfile>>());
       expect((readResult as AppSuccess<List<AppUserProfile>>).value, [user]);
-      expect((syncResult as AppSuccess<List<SyncQueueItem>>).value, isEmpty);
+      final syncItem =
+          (syncResult as AppSuccess<List<SyncQueueItem>>).value.single;
+      expect(syncItem.entityType, 'profiles');
+      expect(syncItem.entityId, user.id);
+      expect(syncItem.payload['roleId'], 'role-admin');
     });
   });
 }

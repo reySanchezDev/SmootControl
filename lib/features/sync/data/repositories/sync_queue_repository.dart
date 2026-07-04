@@ -51,22 +51,6 @@ final class SyncQueueRepository implements ISyncQueueRepository {
         updatedAt: now,
       );
 
-      if (_isLocalOnlyAccessControlEntity(entityType)) {
-        return AppSuccess(
-          SyncQueueItemModel(
-            id: item.id,
-            entityType: item.entityType,
-            entityId: item.entityId,
-            operation: item.operation,
-            payload: item.payload,
-            status: SyncQueueStatus.synced,
-            retryCount: item.retryCount,
-            createdAt: item.createdAt,
-            updatedAt: item.updatedAt,
-          ).toEntity(),
-        );
-      }
-
       final saved = await _localDataSource.saveItem(item);
       unawaited(_trySyncImmediately(saved.toEntity()));
 
@@ -88,16 +72,7 @@ final class SyncQueueRepository implements ISyncQueueRepository {
   }) async {
     try {
       final items = await _localDataSource.getPendingItems(limit: limit);
-      final visibleItems = <SyncQueueItemModel>[];
-      for (final item in items) {
-        if (_isLocalOnlyAccessControlEntity(item.entityType)) {
-          await _localDataSource.markSynced(item.id);
-          continue;
-        }
-        visibleItems.add(item);
-      }
-
-      return AppSuccess(visibleItems.map((item) => item.toEntity()).toList());
+      return AppSuccess(items.map((item) => item.toEntity()).toList());
     } on Object catch (error) {
       return AppFailureResult(
         AppFailure(
@@ -171,12 +146,5 @@ final class SyncQueueRepository implements ISyncQueueRepository {
         ),
       );
     }
-  }
-
-  bool _isLocalOnlyAccessControlEntity(String entityType) {
-    return entityType == 'profiles' ||
-        entityType == 'permissions' ||
-        entityType == 'roles' ||
-        entityType == 'role_permissions';
   }
 }

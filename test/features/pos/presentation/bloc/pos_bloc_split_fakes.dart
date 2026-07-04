@@ -181,8 +181,9 @@ final class _SettingsFake implements IBusinessSettingsRepository {
 
   @override
   Future<AppResult<BusinessSettings>> saveSettings(
-    BusinessSettings settings,
-  ) async {
+    BusinessSettings settings, {
+    bool syncRemote = true,
+  }) async {
     _settings = settings;
     return AppSuccess(settings);
   }

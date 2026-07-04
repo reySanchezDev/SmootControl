@@ -316,6 +316,8 @@ final class _BusinessSettingsRepositoryFake
     nextInvoiceNumber: 1,
   );
 
+  BusinessSettings get current => _settings;
+
   @override
   Future<AppResult<BusinessSettings>> getSettings() async {
     return AppSuccess(_settings);
@@ -323,8 +325,9 @@ final class _BusinessSettingsRepositoryFake
 
   @override
   Future<AppResult<BusinessSettings>> saveSettings(
-    BusinessSettings settings,
-  ) async {
+    BusinessSettings settings, {
+    bool syncRemote = true,
+  }) async {
     _settings = settings;
     return AppSuccess(settings);
   }

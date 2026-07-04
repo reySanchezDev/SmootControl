@@ -56,8 +56,9 @@ final class _BusinessSettingsRepositoryFake
 
   @override
   Future<AppResult<BusinessSettings>> saveSettings(
-    BusinessSettings settings,
-  ) async {
+    BusinessSettings settings, {
+    bool syncRemote = true,
+  }) async {
     return AppSuccess(settings);
   }
 }

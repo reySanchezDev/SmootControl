@@ -27,13 +27,13 @@ Future<void> _saveSelectedSplitAccountSale(
   );
   if (cashRegisterSessionId == _failedCashSessionLookup) return;
 
-  final invoiceNumbers = await _reserveInvoiceNumbers(
+  final invoiceReservation = await _prepareInvoiceNumbers(
     bloc: bloc,
     count: 1,
     current: current,
     emit: emit,
   );
-  if (invoiceNumbers == null) return;
+  if (invoiceReservation == null) return;
 
   final accountsResult = await bloc._tablesRepository.saveTableAccounts([
     TableAccount(
@@ -64,7 +64,7 @@ Future<void> _saveSelectedSplitAccountSale(
   final total = items.fold(0, (sum, item) => sum + item.totalInCents);
   final sale = Sale(
     id: saleId,
-    invoiceNumber: invoiceNumbers.single,
+    invoiceNumber: invoiceReservation.invoiceNumbers.single,
     tableId: current.selectedTableId,
     tableAccountId: account.id,
     cashRegisterSessionId: cashRegisterSessionId,
@@ -82,6 +82,12 @@ Future<void> _saveSelectedSplitAccountSale(
   final result = await bloc._salesRepository.saveSale(sale: sale, items: items);
   switch (result) {
     case AppSuccess(:final value):
+      await _commitInvoiceNumbers(
+        bloc: bloc,
+        invoiceNumbers: invoiceReservation.invoiceNumbers,
+        current: current,
+        emit: emit,
+      );
       var next = _stateAfterSplitAccountPayment(current, account, value);
       if (next.splitAccounts.isEmpty) {
         final ticketCleared = await _clearPersistedActiveTicket(

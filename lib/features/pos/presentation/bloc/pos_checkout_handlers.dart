@@ -47,20 +47,20 @@ Future<void> _saveSingleSale(
   );
   if (cashRegisterSessionId == _failedCashSessionLookup) return;
 
-  final invoiceNumbers = await _reserveInvoiceNumbers(
+  final invoiceReservation = await _prepareInvoiceNumbers(
     bloc: bloc,
     count: 1,
     current: current,
     emit: emit,
   );
-  if (invoiceNumbers == null) return;
+  if (invoiceReservation == null) return;
 
   final now = DateTime.now();
   final saleId = const Uuid().v4();
   final salesType = current.selectedSalesType;
   final sale = Sale(
     id: saleId,
-    invoiceNumber: invoiceNumbers.single,
+    invoiceNumber: invoiceReservation.invoiceNumbers.single,
     tableId: current.selectedTableId,
     cashRegisterSessionId: cashRegisterSessionId,
     paymentMethodId: current.selectedPaymentMethodId!,
@@ -84,6 +84,12 @@ Future<void> _saveSingleSale(
   final result = await bloc._salesRepository.saveSale(sale: sale, items: items);
   switch (result) {
     case AppSuccess(:final value):
+      await _commitInvoiceNumbers(
+        bloc: bloc,
+        invoiceNumbers: invoiceReservation.invoiceNumbers,
+        current: current,
+        emit: emit,
+      );
       final ticketCleared = await _clearPersistedActiveTicket(
         bloc,
         current,
@@ -180,13 +186,13 @@ Future<void> _saveSplitSales(
   );
   if (cashRegisterSessionId == _failedCashSessionLookup) return;
 
-  final invoiceNumbers = await _reserveInvoiceNumbers(
+  final invoiceReservation = await _prepareInvoiceNumbers(
     bloc: bloc,
     count: current.splitAccounts.length,
     current: current,
     emit: emit,
   );
-  if (invoiceNumbers == null) return;
+  if (invoiceReservation == null) return;
 
   final accounts = [
     for (final account in current.splitAccounts)
@@ -224,7 +230,7 @@ Future<void> _saveSplitSales(
     final total = items.fold(0, (sum, item) => sum + item.totalInCents);
     final sale = Sale(
       id: saleId,
-      invoiceNumber: invoiceNumbers[index],
+      invoiceNumber: invoiceReservation.invoiceNumbers[index],
       tableId: current.selectedTableId,
       tableAccountId: account.id,
       cashRegisterSessionId: cashRegisterSessionId,
@@ -246,6 +252,12 @@ Future<void> _saveSplitSales(
     switch (result) {
       case AppSuccess(:final value):
         savedSales.add(value);
+        await _commitInvoiceNumbers(
+          bloc: bloc,
+          invoiceNumbers: [invoiceReservation.invoiceNumbers[index]],
+          current: current,
+          emit: emit,
+        );
       case AppFailureResult(:final error):
         emit(PosFailure(error));
         emit(current);

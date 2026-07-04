@@ -99,17 +99,13 @@ final class SupabaseSyncRemoteSender implements ISyncRemoteSender {
       case 'audit_logs':
         await _upsert('audit_logs', _auditLogPayload(item));
       case 'profiles':
-        await _upsert('profiles', _profilePayload(item));
+        await _pushProfile(item);
       case 'roles':
-        await _upsert('roles', _rolePayload(item));
+        await _pushRole(item);
       case 'role_permissions':
         await _replaceRolePermissions(item);
       case 'permissions':
-        await _upsert(
-          'permissions',
-          _permissionPayload(item),
-          conflictColumn: 'code',
-        );
+        await _pushPermission(item);
       default:
         throw UnsupportedError(
           'Entidad no soportada para sync remoto: ${item.entityType}.',
@@ -190,45 +186,28 @@ final class SupabaseSyncRemoteSender implements ISyncRemoteSender {
       item.payload['permissionCodes'],
     ).toSet();
 
-    await _deleteWhere(
-      'role_permissions',
-      {'role_id': 'eq.${item.entityId}'},
-    );
-
-    if (permissionCodes.isEmpty) return;
-
-    final permissions = await _getRows('permissions', {
-      'code': 'in.(${permissionCodes.join(',')})',
-      'select': 'id,code',
+    await _adminRpc('app_replace_role_permissions', {
+      'p_role_id': item.entityId,
+      'p_permission_codes': permissionCodes.toList()..sort(),
     });
-    final permissionIdByCode = <String, String>{};
-    for (final permission in permissions) {
-      final code = _optionalText(permission['code']);
-      final id = _optionalText(permission['id']);
-      if (code != null && id != null) permissionIdByCode[code] = id;
-    }
+  }
 
-    final missingCodes =
-        permissionCodes
-            .where((code) => !permissionIdByCode.containsKey(code))
-            .toList()
-          ..sort();
-    if (missingCodes.isNotEmpty) {
-      throw StateError(
-        'Permisos remotos no encontrados: ${missingCodes.join(', ')}.',
-      );
-    }
+  Future<void> _pushPermission(SyncQueueItem item) async {
+    await _adminRpc('app_upsert_permission', {
+      'p_payload': _permissionPayload(item),
+    });
+  }
 
-    for (final code in permissionCodes) {
-      await _upsert(
-        'role_permissions',
-        {
-          'role_id': item.entityId,
-          'permission_id': permissionIdByCode[code],
-        },
-        conflictColumn: 'role_id,permission_id',
-      );
-    }
+  Future<void> _pushProfile(SyncQueueItem item) async {
+    await _adminRpc('app_upsert_profile', {
+      'p_payload': _profilePayload(item),
+    });
+  }
+
+  Future<void> _pushRole(SyncQueueItem item) async {
+    await _adminRpc('app_upsert_role', {
+      'p_payload': _rolePayload(item),
+    });
   }
 
   Future<void> _pushProductCategory(SyncQueueItem item) async {
@@ -964,14 +943,6 @@ final class SupabaseSyncRemoteSender implements ISyncRemoteSender {
     _ensureSuccess(response, table);
   }
 
-  Future<void> _deleteWhere(String table, Map<String, String> query) async {
-    final response = await _client.delete(
-      _config.restUri(table, query),
-      headers: await _headers(prefer: 'return=minimal'),
-    );
-    _ensureSuccess(response, table);
-  }
-
   Future<void> _patchWhere(
     String table,
     Map<String, Object?> payload,
@@ -1065,6 +1036,28 @@ final class SupabaseSyncRemoteSender implements ISyncRemoteSender {
   }
 
   String get _restaurantId => _restaurantService.restaurantId;
+
+  Future<Map<String, Object?>> _adminRpc(
+    String functionName,
+    Map<String, Object?> body,
+  ) async {
+    final response = await _client.post(
+      _config.rpcUri(functionName),
+      headers: await _headers(),
+      body: jsonEncode({
+        'p_restaurant_id': _restaurantId,
+        ...body,
+      }),
+    );
+    _ensureSuccess(response, functionName);
+    if (response.body.trim().isEmpty) return const {};
+    final decoded = jsonDecode(response.body);
+    if (decoded is Map<String, Object?>) return decoded;
+    if (decoded is Map) {
+      return decoded.map((key, value) => MapEntry(key.toString(), value));
+    }
+    return const {};
+  }
 
   Future<Map<String, Object?>> _deviceRpc(
     String functionName,

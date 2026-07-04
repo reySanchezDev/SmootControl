@@ -36,13 +36,16 @@ final class BusinessSettingsRepository implements IBusinessSettingsRepository {
 
   @override
   Future<AppResult<BusinessSettings>> saveSettings(
-    BusinessSettings settings,
-  ) async {
+    BusinessSettings settings, {
+    bool syncRemote = true,
+  }) async {
     try {
       final model = BusinessSettingsModel.fromEntity(settings);
       final saved = await _localDataSource.saveSettings(model);
       final entity = saved.toEntity();
-      await _enqueueSettings(entity);
+      if (syncRemote) {
+        await _enqueueSettings(entity);
+      }
 
       return AppSuccess(entity);
     } on Object catch (error) {

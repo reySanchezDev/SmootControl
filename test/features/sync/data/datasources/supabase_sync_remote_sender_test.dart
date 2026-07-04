@@ -131,6 +131,118 @@ void main() {
       expect(body['p_movement_type'], 'sale');
     });
 
+    test('pushes admin access-control writes through RPCs', () async {
+      final requests = <http.Request>[];
+      final sender = SupabaseSyncRemoteSender(
+        database: _testDatabase(),
+        config: const SupabaseAppConfig(
+          supabaseUrl: 'https://smoo.test',
+          publishableKey: 'publishable-key',
+        ),
+        restaurantService: const CurrentRestaurantService(
+          restaurantId: '11111111-1111-4111-8111-111111111111',
+        ),
+        remoteSessionService: _remoteSession(),
+        client: MockClient((request) async {
+          requests.add(request);
+          return http.Response('{}', 200);
+        }),
+      );
+
+      await sender.push(
+        SyncQueueItem(
+          id: 'queue-role',
+          entityType: 'roles',
+          entityId: 'role-waiter',
+          operation: SyncOperation.create,
+          payload: const {
+            'id': 'role-waiter',
+            'name': 'Mesero',
+            'description': 'Atiende mesas',
+            'isSystem': true,
+            'isActive': true,
+          },
+          status: SyncQueueStatus.pending,
+          retryCount: 0,
+          createdAt: DateTime(2026, 7),
+          updatedAt: DateTime(2026, 7),
+        ),
+      );
+      await sender.push(
+        SyncQueueItem(
+          id: 'queue-role-permissions',
+          entityType: 'role_permissions',
+          entityId: 'role-waiter',
+          operation: SyncOperation.update,
+          payload: const {
+            'roleId': 'role-waiter',
+            'permissionCodes': ['sync.ejecutar', 'ventas.registrar'],
+          },
+          status: SyncQueueStatus.pending,
+          retryCount: 0,
+          createdAt: DateTime(2026, 7),
+          updatedAt: DateTime(2026, 7),
+        ),
+      );
+      await sender.push(
+        SyncQueueItem(
+          id: 'queue-profile',
+          entityType: 'profiles',
+          entityId: '22222222-2222-4222-8222-222222222222',
+          operation: SyncOperation.create,
+          payload: const {
+            'id': '22222222-2222-4222-8222-222222222222',
+            'displayName': 'Rey',
+            'email': 'rey@smoo.test',
+            'roleId': 'role-waiter',
+            'isPosUser': true,
+            'isActive': true,
+            'pinSalt': 'salt',
+            'pinHash': 'hash',
+          },
+          status: SyncQueueStatus.pending,
+          retryCount: 0,
+          createdAt: DateTime(2026, 7),
+          updatedAt: DateTime(2026, 7),
+        ),
+      );
+
+      expect(requests.map((request) => request.url.path), [
+        '/rest/v1/rpc/app_upsert_role',
+        '/rest/v1/rpc/app_replace_role_permissions',
+        '/rest/v1/rpc/app_upsert_profile',
+      ]);
+      expect(
+        requests.every(
+          (request) => request.headers['authorization'] == 'Bearer owner-token',
+        ),
+        isTrue,
+      );
+
+      final roleBody = jsonDecode(requests.first.body) as Map<String, Object?>;
+      final rolePayload = roleBody['p_payload']! as Map<String, Object?>;
+      expect(
+        roleBody['p_restaurant_id'],
+        '11111111-1111-4111-8111-111111111111',
+      );
+      expect(rolePayload['id'], 'role-waiter');
+      expect(rolePayload['code'], 'waiter');
+
+      final permissionsBody =
+          jsonDecode(requests[1].body) as Map<String, Object?>;
+      expect(permissionsBody['p_role_id'], 'role-waiter');
+      expect(permissionsBody['p_permission_codes'], [
+        'sync.ejecutar',
+        'ventas.registrar',
+      ]);
+
+      final profileBody =
+          jsonDecode(requests.last.body) as Map<String, Object?>;
+      final profilePayload = profileBody['p_payload']! as Map<String, Object?>;
+      expect(profilePayload['role_id'], 'role-waiter');
+      expect(profilePayload['is_pos_user'], isTrue);
+    });
+
     test(
       'uses the current remote admin session when technical auth is absent',
       () async {

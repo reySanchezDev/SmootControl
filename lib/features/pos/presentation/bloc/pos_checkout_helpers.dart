@@ -44,7 +44,13 @@ String _emitCashSessionFailure({
   return _failedCashSessionLookup;
 }
 
-Future<List<String>?> _reserveInvoiceNumbers({
+final class _InvoiceReservation {
+  const _InvoiceReservation(this.invoiceNumbers);
+
+  final List<String> invoiceNumbers;
+}
+
+Future<_InvoiceReservation?> _prepareInvoiceNumbers({
   required PosBloc bloc,
   required int count,
   required PosReady current,
@@ -73,17 +79,59 @@ Future<List<String>?> _reserveInvoiceNumbers({
     for (var index = 0; index < count; index += 1)
       '$prefix$separator${firstNumber + index}',
   ];
-  final saveResult = await bloc._settingsRepository.saveSettings(
-    settings.copyWith(nextInvoiceNumber: firstNumber + count),
-  );
 
+  return _InvoiceReservation(numbers);
+}
+
+Future<void> _commitInvoiceNumbers({
+  required PosBloc bloc,
+  required List<String> invoiceNumbers,
+  required PosReady current,
+  required Emitter<PosState> emit,
+}) async {
+  if (invoiceNumbers.isEmpty) return;
+
+  final nextNumbers = invoiceNumbers
+      .map(_nextInvoiceNumberAfter)
+      .whereType<int>()
+      .toList();
+  if (nextNumbers.isEmpty) return;
+
+  final settingsResult = await bloc._settingsRepository.getSettings();
+  final currentSettings = switch (settingsResult) {
+    AppSuccess(:final value) => value,
+    AppFailureResult(:final error) => _emitReservationFailure(
+      emit: emit,
+      current: current,
+      error: error,
+    ),
+  };
+  if (currentSettings == null) return;
+
+  final nextInvoiceNumber = nextNumbers.fold<int>(
+    currentSettings.nextInvoiceNumber,
+    (current, nextNumber) => nextNumber > current ? nextNumber : current,
+  );
+  if (nextInvoiceNumber == currentSettings.nextInvoiceNumber) return;
+
+  final saveResult = await bloc._settingsRepository.saveSettings(
+    currentSettings.copyWith(nextInvoiceNumber: nextInvoiceNumber),
+    syncRemote: false,
+  );
   switch (saveResult) {
     case AppSuccess():
-      return numbers;
+      return;
     case AppFailureResult(:final error):
       _emitReservationFailure(emit: emit, current: current, error: error);
-      return null;
   }
+}
+
+int? _nextInvoiceNumberAfter(String invoiceNumber) {
+  final match = RegExp(r'(\d+)$').firstMatch(invoiceNumber.trim());
+  if (match == null) return null;
+  final value = int.tryParse(match.group(1)!);
+  if (value == null) return null;
+  return value + 1;
 }
 
 BusinessSettings? _emitReservationFailure({

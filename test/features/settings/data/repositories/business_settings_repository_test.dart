@@ -66,5 +66,26 @@ void main() {
       expect(syncItem.operation, SyncOperation.update);
       expect(syncItem.payload['businessName'], settings.businessName);
     });
+
+    test('can save the local invoice cursor without remote sync', () async {
+      const settings = BusinessSettings(
+        businessName: 'Casa del Cafe',
+        showCompanyInfoOnReceipts: true,
+        invoicePrefix: 'F',
+        initialInvoiceNumber: 1,
+        nextInvoiceNumber: 2,
+      );
+
+      final saveResult = await repository.saveSettings(
+        settings,
+        syncRemote: false,
+      );
+      final readResult = await repository.getSettings();
+      final syncResult = await syncQueueRepository.getPendingItems();
+
+      expect(saveResult, isA<AppSuccess<BusinessSettings>>());
+      expect((readResult as AppSuccess<BusinessSettings>).value, settings);
+      expect((syncResult as AppSuccess<List<SyncQueueItem>>).value, isEmpty);
+    });
   });
 }

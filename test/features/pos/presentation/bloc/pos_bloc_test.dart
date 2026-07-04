@@ -143,6 +143,7 @@ void main() {
       status: CashRegisterStatus.open,
     );
     late _SalesRepositoryFake sales;
+    late _BusinessSettingsRepositoryFake settings;
 
     PosBloc buildBloc({
       ICashRegisterRepository? cashRegisterRepository,
@@ -150,6 +151,7 @@ void main() {
       IPaymentMethodsRepository? paymentMethodsRepository,
       ISalesRepository? salesRepository,
       IInventoryRepository? inventoryRepository,
+      IBusinessSettingsRepository? settingsRepository,
     }) {
       return PosBloc(
         catalogRepository: const _CatalogRepositoryFake(
@@ -182,7 +184,8 @@ void main() {
         modifiersRepository: const _ModifiersRepositoryFake(),
         packagingRepository: const _PackagingRepositoryFake(),
         salesRepository: salesRepository ?? _SalesRepositoryFake(),
-        settingsRepository: _BusinessSettingsRepositoryFake(),
+        settingsRepository:
+            settingsRepository ?? _BusinessSettingsRepositoryFake(),
         cashRegisterRepository:
             cashRegisterRepository ?? _CashRegisterRepositoryFake(cashSession),
         auditLogRepository: _AuditLogRepositoryFake(),
@@ -561,6 +564,39 @@ void main() {
               'cash-session-1',
             ),
       ],
+    );
+
+    blocTest<PosBloc, PosState>(
+      'does not advance invoice number when checkout save fails',
+      build: () {
+        settings = _BusinessSettingsRepositoryFake();
+        return buildBloc(
+          settingsRepository: settings,
+          salesRepository: _FailingSalesRepositoryFake(
+            const AppFailure(
+              code: 'packaging_stock_insufficient',
+              message: 'Stock insuficiente de empaque: Bandeja.',
+            ),
+          ),
+        );
+      },
+      seed: () => PosReady(
+        products: const [product],
+        tables: const [table],
+        paymentMethods: const [method],
+        cartLines: const [PosCartLine(product: product, quantity: 1)],
+        selectedTableId: 'table-1',
+        selectedPaymentMethodId: 'cash',
+        openCashRegisterSession: cashSession,
+      ),
+      act: (bloc) => bloc.add(const PosCheckoutRequested()),
+      expect: () => [
+        isA<PosFailure>(),
+        isA<PosReady>(),
+      ],
+      verify: (_) {
+        expect(settings.current.nextInvoiceNumber, 1);
+      },
     );
 
     blocTest<PosBloc, PosState>(

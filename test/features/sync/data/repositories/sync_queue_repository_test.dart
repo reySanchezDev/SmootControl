@@ -47,7 +47,7 @@ void main() {
       expect(pending.single.status, SyncQueueStatus.pending);
     });
 
-    test('does not keep local access-control rows pending', () async {
+    test('keeps access-control rows pending for remote sync', () async {
       final enqueueResult = await repository.enqueue(
         entityType: 'profiles',
         entityId: 'user-admin',
@@ -55,8 +55,11 @@ void main() {
         payload: const {'email': 'admin@smoo.test'},
       );
       final newItem = (enqueueResult as AppSuccess<SyncQueueItem>).value;
-      expect(newItem.status, SyncQueueStatus.synced);
-      expect(await database.select(database.localSyncQueue).get(), isEmpty);
+      expect(newItem.status, SyncQueueStatus.pending);
+      expect(
+        await database.select(database.localSyncQueue).get(),
+        hasLength(1),
+      );
 
       final now = DateTime(2026, 6, 30, 20, 9);
       await database
@@ -78,8 +81,20 @@ void main() {
       final pending = (pendingResult as AppSuccess<List<SyncQueueItem>>).value;
       final rows = await database.select(database.localSyncQueue).get();
 
-      expect(pending, isEmpty);
-      expect(rows.single.status, SyncQueueStatus.synced.name);
+      expect(
+        pending.map((item) => item.entityId),
+        containsAll([
+          'user-admin',
+          'user-waiter',
+        ]),
+      );
+      expect(
+        rows.map((item) => item.status),
+        containsAll([
+          SyncQueueStatus.pending.name,
+          SyncQueueStatus.error.name,
+        ]),
+      );
     });
 
     test('updates queue item status locally', () async {

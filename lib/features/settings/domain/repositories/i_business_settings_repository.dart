@@ -7,5 +7,8 @@ abstract interface class IBusinessSettingsRepository {
   Future<AppResult<BusinessSettings>> getSettings();
 
   /// Saves business settings.
-  Future<AppResult<BusinessSettings>> saveSettings(BusinessSettings settings);
+  Future<AppResult<BusinessSettings>> saveSettings(
+    BusinessSettings settings, {
+    bool syncRemote = true,
+  });
 }
