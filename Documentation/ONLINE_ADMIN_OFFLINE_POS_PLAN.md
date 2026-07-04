@@ -162,6 +162,19 @@ Catalogos online-first implementados:
 - movimientos operativos del POS, como ventas, gastos registrados desde POS,
   cuentas de mesa y caja, siguen offline-first.
 
+Correccion de control de acceso administrativo:
+
+- usuarios, roles, permisos y asignaciones rol-permiso son parte del
+  backoffice online-first;
+- al guardar un rol o sus permisos, la operacion se envia primero a Supabase;
+- si Supabase rechaza el cambio, no se actualiza la cache local ni se muestra
+  como guardado real;
+- la cache local de roles/permisos solo existe para que el POS pueda operar y
+  para pintar pantallas despues de descargar datos, pero no es la verdad
+  administrativa;
+- el POS sigue actualizando su copia local con **Sincronizar datos** o durante
+  la inicializacion/restauracion del dispositivo.
+
 Resuelto posteriormente:
 
 - las eliminaciones jerarquicas remotas quedaron cubiertas en Fase 9 para

@@ -211,6 +211,11 @@ void main() {
             )
             .having((state) => state.tables, 'tables', [table])
             .having(
+              (state) => state.selectedTableId,
+              'selected table',
+              table.id,
+            )
+            .having(
               (state) => state.paymentMethods,
               'methods',
               [method, transferMethod],
@@ -702,12 +707,6 @@ void main() {
         bloc.add(const PosStarted());
         await readyLoaded;
 
-        final tableSelected = bloc.stream.firstWhere(
-          (state) => state is PosReady && state.selectedTableId == table.id,
-        );
-        bloc.add(PosTableSelected(table.id));
-        await tableSelected;
-
         final productAdded = bloc.stream.firstWhere(
           (state) => state is PosReady && state.cartLines.isNotEmpty,
         );
@@ -771,24 +770,20 @@ void main() {
           ),
         );
       },
-      act: (bloc) async {
-        bloc.add(const PosStarted());
-        await Future<void>.delayed(Duration.zero);
-        bloc.add(PosTableSelected(table.id));
-      },
-      wait: const Duration(milliseconds: 1),
+      act: (bloc) => bloc.add(const PosStarted()),
       expect: () => [
         const PosLoading(),
-        isA<PosReady>().having(
-          (state) => state.cartLinesByTable['table-1']?.single.quantity,
-          'persisted table quantity',
-          2,
-        ),
-        isA<PosReady>().having(
-          (state) => state.cartLines.single.quantity,
-          'selected table restored quantity',
-          2,
-        ),
+        isA<PosReady>()
+            .having(
+              (state) => state.cartLines.single.quantity,
+              'selected table restored quantity on start',
+              2,
+            )
+            .having(
+              (state) => state.selectedTableId,
+              'selected table',
+              table.id,
+            ),
       ],
     );
 

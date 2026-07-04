@@ -8,7 +8,6 @@ class _TicketTotalBand extends StatelessWidget {
     required this.salesTypes,
     required this.productsVisible,
     this.hideProductsVisibilityButtonOnPhone = false,
-    this.hideTotalOnPhone = false,
     this.selectedSalesTypeId,
     this.onProductsVisibilityToggled,
   });
@@ -16,7 +15,6 @@ class _TicketTotalBand extends StatelessWidget {
   final List<PosCartLine> lines;
   final List<SalesType> salesTypes;
   final bool hideProductsVisibilityButtonOnPhone;
-  final bool hideTotalOnPhone;
   final String? selectedSalesTypeId;
   final bool productsVisible;
   final VoidCallback? onProductsVisibilityToggled;
@@ -39,7 +37,6 @@ class _TicketTotalBand extends StatelessWidget {
                 onProductsVisibilityToggled: onProductsVisibilityToggled,
                 hideProductsVisibilityButton:
                     hideProductsVisibilityButtonOnPhone,
-                hideTotal: hideTotalOnPhone,
                 productsVisible: productsVisible,
                 salesTypes: salesTypes,
                 selectedSalesTypeId: selectedSalesTypeId,
@@ -129,7 +126,6 @@ class _TicketTotalBand extends StatelessWidget {
 class _MobileTicketTotalBand extends StatelessWidget {
   const _MobileTicketTotalBand({
     required this.hideProductsVisibilityButton,
-    required this.hideTotal,
     required this.productsVisible,
     required this.salesTypes,
     required this.total,
@@ -138,7 +134,6 @@ class _MobileTicketTotalBand extends StatelessWidget {
   });
 
   final bool hideProductsVisibilityButton;
-  final bool hideTotal;
   final bool productsVisible;
   final List<SalesType> salesTypes;
   final VoidCallback? onProductsVisibilityToggled;
@@ -184,7 +179,7 @@ class _MobileTicketTotalBand extends StatelessWidget {
           ),
         ],
         const SizedBox(width: 12),
-        if (!hideTotal) Expanded(child: _TotalAmountText(total: total)),
+        Expanded(child: _TotalAmountText(total: total)),
       ],
     );
   }

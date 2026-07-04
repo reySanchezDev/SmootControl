@@ -3,6 +3,7 @@ import 'package:smoo_control/core/result/app_result.dart';
 import 'package:smoo_control/features/auth/domain/services/local_pin_hasher.dart';
 import 'package:smoo_control/features/sync/domain/entities/sync_queue_item.dart';
 import 'package:smoo_control/features/sync/domain/repositories/i_sync_queue_repository.dart';
+import 'package:smoo_control/features/sync/domain/services/i_sync_remote_sender.dart';
 import 'package:smoo_control/features/users/data/datasources/local_users_datasource.dart';
 import 'package:smoo_control/features/users/data/models/app_user_profile_model.dart';
 import 'package:smoo_control/features/users/domain/entities/app_user_profile.dart';
@@ -14,12 +15,15 @@ final class UsersRepository implements IUsersRepository {
   const UsersRepository(
     this._localDataSource, {
     ISyncQueueRepository? syncQueueRepository,
+    ISyncRemoteSender? remoteSender,
     LocalPinHasher pinHasher = const LocalPinHasher(),
   }) : _syncQueueRepository = syncQueueRepository,
+       _remoteSender = remoteSender,
        _pinHasher = pinHasher;
 
   final LocalUsersDataSource _localDataSource;
   final ISyncQueueRepository? _syncQueueRepository;
+  final ISyncRemoteSender? _remoteSender;
   final LocalPinHasher _pinHasher;
 
   @override
@@ -44,9 +48,12 @@ final class UsersRepository implements IUsersRepository {
     try {
       final userToSave = _withUpdatedPin(user, pin);
       final model = AppUserProfileModel.fromEntity(userToSave);
+      await _pushUserRemote(userToSave);
       final saved = await _localDataSource.saveUser(model);
       final entity = saved.toEntity();
-      await _enqueueUser(entity);
+      if (_remoteSender == null) {
+        await _enqueueUser(entity);
+      }
 
       return AppSuccess(entity);
     } on Object catch (error) {
@@ -91,6 +98,36 @@ final class UsersRepository implements IUsersRepository {
         'pinHash': user.pinHash,
         'hasLocalPin': user.hasLocalPin,
       },
+    );
+  }
+
+  Future<void> _pushUserRemote(AppUserProfile user) async {
+    final remoteSender = _remoteSender;
+    if (remoteSender == null) return;
+
+    final now = DateTime.now();
+    await remoteSender.push(
+      SyncQueueItem(
+        id: 'admin-direct-profiles-${user.id}',
+        entityType: 'profiles',
+        entityId: user.id,
+        operation: SyncOperation.create,
+        payload: {
+          'id': user.id,
+          'displayName': user.displayName,
+          'email': user.email,
+          'roleId': user.roleId,
+          'isPosUser': user.isPosUser,
+          'isActive': user.isActive,
+          'pinSalt': user.pinSalt,
+          'pinHash': user.pinHash,
+          'hasLocalPin': user.hasLocalPin,
+        },
+        status: SyncQueueStatus.pending,
+        retryCount: 0,
+        createdAt: now,
+        updatedAt: now,
+      ),
     );
   }
 }

@@ -101,11 +101,15 @@ final class SupabaseSyncRemoteSender implements ISyncRemoteSender {
       case 'profiles':
         await _upsert('profiles', _profilePayload(item));
       case 'roles':
-        return;
+        await _upsert('roles', _rolePayload(item));
       case 'role_permissions':
-        return;
+        await _replaceRolePermissions(item);
       case 'permissions':
-        return;
+        await _upsert(
+          'permissions',
+          _permissionPayload(item),
+          conflictColumn: 'code',
+        );
       default:
         throw UnsupportedError(
           'Entidad no soportada para sync remoto: ${item.entityType}.',
@@ -179,6 +183,52 @@ final class SupabaseSyncRemoteSender implements ISyncRemoteSender {
       return;
     }
     await _upsert('expense_categories', _expenseCategoryPayload(item));
+  }
+
+  Future<void> _replaceRolePermissions(SyncQueueItem item) async {
+    final permissionCodes = _stringList(
+      item.payload['permissionCodes'],
+    ).toSet();
+
+    await _deleteWhere(
+      'role_permissions',
+      {'role_id': 'eq.${item.entityId}'},
+    );
+
+    if (permissionCodes.isEmpty) return;
+
+    final permissions = await _getRows('permissions', {
+      'code': 'in.(${permissionCodes.join(',')})',
+      'select': 'id,code',
+    });
+    final permissionIdByCode = <String, String>{};
+    for (final permission in permissions) {
+      final code = _optionalText(permission['code']);
+      final id = _optionalText(permission['id']);
+      if (code != null && id != null) permissionIdByCode[code] = id;
+    }
+
+    final missingCodes =
+        permissionCodes
+            .where((code) => !permissionIdByCode.containsKey(code))
+            .toList()
+          ..sort();
+    if (missingCodes.isNotEmpty) {
+      throw StateError(
+        'Permisos remotos no encontrados: ${missingCodes.join(', ')}.',
+      );
+    }
+
+    for (final code in permissionCodes) {
+      await _upsert(
+        'role_permissions',
+        {
+          'role_id': item.entityId,
+          'permission_id': permissionIdByCode[code],
+        },
+        conflictColumn: 'role_id,permission_id',
+      );
+    }
   }
 
   Future<void> _pushProductCategory(SyncQueueItem item) async {
@@ -584,6 +634,30 @@ final class SupabaseSyncRemoteSender implements ISyncRemoteSender {
     };
   }
 
+  Map<String, Object?> _permissionPayload(SyncQueueItem item) {
+    final payload = item.payload;
+    return {
+      'code': payload['code'] ?? item.entityId,
+      'name': payload['name'] ?? item.entityId,
+      'description': payload['description'],
+    };
+  }
+
+  Map<String, Object?> _rolePayload(SyncQueueItem item) {
+    final payload = item.payload;
+    final id = payload['id'] ?? item.entityId;
+    return {
+      'id': id,
+      'restaurant_id': _restaurantId,
+      'code': _roleCode(id),
+      'name': payload['name'],
+      'description': payload['description'],
+      'is_system': payload['isSystem'] ?? false,
+      'is_active': payload['isActive'] ?? true,
+      'updated_at': DateTime.now().toIso8601String(),
+    };
+  }
+
   Map<String, Object?> _productCategoryPayload(SyncQueueItem item) {
     final payload = item.payload;
     return {
@@ -890,6 +964,14 @@ final class SupabaseSyncRemoteSender implements ISyncRemoteSender {
     _ensureSuccess(response, table);
   }
 
+  Future<void> _deleteWhere(String table, Map<String, String> query) async {
+    final response = await _client.delete(
+      _config.restUri(table, query),
+      headers: await _headers(prefer: 'return=minimal'),
+    );
+    _ensureSuccess(response, table);
+  }
+
   Future<void> _patchWhere(
     String table,
     Map<String, Object?> payload,
@@ -1144,6 +1226,17 @@ final class SupabaseSyncRemoteSender implements ISyncRemoteSender {
   List<String> _stringList(Object? value) {
     if (value is! List) return const [];
     return value.whereType<String>().toList();
+  }
+
+  String _roleCode(Object? value) {
+    final id = value?.toString().trim();
+    if (id == null || id.isEmpty) return _uuid.v4();
+    return switch (id) {
+      'role-admin' => 'admin',
+      'role-cashier' => 'cashier',
+      'role-waiter' => 'waiter',
+      _ => id,
+    };
   }
 
   String? _uuidOrNull(Object? value) {

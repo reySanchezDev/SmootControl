@@ -63,7 +63,6 @@ class PosTicketPanel extends StatelessWidget {
             ),
             child: _TicketTotalBand(
               hideProductsVisibilityButtonOnPhone: true,
-              hideTotalOnPhone: true,
               lines: lines,
               salesTypes: salesTypes,
               selectedSalesTypeId: selectedSalesTypeId,

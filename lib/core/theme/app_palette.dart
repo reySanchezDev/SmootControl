@@ -37,4 +37,10 @@ abstract final class AppPalette {
 
   /// Success and confirmation color.
   static const success = Color(0xFF7C8B6B);
+
+  /// Soft premium green for available POS tables.
+  static const tableAvailableSoft = Color(0xFFDDE8D6);
+
+  /// Elegant wine red for occupied POS tables.
+  static const tableOccupiedWine = Color(0xFF7F2E3B);
 }

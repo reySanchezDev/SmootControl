@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/core/session/current_operator_service.dart';
+import 'package:smoo_control/core/theme/app_palette.dart';
 import 'package:smoo_control/features/catalog/domain/entities/product_category.dart';
 import 'package:smoo_control/features/packaging/domain/entities/sales_type.dart';
 import 'package:smoo_control/features/payment_methods/domain/entities/payment_method.dart';
@@ -326,33 +327,36 @@ void main() {
     },
   );
 
-  testWidgets('toggles phone cart mode without exposing the ticket total', (
-    tester,
-  ) async {
-    await tester.binding.setSurfaceSize(const Size(393, 852));
-    addTearDown(() => tester.binding.setSurfaceSize(null));
+  testWidgets(
+    'toggles phone cart mode while keeping the ticket total visible',
+    (
+      tester,
+    ) async {
+      await tester.binding.setSurfaceSize(const Size(393, 852));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
 
-    await _pumpReadyView(tester, state: _mobileSalesTypeState);
+      await _pumpReadyView(tester, state: _mobileSalesTypeState);
 
-    expect(tester.takeException(), isNull);
-    expect(find.text(r'C$ 0.00'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      expect(find.text(r'C$ 0.00'), findsOneWidget);
 
-    await tester.tap(find.byIcon(Icons.shopping_cart_outlined));
-    await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(Icons.shopping_cart_outlined));
+      await tester.pumpAndSettle();
 
-    expect(tester.takeException(), isNull);
-    expect(find.text(r'C$ 0.00'), findsNothing);
-    expect(find.text('Hide'), findsNothing);
-    expect(find.text('Cafe'), findsOneWidget);
-    expect(find.byType(PosCategoryBand), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      expect(find.text(r'C$ 0.00'), findsOneWidget);
+      expect(find.text('Hide'), findsNothing);
+      expect(find.text('Cafe'), findsOneWidget);
+      expect(find.byType(PosCategoryBand), findsOneWidget);
 
-    await tester.tap(find.byIcon(Icons.shopping_cart_outlined));
-    await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(Icons.shopping_cart_outlined));
+      await tester.pumpAndSettle();
 
-    expect(tester.takeException(), isNull);
-    expect(find.text(r'C$ 0.00'), findsOneWidget);
-    expect(find.text('Hide'), findsOneWidget);
-  });
+      expect(tester.takeException(), isNull);
+      expect(find.text(r'C$ 0.00'), findsOneWidget);
+      expect(find.text('Hide'), findsOneWidget);
+    },
+  );
 
   test('orders phone table navigation with occupied tables first', () {
     final ordered = orderMobilePosTables(
@@ -383,6 +387,25 @@ void main() {
     );
 
     expect(ordered.map((table) => table.name), ['Mesa 2', 'Mesa 3', 'Mesa 1']);
+  });
+
+  testWidgets('uses color instead of occupied badge on phone table launcher', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(393, 852));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await _pumpReadyView(tester, state: _occupiedMobileTableState);
+
+    final hasOccupiedWine = tester
+        .widgetList<DecoratedBox>(find.byType(DecoratedBox))
+        .map((box) => box.decoration)
+        .whereType<BoxDecoration>()
+        .any((decoration) => decoration.color == AppPalette.tableOccupiedWine);
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('Occupied'), findsNothing);
+    expect(hasOccupiedWine, isTrue);
   });
 
   testWidgets('renders dense POS content across constrained surfaces', (
@@ -684,6 +707,23 @@ const _mobileSalesTypeState = PosReady(
   selectedCategoryId: 'category-1',
   selectedPaymentMethodId: 'cash',
   selectedSalesTypeId: 'sales-type-dine-in',
+  selectedTableId: 'table-1',
+);
+
+const _occupiedMobileTableState = PosReady(
+  categories: [_category],
+  products: [_product],
+  tables: [
+    RestaurantTable(
+      id: 'table-1',
+      name: 'Mesa 1',
+      status: RestaurantTableStatus.occupied,
+      isActive: true,
+    ),
+  ],
+  paymentMethods: [_cashMethod],
+  selectedCategoryId: 'category-1',
+  selectedPaymentMethodId: 'cash',
   selectedTableId: 'table-1',
 );
 

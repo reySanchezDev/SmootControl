@@ -311,6 +311,8 @@ Future<void> configureDependencies() async {
     ..registerLazySingleton<IRolesRepository>(
       () => RolesRepository(
         serviceLocator<LocalRolesDataSource>(),
+        syncQueueRepository: serviceLocator<ISyncQueueRepository>(),
+        remoteSender: serviceLocator<ISyncRemoteSender>(),
       ),
     )
     ..registerLazySingleton<AccessControlService>(
@@ -334,6 +336,7 @@ Future<void> configureDependencies() async {
       () => UsersRepository(
         serviceLocator<LocalUsersDataSource>(),
         syncQueueRepository: serviceLocator<ISyncQueueRepository>(),
+        remoteSender: serviceLocator<ISyncRemoteSender>(),
       ),
     )
     ..registerFactory<UsersBloc>(

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:smoo_control/core/theme/app_palette.dart';
 import 'package:smoo_control/features/catalog/domain/entities/product_category.dart';
 import 'package:smoo_control/features/pos/domain/entities/account_split_draft.dart';
 import 'package:smoo_control/features/pos/domain/entities/pos_cart_line.dart';
@@ -434,6 +435,22 @@ class _MobileTablesLauncher extends StatelessWidget {
     final selectedLabel = selected?.label ?? _selectedTableLabel();
     final selectedOccupied = selected?.isOccupied ?? false;
     final canSwipe = options.length > 1;
+    final selectedBackground = selectedLabel == null
+        ? colorScheme.surfaceContainerHighest
+        : selectedOccupied
+        ? AppPalette.tableOccupiedWine
+        : AppPalette.tableAvailableSoft;
+    final selectedForeground = selectedLabel == null || !selectedOccupied
+        ? AppPalette.textPrimary
+        : AppPalette.surface;
+    final selectedSecondary = selectedLabel == null || !selectedOccupied
+        ? AppPalette.textSecondary
+        : AppPalette.surface.withValues(alpha: .86);
+    final selectedBorder = selectedLabel == null
+        ? colorScheme.outlineVariant
+        : selectedOccupied
+        ? AppPalette.tableOccupiedWine
+        : AppPalette.success.withValues(alpha: .58);
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
@@ -447,7 +464,7 @@ class _MobileTablesLauncher extends StatelessWidget {
           side: BorderSide(color: colorScheme.outlineVariant),
         ),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
           child: Row(
             children: [
               _MobileCatalogModeButton(
@@ -456,57 +473,50 @@ class _MobileTablesLauncher extends StatelessWidget {
               ),
               const SizedBox(width: 10),
               Expanded(
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 180),
-                  reverseDuration: const Duration(milliseconds: 140),
-                  transitionBuilder: (child, animation) {
-                    final offsetAnimation =
-                        Tween<Offset>(
-                          begin: const Offset(.12, 0),
-                          end: Offset.zero,
-                        ).animate(
-                          CurvedAnimation(
-                            parent: animation,
-                            curve: Curves.easeOutCubic,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    color: selectedBackground,
+                    border: Border.all(color: selectedBorder),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 5,
+                    ),
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 180),
+                      reverseDuration: const Duration(milliseconds: 140),
+                      transitionBuilder: (child, animation) {
+                        final offsetAnimation =
+                            Tween<Offset>(
+                              begin: const Offset(.12, 0),
+                              end: Offset.zero,
+                            ).animate(
+                              CurvedAnimation(
+                                parent: animation,
+                                curve: Curves.easeOutCubic,
+                              ),
+                            );
+                        return FadeTransition(
+                          opacity: animation,
+                          child: SlideTransition(
+                            position: offsetAnimation,
+                            child: child,
                           ),
                         );
-                    return FadeTransition(
-                      opacity: animation,
-                      child: SlideTransition(
-                        position: offsetAnimation,
-                        child: child,
+                      },
+                      child: _MobileTableSelectionLabel(
+                        key: ValueKey(selected?.id ?? selectedLabel ?? 'none'),
+                        primaryColor: selectedForeground,
+                        secondaryColor: selectedSecondary,
+                        selectedLabel: selectedLabel,
+                        title: l10n.moduleTables.toUpperCase(),
                       ),
-                    );
-                  },
-                  child: _MobileTableSelectionLabel(
-                    key: ValueKey(selected?.id ?? selectedLabel ?? 'none'),
-                    selectedLabel: selectedLabel,
-                    title: l10n.moduleTables.toUpperCase(),
-                  ),
-                ),
-              ),
-              if (selectedOccupied) ...[
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 2,
-                  ),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(999),
-                    color: colorScheme.error,
-                  ),
-                  child: Text(
-                    l10n.tableOccupiedLabel,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: colorScheme.onError,
-                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
-                const SizedBox(width: 8),
-              ],
+              ),
               IconButton(
                 tooltip: l10n.moduleTables,
                 icon: Icon(
@@ -724,17 +734,20 @@ class _MobileCatalogModeButton extends StatelessWidget {
 
 class _MobileTableSelectionLabel extends StatelessWidget {
   const _MobileTableSelectionLabel({
+    required this.primaryColor,
+    required this.secondaryColor,
     required this.selectedLabel,
     required this.title,
     super.key,
   });
 
+  final Color primaryColor;
+  final Color secondaryColor;
   final String? selectedLabel;
   final String title;
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -744,7 +757,7 @@ class _MobileTableSelectionLabel extends StatelessWidget {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: Theme.of(context).textTheme.labelLarge?.copyWith(
-            color: colorScheme.onSurface,
+            color: primaryColor,
             fontWeight: FontWeight.w800,
           ),
         ),
@@ -754,7 +767,7 @@ class _MobileTableSelectionLabel extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: Theme.of(context).textTheme.labelMedium?.copyWith(
-              color: colorScheme.onSurfaceVariant,
+              color: secondaryColor,
             ),
           ),
       ],

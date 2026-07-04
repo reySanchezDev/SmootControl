@@ -234,7 +234,7 @@ class _ProductTile extends StatelessWidget {
     return _MenuTile(
       compact: compact,
       label: product.name,
-      onTap: canAdd ? () => _addProduct(context) : null,
+      onTap: () => _addProduct(context),
       price: MoneyFormatter.format(product.priceInCents),
       product: true,
     );
@@ -242,6 +242,11 @@ class _ProductTile extends StatelessWidget {
 
   Future<void> _addProduct(BuildContext context) async {
     final bloc = context.read<PosBloc>();
+    if (!canAdd) {
+      bloc.add(PosProductAdded(product));
+      return;
+    }
+
     final state = bloc.state;
     final optionGroups = state is PosReady
         ? state.optionGroupsFor(product)

@@ -132,6 +132,11 @@ Future<void> _handlePosStarted(
       return;
   }
 
+  final selectedTableId = _defaultSelectedTableId(tables);
+  final activeCartKey = selectedTableId ?? '__no_table__';
+  final selectedSalesTypeId =
+      salesTypeIdByOrderKey[activeCartKey] ?? _defaultSalesTypeId(salesTypes);
+
   emit(
     PosReady(
       categories: categories,
@@ -141,10 +146,12 @@ Future<void> _handlePosStarted(
       salesTypes: salesTypes,
       salesTypeIdByOrderKey: salesTypeIdByOrderKey,
       paymentMethods: methods,
+      cartLines: cartLinesByTable[activeCartKey] ?? const [],
       cartLinesByTable: cartLinesByTable,
       openCashRegisterSession: cashSession,
       selectedPaymentMethodId: methods.isEmpty ? null : methods.first.id,
-      selectedSalesTypeId: _defaultSalesTypeId(salesTypes),
+      selectedSalesTypeId: selectedSalesTypeId,
+      selectedTableId: selectedTableId,
     ),
   );
 }
@@ -165,6 +172,30 @@ String? _defaultSalesTypeId(List<SalesType> salesTypes) {
     if (type.isActive) return type.id;
   }
   return null;
+}
+
+String? _defaultSelectedTableId(List<RestaurantTable> tables) {
+  if (tables.isEmpty) return null;
+  final ordered = [...tables]..sort(_compareRestaurantTableNames);
+  return ordered.first.id;
+}
+
+int _compareRestaurantTableNames(
+  RestaurantTable first,
+  RestaurantTable second,
+) {
+  final firstNumber = _firstNumber(first.name);
+  final secondNumber = _firstNumber(second.name);
+  if (firstNumber != null && secondNumber != null) {
+    final numberOrder = firstNumber.compareTo(secondNumber);
+    if (numberOrder != 0) return numberOrder;
+  }
+  return first.name.compareTo(second.name);
+}
+
+int? _firstNumber(String value) {
+  final match = RegExp(r'\d+').firstMatch(value);
+  return match == null ? null : int.tryParse(match.group(0)!);
 }
 
 bool _isSameBusinessDate(DateTime first, DateTime second) {
