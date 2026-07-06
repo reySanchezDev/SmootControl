@@ -149,6 +149,7 @@ void main() {
       ICashRegisterRepository? cashRegisterRepository,
       IPosOpenTicketRepository? openTicketRepository,
       IPaymentMethodsRepository? paymentMethodsRepository,
+      IPackagingRepository? packagingRepository,
       ISalesRepository? salesRepository,
       IInventoryRepository? inventoryRepository,
       IBusinessSettingsRepository? settingsRepository,
@@ -182,7 +183,8 @@ void main() {
               methodsResult: AppSuccess([method, transferMethod]),
             ),
         modifiersRepository: const _ModifiersRepositoryFake(),
-        packagingRepository: const _PackagingRepositoryFake(),
+        packagingRepository:
+            packagingRepository ?? const _PackagingRepositoryFake(),
         salesRepository: salesRepository ?? _SalesRepositoryFake(),
         settingsRepository:
             settingsRepository ?? _BusinessSettingsRepositoryFake(),
@@ -787,6 +789,87 @@ void main() {
 
         expect(sales.savedItemsBySaleId, hasLength(1));
         expect(find.byType(PosPaymentAmountDialog), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'selects GO from compact more options sales type selector',
+      (tester) async {
+        await tester.binding.setSurfaceSize(const Size(390, 720));
+        addTearDown(() => tester.binding.setSurfaceSize(null));
+
+        final bloc = buildBloc(
+          packagingRepository: const _PackagingRepositoryFake(
+            salesTypes: [
+              SalesType(
+                id: 'sales-type-dine-in',
+                code: 'dine_in',
+                name: 'Comer aqui',
+                displayOrder: 0,
+                isDefault: true,
+                isActive: true,
+              ),
+              SalesType(
+                id: 'sales-type-to-go',
+                code: 'to_go',
+                name: 'Para llevar',
+                displayOrder: 1,
+                isDefault: false,
+                isActive: true,
+              ),
+            ],
+          ),
+        );
+        addTearDown(bloc.close);
+
+        final readyLoaded = bloc.stream.firstWhere(
+          (state) => state is PosReady,
+        );
+        bloc.add(const PosStarted());
+        await readyLoaded;
+
+        final ready = bloc.state as PosReady;
+        await tester.pumpWidget(
+          MaterialApp(
+            locale: const Locale('es'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: BlocProvider.value(
+              value: bloc,
+              child: Scaffold(
+                body: PosMoreOptionsPanel(
+                  compactOperationalMode: true,
+                  onPaymentParentChanged: (_) {},
+                  state: ready,
+                ),
+              ),
+            ),
+          ),
+        );
+
+        await tester.tap(find.byIcon(Icons.more_horiz));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Aqui'), findsOneWidget);
+        expect(find.text('GO'), findsOneWidget);
+        expect(find.byIcon(Icons.check_circle), findsOneWidget);
+        expect(find.byIcon(Icons.radio_button_unchecked), findsOneWidget);
+
+        final toGoSelected = bloc.stream.firstWhere(
+          (state) =>
+              state is PosReady &&
+              state.selectedSalesType?.id == 'sales-type-to-go',
+        );
+        await tester.tap(find.text('GO'));
+        await tester.pumpAndSettle();
+        await toGoSelected;
+
+        expect(tester.takeException(), isNull);
+        expect(
+          (bloc.state as PosReady).selectedSalesType?.id,
+          'sales-type-to-go',
+        );
+        expect(find.byIcon(Icons.check_circle), findsOneWidget);
       },
     );
 

@@ -115,7 +115,7 @@ class _PosReadyViewState extends State<PosReadyView> {
         final layout = PosResponsiveLayout.fromConstraints(constraints);
         final phoneLayout = layout.maxWidth < 560;
         final productsVisible = phoneLayout
-            ? _productsVisible || _mobileCatalogMode
+            ? _mobileCatalogMode
             : _productsVisible;
         final catalog = PosCatalogPanel(state: widget.state);
         final ticket = PosTicketPanel(
@@ -291,9 +291,7 @@ class _PosReadyViewState extends State<PosReadyView> {
   void _toggleMobileCatalogMode() {
     setState(() {
       _mobileCatalogMode = !_mobileCatalogMode;
-      if (_mobileCatalogMode) {
-        _productsVisible = true;
-      }
+      _productsVisible = _mobileCatalogMode;
     });
   }
 
@@ -412,17 +410,12 @@ class _PosMobileLayout extends StatelessWidget {
               child: catalog,
             ),
           ),
-        if (!mobileCatalogMode) ...[
-          const Divider(height: 1),
-          SizedBox(height: categoryHeight, child: categoryBand),
-        ],
+        const Divider(height: 1),
+        SizedBox(height: categoryHeight, child: categoryBand),
         const Divider(height: 1),
         SizedBox(
           height: _tableBandHeight,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            child: tableBand,
-          ),
+          child: tableBand,
         ),
         const Divider(height: 1),
         SizedBox(height: _actionsBandHeight, child: actionsBand),
@@ -477,6 +470,7 @@ class _MobileTablesLauncher extends StatelessWidget {
           ? null
           : (details) => _handleHorizontalSwipe(context, options, details),
       child: Material(
+        key: const ValueKey('pos-mobile-table-launcher-panel'),
         color: colorScheme.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(4),
@@ -770,29 +764,28 @@ class _MobileCatalogModeButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final background = active ? AppPalette.primaryDark : AppPalette.accentSoft;
+    final foreground = active ? AppPalette.surface : AppPalette.textPrimary;
+    final border = active
+        ? AppPalette.primaryDark
+        : AppPalette.accent.withValues(alpha: .42);
+    final icon = active ? Icons.shopping_cart : Icons.receipt_long_outlined;
     return Tooltip(
       message: active ? 'Ver orden' : 'Ver productos',
       child: Material(
         key: const ValueKey('pos-mobile-cart-mode-button'),
         clipBehavior: Clip.antiAlias,
-        color: active
-            ? colorScheme.primaryContainer
-            : colorScheme.surfaceContainerHighest.withValues(alpha: .42),
+        color: background,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(4),
-          side: BorderSide(
-            color: active
-                ? colorScheme.primary.withValues(alpha: .48)
-                : colorScheme.outlineVariant,
-          ),
+          side: BorderSide(color: border),
         ),
         child: InkWell(
           onTap: onPressed,
           child: SizedBox(
             child: Icon(
-              Icons.shopping_cart_outlined,
-              color: colorScheme.primary,
+              icon,
+              color: foreground,
               size: 21,
             ),
           ),
@@ -820,13 +813,13 @@ class _MobileTableSelectionLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           selectedLabel ?? '',
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.labelMedium?.copyWith(
             color: primaryColor,
             fontWeight: FontWeight.w800,
           ),
@@ -835,9 +828,10 @@ class _MobileTableSelectionLabel extends StatelessWidget {
           totalLabel,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: Theme.of(context).textTheme.labelMedium?.copyWith(
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.labelLarge?.copyWith(
             color: secondaryColor,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w800,
           ),
         ),
       ],

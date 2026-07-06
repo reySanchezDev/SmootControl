@@ -9,6 +9,7 @@ import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/core/navigation/app_routes.dart';
 import 'package:smoo_control/core/result/app_result.dart';
 import 'package:smoo_control/core/session/current_operator_service.dart';
+import 'package:smoo_control/core/theme/app_palette.dart';
 import 'package:smoo_control/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:smoo_control/features/auth/presentation/bloc/auth_event.dart';
 import 'package:smoo_control/features/cash_register/presentation/widgets/close_cash_register_dialog.dart';
@@ -77,6 +78,7 @@ class PosMoreOptionsPanel extends StatelessWidget {
   Future<void> _openMoreOptions(BuildContext context) async {
     final l10n = AppLocalizations.of(context);
     var dialogPaymentParentKey = paymentParentKey;
+    var selectedSalesTypeId = state.selectedSalesType?.id;
     final action = await showDialog<_MoreOptionAction>(
       context: context,
       builder: (dialogContext) {
@@ -102,7 +104,18 @@ class PosMoreOptionsPanel extends StatelessWidget {
                             const _CompactSectionTitle(label: 'Tipo de venta'),
                             SizedBox(
                               height: 58,
-                              child: _CompactSalesTypeSelector(state: state),
+                              child: _CompactSalesTypeSelector(
+                                selectedSalesTypeId: selectedSalesTypeId,
+                                state: state,
+                                onSelected: (salesTypeId) {
+                                  setDialogState(() {
+                                    selectedSalesTypeId = salesTypeId;
+                                  });
+                                  context.read<PosBloc>().add(
+                                    PosSalesTypeSelected(salesTypeId),
+                                  );
+                                },
+                              ),
                             ),
                             const SizedBox(height: 12),
                           ],
@@ -428,8 +441,14 @@ class PosMoreOptionsPanel extends StatelessWidget {
 }
 
 class _CompactSalesTypeSelector extends StatelessWidget {
-  const _CompactSalesTypeSelector({required this.state});
+  const _CompactSalesTypeSelector({
+    required this.onSelected,
+    required this.selectedSalesTypeId,
+    required this.state,
+  });
 
+  final ValueChanged<String> onSelected;
+  final String? selectedSalesTypeId;
   final PosReady state;
 
   @override
@@ -446,10 +465,8 @@ class _CompactSalesTypeSelector extends StatelessWidget {
           Expanded(
             child: _CompactSalesTypeButton(
               label: _mobileSalesTypeLabel(type),
-              selected: type.id == state.selectedSalesType?.id,
-              onPressed: () {
-                context.read<PosBloc>().add(PosSalesTypeSelected(type.id));
-              },
+              selected: type.id == selectedSalesTypeId,
+              onPressed: () => onSelected(type.id),
             ),
           ),
           if (type != activeTypes.last) const SizedBox(width: 8),
@@ -473,23 +490,46 @@ class _CompactSalesTypeButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    return FilledButton(
-      style: FilledButton.styleFrom(
-        backgroundColor: selected
-            ? colorScheme.primary
-            : colorScheme.surfaceContainerHighest,
-        foregroundColor: selected
-            ? colorScheme.onPrimary
-            : colorScheme.onSurfaceVariant,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+    final background = selected
+        ? AppPalette.primaryDark
+        : colorScheme.surfaceContainerHighest.withValues(alpha: .58);
+    final foreground = selected ? AppPalette.surface : AppPalette.textPrimary;
+    final border = selected
+        ? AppPalette.primaryDark
+        : colorScheme.outlineVariant;
+    return Material(
+      color: background,
+      clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(4),
+        side: BorderSide(color: border),
       ),
-      onPressed: selected ? null : onPressed,
-      child: AppText(
-        label,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        textAlign: TextAlign.center,
-        variant: AppTextVariant.label,
+      child: InkWell(
+        onTap: selected ? null : onPressed,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                selected ? Icons.check_circle : Icons.radio_button_unchecked,
+                color: foreground,
+                size: 18,
+              ),
+              const SizedBox(width: 8),
+              Flexible(
+                child: AppText(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(color: foreground),
+                  textAlign: TextAlign.center,
+                  variant: AppTextVariant.label,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

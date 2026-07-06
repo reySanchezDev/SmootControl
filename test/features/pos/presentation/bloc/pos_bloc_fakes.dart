@@ -410,11 +410,8 @@ final class _PosOpenTicketRepositoryFake implements IPosOpenTicketRepository {
 }
 
 final class _PackagingRepositoryFake implements IPackagingRepository {
-  const _PackagingRepositoryFake();
-
-  @override
-  Future<AppResult<List<SalesType>>> getSalesTypes() async {
-    return const AppSuccess([
+  const _PackagingRepositoryFake({
+    this.salesTypes = const [
       SalesType(
         id: 'sales-type-dine-in',
         code: 'dine_in',
@@ -423,7 +420,14 @@ final class _PackagingRepositoryFake implements IPackagingRepository {
         isDefault: true,
         isActive: true,
       ),
-    ]);
+    ],
+  });
+
+  final List<SalesType> salesTypes;
+
+  @override
+  Future<AppResult<List<SalesType>>> getSalesTypes() async {
+    return AppSuccess(salesTypes);
   }
 
   @override

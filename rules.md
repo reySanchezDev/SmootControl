@@ -474,7 +474,52 @@ Rules:
 - Reuse the shared POS payment flow so validation, amount dialog, USD exchange
   rate, change calculation, and checkout remain identical.
 
-### 14.7 Supabase Credentials
+### 14.7 POS Mobile Catalog/Detail Switch
+
+The mobile POS uses the cart button as a strict two-state switch:
+
+```text
+detail mode:  order detail visible, product catalog hidden, categories visible
+cart mode:    order detail hidden, product catalog visible, categories visible
+```
+
+Rules:
+
+- The cart button and selecting a category may activate cart mode.
+- Pressing the cart button while cart mode is active must return to detail
+  mode.
+- Categories remain visible in both modes.
+- Do not reintroduce the old `Ocultar productos` strip on phone layout.
+- Do not let product visibility be controlled by independent booleans that can
+  drift from the active mobile mode.
+- Use stable widget keys in tests for cart interactions because the icon changes
+  by mode.
+- The cart icon must communicate mode:
+  - cart mode uses a cart icon and active premium color from `AppPalette` or
+    `ColorScheme`.
+  - detail mode uses a detail/receipt icon and a distinct premium color from
+    `AppPalette` or `ColorScheme`.
+- Do not hardcode colors with `Color(0x...)` or `Colors.*` in POS widgets.
+
+### 14.8 POS Mobile Sales Type Selector
+
+The compact `Mas opciones` dialog owns the sales type selector for phone POS.
+
+Rules:
+
+- `Comer aqui` is the default sales type when no order-specific type exists.
+- Selecting `GO` / `Para llevar` must dispatch `PosSalesTypeSelected` and update
+  `selectedSalesTypeId` for the active order.
+- This selection is business-critical because checkout packaging consumption
+  depends on the selected sales type.
+- The compact selector must provide immediate visual feedback inside the modal
+  (for example check/radio toggle state), even before the parent POS screen
+  rebuilds.
+- Do not implement it as plain ambiguous buttons.
+- Add or keep tests that select `GO` through compact more options and assert
+  the BLoC selected sales type changed.
+
+### 14.9 Supabase Credentials
 
 Never hardcode Supabase values in Dart, Android, web files, or tests.
 
@@ -497,7 +542,7 @@ Build scripts inject them with `--dart-define`.
 Use the scripts. Do not manually paste credentials into commands, source code,
 or documentation.
 
-### 14.8 APK Build Procedure
+### 14.10 APK Build Procedure
 
 Build production APK only with:
 
@@ -534,7 +579,7 @@ Must verify:
 Never ask the user to uninstall the app if there may be unsynchronized POS
 operations. Install updates over the existing APK.
 
-### 14.9 Web Release Procedure
+### 14.11 Web Release Procedure
 
 Build web release only with:
 
@@ -553,7 +598,7 @@ Operational server commands are documented in:
 comandos.md
 ```
 
-### 14.10 Drift Database And Migrations
+### 14.12 Drift Database And Migrations
 
 - Do not bump `schemaVersion` without a non-destructive migration.
 - Do not delete or recreate local operational tables.
@@ -563,7 +608,7 @@ comandos.md
 - If a migration touches device initialization state, test clean install and
   update-over-existing-APK scenarios.
 
-### 14.11 Required Validation Before Delivery
+### 14.13 Required Validation Before Delivery
 
 For POS UI/payment changes, run at minimum:
 
@@ -582,7 +627,7 @@ flutter test test\features\auth\domain\services\device_initialization_service_te
 Before building any production APK after mixed changes, run both POS and auth
 test groups.
 
-### 14.12 Git Discipline
+### 14.14 Git Discipline
 
 - Keep commits scoped.
 - Commit POS UI changes separately from auth/database/build changes.

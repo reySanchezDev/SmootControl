@@ -43,6 +43,8 @@ void main() {
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
     await _pumpReadyView(tester, state: _responsiveState);
+    await tester.tap(find.byKey(const ValueKey('pos-mobile-cart-mode-button')));
+    await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
     expect(find.text('Cafe'), findsOneWidget);
@@ -246,6 +248,8 @@ void main() {
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
     await _pumpReadyView(tester, state: _phoneLongSubcategoryState);
+    await tester.tap(find.byKey(const ValueKey('pos-mobile-cart-mode-button')));
+    await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
     expect(find.text('COMBOS POLLO'), findsOneWidget);
@@ -263,6 +267,8 @@ void main() {
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
     await _pumpReadyView(tester, state: _phoneLongSubcategoryState);
+    await tester.tap(find.byKey(const ValueKey('pos-mobile-cart-mode-button')));
+    await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
     final firstRect = tester.getRect(find.text('ASADOS'));
@@ -297,6 +303,8 @@ void main() {
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
     await _pumpReadyView(tester, state: _phoneCatalogProductsState);
+    await tester.tap(find.byKey(const ValueKey('pos-mobile-cart-mode-button')));
+    await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
     final lastVisibleProductRect = tester.getRect(find.text(r'C$ 120.00'));
@@ -305,7 +313,7 @@ void main() {
     expect(categoryBandRect.top, greaterThan(lastVisibleProductRect.bottom));
   });
 
-  testWidgets('cart button hides phone detail and categories', (
+  testWidgets('cart button hides phone detail without hiding categories', (
     tester,
   ) async {
     await tester.binding.setSurfaceSize(const Size(393, 852));
@@ -314,23 +322,29 @@ void main() {
     await _pumpReadyView(tester, state: _phoneCatalogProductsState);
 
     expect(find.byType(PosTicketPanel), findsOneWidget);
-    expect(find.text('ENCHILADAS'), findsOneWidget);
+    expect(find.byIcon(Icons.receipt_long_outlined), findsOneWidget);
+    expect(find.byIcon(Icons.shopping_cart), findsNothing);
+    expect(find.text('ENCHILADAS'), findsNothing);
     expect(find.text('Cafe caliente'), findsOneWidget);
 
-    await tester.tap(find.byIcon(Icons.shopping_cart_outlined));
+    await tester.tap(find.byKey(const ValueKey('pos-mobile-cart-mode-button')));
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
     expect(find.byType(PosTicketPanel), findsNothing);
+    expect(find.byIcon(Icons.receipt_long_outlined), findsNothing);
+    expect(find.byIcon(Icons.shopping_cart), findsOneWidget);
     expect(find.text('ENCHILADAS'), findsOneWidget);
-    expect(find.text('Cafe caliente'), findsNothing);
+    expect(find.text('Cafe caliente'), findsOneWidget);
 
-    await tester.tap(find.byIcon(Icons.shopping_cart_outlined));
+    await tester.tap(find.byKey(const ValueKey('pos-mobile-cart-mode-button')));
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
     expect(find.byType(PosTicketPanel), findsOneWidget);
-    expect(find.text('ENCHILADAS'), findsOneWidget);
+    expect(find.byIcon(Icons.receipt_long_outlined), findsOneWidget);
+    expect(find.byIcon(Icons.shopping_cart), findsNothing);
+    expect(find.text('ENCHILADAS'), findsNothing);
     expect(find.text('Cafe caliente'), findsOneWidget);
   });
 
@@ -361,6 +375,7 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(find.byType(PosTicketPanel), findsOneWidget);
     expect(find.text('Cafe caliente'), findsOneWidget);
+    expect(find.text('ENCHILADAS'), findsNothing);
 
     updateState(
       _phoneCatalogProductsState.copyWith(
@@ -375,20 +390,20 @@ void main() {
 
     expect(tester.takeException(), isNull);
     expect(find.byType(PosTicketPanel), findsNothing);
-    expect(find.text('Cafe caliente'), findsNothing);
+    expect(find.text('Cafe caliente'), findsOneWidget);
     expect(find.text('NUEVA CATEGORIA'), findsOneWidget);
 
-    await tester.tap(find.byIcon(Icons.shopping_cart_outlined));
+    await tester.tap(find.byKey(const ValueKey('pos-mobile-cart-mode-button')));
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
     expect(find.byType(PosTicketPanel), findsOneWidget);
-    expect(find.text('NUEVA CATEGORIA'), findsOneWidget);
+    expect(find.text('NUEVA CATEGORIA'), findsNothing);
     expect(find.text('Cafe caliente'), findsOneWidget);
   });
 
   testWidgets(
-    'cart catalog mode removes phone category band from layout',
+    'cart catalog mode keeps phone category band fixed',
     (
       tester,
     ) async {
@@ -397,12 +412,14 @@ void main() {
 
       await _pumpReadyView(tester, state: _veryDenseResponsiveState);
 
-      await tester.tap(find.byIcon(Icons.shopping_cart_outlined));
+      await tester.tap(
+        find.byKey(const ValueKey('pos-mobile-cart-mode-button')),
+      );
       await tester.pumpAndSettle();
 
       expect(tester.takeException(), isNull);
       expect(find.byType(PosTicketPanel), findsNothing);
-      expect(find.byType(PosCategoryBand), findsNothing);
+      expect(find.byType(PosCategoryBand), findsOneWidget);
       expect(find.text('Pollo asado familiar'), findsOneWidget);
     },
   );
@@ -419,25 +436,29 @@ void main() {
 
       expect(tester.takeException(), isNull);
       expect(find.text(r'C$ 0.00'), findsOneWidget);
-      expect(find.text('Cafe'), findsOneWidget);
+      expect(find.text('Cafe'), findsNothing);
       expect(find.byType(PosTicketPanel), findsOneWidget);
       expect(find.byType(PosCategoryBand), findsOneWidget);
 
-      await tester.tap(find.byIcon(Icons.shopping_cart_outlined));
+      await tester.tap(
+        find.byKey(const ValueKey('pos-mobile-cart-mode-button')),
+      );
       await tester.pumpAndSettle();
 
       expect(tester.takeException(), isNull);
       expect(find.text(r'C$ 0.00'), findsOneWidget);
       expect(find.text('Cafe'), findsOneWidget);
       expect(find.byType(PosTicketPanel), findsNothing);
-      expect(find.byType(PosCategoryBand), findsNothing);
+      expect(find.byType(PosCategoryBand), findsOneWidget);
 
-      await tester.tap(find.byIcon(Icons.shopping_cart_outlined));
+      await tester.tap(
+        find.byKey(const ValueKey('pos-mobile-cart-mode-button')),
+      );
       await tester.pumpAndSettle();
 
       expect(tester.takeException(), isNull);
       expect(find.text(r'C$ 0.00'), findsOneWidget);
-      expect(find.text('Cafe'), findsOneWidget);
+      expect(find.text('Cafe'), findsNothing);
       expect(find.byType(PosTicketPanel), findsOneWidget);
       expect(find.byType(PosCategoryBand), findsOneWidget);
     },
@@ -510,12 +531,17 @@ void main() {
     final cartRect = tester.getRect(
       find.byKey(const ValueKey('pos-mobile-cart-mode-button')),
     );
+    final launcherRect = tester.getRect(
+      find.byKey(const ValueKey('pos-mobile-table-launcher-panel')),
+    );
     final tableRect = tester.getRect(
       find.byKey(const ValueKey('pos-mobile-tables-button')),
     );
     final selectedTableRect = tester.getRect(find.text('Mesa 1'));
 
     expect(cartRect.width, greaterThanOrEqualTo(60));
+    expect(launcherRect.left, 0);
+    expect(launcherRect.right, tester.view.physicalSize.width);
     expect(tableRect.width, greaterThanOrEqualTo(60));
     expect(selectedTableRect.left, greaterThan(cartRect.right));
     expect(selectedTableRect.right, lessThan(tableRect.left));

@@ -133,11 +133,25 @@
 - Data impact: `sales.cash_register_session_id`, `cash_register_sessions.cashier_id`.
 
 ### Regla: Navegacion de catalogo POS
-- Description: Una categoria puede tener multiples niveles de categorias hijas y tambien productos directos; el POS mantiene categorias principales visibles y actualiza la grilla central al tocar otra categoria o subcategoria.
-- Rationale: Cubre flujos como cafe caliente > cappuccino > 8 oz y tambien sopa con productos directos, sin hacer lento el cambio entre familias.
-- Example(s): Cafe caliente muestra Cappuccino; Cappuccino muestra 8 oz; Sopa puede mostrar solo productos.
-- Edge cases: Si no existen categorias, el POS muestra todos los productos activos; para volver a otra familia se toca otra categoria principal, sin boton de regreso. Si la seccion de productos esta oculta y el usuario navega por categorias, el POS vuelve a mostrarla automaticamente.
+- Description: Una categoria puede tener multiples niveles de categorias hijas y tambien productos directos. En POS movil, tocar una categoria activa el modo carrito/catalogo: oculta el detalle del pedido, muestra productos y mantiene la banda de categorias visible.
+- Rationale: Cubre flujos como cafe caliente > cappuccino > 8 oz y tambien sopa con productos directos, permitiendo cambiar de familia sin perder acceso rapido a categorias ni saturar la pantalla movil.
+- Example(s): En modo detalle se ve el pedido y no se ven productos. El cajero toca `COMIDA`; el POS entra a modo carrito, oculta el detalle, muestra los productos de comida y conserva visibles las categorias. Al tocar el boton de carrito activo vuelve al detalle y oculta productos.
+- Edge cases: Si no existen categorias, el POS muestra todos los productos activos cuando entra a modo carrito. Las categorias siguen visibles en modo detalle y en modo carrito. La seccion de productos no debe quedar visible si el modo carrito esta apagado.
 - Data impact: `product_categories.parent_id`, `products.category_id`.
+
+### Regla: Switch movil carrito/detalle
+- Description: En POS movil, el boton del carrito funciona como un switch de dos estados: modo detalle muestra el detalle del pedido y oculta productos; modo carrito oculta el detalle y muestra productos. Las categorias permanecen visibles en ambos modos.
+- Rationale: El cajero necesita alternar rapidamente entre revisar la orden y escoger productos sin controles adicionales ni una franja de ocultar productos.
+- Example(s): Si el icono muestra estado de detalle, tocarlo activa modo carrito y aparecen productos. Si el icono muestra carrito activo, tocarlo regresa al detalle y los productos desaparecen.
+- Edge cases: El modo carrito tambien puede activarse al tocar una categoria. El icono y color del boton deben diferenciar claramente ambos estados. No debe existir una tercera combinacion donde detalle y productos queden visibles a la vez en movil.
+- Data impact: Sin impacto de datos; regla de presentacion del POS movil.
+
+### Regla: Tipo de venta y empaque en POS
+- Description: El tipo de venta seleccionado para la orden activa (`Comer aqui` o `Para llevar`/`GO`) se cambia desde `Mas opciones` en POS movil y debe guardarse en el BLoC como `selectedSalesTypeId` para la orden activa.
+- Rationale: La descarga de empaque depende del tipo de venta. Si el usuario marca `GO`, los productos configurados para descargar empaque deben validar y consumir empaque al cobrar; si marca `Comer aqui`, no debe consumirse empaque por esa regla.
+- Example(s): Mesa 1 esta en `Comer aqui` por defecto. El cajero abre `Mas opciones`, marca `GO` y cobra; el checkout usa el tipo `to_go` para validar empaque. Si vuelve a `Aqui`, la orden se cobra como consumo en local.
+- Edge cases: El selector debe mostrar retroalimentacion inmediata tipo check/toggle para evitar que el cajero crea que eligio una opcion que no se aplico. Si persiste el tipo falla, el BLoC debe conservar el estado anterior y mostrar error.
+- Data impact: `sales_type_id` por orden abierta en `IPosOpenTicketRepository.saveOrderSalesType`, `PosReady.selectedSalesTypeId`, reglas de empaque en checkout.
 
 ### Regla: Categorias visibles aunque esten vacias
 - Description: Toda categoria activa debe mostrarse en el POS aunque aun no tenga productos disponibles debajo.
