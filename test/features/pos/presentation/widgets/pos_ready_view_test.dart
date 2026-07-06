@@ -305,7 +305,7 @@ void main() {
     expect(categoryBandRect.top, greaterThan(lastVisibleProductRect.bottom));
   });
 
-  testWidgets('cart button hides phone catalog without hiding categories', (
+  testWidgets('cart button hides phone detail and categories', (
     tester,
   ) async {
     await tester.binding.setSurfaceSize(const Size(393, 852));
@@ -313,21 +313,28 @@ void main() {
 
     await _pumpReadyView(tester, state: _phoneCatalogProductsState);
 
-    await tester.tap(find.byIcon(Icons.shopping_cart_outlined));
-    await tester.pumpAndSettle();
-
-    expect(tester.takeException(), isNull);
-    expect(find.text('ENCHILADAS'), findsNothing);
+    expect(find.byType(PosTicketPanel), findsOneWidget);
+    expect(find.text('ENCHILADAS'), findsOneWidget);
     expect(find.text('Cafe caliente'), findsOneWidget);
 
     await tester.tap(find.byIcon(Icons.shopping_cart_outlined));
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
+    expect(find.byType(PosTicketPanel), findsNothing);
     expect(find.text('ENCHILADAS'), findsOneWidget);
+    expect(find.text('Cafe caliente'), findsNothing);
+
+    await tester.tap(find.byIcon(Icons.shopping_cart_outlined));
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.byType(PosTicketPanel), findsOneWidget);
+    expect(find.text('ENCHILADAS'), findsOneWidget);
+    expect(find.text('Cafe caliente'), findsOneWidget);
   });
 
-  testWidgets('phone category changes keep cart detail mode active', (
+  testWidgets('phone category changes enter product catalog mode', (
     tester,
   ) async {
     await tester.binding.setSurfaceSize(const Size(393, 852));
@@ -351,11 +358,9 @@ void main() {
       ),
     );
 
-    await tester.tap(find.byIcon(Icons.shopping_cart_outlined));
-    await tester.pumpAndSettle();
-
     expect(tester.takeException(), isNull);
-    expect(find.text('ENCHILADAS'), findsNothing);
+    expect(find.byType(PosTicketPanel), findsOneWidget);
+    expect(find.text('Cafe caliente'), findsOneWidget);
 
     updateState(
       _phoneCatalogProductsState.copyWith(
@@ -369,17 +374,21 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
-    expect(find.text('NUEVA CATEGORIA'), findsNothing);
+    expect(find.byType(PosTicketPanel), findsNothing);
+    expect(find.text('Cafe caliente'), findsNothing);
+    expect(find.text('NUEVA CATEGORIA'), findsOneWidget);
 
     await tester.tap(find.byIcon(Icons.shopping_cart_outlined));
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
+    expect(find.byType(PosTicketPanel), findsOneWidget);
     expect(find.text('NUEVA CATEGORIA'), findsOneWidget);
+    expect(find.text('Cafe caliente'), findsOneWidget);
   });
 
   testWidgets(
-    'keeps phone total band from overlapping categories when catalog is hidden',
+    'cart catalog mode removes phone category band from layout',
     (
       tester,
     ) async {
@@ -392,10 +401,9 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(tester.takeException(), isNull);
-      final ticketRect = tester.getRect(find.byType(PosTicketPanel));
-      final categoryBandRect = tester.getRect(find.byType(PosCategoryBand));
-
-      expect(categoryBandRect.top - ticketRect.bottom, lessThan(8));
+      expect(find.byType(PosTicketPanel), findsNothing);
+      expect(find.byType(PosCategoryBand), findsNothing);
+      expect(find.text('Pollo asado familiar'), findsOneWidget);
     },
   );
 
@@ -412,13 +420,7 @@ void main() {
       expect(tester.takeException(), isNull);
       expect(find.text(r'C$ 0.00'), findsOneWidget);
       expect(find.text('Cafe'), findsOneWidget);
-
-      await tester.tap(find.byIcon(Icons.shopping_cart_outlined));
-      await tester.pumpAndSettle();
-
-      expect(tester.takeException(), isNull);
-      expect(find.text(r'C$ 0.00'), findsOneWidget);
-      expect(find.text('Cafe'), findsNothing);
+      expect(find.byType(PosTicketPanel), findsOneWidget);
       expect(find.byType(PosCategoryBand), findsOneWidget);
 
       await tester.tap(find.byIcon(Icons.shopping_cart_outlined));
@@ -427,6 +429,17 @@ void main() {
       expect(tester.takeException(), isNull);
       expect(find.text(r'C$ 0.00'), findsOneWidget);
       expect(find.text('Cafe'), findsOneWidget);
+      expect(find.byType(PosTicketPanel), findsNothing);
+      expect(find.byType(PosCategoryBand), findsNothing);
+
+      await tester.tap(find.byIcon(Icons.shopping_cart_outlined));
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      expect(find.text(r'C$ 0.00'), findsOneWidget);
+      expect(find.text('Cafe'), findsOneWidget);
+      expect(find.byType(PosTicketPanel), findsOneWidget);
+      expect(find.byType(PosCategoryBand), findsOneWidget);
     },
   );
 

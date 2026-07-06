@@ -89,6 +89,7 @@ class PosReadyView extends StatefulWidget {
 class _PosReadyViewState extends State<PosReadyView> {
   String? _paymentParentKey;
   bool _productsVisible = true;
+  bool _mobileCatalogMode = false;
 
   @override
   void didUpdateWidget(covariant PosReadyView oldWidget) {
@@ -99,6 +100,12 @@ class _PosReadyViewState extends State<PosReadyView> {
     if (completedSaleChanged && widget.state.lastCompletedSale != null) {
       _paymentParentKey = null;
     }
+    final categoryChanged =
+        oldWidget.state.selectedCategoryId != widget.state.selectedCategoryId;
+    if (categoryChanged) {
+      _mobileCatalogMode = true;
+      _productsVisible = true;
+    }
   }
 
   @override
@@ -107,6 +114,9 @@ class _PosReadyViewState extends State<PosReadyView> {
       builder: (context, constraints) {
         final layout = PosResponsiveLayout.fromConstraints(constraints);
         final phoneLayout = layout.maxWidth < 560;
+        final productsVisible = phoneLayout
+            ? _productsVisible || _mobileCatalogMode
+            : _productsVisible;
         final catalog = PosCatalogPanel(state: widget.state);
         final ticket = PosTicketPanel(
           lines: widget.state.cartLines,
@@ -114,16 +124,18 @@ class _PosReadyViewState extends State<PosReadyView> {
           selectedSalesTypeId: widget.state.selectedSalesType?.id,
           onProductsVisibilityToggled: _toggleProductsVisibility,
           showMobileTotalBand: !phoneLayout,
-          productsVisible: _productsVisible,
+          productsVisible: productsVisible,
         );
         final categoryBand = PosCategoryBand(
-          onCategorySelected: phoneLayout ? null : _showProducts,
+          onCategorySelected: phoneLayout
+              ? _enterMobileCatalogMode
+              : _showProducts,
           state: widget.state,
         );
         final tableBand = phoneLayout
             ? _MobileTablesLauncher(
-                detailMode: !_productsVisible,
-                onDetailModeToggled: _toggleProductsVisibility,
+                catalogMode: _mobileCatalogMode,
+                onCatalogModeToggled: _toggleMobileCatalogMode,
                 state: widget.state,
               )
             : PosTablesBand(state: widget.state);
@@ -144,7 +156,8 @@ class _PosReadyViewState extends State<PosReadyView> {
               categoryHeight: layout.mobileCategoryBandHeight(
                 _visibleRootCategoryCount(),
               ),
-              productsVisible: _productsVisible,
+              mobileCatalogMode: _mobileCatalogMode,
+              productsVisible: productsVisible,
               tableBand: tableBand,
               ticket: ticket,
             );
@@ -271,7 +284,25 @@ class _PosReadyViewState extends State<PosReadyView> {
   }
 
   void _toggleProductsVisibility() {
+    if (_mobileCatalogMode) return;
     setState(() => _productsVisible = !_productsVisible);
+  }
+
+  void _toggleMobileCatalogMode() {
+    setState(() {
+      _mobileCatalogMode = !_mobileCatalogMode;
+      if (_mobileCatalogMode) {
+        _productsVisible = true;
+      }
+    });
+  }
+
+  void _enterMobileCatalogMode() {
+    if (_mobileCatalogMode && _productsVisible) return;
+    setState(() {
+      _mobileCatalogMode = true;
+      _productsVisible = true;
+    });
   }
 
   int _visibleCatalogItemCount() {
@@ -343,6 +374,7 @@ class _PosMobileLayout extends StatelessWidget {
     required this.catalog,
     required this.categoryBand,
     required this.categoryHeight,
+    required this.mobileCatalogMode,
     required this.productsVisible,
     required this.tableBand,
     required this.ticket,
@@ -355,6 +387,7 @@ class _PosMobileLayout extends StatelessWidget {
   final Widget catalog;
   final Widget categoryBand;
   final double categoryHeight;
+  final bool mobileCatalogMode;
   final bool productsVisible;
   final Widget tableBand;
   final Widget ticket;
@@ -363,23 +396,26 @@ class _PosMobileLayout extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Expanded(
-          flex: productsVisible ? 5 : 1,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
-            child: ticket,
+        if (!mobileCatalogMode)
+          Expanded(
+            flex: productsVisible ? 5 : 1,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
+              child: ticket,
+            ),
           ),
-        ),
         if (productsVisible)
           Expanded(
-            flex: 3,
+            flex: mobileCatalogMode ? 1 : 3,
             child: Padding(
               padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
               child: catalog,
             ),
           ),
-        const Divider(height: 1),
-        SizedBox(height: categoryHeight, child: categoryBand),
+        if (!mobileCatalogMode) ...[
+          const Divider(height: 1),
+          SizedBox(height: categoryHeight, child: categoryBand),
+        ],
         const Divider(height: 1),
         SizedBox(
           height: _tableBandHeight,
@@ -397,16 +433,16 @@ class _PosMobileLayout extends StatelessWidget {
 
 class _MobileTablesLauncher extends StatelessWidget {
   const _MobileTablesLauncher({
-    required this.detailMode,
-    required this.onDetailModeToggled,
+    required this.catalogMode,
+    required this.onCatalogModeToggled,
     required this.state,
   });
 
   static const double _sideButtonWidth = 66;
   static const double _horizontalGap = 8;
 
-  final bool detailMode;
-  final VoidCallback onDetailModeToggled;
+  final bool catalogMode;
+  final VoidCallback onCatalogModeToggled;
   final PosReady state;
 
   @override
@@ -454,8 +490,8 @@ class _MobileTablesLauncher extends StatelessWidget {
               SizedBox(
                 width: _sideButtonWidth,
                 child: _MobileCatalogModeButton(
-                  active: detailMode,
-                  onPressed: onDetailModeToggled,
+                  active: catalogMode,
+                  onPressed: onCatalogModeToggled,
                 ),
               ),
               const SizedBox(width: _horizontalGap),
@@ -736,7 +772,7 @@ class _MobileCatalogModeButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     return Tooltip(
-      message: active ? 'Mostrar productos' : 'Ver orden',
+      message: active ? 'Ver orden' : 'Ver productos',
       child: Material(
         key: const ValueKey('pos-mobile-cart-mode-button'),
         clipBehavior: Clip.antiAlias,
