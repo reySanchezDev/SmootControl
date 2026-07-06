@@ -341,6 +341,267 @@ Definition of Done for any data-affecting feature:
 - Audit behavior is defined for sensitive actions.
 - Auth/restaurant ownership mapping is clear, even if Auth is still disabled.
 
+## 14. SmooControl Project Rules (CRITICAL)
+
+These rules are specific to `SmooControl`. They override generic assumptions.
+
+### 14.1 Golden Rule For This Repository
+
+- Do not make broad changes outside the requested scope.
+- Before editing, run:
+
+```powershell
+git status --short
+git log --oneline -5
+```
+
+- If the task is a POS UI change, do not touch auth, device initialization,
+  Drift schema, Supabase migrations, Android manifest, app version, or build
+  scripts unless the user explicitly asks for that.
+- If the task is auth/device initialization, do not touch POS checkout, catalog
+  sync, admin repositories, or visual widgets unless required by the bug.
+- Never "clean up" unrelated files.
+- Never change `applicationId`, package name, signing setup, or local database
+  schema casually.
+- If an APK was already distributed and a new APK must be installed over it,
+  bump `pubspec.yaml` `versionCode` only after confirming the currently
+  distributed `versionCode`.
+
+### 14.2 Current Architecture
+
+SmooControl has two operational modes:
+
+- **Admin mode**: online-first / remote-first. Catalogs and administrative data
+  must write directly to Supabase first.
+- **POS mode**: offline-first. The tablet works from local Drift/SQLite and
+  synchronizes operational transactions later.
+
+Do not mix those rules.
+
+### 14.3 Admin Mode Rules
+
+Admin catalogs must be remote-first:
+
+- products
+- categories
+- payment methods
+- tables catalog fields
+- modifiers catalog
+- roles, permissions, users
+- packaging rules/items/sales types
+- exchange rates
+- business settings, except explicitly local operational values
+
+For remote-first saves:
+
+- Push to Supabase first through the existing repository/remote sender pattern.
+- Save locally only after the remote write succeeds.
+- Do not enqueue admin catalog changes as the primary path unless the existing
+  repository explicitly supports a fallback.
+- Do not tell the UI "guardado" if the remote write failed.
+
+### 14.4 POS Mode Rules
+
+POS operational data is local-first:
+
+- open tickets
+- cart lines
+- table operational state
+- table temporary display name, for example `Mesa 1` shown as `JOSE`
+- cash register sessions
+- local expenses from POS
+- sales created by POS
+- POS modifier availability
+
+POS sales are synchronized upward later. The remote side assigns/controls the
+  invoice consecutive. Do not burn local invoice numbers before the sale is
+  accepted.
+
+Local-only POS values must not be pushed upward unless explicitly requested.
+Known local-only examples:
+
+- `RestaurantTable.displayName` edited from POS.
+- `ModifierOption.isAvailableInPos` toggled from POS.
+
+Catalog pull from Supabase must preserve those local-only POS values.
+
+### 14.5 Device Initialization And Login
+
+The clean APK/tablet flow is:
+
+1. App starts.
+2. `AuthGate` asks `DeviceInitializationService.getStartupMode()`.
+3. A clean Supabase-configured tablet must show `DeviceInitializationPage`.
+4. After successful restore, local users/PINs and operational catalog exist.
+5. POS users log in locally with email/PIN.
+
+Do not modify this flow for UI work.
+
+Do not touch these files unless the task is specifically auth/init related:
+
+- `lib/features/auth/**`
+- `lib/core/di/register_auth_dependencies.dart`
+- `lib/core/database/app_database.dart`
+- `lib/core/database/tables/**`
+- `android/app/src/main/AndroidManifest.xml`
+- `supabase/migrations/**`
+
+If those files change unexpectedly during a POS UI task, stop and revert those
+unrelated edits before building an APK.
+
+### 14.6 POS Mobile Payment Shortcuts
+
+The mobile POS quick payment row is:
+
+```text
+DOLAR | MAS OPCIONES | CORDOBA
+```
+
+Rules:
+
+- Do not hardcode payment method IDs.
+- Do not depend on visible names like `Dolar`, `Cordoba`, `Cash`, or
+  `Efectivo`.
+- Resolve shortcuts from catalog data:
+  - active method
+  - `isPaymentTarget == true`
+  - `affectsCashRegister == true`
+  - `currencyCode == USD` for DOLAR
+  - `currencyCode == NIO` for CORDOBA
+- Keep those methods inside their existing payment catalog hierarchy.
+- Do not remove them from `Mas opciones`; shortcuts are only convenience
+  buttons.
+- Reuse the shared POS payment flow so validation, amount dialog, USD exchange
+  rate, change calculation, and checkout remain identical.
+
+### 14.7 Supabase Credentials
+
+Never hardcode Supabase values in Dart, Android, web files, or tests.
+
+Credentials are read from:
+
+```text
+Requerimiento/CredencialesSupabase.md
+```
+
+Expected keys:
+
+```text
+SMOO_SUPABASE_URL=
+SMOO_SUPABASE_PUBLISHABLE_KEY=
+SMOO_RESTAURANT_ID=
+```
+
+Build scripts inject them with `--dart-define`.
+
+Use the scripts. Do not manually paste credentials into commands, source code,
+or documentation.
+
+### 14.8 APK Build Procedure
+
+Build production APK only with:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\tool\build_android_release.ps1
+```
+
+Output:
+
+```text
+release/SmooControl-produccion.apk
+```
+
+Mandatory APK validation:
+
+```powershell
+$aapt = Get-ChildItem -Path "$env:LOCALAPPDATA\Android\Sdk\build-tools" `
+  -Recurse -Filter aapt.exe |
+  Sort-Object FullName -Descending |
+  Select-Object -First 1
+
+& $aapt.FullName dump permissions release\SmooControl-produccion.apk
+& $aapt.FullName dump badging release\SmooControl-produccion.apk |
+  Select-String -Pattern "package:"
+```
+
+Must verify:
+
+- `android.permission.INTERNET` exists.
+- package name remains `com.smoocontrol.pos`.
+- `versionCode` is greater than the APK already installed in production.
+- `versionName` matches `pubspec.yaml`.
+
+Never ask the user to uninstall the app if there may be unsynchronized POS
+operations. Install updates over the existing APK.
+
+### 14.9 Web Release Procedure
+
+Build web release only with:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\tool\build_web_release.ps1
+```
+
+This also builds/copies Drift web assets:
+
+- `sqlite3.wasm`
+- `drift_worker.js`
+
+Operational server commands are documented in:
+
+```text
+comandos.md
+```
+
+### 14.10 Drift Database And Migrations
+
+- Do not bump `schemaVersion` without a non-destructive migration.
+- Do not delete or recreate local operational tables.
+- Do not write migrations that lose pending POS sales, open tickets, cash
+  sessions, expenses, or sync queue rows.
+- Migration tests are required for every schema change.
+- If a migration touches device initialization state, test clean install and
+  update-over-existing-APK scenarios.
+
+### 14.11 Required Validation Before Delivery
+
+For POS UI/payment changes, run at minimum:
+
+```powershell
+dart analyze lib\features\pos\presentation\widgets test\features\pos\presentation\widgets\pos_ready_view_test.dart
+flutter test test\features\pos\presentation\widgets\pos_ready_view_test.dart test\features\pos\presentation\bloc\pos_bloc_test.dart
+```
+
+For auth/device initialization changes, run at minimum:
+
+```powershell
+dart analyze lib\features\auth lib\core\database test\features\auth test\core\database
+flutter test test\features\auth\domain\services\device_initialization_service_test.dart test\core\database\app_database_test.dart
+```
+
+Before building any production APK after mixed changes, run both POS and auth
+test groups.
+
+### 14.12 Git Discipline
+
+- Keep commits scoped.
+- Commit POS UI changes separately from auth/database/build changes.
+- Before commit, run:
+
+```powershell
+git diff --stat
+git diff --name-status
+```
+
+- If a POS-only task shows diffs in auth/database/manifest/migrations, revert
+  those unrelated files before commit.
+- After commit and push, confirm:
+
+```powershell
+git status --short
+git log --oneline -3
+```
+
 
 ### Business Rules Register (MANDATORY)
 
