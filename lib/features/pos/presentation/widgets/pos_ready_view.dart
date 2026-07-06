@@ -362,7 +362,7 @@ class _PosMobileLayout extends StatelessWidget {
   });
 
   static const double _categoryBandHeight = 132;
-  static const double _tableBandHeight = 68;
+  static const double _tableBandHeight = 76;
   static const double _actionsBandHeight = 76;
 
   final Widget actionsBand;
@@ -422,6 +422,9 @@ class _MobileTablesLauncher extends StatelessWidget {
     required this.state,
   });
 
+  static const double _sideButtonWidth = 66;
+  static const double _horizontalGap = 8;
+
   final bool catalogMode;
   final VoidCallback onCatalogModeToggled;
   final PosReady state;
@@ -464,14 +467,18 @@ class _MobileTablesLauncher extends StatelessWidget {
           side: BorderSide(color: colorScheme.outlineVariant),
         ),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _MobileCatalogModeButton(
-                active: catalogMode,
-                onPressed: onCatalogModeToggled,
+              SizedBox(
+                width: _sideButtonWidth,
+                child: _MobileCatalogModeButton(
+                  active: catalogMode,
+                  onPressed: onCatalogModeToggled,
+                ),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: _horizontalGap),
               Expanded(
                 child: DecoratedBox(
                   decoration: BoxDecoration(
@@ -517,15 +524,15 @@ class _MobileTablesLauncher extends StatelessWidget {
                   ),
                 ),
               ),
-              IconButton(
-                tooltip: l10n.moduleTables,
-                icon: Icon(
-                  Icons.table_restaurant_outlined,
-                  color: colorScheme.primary,
+              const SizedBox(width: _horizontalGap),
+              SizedBox(
+                width: _sideButtonWidth,
+                child: _MobileTablesButton(
+                  tooltip: l10n.moduleTables,
+                  onPressed: state.tables.isEmpty
+                      ? null
+                      : () => _openTablesSheet(context),
                 ),
-                onPressed: state.tables.isEmpty
-                    ? null
-                    : () => _openTablesSheet(context),
               ),
             ],
           ),
@@ -669,6 +676,47 @@ class _MobileTablesLauncher extends StatelessWidget {
   }
 }
 
+class _MobileTablesButton extends StatelessWidget {
+  const _MobileTablesButton({
+    required this.onPressed,
+    required this.tooltip,
+  });
+
+  final VoidCallback? onPressed;
+  final String tooltip;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final enabled = onPressed != null;
+    final foreground = enabled
+        ? colorScheme.primary
+        : colorScheme.onSurface.withValues(alpha: .38);
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        key: const ValueKey('pos-mobile-tables-button'),
+        clipBehavior: Clip.antiAlias,
+        color: colorScheme.surfaceContainerHighest.withValues(alpha: .42),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(4),
+          side: BorderSide(color: colorScheme.outlineVariant),
+        ),
+        child: InkWell(
+          onTap: onPressed,
+          child: SizedBox(
+            child: Icon(
+              Icons.table_restaurant_outlined,
+              color: foreground,
+              size: 21,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _FloatingSheetCloseButton extends StatelessWidget {
   const _FloatingSheetCloseButton({required this.onPressed});
 
@@ -710,20 +758,26 @@ class _MobileCatalogModeButton extends StatelessWidget {
     return Tooltip(
       message: active ? 'Mostrar detalle' : 'Modo carrito',
       child: Material(
-        color: active ? colorScheme.primary : colorScheme.surface,
+        key: const ValueKey('pos-mobile-cart-mode-button'),
+        clipBehavior: Clip.antiAlias,
+        color: active
+            ? colorScheme.primaryContainer
+            : colorScheme.surfaceContainerHighest.withValues(alpha: .42),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(6),
-          side: BorderSide(color: colorScheme.primary.withValues(alpha: .45)),
+          borderRadius: BorderRadius.circular(4),
+          side: BorderSide(
+            color: active
+                ? colorScheme.primary.withValues(alpha: .48)
+                : colorScheme.outlineVariant,
+          ),
         ),
         child: InkWell(
-          borderRadius: BorderRadius.circular(6),
           onTap: onPressed,
-          child: Padding(
-            padding: const EdgeInsets.all(8),
+          child: SizedBox(
             child: Icon(
               Icons.shopping_cart_outlined,
-              color: active ? colorScheme.onPrimary : colorScheme.primary,
-              size: 20,
+              color: colorScheme.primary,
+              size: 21,
             ),
           ),
         ),

@@ -3,11 +3,13 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smoo_control/core/design_system/app_message_dialog.dart';
+import 'package:smoo_control/features/payment_methods/domain/entities/payment_method.dart';
 import 'package:smoo_control/features/pos/presentation/bloc/pos_bloc.dart';
 import 'package:smoo_control/features/pos/presentation/bloc/pos_event.dart';
 import 'package:smoo_control/features/pos/presentation/bloc/pos_state.dart';
 import 'package:smoo_control/features/pos/presentation/widgets/pos_danger_confirmation.dart';
 import 'package:smoo_control/features/pos/presentation/widgets/pos_more_options_panel.dart';
+import 'package:smoo_control/features/pos/presentation/widgets/pos_payment_flow.dart';
 import 'package:smoo_control/features/pos/presentation/widgets/pos_payment_section.dart';
 import 'package:smoo_control/features/pos/presentation/widgets/pos_split_dialog_launcher.dart';
 import 'package:smoo_control/features/pos/presentation/widgets/pos_touch_grid.dart';
@@ -42,10 +44,14 @@ class PosActionsBand extends StatelessWidget {
           state: state,
         );
         if (constraints.maxWidth < 560) {
-          return PosMoreOptionsPanel(
-            compactOperationalMode: true,
-            onPaymentParentChanged: onPaymentParentChanged,
-            paymentParentKey: paymentParentKey,
+          return _MobilePaymentShortcutsBand(
+            moreOptionsPanel: PosMoreOptionsPanel(
+              buttonOnly: true,
+              compactOperationalMode: true,
+              onPaymentParentChanged: onPaymentParentChanged,
+              paymentParentKey: paymentParentKey,
+              state: state,
+            ),
             state: state,
           );
         }
@@ -77,6 +83,72 @@ class PosActionsBand extends StatelessWidget {
         );
       },
     );
+  }
+}
+
+class _MobilePaymentShortcutsBand extends StatelessWidget {
+  const _MobilePaymentShortcutsBand({
+    required this.moreOptionsPanel,
+    required this.state,
+  });
+
+  final Widget moreOptionsPanel;
+  final PosReady state;
+
+  @override
+  Widget build(BuildContext context) {
+    final dollarMethod = _cashMethodForCurrency('USD');
+    final cordobaMethod = _cashMethodForCurrency('NIO');
+
+    return Padding(
+      padding: const EdgeInsets.all(4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(child: _quickPaymentButton(context, dollarMethod)),
+          const SizedBox(width: 4),
+          Expanded(child: moreOptionsPanel),
+          const SizedBox(width: 4),
+          Expanded(child: _quickPaymentButton(context, cordobaMethod)),
+        ],
+      ),
+    );
+  }
+
+  Widget _quickPaymentButton(BuildContext context, PaymentMethod? method) {
+    return PosTouchButton(
+      label: method?.name ?? '',
+      onPressed: method == null || state.cartLines.isEmpty
+          ? null
+          : () => unawaited(
+              startPosPaymentFlow(
+                context: context,
+                method: method,
+                state: state,
+              ),
+            ),
+      selected: method != null && state.selectedPaymentMethodId == method.id,
+      tone: PosButtonTone.success,
+    );
+  }
+
+  PaymentMethod? _cashMethodForCurrency(String currencyCode) {
+    final normalizedCurrency = currencyCode.trim().toUpperCase();
+    final matches = state.paymentMethods.where((method) {
+      final currency = method.currencyCode?.trim().toUpperCase();
+      return method.isActive &&
+          method.isPaymentTarget &&
+          method.affectsCashRegister &&
+          currency == normalizedCurrency;
+    }).toList()..sort(_compareMethods);
+
+    return matches.isEmpty ? null : matches.first;
+  }
+
+  int _compareMethods(PaymentMethod first, PaymentMethod second) {
+    final order = first.displayOrder.compareTo(second.displayOrder);
+    if (order != 0) return order;
+    return first.name.compareTo(second.name);
   }
 }
 

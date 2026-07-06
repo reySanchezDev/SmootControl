@@ -408,6 +408,34 @@ void main() {
     expect(hasOccupiedWine, isTrue);
   });
 
+  testWidgets('keeps mobile cart and table buttons visually substantial', (
+    tester,
+  ) async {
+    tester.view
+      ..devicePixelRatio = 1
+      ..physicalSize = const Size(393, 852);
+    addTearDown(() {
+      tester.view
+        ..resetDevicePixelRatio()
+        ..resetPhysicalSize();
+    });
+
+    await _pumpReadyView(tester, state: _mobileQuickPaymentState);
+
+    final cartRect = tester.getRect(
+      find.byKey(const ValueKey('pos-mobile-cart-mode-button')),
+    );
+    final tableRect = tester.getRect(
+      find.byKey(const ValueKey('pos-mobile-tables-button')),
+    );
+    final selectedTableRect = tester.getRect(find.text('TABLES'));
+
+    expect(cartRect.width, greaterThanOrEqualTo(60));
+    expect(tableRect.width, greaterThanOrEqualTo(60));
+    expect(selectedTableRect.left, greaterThan(cartRect.right));
+    expect(selectedTableRect.right, lessThan(tableRect.left));
+  });
+
   testWidgets('renders dense POS content across constrained surfaces', (
     tester,
   ) async {
@@ -496,6 +524,56 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('shows mobile cash shortcuts by currency around more options', (
+    tester,
+  ) async {
+    tester.view
+      ..devicePixelRatio = 1
+      ..physicalSize = const Size(393, 852);
+    addTearDown(() {
+      tester.view
+        ..resetDevicePixelRatio()
+        ..resetPhysicalSize();
+    });
+
+    await _pumpReadyView(tester, state: _mobileQuickPaymentState);
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('Pago moneda extranjera'), findsOneWidget);
+    expect(find.text('More options'), findsOneWidget);
+    expect(find.text('Pago moneda local'), findsOneWidget);
+
+    final usdRect = tester.getRect(find.text('Pago moneda extranjera'));
+    final optionsRect = tester.getRect(find.text('More options'));
+    final nioRect = tester.getRect(find.text('Pago moneda local'));
+
+    expect(usdRect.left, lessThan(optionsRect.left));
+    expect(optionsRect.left, lessThan(nioRect.left));
+  });
+
+  testWidgets('renders mobile more options shortcut without a scroll grid', (
+    tester,
+  ) async {
+    tester.view
+      ..devicePixelRatio = 1
+      ..physicalSize = const Size(393, 852);
+    addTearDown(() {
+      tester.view
+        ..resetDevicePixelRatio()
+        ..resetPhysicalSize();
+    });
+
+    await _pumpReadyView(tester, state: _mobileQuickPaymentState);
+
+    expect(
+      find.ancestor(
+        of: find.text('More options'),
+        matching: find.byType(GridView),
+      ),
+      findsNothing,
+    );
+  });
+
   testWidgets('orders compact more options by operational priority', (
     tester,
   ) async {
@@ -553,6 +631,36 @@ const _transferMethod = PaymentMethod(
   name: 'Transfer',
   affectsCashRegister: false,
   requiresReference: true,
+  isActive: true,
+);
+
+const _cashRoot = PaymentMethod(
+  id: 'cash-root',
+  name: 'Caja',
+  affectsCashRegister: false,
+  requiresReference: false,
+  isPaymentTarget: false,
+  isActive: true,
+);
+
+const _quickUsdMethod = PaymentMethod(
+  id: 'quick-usd',
+  name: 'Pago moneda extranjera',
+  parentId: 'cash-root',
+  currencyCode: 'USD',
+  affectsCashRegister: true,
+  requiresReference: false,
+  isActive: true,
+);
+
+const _quickNioMethod = PaymentMethod(
+  id: 'quick-nio',
+  name: 'Pago moneda local',
+  parentId: 'cash-root',
+  currencyCode: 'NIO',
+  displayOrder: 1,
+  affectsCashRegister: true,
+  requiresReference: false,
   isActive: true,
 );
 
@@ -714,6 +822,16 @@ const _mobileSalesTypeState = PosReady(
   selectedCategoryId: 'category-1',
   selectedPaymentMethodId: 'cash',
   selectedSalesTypeId: 'sales-type-dine-in',
+  selectedTableId: 'table-1',
+);
+
+const _mobileQuickPaymentState = PosReady(
+  categories: [_category],
+  products: [_product],
+  tables: [_table],
+  paymentMethods: [_cashRoot, _quickNioMethod, _quickUsdMethod],
+  cartLines: [PosCartLine(product: _product, quantity: 1)],
+  selectedCategoryId: 'category-1',
   selectedTableId: 'table-1',
 );
 

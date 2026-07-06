@@ -32,6 +32,7 @@ class PosMoreOptionsPanel extends StatelessWidget {
   /// Creates the panel.
   const PosMoreOptionsPanel({
     required this.state,
+    this.buttonOnly = false,
     this.compactOperationalMode = false,
     this.onPaymentParentChanged,
     this.paymentParentKey,
@@ -40,6 +41,9 @@ class PosMoreOptionsPanel extends StatelessWidget {
 
   /// Current POS state.
   final PosReady state;
+
+  /// Whether to render only the tactile button without the grid wrapper.
+  final bool buttonOnly;
 
   /// Whether phone layouts should move POS actions and payments inside.
   final bool compactOperationalMode;
@@ -53,17 +57,19 @@ class PosMoreOptionsPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final button = PosTouchButton(
+      icon: Icons.more_horiz,
+      label: l10n.moreOptionsAction,
+      onPressed: () => _openMoreOptions(context),
+      tone: PosButtonTone.neutral,
+    );
+
+    if (buttonOnly) return button;
+
     return PosTouchGrid(
       minTileHeight: 52,
       minTileWidth: 130,
-      children: [
-        PosTouchButton(
-          icon: Icons.more_horiz,
-          label: l10n.moreOptionsAction,
-          onPressed: () => _openMoreOptions(context),
-          tone: PosButtonTone.neutral,
-        ),
-      ],
+      children: [button],
     );
   }
 
