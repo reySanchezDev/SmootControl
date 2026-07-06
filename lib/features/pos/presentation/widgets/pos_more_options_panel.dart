@@ -13,6 +13,7 @@ import 'package:smoo_control/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:smoo_control/features/auth/presentation/bloc/auth_event.dart';
 import 'package:smoo_control/features/cash_register/presentation/widgets/close_cash_register_dialog.dart';
 import 'package:smoo_control/features/modifiers/domain/repositories/i_modifiers_repository.dart';
+import 'package:smoo_control/features/packaging/domain/entities/sales_type.dart';
 import 'package:smoo_control/features/pos/presentation/bloc/pos_bloc.dart';
 import 'package:smoo_control/features/pos/presentation/bloc/pos_event.dart';
 import 'package:smoo_control/features/pos/presentation/bloc/pos_state.dart';
@@ -97,6 +98,14 @@ class PosMoreOptionsPanel extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         if (compactOperationalMode) ...[
+                          if (_activeSalesTypes.isNotEmpty) ...[
+                            const _CompactSectionTitle(label: 'Tipo de venta'),
+                            SizedBox(
+                              height: 58,
+                              child: _CompactSalesTypeSelector(state: state),
+                            ),
+                            const SizedBox(height: 12),
+                          ],
                           _CompactSectionTitle(label: l10n.paymentMethodField),
                           SizedBox(
                             height: 168,
@@ -410,6 +419,91 @@ class PosMoreOptionsPanel extends StatelessWidget {
       return null;
     }
   }
+
+  List<SalesType> get _activeSalesTypes {
+    return state.salesTypes.where((type) => type.isActive).toList()..sort(
+      (first, second) => first.displayOrder.compareTo(second.displayOrder),
+    );
+  }
+}
+
+class _CompactSalesTypeSelector extends StatelessWidget {
+  const _CompactSalesTypeSelector({required this.state});
+
+  final PosReady state;
+
+  @override
+  Widget build(BuildContext context) {
+    final activeTypes = state.salesTypes.where((type) => type.isActive).toList()
+      ..sort(
+        (first, second) => first.displayOrder.compareTo(second.displayOrder),
+      );
+    if (activeTypes.isEmpty) return const SizedBox.shrink();
+
+    return Row(
+      children: [
+        for (final type in activeTypes) ...[
+          Expanded(
+            child: _CompactSalesTypeButton(
+              label: _mobileSalesTypeLabel(type),
+              selected: type.id == state.selectedSalesType?.id,
+              onPressed: () {
+                context.read<PosBloc>().add(PosSalesTypeSelected(type.id));
+              },
+            ),
+          ),
+          if (type != activeTypes.last) const SizedBox(width: 8),
+        ],
+      ],
+    );
+  }
+}
+
+class _CompactSalesTypeButton extends StatelessWidget {
+  const _CompactSalesTypeButton({
+    required this.label,
+    required this.onPressed,
+    required this.selected,
+  });
+
+  final String label;
+  final VoidCallback onPressed;
+  final bool selected;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return FilledButton(
+      style: FilledButton.styleFrom(
+        backgroundColor: selected
+            ? colorScheme.primary
+            : colorScheme.surfaceContainerHighest,
+        foregroundColor: selected
+            ? colorScheme.onPrimary
+            : colorScheme.onSurfaceVariant,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+      ),
+      onPressed: selected ? null : onPressed,
+      child: AppText(
+        label,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        textAlign: TextAlign.center,
+        variant: AppTextVariant.label,
+      ),
+    );
+  }
+}
+
+String _mobileSalesTypeLabel(SalesType type) {
+  final normalized = type.code.trim().toLowerCase();
+  if (normalized == 'dine_in' || normalized == 'eat_here') return 'Aqui';
+  if (normalized == 'to_go' || normalized == 'takeout') return 'GO';
+
+  final name = type.name.trim().toLowerCase();
+  if (name == 'comer aqui' || name == 'aqui') return 'Aqui';
+  if (name == 'para llevar' || name == 'llevar') return 'GO';
+  return type.name;
 }
 
 class _CompactSectionTitle extends StatelessWidget {

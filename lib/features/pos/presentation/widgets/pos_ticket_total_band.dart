@@ -7,14 +7,14 @@ class _TicketTotalBand extends StatelessWidget {
     required this.lines,
     required this.salesTypes,
     required this.productsVisible,
-    this.hideProductsVisibilityButtonOnPhone = false,
+    this.showPhoneBand = true,
     this.selectedSalesTypeId,
     this.onProductsVisibilityToggled,
   });
 
   final List<PosCartLine> lines;
   final List<SalesType> salesTypes;
-  final bool hideProductsVisibilityButtonOnPhone;
+  final bool showPhoneBand;
   final String? selectedSalesTypeId;
   final bool productsVisible;
   final VoidCallback? onProductsVisibilityToggled;
@@ -29,14 +29,15 @@ class _TicketTotalBand extends StatelessWidget {
         final compact = constraints.maxWidth < _ticketMinWidth;
         if (compact) {
           final phoneLayout = constraints.maxWidth < 560;
+          if (phoneLayout && !showPhoneBand) {
+            return const SizedBox.shrink();
+          }
           if (phoneLayout) {
             return Container(
               color: colorScheme.primary,
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
               child: _MobileTicketTotalBand(
                 onProductsVisibilityToggled: onProductsVisibilityToggled,
-                hideProductsVisibilityButton:
-                    hideProductsVisibilityButtonOnPhone,
                 productsVisible: productsVisible,
                 salesTypes: salesTypes,
                 selectedSalesTypeId: selectedSalesTypeId,
@@ -125,7 +126,6 @@ class _TicketTotalBand extends StatelessWidget {
 
 class _MobileTicketTotalBand extends StatelessWidget {
   const _MobileTicketTotalBand({
-    required this.hideProductsVisibilityButton,
     required this.productsVisible,
     required this.salesTypes,
     required this.total,
@@ -133,7 +133,6 @@ class _MobileTicketTotalBand extends StatelessWidget {
     this.selectedSalesTypeId,
   });
 
-  final bool hideProductsVisibilityButton;
   final bool productsVisible;
   final List<SalesType> salesTypes;
   final VoidCallback? onProductsVisibilityToggled;
@@ -146,13 +145,12 @@ class _MobileTicketTotalBand extends StatelessWidget {
 
     return Row(
       children: [
-        if (!hideProductsVisibilityButton)
-          _ProductsVisibilityButton(
-            onPressed: onProductsVisibilityToggled,
-            productsVisible: productsVisible,
-          ),
+        _ProductsVisibilityButton(
+          onPressed: onProductsVisibilityToggled,
+          productsVisible: productsVisible,
+        ),
         if (activeTypes.isNotEmpty) ...[
-          SizedBox(width: hideProductsVisibilityButton ? 0 : 14),
+          const SizedBox(width: 14),
           ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 122),
             child: SingleChildScrollView(

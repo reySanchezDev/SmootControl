@@ -83,6 +83,16 @@ final class PosResponsiveLayout {
     return desired.clamp(66.0, maxHeight * .22).clamp(66.0, 180.0).toDouble();
   }
 
+  /// Height for phone categories. Grows enough to avoid category scrolling.
+  double mobileCategoryBandHeight(int visibleEntryCount) {
+    final columns = touchColumns(minTileWidth: 128);
+    final rows = visibleEntryCount <= 0
+        ? 1
+        : (visibleEntryCount / columns).ceil();
+    final desired = 8 + rows * 58 + (rows - 1) * 4;
+    return desired.clamp(66.0, double.infinity).toDouble();
+  }
+
   /// Height for the table/account selector in compact composition.
   double tableBandHeight(int visibleEntryCount) {
     if (!compact) return categoryBandHeight(visibleEntryCount);

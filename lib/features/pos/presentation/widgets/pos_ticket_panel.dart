@@ -27,7 +27,7 @@ class PosTicketPanel extends StatelessWidget {
     this.selectedSalesTypeId,
     this.onProductsVisibilityToggled,
     this.productsVisible = true,
-    this.mobileCatalogMode = false,
+    this.showMobileTotalBand = true,
     super.key,
   });
 
@@ -43,8 +43,8 @@ class PosTicketPanel extends StatelessWidget {
   /// Whether the product catalog is visible below the ticket.
   final bool productsVisible;
 
-  /// Whether phone layout is prioritizing catalog navigation over detail.
-  final bool mobileCatalogMode;
+  /// Whether phone layout should render the bottom total/action band.
+  final bool showMobileTotalBand;
 
   /// Toggles product catalog visibility.
   final VoidCallback? onProductsVisibilityToggled;
@@ -56,22 +56,6 @@ class PosTicketPanel extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final compact = constraints.maxWidth < _ticketMinWidth;
-        if (compact && mobileCatalogMode) {
-          return DecoratedBox(
-            decoration: BoxDecoration(
-              border: Border.all(color: colorScheme.outlineVariant),
-            ),
-            child: _TicketTotalBand(
-              hideProductsVisibilityButtonOnPhone: true,
-              lines: lines,
-              salesTypes: salesTypes,
-              selectedSalesTypeId: selectedSalesTypeId,
-              onProductsVisibilityToggled: onProductsVisibilityToggled,
-              productsVisible: productsVisible,
-            ),
-          );
-        }
-
         return DecoratedBox(
           decoration: BoxDecoration(
             border: Border.all(color: colorScheme.outlineVariant),
@@ -103,6 +87,7 @@ class PosTicketPanel extends StatelessWidget {
                 selectedSalesTypeId: selectedSalesTypeId,
                 onProductsVisibilityToggled: onProductsVisibilityToggled,
                 productsVisible: productsVisible,
+                showPhoneBand: showMobileTotalBand,
               ),
             ],
           ),

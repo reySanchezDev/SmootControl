@@ -50,7 +50,7 @@ void main() {
   });
 
   testWidgets(
-    'uses abbreviated sales type labels and hides exchange on phone',
+    'moves abbreviated sales type labels into mobile more options',
     (
       tester,
     ) async {
@@ -60,11 +60,18 @@ void main() {
       await _pumpReadyView(tester, state: _mobileSalesTypeState);
 
       expect(tester.takeException(), isNull);
-      expect(find.text('Aquí'), findsOneWidget);
-      expect(find.text('GO'), findsOneWidget);
+      expect(find.text('Aqui'), findsNothing);
+      expect(find.text('GO'), findsNothing);
       expect(find.text('Comer aqui'), findsNothing);
       expect(find.text('Para llevar'), findsNothing);
       expect(find.byIcon(Icons.currency_exchange_outlined), findsNothing);
+
+      await tester.tap(find.text('More options'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Tipo de venta'), findsOneWidget);
+      expect(find.text('Aqui'), findsOneWidget);
+      expect(find.text('GO'), findsOneWidget);
     },
   );
 
@@ -267,6 +274,22 @@ void main() {
     expect(thirdRect.top, greaterThan(firstRect.bottom));
   });
 
+  testWidgets('grows phone category band to keep all root categories visible', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(393, 852));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await _pumpReadyView(tester, state: _manyMobileCategoriesState);
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('BEBIDAS'), findsOneWidget);
+    expect(find.text('POSTRES'), findsOneWidget);
+
+    final categoryBandRect = tester.getRect(find.byType(PosCategoryBand));
+    expect(categoryBandRect.height, greaterThan(180));
+  });
+
   testWidgets('keeps phone categories separated from catalog content', (
     tester,
   ) async {
@@ -282,7 +305,7 @@ void main() {
     expect(categoryBandRect.top, greaterThan(lastVisibleProductRect.bottom));
   });
 
-  testWidgets('hides phone catalog without hiding category controls', (
+  testWidgets('cart button hides phone catalog without hiding categories', (
     tester,
   ) async {
     await tester.binding.setSurfaceSize(const Size(393, 852));
@@ -290,19 +313,17 @@ void main() {
 
     await _pumpReadyView(tester, state: _phoneCatalogProductsState);
 
-    await tester.tap(find.text('Hide'));
+    await tester.tap(find.byIcon(Icons.shopping_cart_outlined));
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
-    expect(find.text('Show'), findsOneWidget);
     expect(find.text('ENCHILADAS'), findsNothing);
     expect(find.text('Cafe caliente'), findsOneWidget);
 
-    await tester.tap(find.text('Show'));
+    await tester.tap(find.byIcon(Icons.shopping_cart_outlined));
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
-    expect(find.text('Hide'), findsOneWidget);
     expect(find.text('ENCHILADAS'), findsOneWidget);
   });
 
@@ -316,7 +337,7 @@ void main() {
 
       await _pumpReadyView(tester, state: _veryDenseResponsiveState);
 
-      await tester.tap(find.text('Hide'));
+      await tester.tap(find.byIcon(Icons.shopping_cart_outlined));
       await tester.pumpAndSettle();
 
       expect(tester.takeException(), isNull);
@@ -328,7 +349,7 @@ void main() {
   );
 
   testWidgets(
-    'toggles phone cart mode while keeping the ticket total visible',
+    'cart button toggles phone order detail and product catalog',
     (
       tester,
     ) async {
@@ -339,14 +360,14 @@ void main() {
 
       expect(tester.takeException(), isNull);
       expect(find.text(r'C$ 0.00'), findsOneWidget);
+      expect(find.text('Cafe'), findsOneWidget);
 
       await tester.tap(find.byIcon(Icons.shopping_cart_outlined));
       await tester.pumpAndSettle();
 
       expect(tester.takeException(), isNull);
       expect(find.text(r'C$ 0.00'), findsOneWidget);
-      expect(find.text('Hide'), findsNothing);
-      expect(find.text('Cafe'), findsOneWidget);
+      expect(find.text('Cafe'), findsNothing);
       expect(find.byType(PosCategoryBand), findsOneWidget);
 
       await tester.tap(find.byIcon(Icons.shopping_cart_outlined));
@@ -354,7 +375,7 @@ void main() {
 
       expect(tester.takeException(), isNull);
       expect(find.text(r'C$ 0.00'), findsOneWidget);
-      expect(find.text('Hide'), findsOneWidget);
+      expect(find.text('Cafe'), findsOneWidget);
     },
   );
 
@@ -428,7 +449,7 @@ void main() {
     final tableRect = tester.getRect(
       find.byKey(const ValueKey('pos-mobile-tables-button')),
     );
-    final selectedTableRect = tester.getRect(find.text('TABLES'));
+    final selectedTableRect = tester.getRect(find.text('Mesa 1'));
 
     expect(cartRect.width, greaterThanOrEqualTo(60));
     expect(tableRect.width, greaterThanOrEqualTo(60));
@@ -475,7 +496,7 @@ void main() {
 
     expect(tester.takeException(), isNull);
     expect(find.text('Pollo asado familiar'), findsAtLeastNWidgets(1));
-    final tablesFinder = find.text('TABLES', skipOffstage: false);
+    final tablesFinder = find.text('Mesa 1', skipOffstage: false);
     expect(tablesFinder, findsAtLeastNWidgets(1));
     expect(find.text('Mesa 3', skipOffstage: false), findsNothing);
 
@@ -518,8 +539,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Cafe caliente'), findsOneWidget);
-    expect(find.text('TABLES'), findsOneWidget);
     expect(find.text('Mesa 1'), findsOneWidget);
+    expect(find.text(r'C$ 1,260.00'), findsOneWidget);
     expect(find.text('More options'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
@@ -931,6 +952,58 @@ const _phoneCatalogProductsState = PosReady(
   paymentMethods: [_cashMethod],
   selectedCategoryId: 'category-1',
   selectedPaymentMethodId: 'cash',
+  selectedTableId: 'table-1',
+);
+
+const _manyMobileCategoriesState = PosReady(
+  categories: [
+    ProductCategory(
+      id: 'mobile-category-1',
+      name: 'COMIDA',
+      sortOrder: 1,
+      isActive: true,
+    ),
+    ProductCategory(
+      id: 'mobile-category-2',
+      name: 'FAST FOOD',
+      sortOrder: 2,
+      isActive: true,
+    ),
+    ProductCategory(
+      id: 'mobile-category-3',
+      name: 'COMBOS POLLO',
+      sortOrder: 3,
+      isActive: true,
+    ),
+    ProductCategory(
+      id: 'mobile-category-4',
+      name: 'FRITANGA',
+      sortOrder: 4,
+      isActive: true,
+    ),
+    ProductCategory(
+      id: 'mobile-category-5',
+      name: 'EXTRAS',
+      sortOrder: 5,
+      isActive: true,
+    ),
+    ProductCategory(
+      id: 'mobile-category-6',
+      name: 'BEBIDAS',
+      sortOrder: 6,
+      isActive: true,
+    ),
+    ProductCategory(
+      id: 'mobile-category-7',
+      name: 'POSTRES',
+      sortOrder: 7,
+      isActive: true,
+    ),
+  ],
+  products: [],
+  tables: [_table],
+  paymentMethods: [_cashMethod],
+  selectedCategoryId: 'mobile-category-1',
   selectedTableId: 'table-1',
 );
 
