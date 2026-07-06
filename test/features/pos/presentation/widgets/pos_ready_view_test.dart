@@ -327,6 +327,57 @@ void main() {
     expect(find.text('ENCHILADAS'), findsOneWidget);
   });
 
+  testWidgets('phone category changes keep cart detail mode active', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(393, 852));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    const newCategoryProduct = Product(
+      id: 'phone-product-category-2',
+      categoryId: 'category-2',
+      name: 'NUEVA CATEGORIA',
+      priceInCents: 7000,
+      costInCents: 3000,
+      isActive: true,
+    );
+    final updateState = await _pumpReadyView(
+      tester,
+      state: _phoneCatalogProductsState.copyWith(
+        products: [
+          ..._phoneCatalogProductsState.products,
+          newCategoryProduct,
+        ],
+      ),
+    );
+
+    await tester.tap(find.byIcon(Icons.shopping_cart_outlined));
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('ENCHILADAS'), findsNothing);
+
+    updateState(
+      _phoneCatalogProductsState.copyWith(
+        products: [
+          ..._phoneCatalogProductsState.products,
+          newCategoryProduct,
+        ],
+        selectedCategoryId: 'category-2',
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('NUEVA CATEGORIA'), findsNothing);
+
+    await tester.tap(find.byIcon(Icons.shopping_cart_outlined));
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('NUEVA CATEGORIA'), findsOneWidget);
+  });
+
   testWidgets(
     'keeps phone total band from overlapping categories when catalog is hidden',
     (

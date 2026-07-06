@@ -99,11 +99,6 @@ class _PosReadyViewState extends State<PosReadyView> {
     if (completedSaleChanged && widget.state.lastCompletedSale != null) {
       _paymentParentKey = null;
     }
-    final categoryChanged =
-        oldWidget.state.selectedCategoryId != widget.state.selectedCategoryId;
-    if (categoryChanged && !_productsVisible) {
-      _productsVisible = true;
-    }
   }
 
   @override
@@ -122,7 +117,7 @@ class _PosReadyViewState extends State<PosReadyView> {
           productsVisible: _productsVisible,
         );
         final categoryBand = PosCategoryBand(
-          onCategorySelected: _showProducts,
+          onCategorySelected: phoneLayout ? null : _showProducts,
           state: widget.state,
         );
         final tableBand = phoneLayout
