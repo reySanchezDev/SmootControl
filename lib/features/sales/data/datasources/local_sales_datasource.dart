@@ -84,6 +84,10 @@ final class LocalSalesDataSource {
             LocalSalesCompanion(
               id: Value(sale.id),
               invoiceNumber: Value(sale.invoiceNumber),
+              saleKind: Value(sale.saleKindValue),
+              employeeId: Value(sale.employeeId),
+              internalReceiptNumber: Value(sale.internalReceiptNumber),
+              payrollRunId: Value(sale.payrollRunId),
               tableId: Value(sale.tableId),
               tableAccountId: Value(sale.tableAccountId),
               cashRegisterSessionId: Value(sale.cashRegisterSessionId),
@@ -193,12 +197,14 @@ final class LocalSalesDataSource {
     final sales = <SaleModel>[];
     for (final row in rows) {
       final model = SaleModel.fromLocal(row);
+      final syncSnapshot = await _latestQueueSnapshotForSale(
+        row.id,
+        fallback: model.syncStatus,
+      );
       sales.add(
         model.copyWith(
-          syncStatus: await _latestQueueStatusForSale(
-            row.id,
-            fallback: model.syncStatus,
-          ),
+          syncStatus: syncSnapshot.status,
+          syncError: syncSnapshot.error,
         ),
       );
     }
@@ -206,7 +212,7 @@ final class LocalSalesDataSource {
     return sales;
   }
 
-  Future<SaleSyncStatus> _latestQueueStatusForSale(
+  Future<_SaleSyncSnapshot> _latestQueueSnapshotForSale(
     String saleId, {
     required SaleSyncStatus fallback,
   }) async {
@@ -220,11 +226,19 @@ final class LocalSalesDataSource {
               ..orderBy([(item) => OrderingTerm.desc(item.updatedAt)])
               ..limit(1))
             .getSingleOrNull();
-    if (row == null) return fallback;
+    if (row == null) return _SaleSyncSnapshot(status: fallback);
 
-    return SaleSyncStatus.values.firstWhere(
+    final status = SaleSyncStatus.values.firstWhere(
       (status) => status.name == row.status,
       orElse: () => SaleSyncStatus.pending,
     );
+    return _SaleSyncSnapshot(status: status, error: row.lastError);
   }
+}
+
+final class _SaleSyncSnapshot {
+  const _SaleSyncSnapshot({required this.status, this.error});
+
+  final SaleSyncStatus status;
+  final String? error;
 }

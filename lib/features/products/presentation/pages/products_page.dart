@@ -5,14 +5,14 @@ import 'package:smoo_control/core/design_system/app_loading_page.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
 import 'package:smoo_control/core/design_system/app_searchable_list_section.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
+import 'package:smoo_control/core/design_system/app_tile_actions.dart';
 import 'package:smoo_control/core/design_system/confirm_deactivate_dialog.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/core/formatters/money_formatter.dart';
 import 'package:smoo_control/core/result/app_result.dart';
+import 'package:smoo_control/features/admin_remote/data/repositories/supabase_admin_repository.dart';
 import 'package:smoo_control/features/catalog/domain/entities/product_category.dart';
-import 'package:smoo_control/features/catalog/domain/repositories/i_catalog_repository.dart';
 import 'package:smoo_control/features/modifiers/domain/entities/modifier_group.dart';
-import 'package:smoo_control/features/modifiers/domain/repositories/i_modifiers_repository.dart';
 import 'package:smoo_control/features/products/domain/entities/product.dart';
 import 'package:smoo_control/features/products/presentation/bloc/products_bloc.dart';
 import 'package:smoo_control/features/products/presentation/bloc/products_event.dart';
@@ -176,7 +176,7 @@ class ProductsPage extends StatelessWidget {
   }
 
   Future<List<ModifierGroup>> _loadModifierGroups() async {
-    final result = await serviceLocator<IModifiersRepository>().getCatalog();
+    final result = await serviceLocator<SupabaseAdminRepository>().getCatalog();
 
     return switch (result) {
       AppSuccess(:final value) => value.groups,
@@ -185,7 +185,8 @@ class ProductsPage extends StatelessWidget {
   }
 
   Future<List<ProductCategory>> _loadCategories() async {
-    final result = await serviceLocator<ICatalogRepository>().getCategories();
+    final result = await serviceLocator<SupabaseAdminRepository>()
+        .getCategories();
 
     return switch (result) {
       AppSuccess(:final value) => value,
@@ -243,34 +244,43 @@ class _ProductTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
 
-    return ListTile(
-      leading: const Icon(Icons.local_cafe_outlined),
-      subtitle: AppText(
-        _subtitle(l10n),
-        variant: AppTextVariant.label,
-      ),
-      title: AppText(product.name),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          AppText(
-            MoneyFormatter.format(product.priceInCents),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 560;
+        final price = MoneyFormatter.format(product.priceInCents);
+        return ListTile(
+          leading: const Icon(Icons.local_cafe_outlined),
+          subtitle: AppText(
+            compact ? '$price - ${_subtitle(l10n)}' : _subtitle(l10n),
+            maxLines: compact ? 3 : 2,
+            overflow: TextOverflow.ellipsis,
             variant: AppTextVariant.label,
           ),
-          if (product.isActive)
-            IconButton(
-              color: Theme.of(context).colorScheme.error,
-              icon: const Icon(Icons.delete_outline),
-              onPressed: onDeactivate,
-              tooltip: l10n.deactivateAction,
-            ),
-          IconButton(
-            icon: const Icon(Icons.edit_outlined),
-            onPressed: onEdit,
-            tooltip: l10n.editAction,
+          title: AppText(
+            product.name,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
-        ],
-      ),
+          trailing: AppTileActions(
+            compact: compact,
+            inlineLeading: AppText(price, variant: AppTextVariant.label),
+            actions: [
+              if (product.isActive)
+                AppTileAction(
+                  color: Theme.of(context).colorScheme.error,
+                  icon: Icons.delete_outline,
+                  label: l10n.deactivateAction,
+                  onPressed: onDeactivate,
+                ),
+              AppTileAction(
+                icon: Icons.edit_outlined,
+                label: l10n.editAction,
+                onPressed: onEdit,
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 

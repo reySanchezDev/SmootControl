@@ -380,7 +380,8 @@ Do not mix those rules.
 
 ### 14.3 Admin Mode Rules
 
-Admin catalogs must be remote-first:
+Admin catalogs and administrative screens must be remote-only from the UI
+perspective:
 
 - products
 - categories
@@ -390,15 +391,34 @@ Admin catalogs must be remote-first:
 - roles, permissions, users
 - packaging rules/items/sales types
 - exchange rates
-- business settings, except explicitly local operational values
+- inventory purchases and packaging purchases
+- sales admin views/actions
+- expenses admin views/actions
+- audit log views/actions
+- business settings
 
-For remote-first saves:
+For admin saves:
 
-- Push to Supabase first through the existing repository/remote sender pattern.
-- Save locally only after the remote write succeeds.
-- Do not enqueue admin catalog changes as the primary path unless the existing
-  repository explicitly supports a fallback.
+- Read from Supabase directly when entering the screen.
+- Write/update/delete in Supabase directly.
+- Refresh visible lists from Supabase after a successful save.
+- Do not write Drift/local tables from admin screens.
+- Do not enqueue admin changes in the sync queue as the primary path.
+- Do not use `AdminDataRefreshService` from admin BLoCs/pages to refresh local
+  cache.
 - Do not tell the UI "guardado" if the remote write failed.
+- Keep local repositories for POS and catalog sync only.
+
+Admin create/edit forms must not expose technical identifiers:
+
+- Do not show or request `id`, UUID, remote id, local id, sequence number or
+  sync ids as editable fields.
+- New records must let Supabase/RPC assign the technical id.
+- If the business needs a visible consecutive, create a dedicated business
+  number/code managed by Supabase, starting from `1` per restaurant when
+  applicable.
+- The UI may display that business number after creation, but must not let the
+  user type it during normal creation.
 
 ### 14.4 POS Mode Rules
 
@@ -416,6 +436,16 @@ POS operational data is local-first:
 POS sales are synchronized upward later. The remote side assigns/controls the
   invoice consecutive. Do not burn local invoice numbers before the sale is
   accepted.
+
+POS sale synchronization must be FIFO and single-lane:
+
+- `SyncQueueProcessor` is the source of truth for retry order.
+- `syncOnSave` must never send a later sale while an older sale is still
+  `pending`, `syncing` or `error`.
+- If an older sale has an error, later sales must remain queued until the older
+  error is fixed or explicitly retried successfully.
+- Do not add direct background pushes that bypass `local_sync_queue`.
+- A sale retry must be idempotent by stable local sale id, not by invoice text.
 
 Local-only POS values must not be pushed upward unless explicitly requested.
 Known local-only examples:
@@ -519,7 +549,25 @@ Rules:
 - Add or keep tests that select `GO` through compact more options and assert
   the BLoC selected sales type changed.
 
-### 14.9 Supabase Credentials
+### 14.9 KDS Scope
+
+KDS is explicitly deferred to Version 2.
+
+- Do not implement KDS tables, product KDS fields, routes, roles, permissions,
+  Supabase migrations, realtime subscriptions, or UI in V1 unless the user
+  explicitly reopens the scope.
+- The documented V2 direction is remote-first KDS over Supabase.
+- POS remains offline-first; if internet is down, KDS delivery is manual.
+- Future KDS must use configurable stations, for example `Cocina` and
+  `Mostrador/Baño Maria`, not hardcoded product-name rules.
+- Future product routing should be modeled as:
+  - `applies_to_kds`
+  - `kds_station_id`
+- Future roles should use permissions per station, not only role names.
+- See `Documentation/PROJECT_TRACKING.md` and
+  `Documentation/BUSINESS_RULES.md`.
+
+### 14.10 Supabase Credentials
 
 Never hardcode Supabase values in Dart, Android, web files, or tests.
 
@@ -542,7 +590,17 @@ Build scripts inject them with `--dart-define`.
 Use the scripts. Do not manually paste credentials into commands, source code,
 or documentation.
 
-### 14.10 APK Build Procedure
+If an APK shows `Supabase no esta configurado para inicializar este
+dispositivo`, the first suspect is an APK built without these dart-defines.
+Rebuild with `tool/build_android_release.ps1`.
+
+### 14.11 APK Build Procedure
+
+Before building any APK candidate, run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\tool\production_preflight.ps1
+```
 
 Build production APK only with:
 
@@ -550,10 +608,20 @@ Build production APK only with:
 powershell -ExecutionPolicy Bypass -File .\tool\build_android_release.ps1
 ```
 
+Never use this command for an APK that will be installed on a phone/tablet:
+
+```powershell
+flutter build apk --release
+```
+
+That raw command produces an APK without Supabase/restaurant dart-defines. It
+will compile, but remote admin login and device initialization can fail.
+
 Output:
 
 ```text
 release/SmooControl-produccion.apk
+release/SmooControl-produccion.buildinfo.txt
 ```
 
 Mandatory APK validation:
@@ -567,6 +635,7 @@ $aapt = Get-ChildItem -Path "$env:LOCALAPPDATA\Android\Sdk\build-tools" `
 & $aapt.FullName dump permissions release\SmooControl-produccion.apk
 & $aapt.FullName dump badging release\SmooControl-produccion.apk |
   Select-String -Pattern "package:"
+Get-Content release\SmooControl-produccion.buildinfo.txt
 ```
 
 Must verify:
@@ -575,11 +644,20 @@ Must verify:
 - package name remains `com.smoocontrol.pos`.
 - `versionCode` is greater than the APK already installed in production.
 - `versionName` matches `pubspec.yaml`.
+- build info says
+  `InjectedDartDefines=SMOO_SUPABASE_URL,SMOO_SUPABASE_PUBLISHABLE_KEY,SMOO_RESTAURANT_ID`.
+- build info says `SqliteNativeLibrary=PRESENTE`.
+- APK contains `lib/arm64-v8a/libsqlite3.so` at minimum. Missing SQLite native
+  libs can break POS local storage, sync, utilities, and any Drift-backed flow
+  on Android.
+- `Documentation/V1_RELEASE_CANDIDATE_CHECKLIST.md` has been executed for the
+  candidate APK.
+- `Documentation/APK_RELEASE_BUILD_PROCEDURE.md` was followed.
 
 Never ask the user to uninstall the app if there may be unsynchronized POS
 operations. Install updates over the existing APK.
 
-### 14.11 Web Release Procedure
+### 14.12 Web Release Procedure
 
 Build web release only with:
 
@@ -598,7 +676,7 @@ Operational server commands are documented in:
 comandos.md
 ```
 
-### 14.12 Drift Database And Migrations
+### 14.13 Drift Database And Migrations
 
 - Do not bump `schemaVersion` without a non-destructive migration.
 - Do not delete or recreate local operational tables.
@@ -608,7 +686,25 @@ comandos.md
 - If a migration touches device initialization state, test clean install and
   update-over-existing-APK scenarios.
 
-### 14.13 Required Validation Before Delivery
+### 14.13.1 Supabase Remote Migrations
+
+- If a requested improvement requires Supabase schema/RPC/permission changes,
+  create the migration and apply it to the linked Supabase project in the same
+  work session.
+- Do not wait for the user to ask "haz la migracion" after implementing a
+  feature that depends on new remote tables, columns, policies, permissions or
+  RPCs.
+- Before applying, verify the linked project and pending migration list with
+  Supabase CLI.
+- Apply pending migrations with the project scripts/CLI, not by pasting SQL in
+  the dashboard unless the CLI is unavailable.
+- After applying, report which migration files were pushed and whether the
+  command succeeded.
+- If the migration fails, stop and fix the SQL/RPC/policy issue before
+  rebuilding or delivering an APK that depends on it.
+- Never print or hardcode Supabase secrets while running migrations.
+
+### 14.14 Required Validation Before Delivery
 
 For POS UI/payment changes, run at minimum:
 
@@ -627,7 +723,7 @@ flutter test test\features\auth\domain\services\device_initialization_service_te
 Before building any production APK after mixed changes, run both POS and auth
 test groups.
 
-### 14.14 Git Discipline
+### 14.15 Git Discipline
 
 - Keep commits scoped.
 - Commit POS UI changes separately from auth/database/build changes.

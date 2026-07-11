@@ -407,6 +407,48 @@
 - Edge cases: Requiere confirmacion; no se muestra accion de quitar en metodos raiz; si el nivel quitado tiene hijos directos, esos hijos quedan reubicados en el nivel anterior.
 - Data impact: `payment_methods.parent_id`, `local_sync_queue`, `local_audit_logs`.
 
+## Personal Y Planilla
+
+### Regla: Pago parcial de planilla
+- Description: La planilla muestra solo empleados y periodos con saldo pendiente. Un empleado desaparece del periodo unicamente cuando `paid_amount` cubre el 100% de `net_pay`.
+- Rationale: Permite pagar parcialmente una quincena sin perder control del saldo restante.
+- Example(s): Ana tiene neto C$ 4,050.00 y se pagan C$ 2,000.00; la planilla sigue mostrando Ana con pendiente C$ 2,050.00. Si luego inicia otra quincena, Ana puede aparecer dos veces: saldo anterior y periodo actual.
+- Edge cases: Los pagos completos no se devuelven en `app_get_pending_payroll_lines`; los pagos parciales anteriores no vuelven a descontar adelantos porque el saldo ya trae esos calculos aplicados.
+- Related screens/flows: `Planilla`, `Adelantos`, `Consumos de personal`.
+- Data impact: `payroll_run_lines.paid_amount`, `payroll_run_lines.balance_amount`, `app_post_payroll_employee`, `app_get_pending_payroll_lines`.
+
+### Regla: Lectura clara de saldos de planilla
+- Description: La tarjeta de planilla separa salario, consumo, adelanto registrado, abono a adelanto, saldo de adelanto, neto de planilla, pagado y pendiente de nomina.
+- Rationale: Evita confundir dos saldos distintos: deuda de nomina pendiente de pagar y deuda de adelanto pendiente de descontar.
+- Example(s): Scarleth gana C$ 4,050.00, consume C$ 150.00, tiene adelanto C$ 525.00 y se abonan C$ 25.00 al adelanto; la tarjeta muestra saldo de adelanto C$ 500.00 y pendiente de nomina segun el monto pagado.
+- Edge cases: En saldos de planilla ya creados, el abono de adelanto ya aplicado se muestra como historico y no se vuelve a descontar en pagos posteriores del mismo periodo. Al iniciar un pago nuevo, el abono de adelanto inicia en cero y el monto a pagar se recalcula al cambiar ese abono.
+- Related screens/flows: `Planilla`.
+- Data impact: lectura de `employee_salary_advances.balance_amount`, `payroll_run_lines.salary_advance_deduction`, `payroll_run_lines.paid_amount`, `payroll_run_lines.balance_amount`.
+
+### Regla: Adelantos muestran monto original y saldo
+- Description: La pantalla de adelantos debe mostrar el monto original entregado, lo abonado y el saldo pendiente.
+- Rationale: Mostrar solo el saldo oculta la historia del adelanto y confunde cuando hay pagos parciales.
+- Example(s): Holman recibio C$ 1,000.00 y se abonaron C$ 500.00; la lista muestra Adelanto C$ 1,000.00, Abonado C$ 500.00 y Saldo C$ 500.00.
+- Edge cases: Un adelanto pagado muestra saldo C$ 0.00, pero conserva el monto original para auditoria.
+- Related screens/flows: `Adelantos`, `Planilla`.
+- Data impact: `employee_salary_advances.amount`, `employee_salary_advances.balance_amount`.
+
+### Regla: Reinicio de produccion limpia operacion de personal
+- Description: `REINICIAR PRODUCCION` elimina movimientos de personal generados en preproduccion: adelantos, planilla y consumos ligados a ventas internas, conservando empleados y puestos.
+- Rationale: La salida a vivo debe iniciar sin deudas ni nominas de prueba, pero sin perder catalogos administrativos.
+- Example(s): Antes de produccion se borran adelantos de prueba y planillas registradas; los empleados quedan creados para seguir operando.
+- Edge cases: La accion requiere permiso `sistema.reiniciar_operacion`, confirmacion exacta y sesion admin remota. Tambien reinicia el consecutivo de consumos de personal a 1.
+- Related screens/flows: `Utilidades`, `Reiniciar produccion`.
+- Data impact: `employee_salary_advances`, `payroll_runs`, `payroll_run_lines`, `staff_consumption_number_settings`, `local_salary_advances`, `reset_pilot_operation`.
+
+### Regla: Utilidades limpia primero local y despues remoto
+- Description: Las limpiezas modulares de preproduccion desde `Utilidades` borran primero la informacion local del movil y su cola de sincronizacion relacionada. Luego ejecutan la limpieza remota en Supabase.
+- Rationale: El POS es offline-first; si el remoto se limpia antes que la cola local, el movil podria volver a empujar datos de prueba.
+- Example(s): Al ejecutar `BORRAR GASTOS`, el movil borra `local_operating_expenses` operativos y su cola `operating_expenses`; despues llama `reset_pilot_operation_scope` con alcance `expenses`.
+- Edge cases: Si Supabase falla despues de limpiar local, el movil ya no reenvia esos datos de prueba. El administrador puede repetir la misma accion para completar la limpieza remota.
+- Related screens/flows: `Utilidades`, `Sincronizacion`, POS offline.
+- Data impact: `local_sync_queue`, tablas locales del modulo, `pilot_cleanup_markers`, `reset_pilot_operation_scope`.
+
 ## Roles Y Permisos
 
 ### Regla: Permisos granulares
@@ -441,3 +483,13 @@
 - Edge cases: Si local usa un valor temporal como `usuario-local`, debe estar centralizado y marcado como deuda antes de remoto; si Supabase exige un campo no capturado en UI, debe existir un mapeo deterministico o bloquearse la migracion.
 - Related screens/flows: catalogos, POS, caja, gastos, usuarios, sync.
 - Data impact: `Documentation/SUPABASE_READINESS_AUDIT.md`, `supabase/migrations`, `local_sync_queue`.
+
+## Version 2 / KDS
+
+### Regla futura: KDS remoto por estaciones
+- Description: En V2 se evaluara una pantalla KDS conectada 100% al remoto en Supabase. Los productos podran indicar si aplican a KDS y a que estacion deben enviarse.
+- Rationale: Cocina y mostrador necesitan recibir pedidos segun el tipo de preparacion: productos preparados al momento van a cocina; productos ya cocinados en baño maria o buffet van a mostrador; bebidas u otros productos pueden no aparecer en ningun KDS.
+- Example(s): `Hamburguesa` aplica KDS y se enruta a `Cocina`; `Comida > Asados > Res` aplica KDS y se enruta a `Mostrador/Baño Maria`; `Coca Cola` no aplica KDS.
+- Edge cases: KDS no se implementa en V1. El POS sigue pudiendo vender sin internet; si no hay conexion, el pedido no llegara automaticamente al KDS remoto y se comunicara manualmente. KDS debe recibir pedidos abiertos, no esperar a que la venta este cobrada. Los estados KDS deben ser propios y no reutilizar `isServed` del ticket POS.
+- Related screens/flows: futuro `lib/features/kds/`, mantenimiento de productos, roles/permisos, POS pedidos abiertos, Supabase Realtime/polling.
+- Data impact: propuesta futura de `kds_stations`, columnas `products.applies_to_kds`, `products.kds_station_id` y tablas remotas para ordenes/items KDS. No crear migraciones en V1.

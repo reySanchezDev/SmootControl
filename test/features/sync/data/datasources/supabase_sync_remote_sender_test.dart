@@ -683,6 +683,191 @@ void main() {
     );
 
     test(
+      'syncs local cash session before staff consumption when alias is missing',
+      () async {
+        final database = _testDatabase();
+        final now = DateTime(2026, 7, 8, 21, 21);
+        await _seedDeviceForPosSync(database, now);
+        await _seedLocalCashSession(database, now: now);
+
+        final requests = <http.Request>[];
+        final sender = SupabaseSyncRemoteSender(
+          database: database,
+          config: const SupabaseAppConfig(
+            supabaseUrl: 'https://smoo.test',
+            publishableKey: 'publishable-key',
+          ),
+          restaurantService: const CurrentRestaurantService(
+            restaurantId: '11111111-1111-4111-8111-111111111111',
+          ),
+          remoteSessionService: CurrentRemoteSessionService(),
+          client: MockClient((request) async {
+            requests.add(request);
+            if (request.url.path ==
+                '/rest/v1/rpc/pos_sync_cash_register_session') {
+              return http.Response(
+                jsonEncode({
+                  'remote_id': '99999999-9999-4999-8999-999999999999',
+                }),
+                200,
+              );
+            }
+            if (request.url.path == '/rest/v1/rpc/pos_sync_staff_consumption') {
+              return http.Response(
+                jsonEncode({
+                  'remote_id': '88888888-8888-4888-8888-888888888888',
+                  'invoice_number': 'CP-1',
+                  'internal_receipt_number': 1,
+                }),
+                200,
+              );
+            }
+            return http.Response('', 404);
+          }),
+        );
+
+        await sender.push(
+          SyncQueueItem(
+            id: 'queue-staff-consumption',
+            entityType: 'sales',
+            entityId: '88888888-8888-4888-8888-888888888888',
+            operation: SyncOperation.create,
+            payload: const {
+              'sale': {
+                'id': '88888888-8888-4888-8888-888888888888',
+                'invoiceNumber': 'CP-PEND-8b6a2d06',
+                'saleKind': 'staff_consumption',
+                'employeeId': 'employee-1',
+                'tableId': null,
+                'tableAccountId': null,
+                'paymentMethodId': '77777777-7777-4777-8777-777777777777',
+                'salesTypeId': null,
+                'salesTypeName': null,
+                'paymentReference': null,
+                'cashRegisterSessionId': '7da1e8d4-8844-41c8-add6-deba18d0e71f',
+                'cashierId': '44444444-4444-4444-8444-444444444444',
+                'businessDate': '2026-07-08',
+                'status': 'completed',
+                'subtotalInCents': 6000,
+                'totalInCents': 6000,
+                'createdAt': '2026-07-08T21:21:00.000',
+              },
+              'items': [
+                {
+                  'id': 'item-1',
+                  'saleId': '88888888-8888-4888-8888-888888888888',
+                  'tableAccountId': null,
+                  'productId': 'product-1',
+                  'productName': 'TAJADAS CON QUESO',
+                  'categoryName': 'COMIDA',
+                  'selectedOptionsLabel': null,
+                  'quantity': 1,
+                  'unitPriceInCents': 6000,
+                  'unitCostInCents': 0,
+                  'createdAt': '2026-07-08T21:21:00.000',
+                },
+              ],
+              'inventoryMovements': [],
+              'packagingMovements': [],
+            },
+            status: SyncQueueStatus.pending,
+            retryCount: 0,
+            createdAt: now,
+            updatedAt: now,
+          ),
+        );
+
+        expect(requests.map((request) => request.url.path), [
+          '/rest/v1/rpc/pos_sync_cash_register_session',
+          '/rest/v1/rpc/pos_sync_staff_consumption',
+        ]);
+
+        final body = jsonDecode(requests.last.body) as Map<String, Object?>;
+        final payload = body['p_payload']! as Map<String, Object?>;
+        final sale = payload['sale']! as Map<String, Object?>;
+        expect(
+          sale['cash_register_session_id'],
+          '99999999-9999-4999-8999-999999999999',
+        );
+      },
+    );
+
+    test(
+      'syncs local cash session before salary advance when alias is missing',
+      () async {
+        final database = _testDatabase();
+        final now = DateTime(2026, 7, 8, 21, 30);
+        await _seedDeviceForPosSync(database, now);
+        await _seedLocalCashSession(database, now: now);
+
+        final requests = <http.Request>[];
+        final sender = SupabaseSyncRemoteSender(
+          database: database,
+          config: const SupabaseAppConfig(
+            supabaseUrl: 'https://smoo.test',
+            publishableKey: 'publishable-key',
+          ),
+          restaurantService: const CurrentRestaurantService(
+            restaurantId: '11111111-1111-4111-8111-111111111111',
+          ),
+          remoteSessionService: CurrentRemoteSessionService(),
+          client: MockClient((request) async {
+            requests.add(request);
+            if (request.url.path ==
+                '/rest/v1/rpc/pos_sync_cash_register_session') {
+              return http.Response(
+                jsonEncode({
+                  'remote_id': '99999999-9999-4999-8999-999999999999',
+                }),
+                200,
+              );
+            }
+            if (request.url.path == '/rest/v1/rpc/pos_sync_salary_advance') {
+              return http.Response('{}', 200);
+            }
+            return http.Response('', 404);
+          }),
+        );
+
+        await sender.push(
+          SyncQueueItem(
+            id: 'queue-salary-advance',
+            entityType: 'salary_advances',
+            entityId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+            operation: SyncOperation.create,
+            payload: const {
+              'id': 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+              'employeeId': 'employee-1',
+              'cashRegisterSessionId': '7da1e8d4-8844-41c8-add6-deba18d0e71f',
+              'amountInCents': 100000,
+              'affectsCash': true,
+              'note': null,
+              'createdBy': '44444444-4444-4444-8444-444444444444',
+              'createdAt': '2026-07-08T21:30:00.000',
+              'deliveredAt': '2026-07-08T21:30:00.000',
+            },
+            status: SyncQueueStatus.pending,
+            retryCount: 0,
+            createdAt: now,
+            updatedAt: now,
+          ),
+        );
+
+        expect(requests.map((request) => request.url.path), [
+          '/rest/v1/rpc/pos_sync_cash_register_session',
+          '/rest/v1/rpc/pos_sync_salary_advance',
+        ]);
+
+        final body = jsonDecode(requests.last.body) as Map<String, Object?>;
+        final payload = body['p_payload']! as Map<String, Object?>;
+        expect(
+          payload['cash_register_session_id'],
+          '99999999-9999-4999-8999-999999999999',
+        );
+      },
+    );
+
+    test(
       'reuses existing remote open cash session when local cash collides',
       () async {
         final requests = <http.Request>[];
@@ -801,4 +986,40 @@ AppDatabase _testDatabase() {
   final database = AppDatabase(NativeDatabase.memory());
   addTearDown(database.close);
   return database;
+}
+
+Future<void> _seedDeviceForPosSync(AppDatabase database, DateTime now) async {
+  await database
+      .into(database.localDeviceState)
+      .insert(
+        LocalDeviceStateCompanion.insert(
+          deviceId: '33333333-3333-4333-8333-333333333333',
+          restaurantId: '11111111-1111-4111-8111-111111111111',
+          initializedByUserId: '44444444-4444-4444-8444-444444444444',
+          initializedAt: now,
+          lastFullRestoreAt: now,
+          lastRestoreStatus: 'completed',
+          syncDeviceId: const Value('33333333-3333-4333-8333-333333333333'),
+          syncDeviceSecret: const Value('device-secret'),
+        ),
+      );
+}
+
+Future<void> _seedLocalCashSession(
+  AppDatabase database, {
+  required DateTime now,
+}) async {
+  await database
+      .into(database.localCashRegisterSessions)
+      .insert(
+        LocalCashRegisterSessionsCompanion.insert(
+          id: '7da1e8d4-8844-41c8-add6-deba18d0e71f',
+          cashierId: '44444444-4444-4444-8444-444444444444',
+          businessDate: '2026-07-08',
+          openingCashInCents: 0,
+          status: const Value('open'),
+          createdAt: now,
+          updatedAt: now,
+        ),
+      );
 }

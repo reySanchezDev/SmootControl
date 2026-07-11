@@ -21,6 +21,10 @@ Future<void> _handlePosStarted(
   final openTicketsResult = await bloc._openTicketRepository.getOpenTickets();
   final orderSalesTypesResult = await bloc._openTicketRepository
       .getOrderSalesTypes();
+  final productOrderByProductId = await bloc._productOrderDataSource
+      .getProductOrderById();
+  final tableOrderByTableId = await bloc._productOrderDataSource
+      .getTableOrderById();
 
   final CashRegisterSession cashSession;
   switch (cashSessionResult) {
@@ -87,7 +91,14 @@ Future<void> _handlePosStarted(
   final List<RestaurantTable> tables;
   switch (tablesResult) {
     case AppSuccess(:final value):
-      tables = value.where((table) => table.isActive).toList();
+      tables = value.where((table) => table.isActive).toList()
+        ..sort(
+          (first, second) => _compareRestaurantTablesForPos(
+            first,
+            second,
+            tableOrderByTableId,
+          ),
+        );
     case AppFailureResult(:final error):
       emit(PosFailure(error));
       return;
@@ -145,6 +156,8 @@ Future<void> _handlePosStarted(
       tables: tables,
       salesTypes: salesTypes,
       salesTypeIdByOrderKey: salesTypeIdByOrderKey,
+      productOrderByProductId: productOrderByProductId,
+      tableOrderByTableId: tableOrderByTableId,
       paymentMethods: methods,
       cartLines: cartLinesByTable[activeCartKey] ?? const [],
       cartLinesByTable: cartLinesByTable,
@@ -191,6 +204,22 @@ int _compareRestaurantTableNames(
     if (numberOrder != 0) return numberOrder;
   }
   return first.name.compareTo(second.name);
+}
+
+int _compareRestaurantTablesForPos(
+  RestaurantTable first,
+  RestaurantTable second,
+  Map<String, int> orderByTableId,
+) {
+  final firstOrder = orderByTableId[first.id];
+  final secondOrder = orderByTableId[second.id];
+  if (firstOrder != null && secondOrder != null) {
+    final order = firstOrder.compareTo(secondOrder);
+    if (order != 0) return order;
+  }
+  if (firstOrder != null) return -1;
+  if (secondOrder != null) return 1;
+  return _compareRestaurantTableNames(first, second);
 }
 
 int? _firstNumber(String value) {

@@ -6,7 +6,6 @@ import 'package:smoo_control/features/catalog/domain/entities/product_category.d
 import 'package:smoo_control/features/catalog/domain/repositories/i_catalog_repository.dart';
 import 'package:smoo_control/features/catalog/presentation/bloc/catalog_event.dart';
 import 'package:smoo_control/features/catalog/presentation/bloc/catalog_state.dart';
-import 'package:smoo_control/features/sync/domain/services/admin_data_refresh_service.dart';
 import 'package:uuid/uuid.dart';
 
 /// BLoC for category and subcategory management.
@@ -15,11 +14,9 @@ final class CatalogBloc extends Bloc<CatalogEvent, CatalogState> {
   CatalogBloc({
     required ICatalogRepository repository,
     required IAuditLogRepository auditLogRepository,
-    AdminDataRefreshService? remoteRefreshService,
     Uuid uuid = const Uuid(),
   }) : _repository = repository,
        _auditLogRepository = auditLogRepository,
-       _remoteRefreshService = remoteRefreshService,
        _uuid = uuid,
        super(const CatalogInitial()) {
     on<CatalogLoadRequested>(_onLoadRequested);
@@ -29,7 +26,6 @@ final class CatalogBloc extends Bloc<CatalogEvent, CatalogState> {
 
   final ICatalogRepository _repository;
   final IAuditLogRepository _auditLogRepository;
-  final AdminDataRefreshService? _remoteRefreshService;
   final Uuid _uuid;
 
   Future<void> _onLoadRequested(
@@ -37,7 +33,6 @@ final class CatalogBloc extends Bloc<CatalogEvent, CatalogState> {
     Emitter<CatalogState> emit,
   ) async {
     emit(const CatalogLoading());
-    if (!await _refreshRemoteCache(emit)) return;
     final result = await _repository.getCategories();
     emit(
       result.when(
@@ -141,14 +136,5 @@ final class CatalogBloc extends Bloc<CatalogEvent, CatalogState> {
         AppFailureResult() => const <ProductCategory>[],
       },
     };
-  }
-
-  Future<bool> _refreshRemoteCache(Emitter<CatalogState> emit) async {
-    final result = await _remoteRefreshService?.refreshCatalog();
-    if (result case AppFailureResult(:final error)) {
-      emit(CatalogFailure(error));
-      return false;
-    }
-    return true;
   }
 }

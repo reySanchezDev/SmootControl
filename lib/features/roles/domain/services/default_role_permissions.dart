@@ -15,10 +15,13 @@ abstract final class DefaultRolePermissions {
       'pdf.generar',
       'cuentas.separar',
       'ventas.anular',
+      'personal.consumos.registrar',
+      'personal.adelantos.gestionar',
     ],
     DefaultAccessRoles.waiterId: const [
       'ventas.registrar',
       'cuentas.separar',
+      'personal.consumos.registrar',
     ],
   };
 }

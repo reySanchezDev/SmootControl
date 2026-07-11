@@ -1,5 +1,14 @@
 import 'package:equatable/equatable.dart';
 
+/// Business meaning of an operating expense row.
+enum OperatingExpenseKind {
+  /// Regular operational expense.
+  operational,
+
+  /// Salary advance registered from POS.
+  salaryAdvance,
+}
+
 /// Operational expense paid from the business or cash register.
 final class OperatingExpense extends Equatable {
   /// Creates an operating expense.
@@ -10,7 +19,10 @@ final class OperatingExpense extends Equatable {
     required this.description,
     required this.createdAt,
     required this.createdBy,
+    this.kind = OperatingExpenseKind.operational,
     this.cashRegisterSessionId,
+    this.employeeId,
+    this.affectsCash = true,
   });
 
   /// Unique expense identifier.
@@ -21,6 +33,15 @@ final class OperatingExpense extends Equatable {
 
   /// Cash register session when paid from the register.
   final String? cashRegisterSessionId;
+
+  /// Business meaning of the expense.
+  final OperatingExpenseKind kind;
+
+  /// Employee linked to a salary advance.
+  final String? employeeId;
+
+  /// Whether this row reduced the POS cash drawer.
+  final bool affectsCash;
 
   /// Expense amount.
   final int amountInCents;
@@ -39,6 +60,9 @@ final class OperatingExpense extends Equatable {
     id,
     categoryId,
     cashRegisterSessionId,
+    kind,
+    employeeId,
+    affectsCash,
     amountInCents,
     description,
     createdBy,

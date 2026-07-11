@@ -9,6 +9,18 @@ abstract final class AppRoutes {
   /// Reports route.
   static const reports = '/reports';
 
+  /// General report summary route.
+  static const reportSummary = '/reports/summary';
+
+  /// Daily sales report route.
+  static const dailySalesReport = '/reports/daily-sales';
+
+  /// Expenses report route.
+  static const expensesReport = '/reports/expenses';
+
+  /// Inventory value report route.
+  static const inventoryValueReport = '/reports/inventory-value';
+
   /// Categories route.
   static const catalog = '/catalog';
 
@@ -50,6 +62,24 @@ abstract final class AppRoutes {
 
   /// Audit route.
   static const audit = '/audit';
+
+  /// Employees route.
+  static const staff = '/staff';
+
+  /// Employee positions route.
+  static const staffPositions = '/staff-positions';
+
+  /// Staff consumptions route.
+  static const staffConsumptions = '/staff-consumptions';
+
+  /// Salary advances route.
+  static const salaryAdvances = '/salary-advances';
+
+  /// Payroll route.
+  static const payroll = '/payroll';
+
+  /// Business rules route.
+  static const businessRules = '/business-rules';
 
   /// Sync route.
   static const sync = '/sync';

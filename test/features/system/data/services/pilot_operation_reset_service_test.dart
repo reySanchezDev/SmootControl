@@ -74,11 +74,12 @@ void main() {
       expect(result, isA<AppSuccess<PilotOperationResetSummary>>());
       final summary = (result as AppSuccess<PilotOperationResetSummary>).value;
       expect(summary.remoteRows, 9);
-      expect(summary.localRows, 6);
+      expect(summary.localRows, 7);
 
       expect(await _count(database, 'local_sales'), 0);
       expect(await _count(database, 'local_sale_items'), 0);
       expect(await _count(database, 'local_cash_register_sessions'), 0);
+      expect(await _count(database, 'local_salary_advances'), 0);
       expect(await _count(database, 'local_sync_queue'), 0);
       expect(await _count(database, 'local_product_categories'), 1);
 
@@ -104,6 +105,75 @@ void main() {
           .select(database.localBusinessSettings)
           .getSingle();
       expect(settings.nextInvoiceNumber, settings.initialInvoiceNumber);
+    });
+
+    test('clears local scope before calling Supabase', () async {
+      final now = DateTime(2026, 7, 10);
+      await database
+          .into(database.localOperatingExpenses)
+          .insert(
+            LocalOperatingExpensesCompanion.insert(
+              id: 'expense-1',
+              categoryId: 'category-1',
+              amountInCents: 12500,
+              description: 'Gasto prueba',
+              createdBy: 'user-1',
+              createdAt: now,
+              updatedAt: now,
+            ),
+          );
+      await database
+          .into(database.localSyncQueue)
+          .insert(
+            LocalSyncQueueCompanion.insert(
+              id: 'sync-expense-1',
+              entityType: 'operating_expenses',
+              entityId: 'expense-1',
+              operation: 'create',
+              payloadJson: '{"expenseKind":"operational"}',
+              createdAt: now,
+              updatedAt: now,
+            ),
+          );
+
+      final service = PilotOperationResetService(
+        database: database,
+        config: const SupabaseAppConfig(
+          supabaseUrl: 'https://example.supabase.co',
+          publishableKey: 'public-key',
+        ),
+        restaurantService: const CurrentRestaurantService(
+          restaurantId: '11111111-1111-4111-8111-111111111111',
+        ),
+        remoteSessionService: sessionService,
+        client: _FakeClient((request) async {
+          expect(
+            request.url.toString(),
+            'https://example.supabase.co/rest/v1/rpc/'
+            'reset_pilot_operation_scope',
+          );
+          expect(await _count(database, 'local_operating_expenses'), 0);
+          expect(await _count(database, 'local_sync_queue'), 0);
+          final body = jsonDecode(await request.finalize().bytesToString());
+          expect(body, containsPair('p_scope', 'expenses'));
+          expect(body, containsPair('p_confirmation', 'BORRAR GASTOS'));
+          return http.Response(
+            jsonEncode({'total_rows': 3}),
+            200,
+            headers: {'content-type': 'application/json'},
+          );
+        }),
+      );
+
+      final result = await service.resetScope(
+        scope: PilotCleanupScope.expenses,
+        confirmation: PilotCleanupScope.expenses.confirmationText,
+      );
+
+      expect(result, isA<AppSuccess<PilotOperationResetSummary>>());
+      final summary = (result as AppSuccess<PilotOperationResetSummary>).value;
+      expect(summary.localRows, 2);
+      expect(summary.remoteRows, 3);
     });
   });
 }
@@ -171,6 +241,19 @@ Future<void> _seedLocalData(AppDatabase database, DateTime now) async {
           cashierId: 'user-1',
           businessDate: '2026-07-01',
           openingCashInCents: 10000,
+          createdAt: now,
+          updatedAt: now,
+        ),
+      );
+  await database
+      .into(database.localSalaryAdvances)
+      .insert(
+        LocalSalaryAdvancesCompanion.insert(
+          id: 'salary-advance-1',
+          employeeId: 'employee-1',
+          amountInCents: 50000,
+          createdBy: 'user-1',
+          deliveredAt: Value(now),
           createdAt: now,
           updatedAt: now,
         ),

@@ -8,6 +8,7 @@ final class PackagingStockItem extends Equatable {
     required this.packagingName,
     required this.quantityOnHand,
     required this.updatedAt,
+    this.costInCents = 0,
   });
 
   /// Packaging identifier.
@@ -19,6 +20,9 @@ final class PackagingStockItem extends Equatable {
   /// Current stock quantity.
   final int quantityOnHand;
 
+  /// Current unit cost in minor currency units.
+  final int costInCents;
+
   /// Last update.
   final DateTime updatedAt;
 
@@ -27,6 +31,7 @@ final class PackagingStockItem extends Equatable {
     packagingItemId,
     packagingName,
     quantityOnHand,
+    costInCents,
     updatedAt,
   ];
 }

@@ -13,13 +13,18 @@ final class SaleModel extends Equatable {
     required this.subtotalInCents,
     required this.totalInCents,
     required this.createdAt,
+    this.saleKind = SaleKind.sale,
     this.syncStatus = SaleSyncStatus.pending,
+    this.syncError,
     this.tableId,
     this.tableAccountId,
     this.cashRegisterSessionId,
     this.salesTypeId,
     this.salesTypeName,
     this.paymentReference,
+    this.employeeId,
+    this.internalReceiptNumber,
+    this.payrollRunId,
   });
 
   /// Creates a model from a local Drift row.
@@ -27,18 +32,23 @@ final class SaleModel extends Equatable {
     return SaleModel(
       id: row.id,
       invoiceNumber: row.invoiceNumber,
+      saleKind: _saleKindFromText(row.saleKind),
       tableId: row.tableId,
       tableAccountId: row.tableAccountId,
       cashRegisterSessionId: row.cashRegisterSessionId,
       paymentMethodId: row.paymentMethodId,
       salesTypeId: row.salesTypeId,
       salesTypeName: row.salesTypeName,
+      employeeId: row.employeeId,
+      internalReceiptNumber: row.internalReceiptNumber,
+      payrollRunId: row.payrollRunId,
       paymentReference: row.paymentReference,
       status: _statusFromText(row.status),
       subtotalInCents: row.subtotalInCents,
       totalInCents: row.totalInCents,
       createdAt: row.createdAt,
       syncStatus: _syncStatusFromText(row.syncStatus),
+      syncError: row.syncError,
     );
   }
 
@@ -47,18 +57,23 @@ final class SaleModel extends Equatable {
     return SaleModel(
       id: entity.id,
       invoiceNumber: entity.invoiceNumber,
+      saleKind: entity.saleKind,
       tableId: entity.tableId,
       tableAccountId: entity.tableAccountId,
       cashRegisterSessionId: entity.cashRegisterSessionId,
       paymentMethodId: entity.paymentMethodId,
       salesTypeId: entity.salesTypeId,
       salesTypeName: entity.salesTypeName,
+      employeeId: entity.employeeId,
+      internalReceiptNumber: entity.internalReceiptNumber,
+      payrollRunId: entity.payrollRunId,
       paymentReference: entity.paymentReference,
       status: entity.status,
       subtotalInCents: entity.subtotalInCents,
       totalInCents: entity.totalInCents,
       createdAt: entity.createdAt,
       syncStatus: entity.syncStatus,
+      syncError: entity.syncError,
     );
   }
 
@@ -67,6 +82,9 @@ final class SaleModel extends Equatable {
 
   /// Sequential invoice or receipt number.
   final String invoiceNumber;
+
+  /// Business meaning for this sale row.
+  final SaleKind saleKind;
 
   /// Original table identifier.
   final String? tableId;
@@ -86,6 +104,15 @@ final class SaleModel extends Equatable {
   /// Historical selected sales type name.
   final String? salesTypeName;
 
+  /// Employee linked to staff consumption.
+  final String? employeeId;
+
+  /// Remote internal receipt sequence.
+  final int? internalReceiptNumber;
+
+  /// Payroll run that applied this consumption.
+  final String? payrollRunId;
+
   /// Captured payment reference.
   final String? paymentReference;
 
@@ -104,29 +131,49 @@ final class SaleModel extends Equatable {
   /// Current synchronization state.
   final SaleSyncStatus syncStatus;
 
+  /// Last synchronization error captured for this sale.
+  final String? syncError;
+
   /// Database value for status.
   String get statusValue => status.name;
+
+  /// Database value for sale kind.
+  String get saleKindValue => switch (saleKind) {
+    SaleKind.sale => 'sale',
+    SaleKind.staffConsumption => 'staff_consumption',
+  };
 
   /// Database value for sync status.
   String get syncStatusValue => syncStatus.name;
 
   /// Creates a modified copy.
-  SaleModel copyWith({SaleSyncStatus? syncStatus}) {
+  SaleModel copyWith({
+    String? invoiceNumber,
+    int? internalReceiptNumber,
+    SaleSyncStatus? syncStatus,
+    String? syncError,
+  }) {
     return SaleModel(
       id: id,
-      invoiceNumber: invoiceNumber,
+      invoiceNumber: invoiceNumber ?? this.invoiceNumber,
+      saleKind: saleKind,
       tableId: tableId,
       tableAccountId: tableAccountId,
       cashRegisterSessionId: cashRegisterSessionId,
       paymentMethodId: paymentMethodId,
       salesTypeId: salesTypeId,
       salesTypeName: salesTypeName,
+      employeeId: employeeId,
+      internalReceiptNumber:
+          internalReceiptNumber ?? this.internalReceiptNumber,
+      payrollRunId: payrollRunId,
       paymentReference: paymentReference,
       status: status,
       subtotalInCents: subtotalInCents,
       totalInCents: totalInCents,
       createdAt: createdAt,
       syncStatus: syncStatus ?? this.syncStatus,
+      syncError: syncError ?? this.syncError,
     );
   }
 
@@ -135,18 +182,23 @@ final class SaleModel extends Equatable {
     return Sale(
       id: id,
       invoiceNumber: invoiceNumber,
+      saleKind: saleKind,
       tableId: tableId,
       tableAccountId: tableAccountId,
       cashRegisterSessionId: cashRegisterSessionId,
       paymentMethodId: paymentMethodId,
       salesTypeId: salesTypeId,
       salesTypeName: salesTypeName,
+      employeeId: employeeId,
+      internalReceiptNumber: internalReceiptNumber,
+      payrollRunId: payrollRunId,
       paymentReference: paymentReference,
       status: status,
       subtotalInCents: subtotalInCents,
       totalInCents: totalInCents,
       createdAt: createdAt,
       syncStatus: syncStatus,
+      syncError: syncError,
     );
   }
 
@@ -155,6 +207,13 @@ final class SaleModel extends Equatable {
       (status) => status.name == value,
       orElse: () => SaleStatus.completed,
     );
+  }
+
+  static SaleKind _saleKindFromText(String value) {
+    return switch (value) {
+      'staff_consumption' => SaleKind.staffConsumption,
+      _ => SaleKind.sale,
+    };
   }
 
   static SaleSyncStatus _syncStatusFromText(String value) {
@@ -168,17 +227,22 @@ final class SaleModel extends Equatable {
   List<Object?> get props => [
     id,
     invoiceNumber,
+    saleKind,
     tableId,
     tableAccountId,
     cashRegisterSessionId,
     paymentMethodId,
     salesTypeId,
     salesTypeName,
+    employeeId,
+    internalReceiptNumber,
+    payrollRunId,
     paymentReference,
     status,
     subtotalInCents,
     totalInCents,
     createdAt,
     syncStatus,
+    syncError,
   ];
 }

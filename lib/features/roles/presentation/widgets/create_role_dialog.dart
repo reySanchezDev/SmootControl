@@ -102,7 +102,13 @@ class _CreateRoleDialogState extends State<CreateRoleDialog> {
               for (final permission in widget.permissions)
                 CheckboxListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: AppText(permission.name),
+                  title: Row(
+                    children: [
+                      Expanded(child: AppText(permission.name)),
+                      if (_isPosPermission(permission.code))
+                        const _PosPermissionBadge(),
+                    ],
+                  ),
                   value: _selectedCodes.contains(permission.code),
                   onChanged: (value) =>
                       _togglePermission(permission.code, value),
@@ -156,6 +162,42 @@ class _CreateRoleDialogState extends State<CreateRoleDialog> {
       ),
     );
   }
+}
+
+class _PosPermissionBadge extends StatelessWidget {
+  const _PosPermissionBadge();
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: colorScheme.secondaryContainer,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: AppText(
+        'POS',
+        variant: AppTextVariant.label,
+        style: TextStyle(color: colorScheme.onSecondaryContainer),
+      ),
+    );
+  }
+}
+
+bool _isPosPermission(String code) {
+  return const {
+    'ventas.registrar',
+    'caja.aperturar',
+    'caja.cerrar',
+    'cuentas.separar',
+    'ventas.anular',
+    'pdf.generar',
+    'modificadores.gestionar',
+    'personal.consumos.registrar',
+    'personal.adelantos.gestionar',
+    'sync.ejecutar',
+  }.contains(code);
 }
 
 /// Result returned by [CreateRoleDialog].

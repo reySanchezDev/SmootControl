@@ -5,6 +5,7 @@ import 'package:smoo_control/core/design_system/app_loading_page.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
 import 'package:smoo_control/core/design_system/app_searchable_list_section.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
+import 'package:smoo_control/core/design_system/app_tile_actions.dart';
 import 'package:smoo_control/core/design_system/confirm_deactivate_dialog.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/features/payment_methods/domain/entities/payment_method.dart';
@@ -280,37 +281,53 @@ class _PaymentMethodTile extends StatelessWidget {
       if (method.requiresReference) l10n.requiresReference,
     ].join(' - ');
 
-    return ListTile(
-      contentPadding: EdgeInsets.only(left: 16 + (depth * 24), right: 16),
-      leading: Icon(
-        method.isPaymentTarget ? Icons.payments_outlined : Icons.folder_open,
-      ),
-      subtitle: AppText(details, variant: AppTextVariant.label),
-      title: AppText(method.name),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (onRemove != null)
-            IconButton(
-              color: Theme.of(context).colorScheme.error,
-              icon: const Icon(Icons.delete_outline),
-              onPressed: onRemove,
-              tooltip: l10n.removeAction,
-            ),
-          if (method.isActive)
-            IconButton(
-              color: Theme.of(context).colorScheme.error,
-              icon: const Icon(Icons.visibility_off_outlined),
-              onPressed: onDeactivate,
-              tooltip: l10n.deactivateAction,
-            ),
-          IconButton(
-            icon: const Icon(Icons.edit_outlined),
-            onPressed: onEdit,
-            tooltip: l10n.editAction,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 560;
+        return ListTile(
+          contentPadding: EdgeInsets.only(left: 16 + (depth * 24), right: 16),
+          leading: Icon(
+            method.isPaymentTarget
+                ? Icons.payments_outlined
+                : Icons.folder_open,
           ),
-        ],
-      ),
+          subtitle: AppText(
+            details,
+            maxLines: compact ? 3 : 2,
+            overflow: TextOverflow.ellipsis,
+            variant: AppTextVariant.label,
+          ),
+          title: AppText(
+            method.name,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          trailing: AppTileActions(
+            compact: compact,
+            actions: [
+              if (onRemove != null)
+                AppTileAction(
+                  color: Theme.of(context).colorScheme.error,
+                  icon: Icons.delete_outline,
+                  label: l10n.removeAction,
+                  onPressed: onRemove!,
+                ),
+              if (method.isActive)
+                AppTileAction(
+                  color: Theme.of(context).colorScheme.error,
+                  icon: Icons.visibility_off_outlined,
+                  label: l10n.deactivateAction,
+                  onPressed: onDeactivate,
+                ),
+              AppTileAction(
+                icon: Icons.edit_outlined,
+                label: l10n.editAction,
+                onPressed: onEdit,
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

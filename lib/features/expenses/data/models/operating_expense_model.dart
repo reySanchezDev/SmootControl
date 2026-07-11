@@ -12,6 +12,9 @@ final class OperatingExpenseModel extends Equatable {
     required this.description,
     required this.createdBy,
     required this.createdAt,
+    this.kind = OperatingExpenseKind.operational,
+    this.employeeId,
+    this.affectsCash = true,
     this.cashRegisterSessionId,
   });
 
@@ -21,6 +24,9 @@ final class OperatingExpenseModel extends Equatable {
       id: row.id,
       categoryId: row.categoryId,
       cashRegisterSessionId: row.cashRegisterSessionId,
+      kind: _kindFromText(row.expenseKind),
+      employeeId: row.employeeId,
+      affectsCash: row.affectsCash,
       amountInCents: row.amountInCents,
       description: row.description,
       createdBy: row.createdBy,
@@ -34,6 +40,9 @@ final class OperatingExpenseModel extends Equatable {
       id: entity.id,
       categoryId: entity.categoryId,
       cashRegisterSessionId: entity.cashRegisterSessionId,
+      kind: entity.kind,
+      employeeId: entity.employeeId,
+      affectsCash: entity.affectsCash,
       amountInCents: entity.amountInCents,
       description: entity.description,
       createdBy: entity.createdBy,
@@ -49,6 +58,15 @@ final class OperatingExpenseModel extends Equatable {
 
   /// Cash register session identifier when paid from cash.
   final String? cashRegisterSessionId;
+
+  /// Business meaning of the expense.
+  final OperatingExpenseKind kind;
+
+  /// Employee linked to salary advances.
+  final String? employeeId;
+
+  /// Whether this expense affected cash.
+  final bool affectsCash;
 
   /// Expense amount.
   final int amountInCents;
@@ -68,6 +86,9 @@ final class OperatingExpenseModel extends Equatable {
       id: id,
       categoryId: categoryId,
       cashRegisterSessionId: cashRegisterSessionId,
+      kind: kind,
+      employeeId: employeeId,
+      affectsCash: affectsCash,
       amountInCents: amountInCents,
       description: description,
       createdBy: createdBy,
@@ -75,11 +96,27 @@ final class OperatingExpenseModel extends Equatable {
     );
   }
 
+  /// Database value for the kind.
+  String get kindValue => switch (kind) {
+    OperatingExpenseKind.operational => 'operational',
+    OperatingExpenseKind.salaryAdvance => 'salary_advance',
+  };
+
+  static OperatingExpenseKind _kindFromText(String value) {
+    return switch (value) {
+      'salary_advance' => OperatingExpenseKind.salaryAdvance,
+      _ => OperatingExpenseKind.operational,
+    };
+  }
+
   @override
   List<Object?> get props => [
     id,
     categoryId,
     cashRegisterSessionId,
+    kind,
+    employeeId,
+    affectsCash,
     amountInCents,
     description,
     createdBy,

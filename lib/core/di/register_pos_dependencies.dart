@@ -9,6 +9,7 @@ import 'package:smoo_control/features/modifiers/domain/repositories/i_modifiers_
 import 'package:smoo_control/features/packaging/domain/repositories/i_packaging_repository.dart';
 import 'package:smoo_control/features/payment_methods/domain/repositories/i_payment_methods_repository.dart';
 import 'package:smoo_control/features/pos/data/datasources/local_pos_open_ticket_datasource.dart';
+import 'package:smoo_control/features/pos/data/datasources/local_pos_product_order_datasource.dart';
 import 'package:smoo_control/features/pos/data/repositories/pos_open_ticket_repository.dart';
 import 'package:smoo_control/features/pos/domain/repositories/i_pos_open_ticket_repository.dart';
 import 'package:smoo_control/features/pos/domain/services/account_separation_service.dart';
@@ -26,6 +27,9 @@ void registerPosDependencies(GetIt locator) {
     )
     ..registerLazySingleton<LocalPosOpenTicketDataSource>(
       () => LocalPosOpenTicketDataSource(locator<AppDatabase>()),
+    )
+    ..registerLazySingleton<LocalPosProductOrderDataSource>(
+      () => LocalPosProductOrderDataSource(locator<AppDatabase>()),
     )
     ..registerLazySingleton<IPosOpenTicketRepository>(
       () => PosOpenTicketRepository(locator<LocalPosOpenTicketDataSource>()),
@@ -46,6 +50,7 @@ void registerPosDependencies(GetIt locator) {
         auditLogRepository: locator<IAuditLogRepository>(),
         currentOperatorService: locator<CurrentOperatorService>(),
         openTicketRepository: locator<IPosOpenTicketRepository>(),
+        productOrderDataSource: locator<LocalPosProductOrderDataSource>(),
       ),
     );
 }

@@ -119,6 +119,10 @@ void main() {
       expect(items.single.selectedOptionsLabel, contains('BASTIMENTO'));
       expect(requests.single.url.path, '/rest/v1/sale_items');
       expect(
+        requests.single.url.queryParameters['select'],
+        isNot(contains('table_id')),
+      );
+      expect(
         requests.single.url.queryParameters['sale_id'],
         'eq.sale-remote-1',
       );

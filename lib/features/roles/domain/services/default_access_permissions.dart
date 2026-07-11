@@ -49,6 +49,24 @@ abstract final class DefaultAccessPermissions {
       name: 'Gestionar tasas de cambio',
     ),
     AccessPermission(code: 'auditoria.ver', name: 'Ver auditoria'),
+    AccessPermission(code: 'personal.gestionar', name: 'Gestionar personal'),
+    AccessPermission(
+      code: 'personal.consumos.ver',
+      name: 'Ver consumos de personal',
+    ),
+    AccessPermission(
+      code: 'personal.consumos.registrar',
+      name: 'Registrar consumos de personal',
+    ),
+    AccessPermission(
+      code: 'personal.adelantos.gestionar',
+      name: 'Gestionar adelantos de salario',
+    ),
+    AccessPermission(code: 'planilla.gestionar', name: 'Gestionar planilla'),
+    AccessPermission(
+      code: 'reglas_negocio.gestionar',
+      name: 'Gestionar reglas del negocio',
+    ),
     AccessPermission(code: 'sync.configurar', name: 'Configurar sync'),
     AccessPermission(
       code: 'sync.ejecutar',

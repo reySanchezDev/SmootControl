@@ -1,0 +1,29 @@
+import 'dart:async';
+
+import 'package:flutter/material.dart';
+import 'package:smoo_control/core/design_system/app_empty_state.dart';
+import 'package:smoo_control/core/design_system/app_loading_page.dart';
+import 'package:smoo_control/core/design_system/app_message_dialog.dart';
+import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
+import 'package:smoo_control/core/di/service_locator.dart';
+import 'package:smoo_control/core/result/app_result.dart';
+import 'package:smoo_control/core/session/current_remote_session_service.dart';
+import 'package:smoo_control/features/staff/data/repositories/supabase_staff_admin_repository.dart';
+import 'package:smoo_control/features/staff/domain/entities/business_rule.dart';
+import 'package:smoo_control/features/staff/domain/entities/employee.dart';
+import 'package:smoo_control/features/staff/domain/entities/employee_position.dart';
+import 'package:smoo_control/features/staff/domain/entities/payroll_pending_line.dart';
+import 'package:smoo_control/features/staff/domain/entities/salary_advance.dart';
+import 'package:smoo_control/features/staff/domain/entities/staff_consumption.dart';
+import 'package:uuid/uuid.dart';
+
+part 'staff_business_rules_page_part.dart';
+part 'staff_consumptions_page_part.dart';
+part 'staff_employees_page_part.dart';
+part 'staff_payroll_dialog_part.dart';
+part 'staff_payroll_models_part.dart';
+part 'staff_payroll_page_part.dart';
+part 'staff_payroll_widgets_part.dart';
+part 'staff_positions_page_part.dart';
+part 'staff_salary_advance_dialog_part.dart';
+part 'staff_salary_advances_page_part.dart';

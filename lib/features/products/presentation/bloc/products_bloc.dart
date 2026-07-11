@@ -5,7 +5,6 @@ import 'package:smoo_control/features/audit/domain/repositories/i_audit_log_repo
 import 'package:smoo_control/features/products/domain/repositories/i_products_repository.dart';
 import 'package:smoo_control/features/products/presentation/bloc/products_event.dart';
 import 'package:smoo_control/features/products/presentation/bloc/products_state.dart';
-import 'package:smoo_control/features/sync/domain/services/admin_data_refresh_service.dart';
 import 'package:uuid/uuid.dart';
 
 /// BLoC for product management.
@@ -14,11 +13,9 @@ final class ProductsBloc extends Bloc<ProductsEvent, ProductsState> {
   ProductsBloc({
     required IProductsRepository repository,
     required IAuditLogRepository auditLogRepository,
-    AdminDataRefreshService? remoteRefreshService,
     Uuid uuid = const Uuid(),
   }) : _repository = repository,
        _auditLogRepository = auditLogRepository,
-       _remoteRefreshService = remoteRefreshService,
        _uuid = uuid,
        super(const ProductsInitial()) {
     on<ProductsLoadRequested>(_onLoadRequested);
@@ -27,7 +24,6 @@ final class ProductsBloc extends Bloc<ProductsEvent, ProductsState> {
 
   final IProductsRepository _repository;
   final IAuditLogRepository _auditLogRepository;
-  final AdminDataRefreshService? _remoteRefreshService;
   final Uuid _uuid;
 
   Future<void> _onLoadRequested(
@@ -35,7 +31,6 @@ final class ProductsBloc extends Bloc<ProductsEvent, ProductsState> {
     Emitter<ProductsState> emit,
   ) async {
     emit(const ProductsLoading());
-    if (!await _refreshRemoteCache(emit)) return;
     final result = await _repository.getProducts();
     emit(
       result.when(
@@ -84,14 +79,5 @@ final class ProductsBloc extends Bloc<ProductsEvent, ProductsState> {
         failure: ProductsFailure.new,
       ),
     );
-  }
-
-  Future<bool> _refreshRemoteCache(Emitter<ProductsState> emit) async {
-    final result = await _remoteRefreshService?.refreshProducts();
-    if (result case AppFailureResult(:final error)) {
-      emit(ProductsFailure(error));
-      return false;
-    }
-    return true;
   }
 }

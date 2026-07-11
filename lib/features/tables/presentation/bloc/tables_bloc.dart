@@ -2,7 +2,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smoo_control/core/result/app_result.dart';
 import 'package:smoo_control/features/audit/domain/entities/audit_log_entry.dart';
 import 'package:smoo_control/features/audit/domain/repositories/i_audit_log_repository.dart';
-import 'package:smoo_control/features/sync/domain/services/admin_data_refresh_service.dart';
 import 'package:smoo_control/features/tables/domain/repositories/i_tables_repository.dart';
 import 'package:smoo_control/features/tables/presentation/bloc/tables_event.dart';
 import 'package:smoo_control/features/tables/presentation/bloc/tables_state.dart';
@@ -14,11 +13,9 @@ final class TablesBloc extends Bloc<TablesEvent, TablesState> {
   TablesBloc({
     required ITablesRepository repository,
     required IAuditLogRepository auditLogRepository,
-    AdminDataRefreshService? remoteRefreshService,
     Uuid uuid = const Uuid(),
   }) : _repository = repository,
        _auditLogRepository = auditLogRepository,
-       _remoteRefreshService = remoteRefreshService,
        _uuid = uuid,
        super(const TablesInitial()) {
     on<TablesLoadRequested>(_onLoadRequested);
@@ -27,7 +24,6 @@ final class TablesBloc extends Bloc<TablesEvent, TablesState> {
 
   final ITablesRepository _repository;
   final IAuditLogRepository _auditLogRepository;
-  final AdminDataRefreshService? _remoteRefreshService;
   final Uuid _uuid;
 
   Future<void> _onLoadRequested(
@@ -35,7 +31,6 @@ final class TablesBloc extends Bloc<TablesEvent, TablesState> {
     Emitter<TablesState> emit,
   ) async {
     emit(const TablesLoading());
-    if (!await _refreshRemoteCache(emit)) return;
     final result = await _repository.getTables();
     emit(
       result.when(
@@ -82,14 +77,5 @@ final class TablesBloc extends Bloc<TablesEvent, TablesState> {
         failure: TablesFailure.new,
       ),
     );
-  }
-
-  Future<bool> _refreshRemoteCache(Emitter<TablesState> emit) async {
-    final result = await _remoteRefreshService?.refreshTables();
-    if (result case AppFailureResult(:final error)) {
-      emit(TablesFailure(error));
-      return false;
-    }
-    return true;
   }
 }

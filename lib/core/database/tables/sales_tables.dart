@@ -9,6 +9,18 @@ class LocalSales extends Table with SyncColumns {
   /// Sequential invoice or receipt number.
   TextColumn get invoiceNumber => text()();
 
+  /// sale or staff_consumption.
+  TextColumn get saleKind => text().withDefault(const Constant('sale'))();
+
+  /// Employee linked to internal staff consumption.
+  TextColumn get employeeId => text().nullable()();
+
+  /// Remote internal receipt sequence for staff consumption.
+  IntColumn get internalReceiptNumber => integer().nullable()();
+
+  /// Payroll run that consumed this internal sale.
+  TextColumn get payrollRunId => text().nullable()();
+
   /// Original table identifier, when applicable.
   TextColumn get tableId => text().nullable()();
 

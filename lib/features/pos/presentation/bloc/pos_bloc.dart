@@ -15,6 +15,7 @@ import 'package:smoo_control/features/packaging/domain/entities/sales_type.dart'
 import 'package:smoo_control/features/packaging/domain/repositories/i_packaging_repository.dart';
 import 'package:smoo_control/features/payment_methods/domain/entities/payment_method.dart';
 import 'package:smoo_control/features/payment_methods/domain/repositories/i_payment_methods_repository.dart';
+import 'package:smoo_control/features/pos/data/datasources/local_pos_product_order_datasource.dart';
 import 'package:smoo_control/features/pos/domain/entities/account_split_draft.dart';
 import 'package:smoo_control/features/pos/domain/entities/pos_cart_line.dart';
 import 'package:smoo_control/features/pos/domain/entities/pos_open_ticket_line.dart';
@@ -61,6 +62,7 @@ final class PosBloc extends Bloc<PosEvent, PosState> {
     required IAuditLogRepository auditLogRepository,
     required CurrentOperatorService currentOperatorService,
     required IPosOpenTicketRepository openTicketRepository,
+    required IPosProductOrderDataSource productOrderDataSource,
   }) : _catalogRepository = catalogRepository,
        _accountSeparationService = accountSeparationService,
        _productsRepository = productsRepository,
@@ -75,6 +77,7 @@ final class PosBloc extends Bloc<PosEvent, PosState> {
        _auditLogRepository = auditLogRepository,
        _currentOperatorService = currentOperatorService,
        _openTicketRepository = openTicketRepository,
+       _productOrderDataSource = productOrderDataSource,
        super(const PosInitial()) {
     on<PosStarted>((event, emit) => _handlePosStarted(this, event, emit));
     on<PosCashRegisterOpened>(
@@ -84,6 +87,9 @@ final class PosBloc extends Bloc<PosEvent, PosState> {
       (event, emit) => _handlePosCashRegisterClosed(this, event, emit),
     );
     on<PosCategorySelected>(_onCategorySelected);
+    on<PosProductsReordered>(_onProductsReordered);
+    on<PosProductOrderReset>(_onProductOrderReset);
+    on<PosTablesReordered>(_onTablesReordered);
     on<PosProductAdded>(
       (event, emit) => _handleProductAdded(this, event, emit),
     );
@@ -121,6 +127,9 @@ final class PosBloc extends Bloc<PosEvent, PosState> {
     on<PosCheckoutRequested>(
       (event, emit) => _handleCheckoutRequested(this, event, emit),
     );
+    on<PosStaffConsumptionRequested>(
+      (event, emit) => _handleStaffConsumptionRequested(this, event, emit),
+    );
     on<PosCartCleared>(
       (event, emit) => _handleCartCleared(this, event, emit),
     );
@@ -140,6 +149,7 @@ final class PosBloc extends Bloc<PosEvent, PosState> {
   final IAuditLogRepository _auditLogRepository;
   final CurrentOperatorService _currentOperatorService;
   final IPosOpenTicketRepository _openTicketRepository;
+  final IPosProductOrderDataSource _productOrderDataSource;
   bool _checkoutInProgress = false;
 
   void _onCategorySelected(
@@ -168,6 +178,61 @@ final class PosBloc extends Bloc<PosEvent, PosState> {
     emit(
       current.copyWith(
         selectedPaymentMethodId: event.paymentMethodId,
+        clearLastCompletedSale: true,
+      ),
+    );
+  }
+
+  Future<void> _onProductsReordered(
+    PosProductsReordered event,
+    Emitter<PosState> emit,
+  ) async {
+    final current = state;
+    if (current is! PosReady) return;
+
+    final orderByProductId = await _productOrderDataSource.saveCategoryOrder(
+      categoryId: event.categoryId,
+      productIds: event.productIds,
+    );
+    emit(
+      current.copyWith(
+        productOrderByProductId: orderByProductId,
+        clearLastCompletedSale: true,
+      ),
+    );
+  }
+
+  Future<void> _onProductOrderReset(
+    PosProductOrderReset event,
+    Emitter<PosState> emit,
+  ) async {
+    final current = state;
+    if (current is! PosReady) return;
+
+    final orderByProductId = await _productOrderDataSource.resetCategoryOrder(
+      event.categoryId,
+    );
+    emit(
+      current.copyWith(
+        productOrderByProductId: orderByProductId,
+        clearLastCompletedSale: true,
+      ),
+    );
+  }
+
+  Future<void> _onTablesReordered(
+    PosTablesReordered event,
+    Emitter<PosState> emit,
+  ) async {
+    final current = state;
+    if (current is! PosReady) return;
+
+    final orderByTableId = await _productOrderDataSource.saveTableOrder(
+      tableIds: event.tableIds,
+    );
+    emit(
+      current.copyWith(
+        tableOrderByTableId: orderByTableId,
         clearLastCompletedSale: true,
       ),
     );

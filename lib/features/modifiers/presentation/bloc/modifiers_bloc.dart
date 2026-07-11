@@ -5,7 +5,6 @@ import 'package:smoo_control/features/audit/domain/repositories/i_audit_log_repo
 import 'package:smoo_control/features/modifiers/domain/repositories/i_modifiers_repository.dart';
 import 'package:smoo_control/features/modifiers/presentation/bloc/modifiers_event.dart';
 import 'package:smoo_control/features/modifiers/presentation/bloc/modifiers_state.dart';
-import 'package:smoo_control/features/sync/domain/services/admin_data_refresh_service.dart';
 import 'package:uuid/uuid.dart';
 
 /// BLoC for reusable POS modifiers.
@@ -14,11 +13,9 @@ final class ModifiersBloc extends Bloc<ModifiersEvent, ModifiersState> {
   ModifiersBloc({
     required IModifiersRepository repository,
     required IAuditLogRepository auditLogRepository,
-    AdminDataRefreshService? remoteRefreshService,
     Uuid uuid = const Uuid(),
   }) : _repository = repository,
        _auditLogRepository = auditLogRepository,
-       _remoteRefreshService = remoteRefreshService,
        _uuid = uuid,
        super(const ModifiersInitial()) {
     on<ModifiersLoadRequested>(_onLoadRequested);
@@ -28,7 +25,6 @@ final class ModifiersBloc extends Bloc<ModifiersEvent, ModifiersState> {
 
   final IModifiersRepository _repository;
   final IAuditLogRepository _auditLogRepository;
-  final AdminDataRefreshService? _remoteRefreshService;
   final Uuid _uuid;
 
   Future<void> _onLoadRequested(
@@ -36,7 +32,6 @@ final class ModifiersBloc extends Bloc<ModifiersEvent, ModifiersState> {
     Emitter<ModifiersState> emit,
   ) async {
     emit(const ModifiersLoading());
-    if (!await _refreshRemoteCache(emit)) return;
     await _reload(emit);
   }
 
@@ -103,14 +98,5 @@ final class ModifiersBloc extends Bloc<ModifiersEvent, ModifiersState> {
         failure: ModifiersFailure.new,
       ),
     );
-  }
-
-  Future<bool> _refreshRemoteCache(Emitter<ModifiersState> emit) async {
-    final result = await _remoteRefreshService?.refreshModifiers();
-    if (result case AppFailureResult(:final error)) {
-      emit(ModifiersFailure(error));
-      return false;
-    }
-    return true;
   }
 }

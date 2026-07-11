@@ -16,6 +16,8 @@ final class PosReady extends PosState {
     this.tables = const [],
     this.salesTypes = const [],
     this.salesTypeIdByOrderKey = const {},
+    this.productOrderByProductId = const {},
+    this.tableOrderByTableId = const {},
     this.selectedCategoryId,
     this.selectedTableId,
     this.selectedSalesTypeId,
@@ -37,6 +39,12 @@ final class PosReady extends PosState {
 
   /// Payment methods available for checkout.
   final List<PaymentMethod> paymentMethods;
+
+  /// Local-only product display order preferences keyed by product id.
+  final Map<String, int> productOrderByProductId;
+
+  /// Local-only table display order preferences keyed by table id.
+  final Map<String, int> tableOrderByTableId;
 
   /// Sales types available for the current order.
   final List<SalesType> salesTypes;
@@ -216,6 +224,8 @@ final class PosReady extends PosState {
     List<SalesType>? salesTypes,
     Map<String, String>? salesTypeIdByOrderKey,
     List<PaymentMethod>? paymentMethods,
+    Map<String, int>? productOrderByProductId,
+    Map<String, int>? tableOrderByTableId,
     ModifierCatalog? modifierCatalog,
     List<PosCartLine>? cartLines,
     Map<String, List<PosCartLine>>? cartLinesByTable,
@@ -244,6 +254,9 @@ final class PosReady extends PosState {
       salesTypeIdByOrderKey:
           salesTypeIdByOrderKey ?? this.salesTypeIdByOrderKey,
       paymentMethods: paymentMethods ?? this.paymentMethods,
+      productOrderByProductId:
+          productOrderByProductId ?? this.productOrderByProductId,
+      tableOrderByTableId: tableOrderByTableId ?? this.tableOrderByTableId,
       modifierCatalog: modifierCatalog ?? this.modifierCatalog,
       cartLines: cartLines ?? this.cartLines,
       cartLinesByTable: cartLinesByTable ?? this.cartLinesByTable,
@@ -284,6 +297,8 @@ final class PosReady extends PosState {
     salesTypes,
     salesTypeIdByOrderKey,
     paymentMethods,
+    productOrderByProductId,
+    tableOrderByTableId,
     modifierCatalog,
     cartLines,
     cartLinesByTable,

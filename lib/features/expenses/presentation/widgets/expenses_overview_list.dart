@@ -3,6 +3,7 @@ import 'package:smoo_control/core/design_system/app_empty_state.dart';
 import 'package:smoo_control/core/design_system/app_list_section.dart';
 import 'package:smoo_control/core/design_system/app_search_field.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
+import 'package:smoo_control/core/design_system/app_tile_actions.dart';
 import 'package:smoo_control/core/utils/search_text.dart';
 import 'package:smoo_control/features/expenses/domain/entities/expense_category.dart';
 import 'package:smoo_control/l10n/app_localizations.dart';
@@ -93,6 +94,10 @@ class _ExpensesOverviewListState extends State<ExpensesOverviewList> {
         category.name,
         _parentName(category),
         if (category.isActive) l10n.activeStatus else l10n.inactiveStatus,
+        if (category.parentId == null)
+          category.includeInGrossProfitCoverage
+              ? l10n.expenseCategoryCoverageIncluded
+              : l10n.expenseCategoryCoverageExcluded,
       ].join(' ');
       return containsNormalizedSearch(text, _query);
     }).toList()..sort(_sortCategories);
@@ -168,34 +173,55 @@ class _ExpenseCategoryTile extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final colorScheme = Theme.of(context).colorScheme;
     final isGroup = level == 0;
+    final statusLabel = category.isActive
+        ? l10n.activeStatus
+        : l10n.inactiveStatus;
 
-    return ListTile(
-      contentPadding: EdgeInsets.only(left: 16 + level * 28, right: 8),
-      leading: Icon(
-        isGroup ? Icons.folder_outlined : Icons.receipt_long_outlined,
-        color: isGroup ? colorScheme.primary : colorScheme.onSurfaceVariant,
-      ),
-      subtitle: AppText(
-        category.isActive ? l10n.activeStatus : l10n.inactiveStatus,
-        variant: AppTextVariant.label,
-      ),
-      title: AppText(category.name),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          IconButton(
-            color: Theme.of(context).colorScheme.error,
-            icon: const Icon(Icons.delete_outline),
-            onPressed: onDelete,
-            tooltip: l10n.deleteAction,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 560;
+        return ListTile(
+          contentPadding: EdgeInsets.only(left: 16 + level * 28, right: 8),
+          leading: Icon(
+            isGroup ? Icons.folder_outlined : Icons.receipt_long_outlined,
+            color: isGroup ? colorScheme.primary : colorScheme.onSurfaceVariant,
           ),
-          IconButton(
-            icon: const Icon(Icons.edit_outlined),
-            onPressed: onEdit,
-            tooltip: l10n.editAction,
+          subtitle: AppText(
+            [
+              statusLabel,
+              if (category.parentId == null)
+                if (category.includeInGrossProfitCoverage)
+                  l10n.expenseCategoryCoverageIncluded
+                else
+                  l10n.expenseCategoryCoverageExcluded,
+            ].join(' - '),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            variant: AppTextVariant.label,
           ),
-        ],
-      ),
+          title: AppText(
+            category.name,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          trailing: AppTileActions(
+            compact: compact,
+            actions: [
+              AppTileAction(
+                color: Theme.of(context).colorScheme.error,
+                icon: Icons.delete_outline,
+                label: l10n.deleteAction,
+                onPressed: onDelete,
+              ),
+              AppTileAction(
+                icon: Icons.edit_outlined,
+                label: l10n.editAction,
+                onPressed: onEdit,
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

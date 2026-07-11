@@ -10039,6 +10039,643 @@ class LocalPosOrderContextsCompanion
   }
 }
 
+class $LocalPosProductOrderPreferencesTable
+    extends LocalPosProductOrderPreferences
+    with
+        TableInfo<
+          $LocalPosProductOrderPreferencesTable,
+          LocalPosProductOrderPreference
+        > {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LocalPosProductOrderPreferencesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _categoryIdMeta = const VerificationMeta(
+    'categoryId',
+  );
+  @override
+  late final GeneratedColumn<String> categoryId = GeneratedColumn<String>(
+    'category_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _productIdMeta = const VerificationMeta(
+    'productId',
+  );
+  @override
+  late final GeneratedColumn<String> productId = GeneratedColumn<String>(
+    'product_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _displayOrderMeta = const VerificationMeta(
+    'displayOrder',
+  );
+  @override
+  late final GeneratedColumn<int> displayOrder = GeneratedColumn<int>(
+    'display_order',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    categoryId,
+    productId,
+    displayOrder,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_pos_product_order_preferences';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LocalPosProductOrderPreference> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('category_id')) {
+      context.handle(
+        _categoryIdMeta,
+        categoryId.isAcceptableOrUnknown(data['category_id']!, _categoryIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_categoryIdMeta);
+    }
+    if (data.containsKey('product_id')) {
+      context.handle(
+        _productIdMeta,
+        productId.isAcceptableOrUnknown(data['product_id']!, _productIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_productIdMeta);
+    }
+    if (data.containsKey('display_order')) {
+      context.handle(
+        _displayOrderMeta,
+        displayOrder.isAcceptableOrUnknown(
+          data['display_order']!,
+          _displayOrderMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_displayOrderMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {categoryId, productId};
+  @override
+  LocalPosProductOrderPreference map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalPosProductOrderPreference(
+      categoryId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}category_id'],
+      )!,
+      productId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}product_id'],
+      )!,
+      displayOrder: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}display_order'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $LocalPosProductOrderPreferencesTable createAlias(String alias) {
+    return $LocalPosProductOrderPreferencesTable(attachedDatabase, alias);
+  }
+}
+
+class LocalPosProductOrderPreference extends DataClass
+    implements Insertable<LocalPosProductOrderPreference> {
+  /// Category where the order applies.
+  final String categoryId;
+
+  /// Product shown in the category.
+  final String productId;
+
+  /// Visual order inside the category.
+  final int displayOrder;
+
+  /// Last local update timestamp.
+  final DateTime updatedAt;
+  const LocalPosProductOrderPreference({
+    required this.categoryId,
+    required this.productId,
+    required this.displayOrder,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['category_id'] = Variable<String>(categoryId);
+    map['product_id'] = Variable<String>(productId);
+    map['display_order'] = Variable<int>(displayOrder);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  LocalPosProductOrderPreferencesCompanion toCompanion(bool nullToAbsent) {
+    return LocalPosProductOrderPreferencesCompanion(
+      categoryId: Value(categoryId),
+      productId: Value(productId),
+      displayOrder: Value(displayOrder),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory LocalPosProductOrderPreference.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalPosProductOrderPreference(
+      categoryId: serializer.fromJson<String>(json['categoryId']),
+      productId: serializer.fromJson<String>(json['productId']),
+      displayOrder: serializer.fromJson<int>(json['displayOrder']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'categoryId': serializer.toJson<String>(categoryId),
+      'productId': serializer.toJson<String>(productId),
+      'displayOrder': serializer.toJson<int>(displayOrder),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  LocalPosProductOrderPreference copyWith({
+    String? categoryId,
+    String? productId,
+    int? displayOrder,
+    DateTime? updatedAt,
+  }) => LocalPosProductOrderPreference(
+    categoryId: categoryId ?? this.categoryId,
+    productId: productId ?? this.productId,
+    displayOrder: displayOrder ?? this.displayOrder,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  LocalPosProductOrderPreference copyWithCompanion(
+    LocalPosProductOrderPreferencesCompanion data,
+  ) {
+    return LocalPosProductOrderPreference(
+      categoryId: data.categoryId.present
+          ? data.categoryId.value
+          : this.categoryId,
+      productId: data.productId.present ? data.productId.value : this.productId,
+      displayOrder: data.displayOrder.present
+          ? data.displayOrder.value
+          : this.displayOrder,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalPosProductOrderPreference(')
+          ..write('categoryId: $categoryId, ')
+          ..write('productId: $productId, ')
+          ..write('displayOrder: $displayOrder, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(categoryId, productId, displayOrder, updatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalPosProductOrderPreference &&
+          other.categoryId == this.categoryId &&
+          other.productId == this.productId &&
+          other.displayOrder == this.displayOrder &&
+          other.updatedAt == this.updatedAt);
+}
+
+class LocalPosProductOrderPreferencesCompanion
+    extends UpdateCompanion<LocalPosProductOrderPreference> {
+  final Value<String> categoryId;
+  final Value<String> productId;
+  final Value<int> displayOrder;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const LocalPosProductOrderPreferencesCompanion({
+    this.categoryId = const Value.absent(),
+    this.productId = const Value.absent(),
+    this.displayOrder = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LocalPosProductOrderPreferencesCompanion.insert({
+    required String categoryId,
+    required String productId,
+    required int displayOrder,
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : categoryId = Value(categoryId),
+       productId = Value(productId),
+       displayOrder = Value(displayOrder),
+       updatedAt = Value(updatedAt);
+  static Insertable<LocalPosProductOrderPreference> custom({
+    Expression<String>? categoryId,
+    Expression<String>? productId,
+    Expression<int>? displayOrder,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (categoryId != null) 'category_id': categoryId,
+      if (productId != null) 'product_id': productId,
+      if (displayOrder != null) 'display_order': displayOrder,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LocalPosProductOrderPreferencesCompanion copyWith({
+    Value<String>? categoryId,
+    Value<String>? productId,
+    Value<int>? displayOrder,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return LocalPosProductOrderPreferencesCompanion(
+      categoryId: categoryId ?? this.categoryId,
+      productId: productId ?? this.productId,
+      displayOrder: displayOrder ?? this.displayOrder,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (categoryId.present) {
+      map['category_id'] = Variable<String>(categoryId.value);
+    }
+    if (productId.present) {
+      map['product_id'] = Variable<String>(productId.value);
+    }
+    if (displayOrder.present) {
+      map['display_order'] = Variable<int>(displayOrder.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalPosProductOrderPreferencesCompanion(')
+          ..write('categoryId: $categoryId, ')
+          ..write('productId: $productId, ')
+          ..write('displayOrder: $displayOrder, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $LocalPosTableOrderPreferencesTable extends LocalPosTableOrderPreferences
+    with
+        TableInfo<
+          $LocalPosTableOrderPreferencesTable,
+          LocalPosTableOrderPreference
+        > {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LocalPosTableOrderPreferencesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _tableIdMeta = const VerificationMeta(
+    'tableId',
+  );
+  @override
+  late final GeneratedColumn<String> tableId = GeneratedColumn<String>(
+    'table_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _displayOrderMeta = const VerificationMeta(
+    'displayOrder',
+  );
+  @override
+  late final GeneratedColumn<int> displayOrder = GeneratedColumn<int>(
+    'display_order',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [tableId, displayOrder, updatedAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_pos_table_order_preferences';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LocalPosTableOrderPreference> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('table_id')) {
+      context.handle(
+        _tableIdMeta,
+        tableId.isAcceptableOrUnknown(data['table_id']!, _tableIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_tableIdMeta);
+    }
+    if (data.containsKey('display_order')) {
+      context.handle(
+        _displayOrderMeta,
+        displayOrder.isAcceptableOrUnknown(
+          data['display_order']!,
+          _displayOrderMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_displayOrderMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {tableId};
+  @override
+  LocalPosTableOrderPreference map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalPosTableOrderPreference(
+      tableId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}table_id'],
+      )!,
+      displayOrder: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}display_order'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $LocalPosTableOrderPreferencesTable createAlias(String alias) {
+    return $LocalPosTableOrderPreferencesTable(attachedDatabase, alias);
+  }
+}
+
+class LocalPosTableOrderPreference extends DataClass
+    implements Insertable<LocalPosTableOrderPreference> {
+  /// Physical table shown in the POS band.
+  final String tableId;
+
+  /// Visual order selected by the POS operator.
+  final int displayOrder;
+
+  /// Last local update timestamp.
+  final DateTime updatedAt;
+  const LocalPosTableOrderPreference({
+    required this.tableId,
+    required this.displayOrder,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['table_id'] = Variable<String>(tableId);
+    map['display_order'] = Variable<int>(displayOrder);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  LocalPosTableOrderPreferencesCompanion toCompanion(bool nullToAbsent) {
+    return LocalPosTableOrderPreferencesCompanion(
+      tableId: Value(tableId),
+      displayOrder: Value(displayOrder),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory LocalPosTableOrderPreference.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalPosTableOrderPreference(
+      tableId: serializer.fromJson<String>(json['tableId']),
+      displayOrder: serializer.fromJson<int>(json['displayOrder']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'tableId': serializer.toJson<String>(tableId),
+      'displayOrder': serializer.toJson<int>(displayOrder),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  LocalPosTableOrderPreference copyWith({
+    String? tableId,
+    int? displayOrder,
+    DateTime? updatedAt,
+  }) => LocalPosTableOrderPreference(
+    tableId: tableId ?? this.tableId,
+    displayOrder: displayOrder ?? this.displayOrder,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  LocalPosTableOrderPreference copyWithCompanion(
+    LocalPosTableOrderPreferencesCompanion data,
+  ) {
+    return LocalPosTableOrderPreference(
+      tableId: data.tableId.present ? data.tableId.value : this.tableId,
+      displayOrder: data.displayOrder.present
+          ? data.displayOrder.value
+          : this.displayOrder,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalPosTableOrderPreference(')
+          ..write('tableId: $tableId, ')
+          ..write('displayOrder: $displayOrder, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(tableId, displayOrder, updatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalPosTableOrderPreference &&
+          other.tableId == this.tableId &&
+          other.displayOrder == this.displayOrder &&
+          other.updatedAt == this.updatedAt);
+}
+
+class LocalPosTableOrderPreferencesCompanion
+    extends UpdateCompanion<LocalPosTableOrderPreference> {
+  final Value<String> tableId;
+  final Value<int> displayOrder;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const LocalPosTableOrderPreferencesCompanion({
+    this.tableId = const Value.absent(),
+    this.displayOrder = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LocalPosTableOrderPreferencesCompanion.insert({
+    required String tableId,
+    required int displayOrder,
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : tableId = Value(tableId),
+       displayOrder = Value(displayOrder),
+       updatedAt = Value(updatedAt);
+  static Insertable<LocalPosTableOrderPreference> custom({
+    Expression<String>? tableId,
+    Expression<int>? displayOrder,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (tableId != null) 'table_id': tableId,
+      if (displayOrder != null) 'display_order': displayOrder,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LocalPosTableOrderPreferencesCompanion copyWith({
+    Value<String>? tableId,
+    Value<int>? displayOrder,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return LocalPosTableOrderPreferencesCompanion(
+      tableId: tableId ?? this.tableId,
+      displayOrder: displayOrder ?? this.displayOrder,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (tableId.present) {
+      map['table_id'] = Variable<String>(tableId.value);
+    }
+    if (displayOrder.present) {
+      map['display_order'] = Variable<int>(displayOrder.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalPosTableOrderPreferencesCompanion(')
+          ..write('tableId: $tableId, ')
+          ..write('displayOrder: $displayOrder, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $LocalRestaurantTablesTable extends LocalRestaurantTables
     with TableInfo<$LocalRestaurantTablesTable, LocalRestaurantTable> {
   @override
@@ -11440,6 +12077,50 @@ class $LocalSalesTable extends LocalSales
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _saleKindMeta = const VerificationMeta(
+    'saleKind',
+  );
+  @override
+  late final GeneratedColumn<String> saleKind = GeneratedColumn<String>(
+    'sale_kind',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('sale'),
+  );
+  static const VerificationMeta _employeeIdMeta = const VerificationMeta(
+    'employeeId',
+  );
+  @override
+  late final GeneratedColumn<String> employeeId = GeneratedColumn<String>(
+    'employee_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _internalReceiptNumberMeta =
+      const VerificationMeta('internalReceiptNumber');
+  @override
+  late final GeneratedColumn<int> internalReceiptNumber = GeneratedColumn<int>(
+    'internal_receipt_number',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _payrollRunIdMeta = const VerificationMeta(
+    'payrollRunId',
+  );
+  @override
+  late final GeneratedColumn<String> payrollRunId = GeneratedColumn<String>(
+    'payroll_run_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _tableIdMeta = const VerificationMeta(
     'tableId',
   );
@@ -11559,6 +12240,10 @@ class $LocalSalesTable extends LocalSales
     syncedAt,
     id,
     invoiceNumber,
+    saleKind,
+    employeeId,
+    internalReceiptNumber,
+    payrollRunId,
     tableId,
     tableAccountId,
     cashRegisterSessionId,
@@ -11637,6 +12322,36 @@ class $LocalSalesTable extends LocalSales
       );
     } else if (isInserting) {
       context.missing(_invoiceNumberMeta);
+    }
+    if (data.containsKey('sale_kind')) {
+      context.handle(
+        _saleKindMeta,
+        saleKind.isAcceptableOrUnknown(data['sale_kind']!, _saleKindMeta),
+      );
+    }
+    if (data.containsKey('employee_id')) {
+      context.handle(
+        _employeeIdMeta,
+        employeeId.isAcceptableOrUnknown(data['employee_id']!, _employeeIdMeta),
+      );
+    }
+    if (data.containsKey('internal_receipt_number')) {
+      context.handle(
+        _internalReceiptNumberMeta,
+        internalReceiptNumber.isAcceptableOrUnknown(
+          data['internal_receipt_number']!,
+          _internalReceiptNumberMeta,
+        ),
+      );
+    }
+    if (data.containsKey('payroll_run_id')) {
+      context.handle(
+        _payrollRunIdMeta,
+        payrollRunId.isAcceptableOrUnknown(
+          data['payroll_run_id']!,
+          _payrollRunIdMeta,
+        ),
+      );
     }
     if (data.containsKey('table_id')) {
       context.handle(
@@ -11769,6 +12484,22 @@ class $LocalSalesTable extends LocalSales
         DriftSqlType.string,
         data['${effectivePrefix}invoice_number'],
       )!,
+      saleKind: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sale_kind'],
+      )!,
+      employeeId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}employee_id'],
+      ),
+      internalReceiptNumber: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}internal_receipt_number'],
+      ),
+      payrollRunId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}payroll_run_id'],
+      ),
       tableId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}table_id'],
@@ -11843,6 +12574,18 @@ class LocalSale extends DataClass implements Insertable<LocalSale> {
   /// Sequential invoice or receipt number.
   final String invoiceNumber;
 
+  /// sale or staff_consumption.
+  final String saleKind;
+
+  /// Employee linked to internal staff consumption.
+  final String? employeeId;
+
+  /// Remote internal receipt sequence for staff consumption.
+  final int? internalReceiptNumber;
+
+  /// Payroll run that consumed this internal sale.
+  final String? payrollRunId;
+
   /// Original table identifier, when applicable.
   final String? tableId;
 
@@ -11881,6 +12624,10 @@ class LocalSale extends DataClass implements Insertable<LocalSale> {
     this.syncedAt,
     required this.id,
     required this.invoiceNumber,
+    required this.saleKind,
+    this.employeeId,
+    this.internalReceiptNumber,
+    this.payrollRunId,
     this.tableId,
     this.tableAccountId,
     this.cashRegisterSessionId,
@@ -11909,6 +12656,16 @@ class LocalSale extends DataClass implements Insertable<LocalSale> {
     }
     map['id'] = Variable<String>(id);
     map['invoice_number'] = Variable<String>(invoiceNumber);
+    map['sale_kind'] = Variable<String>(saleKind);
+    if (!nullToAbsent || employeeId != null) {
+      map['employee_id'] = Variable<String>(employeeId);
+    }
+    if (!nullToAbsent || internalReceiptNumber != null) {
+      map['internal_receipt_number'] = Variable<int>(internalReceiptNumber);
+    }
+    if (!nullToAbsent || payrollRunId != null) {
+      map['payroll_run_id'] = Variable<String>(payrollRunId);
+    }
     if (!nullToAbsent || tableId != null) {
       map['table_id'] = Variable<String>(tableId);
     }
@@ -11950,6 +12707,16 @@ class LocalSale extends DataClass implements Insertable<LocalSale> {
           : Value(syncedAt),
       id: Value(id),
       invoiceNumber: Value(invoiceNumber),
+      saleKind: Value(saleKind),
+      employeeId: employeeId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(employeeId),
+      internalReceiptNumber: internalReceiptNumber == null && nullToAbsent
+          ? const Value.absent()
+          : Value(internalReceiptNumber),
+      payrollRunId: payrollRunId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(payrollRunId),
       tableId: tableId == null && nullToAbsent
           ? const Value.absent()
           : Value(tableId),
@@ -11989,6 +12756,12 @@ class LocalSale extends DataClass implements Insertable<LocalSale> {
       syncedAt: serializer.fromJson<DateTime?>(json['syncedAt']),
       id: serializer.fromJson<String>(json['id']),
       invoiceNumber: serializer.fromJson<String>(json['invoiceNumber']),
+      saleKind: serializer.fromJson<String>(json['saleKind']),
+      employeeId: serializer.fromJson<String?>(json['employeeId']),
+      internalReceiptNumber: serializer.fromJson<int?>(
+        json['internalReceiptNumber'],
+      ),
+      payrollRunId: serializer.fromJson<String?>(json['payrollRunId']),
       tableId: serializer.fromJson<String?>(json['tableId']),
       tableAccountId: serializer.fromJson<String?>(json['tableAccountId']),
       cashRegisterSessionId: serializer.fromJson<String?>(
@@ -12015,6 +12788,10 @@ class LocalSale extends DataClass implements Insertable<LocalSale> {
       'syncedAt': serializer.toJson<DateTime?>(syncedAt),
       'id': serializer.toJson<String>(id),
       'invoiceNumber': serializer.toJson<String>(invoiceNumber),
+      'saleKind': serializer.toJson<String>(saleKind),
+      'employeeId': serializer.toJson<String?>(employeeId),
+      'internalReceiptNumber': serializer.toJson<int?>(internalReceiptNumber),
+      'payrollRunId': serializer.toJson<String?>(payrollRunId),
       'tableId': serializer.toJson<String?>(tableId),
       'tableAccountId': serializer.toJson<String?>(tableAccountId),
       'cashRegisterSessionId': serializer.toJson<String?>(
@@ -12039,6 +12816,10 @@ class LocalSale extends DataClass implements Insertable<LocalSale> {
     Value<DateTime?> syncedAt = const Value.absent(),
     String? id,
     String? invoiceNumber,
+    String? saleKind,
+    Value<String?> employeeId = const Value.absent(),
+    Value<int?> internalReceiptNumber = const Value.absent(),
+    Value<String?> payrollRunId = const Value.absent(),
     Value<String?> tableId = const Value.absent(),
     Value<String?> tableAccountId = const Value.absent(),
     Value<String?> cashRegisterSessionId = const Value.absent(),
@@ -12058,6 +12839,12 @@ class LocalSale extends DataClass implements Insertable<LocalSale> {
     syncedAt: syncedAt.present ? syncedAt.value : this.syncedAt,
     id: id ?? this.id,
     invoiceNumber: invoiceNumber ?? this.invoiceNumber,
+    saleKind: saleKind ?? this.saleKind,
+    employeeId: employeeId.present ? employeeId.value : this.employeeId,
+    internalReceiptNumber: internalReceiptNumber.present
+        ? internalReceiptNumber.value
+        : this.internalReceiptNumber,
+    payrollRunId: payrollRunId.present ? payrollRunId.value : this.payrollRunId,
     tableId: tableId.present ? tableId.value : this.tableId,
     tableAccountId: tableAccountId.present
         ? tableAccountId.value
@@ -12091,6 +12878,16 @@ class LocalSale extends DataClass implements Insertable<LocalSale> {
       invoiceNumber: data.invoiceNumber.present
           ? data.invoiceNumber.value
           : this.invoiceNumber,
+      saleKind: data.saleKind.present ? data.saleKind.value : this.saleKind,
+      employeeId: data.employeeId.present
+          ? data.employeeId.value
+          : this.employeeId,
+      internalReceiptNumber: data.internalReceiptNumber.present
+          ? data.internalReceiptNumber.value
+          : this.internalReceiptNumber,
+      payrollRunId: data.payrollRunId.present
+          ? data.payrollRunId.value
+          : this.payrollRunId,
       tableId: data.tableId.present ? data.tableId.value : this.tableId,
       tableAccountId: data.tableAccountId.present
           ? data.tableAccountId.value
@@ -12131,6 +12928,10 @@ class LocalSale extends DataClass implements Insertable<LocalSale> {
           ..write('syncedAt: $syncedAt, ')
           ..write('id: $id, ')
           ..write('invoiceNumber: $invoiceNumber, ')
+          ..write('saleKind: $saleKind, ')
+          ..write('employeeId: $employeeId, ')
+          ..write('internalReceiptNumber: $internalReceiptNumber, ')
+          ..write('payrollRunId: $payrollRunId, ')
           ..write('tableId: $tableId, ')
           ..write('tableAccountId: $tableAccountId, ')
           ..write('cashRegisterSessionId: $cashRegisterSessionId, ')
@@ -12146,7 +12947,7 @@ class LocalSale extends DataClass implements Insertable<LocalSale> {
   }
 
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll([
     remoteId,
     syncStatus,
     syncError,
@@ -12155,6 +12956,10 @@ class LocalSale extends DataClass implements Insertable<LocalSale> {
     syncedAt,
     id,
     invoiceNumber,
+    saleKind,
+    employeeId,
+    internalReceiptNumber,
+    payrollRunId,
     tableId,
     tableAccountId,
     cashRegisterSessionId,
@@ -12165,7 +12970,7 @@ class LocalSale extends DataClass implements Insertable<LocalSale> {
     status,
     subtotalInCents,
     totalInCents,
-  );
+  ]);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -12178,6 +12983,10 @@ class LocalSale extends DataClass implements Insertable<LocalSale> {
           other.syncedAt == this.syncedAt &&
           other.id == this.id &&
           other.invoiceNumber == this.invoiceNumber &&
+          other.saleKind == this.saleKind &&
+          other.employeeId == this.employeeId &&
+          other.internalReceiptNumber == this.internalReceiptNumber &&
+          other.payrollRunId == this.payrollRunId &&
           other.tableId == this.tableId &&
           other.tableAccountId == this.tableAccountId &&
           other.cashRegisterSessionId == this.cashRegisterSessionId &&
@@ -12199,6 +13008,10 @@ class LocalSalesCompanion extends UpdateCompanion<LocalSale> {
   final Value<DateTime?> syncedAt;
   final Value<String> id;
   final Value<String> invoiceNumber;
+  final Value<String> saleKind;
+  final Value<String?> employeeId;
+  final Value<int?> internalReceiptNumber;
+  final Value<String?> payrollRunId;
   final Value<String?> tableId;
   final Value<String?> tableAccountId;
   final Value<String?> cashRegisterSessionId;
@@ -12219,6 +13032,10 @@ class LocalSalesCompanion extends UpdateCompanion<LocalSale> {
     this.syncedAt = const Value.absent(),
     this.id = const Value.absent(),
     this.invoiceNumber = const Value.absent(),
+    this.saleKind = const Value.absent(),
+    this.employeeId = const Value.absent(),
+    this.internalReceiptNumber = const Value.absent(),
+    this.payrollRunId = const Value.absent(),
     this.tableId = const Value.absent(),
     this.tableAccountId = const Value.absent(),
     this.cashRegisterSessionId = const Value.absent(),
@@ -12240,6 +13057,10 @@ class LocalSalesCompanion extends UpdateCompanion<LocalSale> {
     this.syncedAt = const Value.absent(),
     required String id,
     required String invoiceNumber,
+    this.saleKind = const Value.absent(),
+    this.employeeId = const Value.absent(),
+    this.internalReceiptNumber = const Value.absent(),
+    this.payrollRunId = const Value.absent(),
     this.tableId = const Value.absent(),
     this.tableAccountId = const Value.absent(),
     this.cashRegisterSessionId = const Value.absent(),
@@ -12267,6 +13088,10 @@ class LocalSalesCompanion extends UpdateCompanion<LocalSale> {
     Expression<DateTime>? syncedAt,
     Expression<String>? id,
     Expression<String>? invoiceNumber,
+    Expression<String>? saleKind,
+    Expression<String>? employeeId,
+    Expression<int>? internalReceiptNumber,
+    Expression<String>? payrollRunId,
     Expression<String>? tableId,
     Expression<String>? tableAccountId,
     Expression<String>? cashRegisterSessionId,
@@ -12288,6 +13113,11 @@ class LocalSalesCompanion extends UpdateCompanion<LocalSale> {
       if (syncedAt != null) 'synced_at': syncedAt,
       if (id != null) 'id': id,
       if (invoiceNumber != null) 'invoice_number': invoiceNumber,
+      if (saleKind != null) 'sale_kind': saleKind,
+      if (employeeId != null) 'employee_id': employeeId,
+      if (internalReceiptNumber != null)
+        'internal_receipt_number': internalReceiptNumber,
+      if (payrollRunId != null) 'payroll_run_id': payrollRunId,
       if (tableId != null) 'table_id': tableId,
       if (tableAccountId != null) 'table_account_id': tableAccountId,
       if (cashRegisterSessionId != null)
@@ -12312,6 +13142,10 @@ class LocalSalesCompanion extends UpdateCompanion<LocalSale> {
     Value<DateTime?>? syncedAt,
     Value<String>? id,
     Value<String>? invoiceNumber,
+    Value<String>? saleKind,
+    Value<String?>? employeeId,
+    Value<int?>? internalReceiptNumber,
+    Value<String?>? payrollRunId,
     Value<String?>? tableId,
     Value<String?>? tableAccountId,
     Value<String?>? cashRegisterSessionId,
@@ -12333,6 +13167,11 @@ class LocalSalesCompanion extends UpdateCompanion<LocalSale> {
       syncedAt: syncedAt ?? this.syncedAt,
       id: id ?? this.id,
       invoiceNumber: invoiceNumber ?? this.invoiceNumber,
+      saleKind: saleKind ?? this.saleKind,
+      employeeId: employeeId ?? this.employeeId,
+      internalReceiptNumber:
+          internalReceiptNumber ?? this.internalReceiptNumber,
+      payrollRunId: payrollRunId ?? this.payrollRunId,
       tableId: tableId ?? this.tableId,
       tableAccountId: tableAccountId ?? this.tableAccountId,
       cashRegisterSessionId:
@@ -12374,6 +13213,20 @@ class LocalSalesCompanion extends UpdateCompanion<LocalSale> {
     }
     if (invoiceNumber.present) {
       map['invoice_number'] = Variable<String>(invoiceNumber.value);
+    }
+    if (saleKind.present) {
+      map['sale_kind'] = Variable<String>(saleKind.value);
+    }
+    if (employeeId.present) {
+      map['employee_id'] = Variable<String>(employeeId.value);
+    }
+    if (internalReceiptNumber.present) {
+      map['internal_receipt_number'] = Variable<int>(
+        internalReceiptNumber.value,
+      );
+    }
+    if (payrollRunId.present) {
+      map['payroll_run_id'] = Variable<String>(payrollRunId.value);
     }
     if (tableId.present) {
       map['table_id'] = Variable<String>(tableId.value);
@@ -12424,6 +13277,10 @@ class LocalSalesCompanion extends UpdateCompanion<LocalSale> {
           ..write('syncedAt: $syncedAt, ')
           ..write('id: $id, ')
           ..write('invoiceNumber: $invoiceNumber, ')
+          ..write('saleKind: $saleKind, ')
+          ..write('employeeId: $employeeId, ')
+          ..write('internalReceiptNumber: $internalReceiptNumber, ')
+          ..write('payrollRunId: $payrollRunId, ')
           ..write('tableId: $tableId, ')
           ..write('tableAccountId: $tableAccountId, ')
           ..write('cashRegisterSessionId: $cashRegisterSessionId, ')
@@ -15014,6 +15871,21 @@ class $LocalExpenseCategoriesTable extends LocalExpenseCategories
     ),
     defaultValue: const Constant(true),
   );
+  static const VerificationMeta _includeInGrossProfitCoverageMeta =
+      const VerificationMeta('includeInGrossProfitCoverage');
+  @override
+  late final GeneratedColumn<bool> includeInGrossProfitCoverage =
+      GeneratedColumn<bool>(
+        'include_in_gross_profit_coverage',
+        aliasedName,
+        false,
+        type: DriftSqlType.bool,
+        requiredDuringInsert: false,
+        defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("include_in_gross_profit_coverage" IN (0, 1))',
+        ),
+        defaultValue: const Constant(false),
+      );
   @override
   List<GeneratedColumn> get $columns => [
     remoteId,
@@ -15026,6 +15898,7 @@ class $LocalExpenseCategoriesTable extends LocalExpenseCategories
     name,
     parentId,
     isActive,
+    includeInGrossProfitCoverage,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -15104,6 +15977,15 @@ class $LocalExpenseCategoriesTable extends LocalExpenseCategories
         isActive.isAcceptableOrUnknown(data['is_active']!, _isActiveMeta),
       );
     }
+    if (data.containsKey('include_in_gross_profit_coverage')) {
+      context.handle(
+        _includeInGrossProfitCoverageMeta,
+        includeInGrossProfitCoverage.isAcceptableOrUnknown(
+          data['include_in_gross_profit_coverage']!,
+          _includeInGrossProfitCoverageMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -15153,6 +16035,10 @@ class $LocalExpenseCategoriesTable extends LocalExpenseCategories
         DriftSqlType.bool,
         data['${effectivePrefix}is_active'],
       )!,
+      includeInGrossProfitCoverage: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}include_in_gross_profit_coverage'],
+      )!,
     );
   }
 
@@ -15193,6 +16079,9 @@ class LocalExpenseCategory extends DataClass
 
   /// Whether the category can be used.
   final bool isActive;
+
+  /// Whether this category subtracts from gross profit coverage reports.
+  final bool includeInGrossProfitCoverage;
   const LocalExpenseCategory({
     this.remoteId,
     required this.syncStatus,
@@ -15204,6 +16093,7 @@ class LocalExpenseCategory extends DataClass
     required this.name,
     this.parentId,
     required this.isActive,
+    required this.includeInGrossProfitCoverage,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -15226,6 +16116,9 @@ class LocalExpenseCategory extends DataClass
       map['parent_id'] = Variable<String>(parentId);
     }
     map['is_active'] = Variable<bool>(isActive);
+    map['include_in_gross_profit_coverage'] = Variable<bool>(
+      includeInGrossProfitCoverage,
+    );
     return map;
   }
 
@@ -15249,6 +16142,7 @@ class LocalExpenseCategory extends DataClass
           ? const Value.absent()
           : Value(parentId),
       isActive: Value(isActive),
+      includeInGrossProfitCoverage: Value(includeInGrossProfitCoverage),
     );
   }
 
@@ -15268,6 +16162,9 @@ class LocalExpenseCategory extends DataClass
       name: serializer.fromJson<String>(json['name']),
       parentId: serializer.fromJson<String?>(json['parentId']),
       isActive: serializer.fromJson<bool>(json['isActive']),
+      includeInGrossProfitCoverage: serializer.fromJson<bool>(
+        json['includeInGrossProfitCoverage'],
+      ),
     );
   }
   @override
@@ -15284,6 +16181,9 @@ class LocalExpenseCategory extends DataClass
       'name': serializer.toJson<String>(name),
       'parentId': serializer.toJson<String?>(parentId),
       'isActive': serializer.toJson<bool>(isActive),
+      'includeInGrossProfitCoverage': serializer.toJson<bool>(
+        includeInGrossProfitCoverage,
+      ),
     };
   }
 
@@ -15298,6 +16198,7 @@ class LocalExpenseCategory extends DataClass
     String? name,
     Value<String?> parentId = const Value.absent(),
     bool? isActive,
+    bool? includeInGrossProfitCoverage,
   }) => LocalExpenseCategory(
     remoteId: remoteId.present ? remoteId.value : this.remoteId,
     syncStatus: syncStatus ?? this.syncStatus,
@@ -15309,6 +16210,8 @@ class LocalExpenseCategory extends DataClass
     name: name ?? this.name,
     parentId: parentId.present ? parentId.value : this.parentId,
     isActive: isActive ?? this.isActive,
+    includeInGrossProfitCoverage:
+        includeInGrossProfitCoverage ?? this.includeInGrossProfitCoverage,
   );
   LocalExpenseCategory copyWithCompanion(LocalExpenseCategoriesCompanion data) {
     return LocalExpenseCategory(
@@ -15324,6 +16227,9 @@ class LocalExpenseCategory extends DataClass
       name: data.name.present ? data.name.value : this.name,
       parentId: data.parentId.present ? data.parentId.value : this.parentId,
       isActive: data.isActive.present ? data.isActive.value : this.isActive,
+      includeInGrossProfitCoverage: data.includeInGrossProfitCoverage.present
+          ? data.includeInGrossProfitCoverage.value
+          : this.includeInGrossProfitCoverage,
     );
   }
 
@@ -15339,7 +16245,8 @@ class LocalExpenseCategory extends DataClass
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('parentId: $parentId, ')
-          ..write('isActive: $isActive')
+          ..write('isActive: $isActive, ')
+          ..write('includeInGrossProfitCoverage: $includeInGrossProfitCoverage')
           ..write(')'))
         .toString();
   }
@@ -15356,6 +16263,7 @@ class LocalExpenseCategory extends DataClass
     name,
     parentId,
     isActive,
+    includeInGrossProfitCoverage,
   );
   @override
   bool operator ==(Object other) =>
@@ -15370,7 +16278,9 @@ class LocalExpenseCategory extends DataClass
           other.id == this.id &&
           other.name == this.name &&
           other.parentId == this.parentId &&
-          other.isActive == this.isActive);
+          other.isActive == this.isActive &&
+          other.includeInGrossProfitCoverage ==
+              this.includeInGrossProfitCoverage);
 }
 
 class LocalExpenseCategoriesCompanion
@@ -15385,6 +16295,7 @@ class LocalExpenseCategoriesCompanion
   final Value<String> name;
   final Value<String?> parentId;
   final Value<bool> isActive;
+  final Value<bool> includeInGrossProfitCoverage;
   final Value<int> rowid;
   const LocalExpenseCategoriesCompanion({
     this.remoteId = const Value.absent(),
@@ -15397,6 +16308,7 @@ class LocalExpenseCategoriesCompanion
     this.name = const Value.absent(),
     this.parentId = const Value.absent(),
     this.isActive = const Value.absent(),
+    this.includeInGrossProfitCoverage = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   LocalExpenseCategoriesCompanion.insert({
@@ -15410,6 +16322,7 @@ class LocalExpenseCategoriesCompanion
     required String name,
     this.parentId = const Value.absent(),
     this.isActive = const Value.absent(),
+    this.includeInGrossProfitCoverage = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : createdAt = Value(createdAt),
        updatedAt = Value(updatedAt),
@@ -15426,6 +16339,7 @@ class LocalExpenseCategoriesCompanion
     Expression<String>? name,
     Expression<String>? parentId,
     Expression<bool>? isActive,
+    Expression<bool>? includeInGrossProfitCoverage,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -15439,6 +16353,8 @@ class LocalExpenseCategoriesCompanion
       if (name != null) 'name': name,
       if (parentId != null) 'parent_id': parentId,
       if (isActive != null) 'is_active': isActive,
+      if (includeInGrossProfitCoverage != null)
+        'include_in_gross_profit_coverage': includeInGrossProfitCoverage,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -15454,6 +16370,7 @@ class LocalExpenseCategoriesCompanion
     Value<String>? name,
     Value<String?>? parentId,
     Value<bool>? isActive,
+    Value<bool>? includeInGrossProfitCoverage,
     Value<int>? rowid,
   }) {
     return LocalExpenseCategoriesCompanion(
@@ -15467,6 +16384,8 @@ class LocalExpenseCategoriesCompanion
       name: name ?? this.name,
       parentId: parentId ?? this.parentId,
       isActive: isActive ?? this.isActive,
+      includeInGrossProfitCoverage:
+          includeInGrossProfitCoverage ?? this.includeInGrossProfitCoverage,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -15504,6 +16423,11 @@ class LocalExpenseCategoriesCompanion
     if (isActive.present) {
       map['is_active'] = Variable<bool>(isActive.value);
     }
+    if (includeInGrossProfitCoverage.present) {
+      map['include_in_gross_profit_coverage'] = Variable<bool>(
+        includeInGrossProfitCoverage.value,
+      );
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -15523,6 +16447,9 @@ class LocalExpenseCategoriesCompanion
           ..write('name: $name, ')
           ..write('parentId: $parentId, ')
           ..write('isActive: $isActive, ')
+          ..write(
+            'includeInGrossProfitCoverage: $includeInGrossProfitCoverage, ',
+          )
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -15633,6 +16560,44 @@ class $LocalOperatingExpensesTable extends LocalOperatingExpenses
         type: DriftSqlType.string,
         requiredDuringInsert: false,
       );
+  static const VerificationMeta _expenseKindMeta = const VerificationMeta(
+    'expenseKind',
+  );
+  @override
+  late final GeneratedColumn<String> expenseKind = GeneratedColumn<String>(
+    'expense_kind',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('operational'),
+  );
+  static const VerificationMeta _employeeIdMeta = const VerificationMeta(
+    'employeeId',
+  );
+  @override
+  late final GeneratedColumn<String> employeeId = GeneratedColumn<String>(
+    'employee_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _affectsCashMeta = const VerificationMeta(
+    'affectsCash',
+  );
+  @override
+  late final GeneratedColumn<bool> affectsCash = GeneratedColumn<bool>(
+    'affects_cash',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("affects_cash" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
   static const VerificationMeta _amountInCentsMeta = const VerificationMeta(
     'amountInCents',
   );
@@ -15677,6 +16642,9 @@ class $LocalOperatingExpensesTable extends LocalOperatingExpenses
     id,
     categoryId,
     cashRegisterSessionId,
+    expenseKind,
+    employeeId,
+    affectsCash,
     amountInCents,
     description,
     createdBy,
@@ -15755,6 +16723,30 @@ class $LocalOperatingExpensesTable extends LocalOperatingExpenses
         ),
       );
     }
+    if (data.containsKey('expense_kind')) {
+      context.handle(
+        _expenseKindMeta,
+        expenseKind.isAcceptableOrUnknown(
+          data['expense_kind']!,
+          _expenseKindMeta,
+        ),
+      );
+    }
+    if (data.containsKey('employee_id')) {
+      context.handle(
+        _employeeIdMeta,
+        employeeId.isAcceptableOrUnknown(data['employee_id']!, _employeeIdMeta),
+      );
+    }
+    if (data.containsKey('affects_cash')) {
+      context.handle(
+        _affectsCashMeta,
+        affectsCash.isAcceptableOrUnknown(
+          data['affects_cash']!,
+          _affectsCashMeta,
+        ),
+      );
+    }
     if (data.containsKey('amount_in_cents')) {
       context.handle(
         _amountInCentsMeta,
@@ -15830,6 +16822,18 @@ class $LocalOperatingExpensesTable extends LocalOperatingExpenses
         DriftSqlType.string,
         data['${effectivePrefix}cash_register_session_id'],
       ),
+      expenseKind: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}expense_kind'],
+      )!,
+      employeeId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}employee_id'],
+      ),
+      affectsCash: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}affects_cash'],
+      )!,
       amountInCents: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}amount_in_cents'],
@@ -15880,6 +16884,15 @@ class LocalOperatingExpense extends DataClass
   /// Cash register session identifier when paid from cash.
   final String? cashRegisterSessionId;
 
+  /// operational or salary_advance.
+  final String expenseKind;
+
+  /// Employee linked to salary advances.
+  final String? employeeId;
+
+  /// Whether this row affected POS cash.
+  final bool affectsCash;
+
   /// Amount in minor currency units.
   final int amountInCents;
 
@@ -15898,6 +16911,9 @@ class LocalOperatingExpense extends DataClass
     required this.id,
     required this.categoryId,
     this.cashRegisterSessionId,
+    required this.expenseKind,
+    this.employeeId,
+    required this.affectsCash,
     required this.amountInCents,
     required this.description,
     required this.createdBy,
@@ -15922,6 +16938,11 @@ class LocalOperatingExpense extends DataClass
     if (!nullToAbsent || cashRegisterSessionId != null) {
       map['cash_register_session_id'] = Variable<String>(cashRegisterSessionId);
     }
+    map['expense_kind'] = Variable<String>(expenseKind);
+    if (!nullToAbsent || employeeId != null) {
+      map['employee_id'] = Variable<String>(employeeId);
+    }
+    map['affects_cash'] = Variable<bool>(affectsCash);
     map['amount_in_cents'] = Variable<int>(amountInCents);
     map['description'] = Variable<String>(description);
     map['created_by'] = Variable<String>(createdBy);
@@ -15947,6 +16968,11 @@ class LocalOperatingExpense extends DataClass
       cashRegisterSessionId: cashRegisterSessionId == null && nullToAbsent
           ? const Value.absent()
           : Value(cashRegisterSessionId),
+      expenseKind: Value(expenseKind),
+      employeeId: employeeId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(employeeId),
+      affectsCash: Value(affectsCash),
       amountInCents: Value(amountInCents),
       description: Value(description),
       createdBy: Value(createdBy),
@@ -15970,6 +16996,9 @@ class LocalOperatingExpense extends DataClass
       cashRegisterSessionId: serializer.fromJson<String?>(
         json['cashRegisterSessionId'],
       ),
+      expenseKind: serializer.fromJson<String>(json['expenseKind']),
+      employeeId: serializer.fromJson<String?>(json['employeeId']),
+      affectsCash: serializer.fromJson<bool>(json['affectsCash']),
       amountInCents: serializer.fromJson<int>(json['amountInCents']),
       description: serializer.fromJson<String>(json['description']),
       createdBy: serializer.fromJson<String>(json['createdBy']),
@@ -15990,6 +17019,9 @@ class LocalOperatingExpense extends DataClass
       'cashRegisterSessionId': serializer.toJson<String?>(
         cashRegisterSessionId,
       ),
+      'expenseKind': serializer.toJson<String>(expenseKind),
+      'employeeId': serializer.toJson<String?>(employeeId),
+      'affectsCash': serializer.toJson<bool>(affectsCash),
       'amountInCents': serializer.toJson<int>(amountInCents),
       'description': serializer.toJson<String>(description),
       'createdBy': serializer.toJson<String>(createdBy),
@@ -16006,6 +17038,9 @@ class LocalOperatingExpense extends DataClass
     String? id,
     String? categoryId,
     Value<String?> cashRegisterSessionId = const Value.absent(),
+    String? expenseKind,
+    Value<String?> employeeId = const Value.absent(),
+    bool? affectsCash,
     int? amountInCents,
     String? description,
     String? createdBy,
@@ -16021,6 +17056,9 @@ class LocalOperatingExpense extends DataClass
     cashRegisterSessionId: cashRegisterSessionId.present
         ? cashRegisterSessionId.value
         : this.cashRegisterSessionId,
+    expenseKind: expenseKind ?? this.expenseKind,
+    employeeId: employeeId.present ? employeeId.value : this.employeeId,
+    affectsCash: affectsCash ?? this.affectsCash,
     amountInCents: amountInCents ?? this.amountInCents,
     description: description ?? this.description,
     createdBy: createdBy ?? this.createdBy,
@@ -16044,6 +17082,15 @@ class LocalOperatingExpense extends DataClass
       cashRegisterSessionId: data.cashRegisterSessionId.present
           ? data.cashRegisterSessionId.value
           : this.cashRegisterSessionId,
+      expenseKind: data.expenseKind.present
+          ? data.expenseKind.value
+          : this.expenseKind,
+      employeeId: data.employeeId.present
+          ? data.employeeId.value
+          : this.employeeId,
+      affectsCash: data.affectsCash.present
+          ? data.affectsCash.value
+          : this.affectsCash,
       amountInCents: data.amountInCents.present
           ? data.amountInCents.value
           : this.amountInCents,
@@ -16066,6 +17113,9 @@ class LocalOperatingExpense extends DataClass
           ..write('id: $id, ')
           ..write('categoryId: $categoryId, ')
           ..write('cashRegisterSessionId: $cashRegisterSessionId, ')
+          ..write('expenseKind: $expenseKind, ')
+          ..write('employeeId: $employeeId, ')
+          ..write('affectsCash: $affectsCash, ')
           ..write('amountInCents: $amountInCents, ')
           ..write('description: $description, ')
           ..write('createdBy: $createdBy')
@@ -16084,6 +17134,9 @@ class LocalOperatingExpense extends DataClass
     id,
     categoryId,
     cashRegisterSessionId,
+    expenseKind,
+    employeeId,
+    affectsCash,
     amountInCents,
     description,
     createdBy,
@@ -16101,6 +17154,9 @@ class LocalOperatingExpense extends DataClass
           other.id == this.id &&
           other.categoryId == this.categoryId &&
           other.cashRegisterSessionId == this.cashRegisterSessionId &&
+          other.expenseKind == this.expenseKind &&
+          other.employeeId == this.employeeId &&
+          other.affectsCash == this.affectsCash &&
           other.amountInCents == this.amountInCents &&
           other.description == this.description &&
           other.createdBy == this.createdBy);
@@ -16117,6 +17173,9 @@ class LocalOperatingExpensesCompanion
   final Value<String> id;
   final Value<String> categoryId;
   final Value<String?> cashRegisterSessionId;
+  final Value<String> expenseKind;
+  final Value<String?> employeeId;
+  final Value<bool> affectsCash;
   final Value<int> amountInCents;
   final Value<String> description;
   final Value<String> createdBy;
@@ -16131,6 +17190,9 @@ class LocalOperatingExpensesCompanion
     this.id = const Value.absent(),
     this.categoryId = const Value.absent(),
     this.cashRegisterSessionId = const Value.absent(),
+    this.expenseKind = const Value.absent(),
+    this.employeeId = const Value.absent(),
+    this.affectsCash = const Value.absent(),
     this.amountInCents = const Value.absent(),
     this.description = const Value.absent(),
     this.createdBy = const Value.absent(),
@@ -16146,6 +17208,9 @@ class LocalOperatingExpensesCompanion
     required String id,
     required String categoryId,
     this.cashRegisterSessionId = const Value.absent(),
+    this.expenseKind = const Value.absent(),
+    this.employeeId = const Value.absent(),
+    this.affectsCash = const Value.absent(),
     required int amountInCents,
     required String description,
     required String createdBy,
@@ -16167,6 +17232,9 @@ class LocalOperatingExpensesCompanion
     Expression<String>? id,
     Expression<String>? categoryId,
     Expression<String>? cashRegisterSessionId,
+    Expression<String>? expenseKind,
+    Expression<String>? employeeId,
+    Expression<bool>? affectsCash,
     Expression<int>? amountInCents,
     Expression<String>? description,
     Expression<String>? createdBy,
@@ -16183,6 +17251,9 @@ class LocalOperatingExpensesCompanion
       if (categoryId != null) 'category_id': categoryId,
       if (cashRegisterSessionId != null)
         'cash_register_session_id': cashRegisterSessionId,
+      if (expenseKind != null) 'expense_kind': expenseKind,
+      if (employeeId != null) 'employee_id': employeeId,
+      if (affectsCash != null) 'affects_cash': affectsCash,
       if (amountInCents != null) 'amount_in_cents': amountInCents,
       if (description != null) 'description': description,
       if (createdBy != null) 'created_by': createdBy,
@@ -16200,6 +17271,9 @@ class LocalOperatingExpensesCompanion
     Value<String>? id,
     Value<String>? categoryId,
     Value<String?>? cashRegisterSessionId,
+    Value<String>? expenseKind,
+    Value<String?>? employeeId,
+    Value<bool>? affectsCash,
     Value<int>? amountInCents,
     Value<String>? description,
     Value<String>? createdBy,
@@ -16216,6 +17290,9 @@ class LocalOperatingExpensesCompanion
       categoryId: categoryId ?? this.categoryId,
       cashRegisterSessionId:
           cashRegisterSessionId ?? this.cashRegisterSessionId,
+      expenseKind: expenseKind ?? this.expenseKind,
+      employeeId: employeeId ?? this.employeeId,
+      affectsCash: affectsCash ?? this.affectsCash,
       amountInCents: amountInCents ?? this.amountInCents,
       description: description ?? this.description,
       createdBy: createdBy ?? this.createdBy,
@@ -16255,6 +17332,15 @@ class LocalOperatingExpensesCompanion
         cashRegisterSessionId.value,
       );
     }
+    if (expenseKind.present) {
+      map['expense_kind'] = Variable<String>(expenseKind.value);
+    }
+    if (employeeId.present) {
+      map['employee_id'] = Variable<String>(employeeId.value);
+    }
+    if (affectsCash.present) {
+      map['affects_cash'] = Variable<bool>(affectsCash.value);
+    }
     if (amountInCents.present) {
       map['amount_in_cents'] = Variable<int>(amountInCents.value);
     }
@@ -16282,6 +17368,9 @@ class LocalOperatingExpensesCompanion
           ..write('id: $id, ')
           ..write('categoryId: $categoryId, ')
           ..write('cashRegisterSessionId: $cashRegisterSessionId, ')
+          ..write('expenseKind: $expenseKind, ')
+          ..write('employeeId: $employeeId, ')
+          ..write('affectsCash: $affectsCash, ')
           ..write('amountInCents: $amountInCents, ')
           ..write('description: $description, ')
           ..write('createdBy: $createdBy, ')
@@ -23107,6 +24196,2241 @@ class LocalDeviceStateCompanion extends UpdateCompanion<LocalDeviceStateData> {
   }
 }
 
+class $LocalEmployeesTable extends LocalEmployees
+    with TableInfo<$LocalEmployeesTable, LocalEmployee> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LocalEmployeesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _remoteIdMeta = const VerificationMeta(
+    'remoteId',
+  );
+  @override
+  late final GeneratedColumn<String> remoteId = GeneratedColumn<String>(
+    'remote_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _syncStatusMeta = const VerificationMeta(
+    'syncStatus',
+  );
+  @override
+  late final GeneratedColumn<String> syncStatus = GeneratedColumn<String>(
+    'sync_status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('pending'),
+  );
+  static const VerificationMeta _syncErrorMeta = const VerificationMeta(
+    'syncError',
+  );
+  @override
+  late final GeneratedColumn<String> syncError = GeneratedColumn<String>(
+    'sync_error',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _syncedAtMeta = const VerificationMeta(
+    'syncedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> syncedAt = GeneratedColumn<DateTime>(
+    'synced_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _codeMeta = const VerificationMeta('code');
+  @override
+  late final GeneratedColumn<String> code = GeneratedColumn<String>(
+    'code',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _fullNameMeta = const VerificationMeta(
+    'fullName',
+  );
+  @override
+  late final GeneratedColumn<String> fullName = GeneratedColumn<String>(
+    'full_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _positionNameMeta = const VerificationMeta(
+    'positionName',
+  );
+  @override
+  late final GeneratedColumn<String> positionName = GeneratedColumn<String>(
+    'position_name',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _baseSalaryInCentsMeta = const VerificationMeta(
+    'baseSalaryInCents',
+  );
+  @override
+  late final GeneratedColumn<int> baseSalaryInCents = GeneratedColumn<int>(
+    'base_salary_in_cents',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _isActiveMeta = const VerificationMeta(
+    'isActive',
+  );
+  @override
+  late final GeneratedColumn<bool> isActive = GeneratedColumn<bool>(
+    'is_active',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_active" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    remoteId,
+    syncStatus,
+    syncError,
+    createdAt,
+    updatedAt,
+    syncedAt,
+    id,
+    code,
+    fullName,
+    positionName,
+    baseSalaryInCents,
+    isActive,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_employees';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LocalEmployee> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('remote_id')) {
+      context.handle(
+        _remoteIdMeta,
+        remoteId.isAcceptableOrUnknown(data['remote_id']!, _remoteIdMeta),
+      );
+    }
+    if (data.containsKey('sync_status')) {
+      context.handle(
+        _syncStatusMeta,
+        syncStatus.isAcceptableOrUnknown(data['sync_status']!, _syncStatusMeta),
+      );
+    }
+    if (data.containsKey('sync_error')) {
+      context.handle(
+        _syncErrorMeta,
+        syncError.isAcceptableOrUnknown(data['sync_error']!, _syncErrorMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    if (data.containsKey('synced_at')) {
+      context.handle(
+        _syncedAtMeta,
+        syncedAt.isAcceptableOrUnknown(data['synced_at']!, _syncedAtMeta),
+      );
+    }
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('code')) {
+      context.handle(
+        _codeMeta,
+        code.isAcceptableOrUnknown(data['code']!, _codeMeta),
+      );
+    }
+    if (data.containsKey('full_name')) {
+      context.handle(
+        _fullNameMeta,
+        fullName.isAcceptableOrUnknown(data['full_name']!, _fullNameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_fullNameMeta);
+    }
+    if (data.containsKey('position_name')) {
+      context.handle(
+        _positionNameMeta,
+        positionName.isAcceptableOrUnknown(
+          data['position_name']!,
+          _positionNameMeta,
+        ),
+      );
+    }
+    if (data.containsKey('base_salary_in_cents')) {
+      context.handle(
+        _baseSalaryInCentsMeta,
+        baseSalaryInCents.isAcceptableOrUnknown(
+          data['base_salary_in_cents']!,
+          _baseSalaryInCentsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('is_active')) {
+      context.handle(
+        _isActiveMeta,
+        isActive.isAcceptableOrUnknown(data['is_active']!, _isActiveMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  LocalEmployee map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalEmployee(
+      remoteId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}remote_id'],
+      ),
+      syncStatus: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sync_status'],
+      )!,
+      syncError: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sync_error'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      syncedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}synced_at'],
+      ),
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      code: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}code'],
+      ),
+      fullName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}full_name'],
+      )!,
+      positionName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}position_name'],
+      ),
+      baseSalaryInCents: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}base_salary_in_cents'],
+      )!,
+      isActive: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_active'],
+      )!,
+    );
+  }
+
+  @override
+  $LocalEmployeesTable createAlias(String alias) {
+    return $LocalEmployeesTable(attachedDatabase, alias);
+  }
+}
+
+class LocalEmployee extends DataClass implements Insertable<LocalEmployee> {
+  /// Remote Supabase identifier when the row has been synced.
+  final String? remoteId;
+
+  /// Local sync state.
+  final String syncStatus;
+
+  /// Last sync error, if any.
+  final String? syncError;
+
+  /// Local creation timestamp.
+  final DateTime createdAt;
+
+  /// Local update timestamp.
+  final DateTime updatedAt;
+
+  /// Last successful sync timestamp.
+  final DateTime? syncedAt;
+
+  /// Employee identifier from Supabase.
+  final String id;
+
+  /// Optional visible code.
+  final String? code;
+
+  /// Employee display name.
+  final String fullName;
+
+  /// Optional position or role label.
+  final String? positionName;
+
+  /// Base salary in minor currency units.
+  final int baseSalaryInCents;
+
+  /// Whether this employee can be selected in POS.
+  final bool isActive;
+  const LocalEmployee({
+    this.remoteId,
+    required this.syncStatus,
+    this.syncError,
+    required this.createdAt,
+    required this.updatedAt,
+    this.syncedAt,
+    required this.id,
+    this.code,
+    required this.fullName,
+    this.positionName,
+    required this.baseSalaryInCents,
+    required this.isActive,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (!nullToAbsent || remoteId != null) {
+      map['remote_id'] = Variable<String>(remoteId);
+    }
+    map['sync_status'] = Variable<String>(syncStatus);
+    if (!nullToAbsent || syncError != null) {
+      map['sync_error'] = Variable<String>(syncError);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    if (!nullToAbsent || syncedAt != null) {
+      map['synced_at'] = Variable<DateTime>(syncedAt);
+    }
+    map['id'] = Variable<String>(id);
+    if (!nullToAbsent || code != null) {
+      map['code'] = Variable<String>(code);
+    }
+    map['full_name'] = Variable<String>(fullName);
+    if (!nullToAbsent || positionName != null) {
+      map['position_name'] = Variable<String>(positionName);
+    }
+    map['base_salary_in_cents'] = Variable<int>(baseSalaryInCents);
+    map['is_active'] = Variable<bool>(isActive);
+    return map;
+  }
+
+  LocalEmployeesCompanion toCompanion(bool nullToAbsent) {
+    return LocalEmployeesCompanion(
+      remoteId: remoteId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(remoteId),
+      syncStatus: Value(syncStatus),
+      syncError: syncError == null && nullToAbsent
+          ? const Value.absent()
+          : Value(syncError),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+      syncedAt: syncedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(syncedAt),
+      id: Value(id),
+      code: code == null && nullToAbsent ? const Value.absent() : Value(code),
+      fullName: Value(fullName),
+      positionName: positionName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(positionName),
+      baseSalaryInCents: Value(baseSalaryInCents),
+      isActive: Value(isActive),
+    );
+  }
+
+  factory LocalEmployee.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalEmployee(
+      remoteId: serializer.fromJson<String?>(json['remoteId']),
+      syncStatus: serializer.fromJson<String>(json['syncStatus']),
+      syncError: serializer.fromJson<String?>(json['syncError']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      syncedAt: serializer.fromJson<DateTime?>(json['syncedAt']),
+      id: serializer.fromJson<String>(json['id']),
+      code: serializer.fromJson<String?>(json['code']),
+      fullName: serializer.fromJson<String>(json['fullName']),
+      positionName: serializer.fromJson<String?>(json['positionName']),
+      baseSalaryInCents: serializer.fromJson<int>(json['baseSalaryInCents']),
+      isActive: serializer.fromJson<bool>(json['isActive']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'remoteId': serializer.toJson<String?>(remoteId),
+      'syncStatus': serializer.toJson<String>(syncStatus),
+      'syncError': serializer.toJson<String?>(syncError),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'syncedAt': serializer.toJson<DateTime?>(syncedAt),
+      'id': serializer.toJson<String>(id),
+      'code': serializer.toJson<String?>(code),
+      'fullName': serializer.toJson<String>(fullName),
+      'positionName': serializer.toJson<String?>(positionName),
+      'baseSalaryInCents': serializer.toJson<int>(baseSalaryInCents),
+      'isActive': serializer.toJson<bool>(isActive),
+    };
+  }
+
+  LocalEmployee copyWith({
+    Value<String?> remoteId = const Value.absent(),
+    String? syncStatus,
+    Value<String?> syncError = const Value.absent(),
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    Value<DateTime?> syncedAt = const Value.absent(),
+    String? id,
+    Value<String?> code = const Value.absent(),
+    String? fullName,
+    Value<String?> positionName = const Value.absent(),
+    int? baseSalaryInCents,
+    bool? isActive,
+  }) => LocalEmployee(
+    remoteId: remoteId.present ? remoteId.value : this.remoteId,
+    syncStatus: syncStatus ?? this.syncStatus,
+    syncError: syncError.present ? syncError.value : this.syncError,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    syncedAt: syncedAt.present ? syncedAt.value : this.syncedAt,
+    id: id ?? this.id,
+    code: code.present ? code.value : this.code,
+    fullName: fullName ?? this.fullName,
+    positionName: positionName.present ? positionName.value : this.positionName,
+    baseSalaryInCents: baseSalaryInCents ?? this.baseSalaryInCents,
+    isActive: isActive ?? this.isActive,
+  );
+  LocalEmployee copyWithCompanion(LocalEmployeesCompanion data) {
+    return LocalEmployee(
+      remoteId: data.remoteId.present ? data.remoteId.value : this.remoteId,
+      syncStatus: data.syncStatus.present
+          ? data.syncStatus.value
+          : this.syncStatus,
+      syncError: data.syncError.present ? data.syncError.value : this.syncError,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      syncedAt: data.syncedAt.present ? data.syncedAt.value : this.syncedAt,
+      id: data.id.present ? data.id.value : this.id,
+      code: data.code.present ? data.code.value : this.code,
+      fullName: data.fullName.present ? data.fullName.value : this.fullName,
+      positionName: data.positionName.present
+          ? data.positionName.value
+          : this.positionName,
+      baseSalaryInCents: data.baseSalaryInCents.present
+          ? data.baseSalaryInCents.value
+          : this.baseSalaryInCents,
+      isActive: data.isActive.present ? data.isActive.value : this.isActive,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalEmployee(')
+          ..write('remoteId: $remoteId, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('syncError: $syncError, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('syncedAt: $syncedAt, ')
+          ..write('id: $id, ')
+          ..write('code: $code, ')
+          ..write('fullName: $fullName, ')
+          ..write('positionName: $positionName, ')
+          ..write('baseSalaryInCents: $baseSalaryInCents, ')
+          ..write('isActive: $isActive')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    remoteId,
+    syncStatus,
+    syncError,
+    createdAt,
+    updatedAt,
+    syncedAt,
+    id,
+    code,
+    fullName,
+    positionName,
+    baseSalaryInCents,
+    isActive,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalEmployee &&
+          other.remoteId == this.remoteId &&
+          other.syncStatus == this.syncStatus &&
+          other.syncError == this.syncError &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.syncedAt == this.syncedAt &&
+          other.id == this.id &&
+          other.code == this.code &&
+          other.fullName == this.fullName &&
+          other.positionName == this.positionName &&
+          other.baseSalaryInCents == this.baseSalaryInCents &&
+          other.isActive == this.isActive);
+}
+
+class LocalEmployeesCompanion extends UpdateCompanion<LocalEmployee> {
+  final Value<String?> remoteId;
+  final Value<String> syncStatus;
+  final Value<String?> syncError;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<DateTime?> syncedAt;
+  final Value<String> id;
+  final Value<String?> code;
+  final Value<String> fullName;
+  final Value<String?> positionName;
+  final Value<int> baseSalaryInCents;
+  final Value<bool> isActive;
+  final Value<int> rowid;
+  const LocalEmployeesCompanion({
+    this.remoteId = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.syncError = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.syncedAt = const Value.absent(),
+    this.id = const Value.absent(),
+    this.code = const Value.absent(),
+    this.fullName = const Value.absent(),
+    this.positionName = const Value.absent(),
+    this.baseSalaryInCents = const Value.absent(),
+    this.isActive = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LocalEmployeesCompanion.insert({
+    this.remoteId = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.syncError = const Value.absent(),
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    this.syncedAt = const Value.absent(),
+    required String id,
+    this.code = const Value.absent(),
+    required String fullName,
+    this.positionName = const Value.absent(),
+    this.baseSalaryInCents = const Value.absent(),
+    this.isActive = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt),
+       id = Value(id),
+       fullName = Value(fullName);
+  static Insertable<LocalEmployee> custom({
+    Expression<String>? remoteId,
+    Expression<String>? syncStatus,
+    Expression<String>? syncError,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<DateTime>? syncedAt,
+    Expression<String>? id,
+    Expression<String>? code,
+    Expression<String>? fullName,
+    Expression<String>? positionName,
+    Expression<int>? baseSalaryInCents,
+    Expression<bool>? isActive,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (remoteId != null) 'remote_id': remoteId,
+      if (syncStatus != null) 'sync_status': syncStatus,
+      if (syncError != null) 'sync_error': syncError,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (syncedAt != null) 'synced_at': syncedAt,
+      if (id != null) 'id': id,
+      if (code != null) 'code': code,
+      if (fullName != null) 'full_name': fullName,
+      if (positionName != null) 'position_name': positionName,
+      if (baseSalaryInCents != null) 'base_salary_in_cents': baseSalaryInCents,
+      if (isActive != null) 'is_active': isActive,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LocalEmployeesCompanion copyWith({
+    Value<String?>? remoteId,
+    Value<String>? syncStatus,
+    Value<String?>? syncError,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<DateTime?>? syncedAt,
+    Value<String>? id,
+    Value<String?>? code,
+    Value<String>? fullName,
+    Value<String?>? positionName,
+    Value<int>? baseSalaryInCents,
+    Value<bool>? isActive,
+    Value<int>? rowid,
+  }) {
+    return LocalEmployeesCompanion(
+      remoteId: remoteId ?? this.remoteId,
+      syncStatus: syncStatus ?? this.syncStatus,
+      syncError: syncError ?? this.syncError,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      syncedAt: syncedAt ?? this.syncedAt,
+      id: id ?? this.id,
+      code: code ?? this.code,
+      fullName: fullName ?? this.fullName,
+      positionName: positionName ?? this.positionName,
+      baseSalaryInCents: baseSalaryInCents ?? this.baseSalaryInCents,
+      isActive: isActive ?? this.isActive,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (remoteId.present) {
+      map['remote_id'] = Variable<String>(remoteId.value);
+    }
+    if (syncStatus.present) {
+      map['sync_status'] = Variable<String>(syncStatus.value);
+    }
+    if (syncError.present) {
+      map['sync_error'] = Variable<String>(syncError.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (syncedAt.present) {
+      map['synced_at'] = Variable<DateTime>(syncedAt.value);
+    }
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (code.present) {
+      map['code'] = Variable<String>(code.value);
+    }
+    if (fullName.present) {
+      map['full_name'] = Variable<String>(fullName.value);
+    }
+    if (positionName.present) {
+      map['position_name'] = Variable<String>(positionName.value);
+    }
+    if (baseSalaryInCents.present) {
+      map['base_salary_in_cents'] = Variable<int>(baseSalaryInCents.value);
+    }
+    if (isActive.present) {
+      map['is_active'] = Variable<bool>(isActive.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalEmployeesCompanion(')
+          ..write('remoteId: $remoteId, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('syncError: $syncError, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('syncedAt: $syncedAt, ')
+          ..write('id: $id, ')
+          ..write('code: $code, ')
+          ..write('fullName: $fullName, ')
+          ..write('positionName: $positionName, ')
+          ..write('baseSalaryInCents: $baseSalaryInCents, ')
+          ..write('isActive: $isActive, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $LocalBusinessRulesTable extends LocalBusinessRules
+    with TableInfo<$LocalBusinessRulesTable, LocalBusinessRule> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LocalBusinessRulesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _remoteIdMeta = const VerificationMeta(
+    'remoteId',
+  );
+  @override
+  late final GeneratedColumn<String> remoteId = GeneratedColumn<String>(
+    'remote_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _syncStatusMeta = const VerificationMeta(
+    'syncStatus',
+  );
+  @override
+  late final GeneratedColumn<String> syncStatus = GeneratedColumn<String>(
+    'sync_status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('pending'),
+  );
+  static const VerificationMeta _syncErrorMeta = const VerificationMeta(
+    'syncError',
+  );
+  @override
+  late final GeneratedColumn<String> syncError = GeneratedColumn<String>(
+    'sync_error',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _syncedAtMeta = const VerificationMeta(
+    'syncedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> syncedAt = GeneratedColumn<DateTime>(
+    'synced_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _keyMeta = const VerificationMeta('key');
+  @override
+  late final GeneratedColumn<String> key = GeneratedColumn<String>(
+    'key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _boolValueMeta = const VerificationMeta(
+    'boolValue',
+  );
+  @override
+  late final GeneratedColumn<bool> boolValue = GeneratedColumn<bool>(
+    'bool_value',
+    aliasedName,
+    true,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("bool_value" IN (0, 1))',
+    ),
+  );
+  static const VerificationMeta _textValueMeta = const VerificationMeta(
+    'textValue',
+  );
+  @override
+  late final GeneratedColumn<String> textValue = GeneratedColumn<String>(
+    'text_value',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    remoteId,
+    syncStatus,
+    syncError,
+    createdAt,
+    updatedAt,
+    syncedAt,
+    key,
+    boolValue,
+    textValue,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_business_rules';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LocalBusinessRule> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('remote_id')) {
+      context.handle(
+        _remoteIdMeta,
+        remoteId.isAcceptableOrUnknown(data['remote_id']!, _remoteIdMeta),
+      );
+    }
+    if (data.containsKey('sync_status')) {
+      context.handle(
+        _syncStatusMeta,
+        syncStatus.isAcceptableOrUnknown(data['sync_status']!, _syncStatusMeta),
+      );
+    }
+    if (data.containsKey('sync_error')) {
+      context.handle(
+        _syncErrorMeta,
+        syncError.isAcceptableOrUnknown(data['sync_error']!, _syncErrorMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    if (data.containsKey('synced_at')) {
+      context.handle(
+        _syncedAtMeta,
+        syncedAt.isAcceptableOrUnknown(data['synced_at']!, _syncedAtMeta),
+      );
+    }
+    if (data.containsKey('key')) {
+      context.handle(
+        _keyMeta,
+        key.isAcceptableOrUnknown(data['key']!, _keyMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_keyMeta);
+    }
+    if (data.containsKey('bool_value')) {
+      context.handle(
+        _boolValueMeta,
+        boolValue.isAcceptableOrUnknown(data['bool_value']!, _boolValueMeta),
+      );
+    }
+    if (data.containsKey('text_value')) {
+      context.handle(
+        _textValueMeta,
+        textValue.isAcceptableOrUnknown(data['text_value']!, _textValueMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {key};
+  @override
+  LocalBusinessRule map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalBusinessRule(
+      remoteId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}remote_id'],
+      ),
+      syncStatus: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sync_status'],
+      )!,
+      syncError: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sync_error'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      syncedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}synced_at'],
+      ),
+      key: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}key'],
+      )!,
+      boolValue: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}bool_value'],
+      ),
+      textValue: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}text_value'],
+      ),
+    );
+  }
+
+  @override
+  $LocalBusinessRulesTable createAlias(String alias) {
+    return $LocalBusinessRulesTable(attachedDatabase, alias);
+  }
+}
+
+class LocalBusinessRule extends DataClass
+    implements Insertable<LocalBusinessRule> {
+  /// Remote Supabase identifier when the row has been synced.
+  final String? remoteId;
+
+  /// Local sync state.
+  final String syncStatus;
+
+  /// Last sync error, if any.
+  final String? syncError;
+
+  /// Local creation timestamp.
+  final DateTime createdAt;
+
+  /// Local update timestamp.
+  final DateTime updatedAt;
+
+  /// Last successful sync timestamp.
+  final DateTime? syncedAt;
+
+  /// Stable rule key.
+  final String key;
+
+  /// Boolean value for simple toggles.
+  final bool? boolValue;
+
+  /// Text value reserved for future rules.
+  final String? textValue;
+  const LocalBusinessRule({
+    this.remoteId,
+    required this.syncStatus,
+    this.syncError,
+    required this.createdAt,
+    required this.updatedAt,
+    this.syncedAt,
+    required this.key,
+    this.boolValue,
+    this.textValue,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (!nullToAbsent || remoteId != null) {
+      map['remote_id'] = Variable<String>(remoteId);
+    }
+    map['sync_status'] = Variable<String>(syncStatus);
+    if (!nullToAbsent || syncError != null) {
+      map['sync_error'] = Variable<String>(syncError);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    if (!nullToAbsent || syncedAt != null) {
+      map['synced_at'] = Variable<DateTime>(syncedAt);
+    }
+    map['key'] = Variable<String>(key);
+    if (!nullToAbsent || boolValue != null) {
+      map['bool_value'] = Variable<bool>(boolValue);
+    }
+    if (!nullToAbsent || textValue != null) {
+      map['text_value'] = Variable<String>(textValue);
+    }
+    return map;
+  }
+
+  LocalBusinessRulesCompanion toCompanion(bool nullToAbsent) {
+    return LocalBusinessRulesCompanion(
+      remoteId: remoteId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(remoteId),
+      syncStatus: Value(syncStatus),
+      syncError: syncError == null && nullToAbsent
+          ? const Value.absent()
+          : Value(syncError),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+      syncedAt: syncedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(syncedAt),
+      key: Value(key),
+      boolValue: boolValue == null && nullToAbsent
+          ? const Value.absent()
+          : Value(boolValue),
+      textValue: textValue == null && nullToAbsent
+          ? const Value.absent()
+          : Value(textValue),
+    );
+  }
+
+  factory LocalBusinessRule.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalBusinessRule(
+      remoteId: serializer.fromJson<String?>(json['remoteId']),
+      syncStatus: serializer.fromJson<String>(json['syncStatus']),
+      syncError: serializer.fromJson<String?>(json['syncError']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      syncedAt: serializer.fromJson<DateTime?>(json['syncedAt']),
+      key: serializer.fromJson<String>(json['key']),
+      boolValue: serializer.fromJson<bool?>(json['boolValue']),
+      textValue: serializer.fromJson<String?>(json['textValue']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'remoteId': serializer.toJson<String?>(remoteId),
+      'syncStatus': serializer.toJson<String>(syncStatus),
+      'syncError': serializer.toJson<String?>(syncError),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'syncedAt': serializer.toJson<DateTime?>(syncedAt),
+      'key': serializer.toJson<String>(key),
+      'boolValue': serializer.toJson<bool?>(boolValue),
+      'textValue': serializer.toJson<String?>(textValue),
+    };
+  }
+
+  LocalBusinessRule copyWith({
+    Value<String?> remoteId = const Value.absent(),
+    String? syncStatus,
+    Value<String?> syncError = const Value.absent(),
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    Value<DateTime?> syncedAt = const Value.absent(),
+    String? key,
+    Value<bool?> boolValue = const Value.absent(),
+    Value<String?> textValue = const Value.absent(),
+  }) => LocalBusinessRule(
+    remoteId: remoteId.present ? remoteId.value : this.remoteId,
+    syncStatus: syncStatus ?? this.syncStatus,
+    syncError: syncError.present ? syncError.value : this.syncError,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    syncedAt: syncedAt.present ? syncedAt.value : this.syncedAt,
+    key: key ?? this.key,
+    boolValue: boolValue.present ? boolValue.value : this.boolValue,
+    textValue: textValue.present ? textValue.value : this.textValue,
+  );
+  LocalBusinessRule copyWithCompanion(LocalBusinessRulesCompanion data) {
+    return LocalBusinessRule(
+      remoteId: data.remoteId.present ? data.remoteId.value : this.remoteId,
+      syncStatus: data.syncStatus.present
+          ? data.syncStatus.value
+          : this.syncStatus,
+      syncError: data.syncError.present ? data.syncError.value : this.syncError,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      syncedAt: data.syncedAt.present ? data.syncedAt.value : this.syncedAt,
+      key: data.key.present ? data.key.value : this.key,
+      boolValue: data.boolValue.present ? data.boolValue.value : this.boolValue,
+      textValue: data.textValue.present ? data.textValue.value : this.textValue,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalBusinessRule(')
+          ..write('remoteId: $remoteId, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('syncError: $syncError, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('syncedAt: $syncedAt, ')
+          ..write('key: $key, ')
+          ..write('boolValue: $boolValue, ')
+          ..write('textValue: $textValue')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    remoteId,
+    syncStatus,
+    syncError,
+    createdAt,
+    updatedAt,
+    syncedAt,
+    key,
+    boolValue,
+    textValue,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalBusinessRule &&
+          other.remoteId == this.remoteId &&
+          other.syncStatus == this.syncStatus &&
+          other.syncError == this.syncError &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.syncedAt == this.syncedAt &&
+          other.key == this.key &&
+          other.boolValue == this.boolValue &&
+          other.textValue == this.textValue);
+}
+
+class LocalBusinessRulesCompanion extends UpdateCompanion<LocalBusinessRule> {
+  final Value<String?> remoteId;
+  final Value<String> syncStatus;
+  final Value<String?> syncError;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<DateTime?> syncedAt;
+  final Value<String> key;
+  final Value<bool?> boolValue;
+  final Value<String?> textValue;
+  final Value<int> rowid;
+  const LocalBusinessRulesCompanion({
+    this.remoteId = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.syncError = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.syncedAt = const Value.absent(),
+    this.key = const Value.absent(),
+    this.boolValue = const Value.absent(),
+    this.textValue = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LocalBusinessRulesCompanion.insert({
+    this.remoteId = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.syncError = const Value.absent(),
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    this.syncedAt = const Value.absent(),
+    required String key,
+    this.boolValue = const Value.absent(),
+    this.textValue = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt),
+       key = Value(key);
+  static Insertable<LocalBusinessRule> custom({
+    Expression<String>? remoteId,
+    Expression<String>? syncStatus,
+    Expression<String>? syncError,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<DateTime>? syncedAt,
+    Expression<String>? key,
+    Expression<bool>? boolValue,
+    Expression<String>? textValue,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (remoteId != null) 'remote_id': remoteId,
+      if (syncStatus != null) 'sync_status': syncStatus,
+      if (syncError != null) 'sync_error': syncError,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (syncedAt != null) 'synced_at': syncedAt,
+      if (key != null) 'key': key,
+      if (boolValue != null) 'bool_value': boolValue,
+      if (textValue != null) 'text_value': textValue,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LocalBusinessRulesCompanion copyWith({
+    Value<String?>? remoteId,
+    Value<String>? syncStatus,
+    Value<String?>? syncError,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<DateTime?>? syncedAt,
+    Value<String>? key,
+    Value<bool?>? boolValue,
+    Value<String?>? textValue,
+    Value<int>? rowid,
+  }) {
+    return LocalBusinessRulesCompanion(
+      remoteId: remoteId ?? this.remoteId,
+      syncStatus: syncStatus ?? this.syncStatus,
+      syncError: syncError ?? this.syncError,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      syncedAt: syncedAt ?? this.syncedAt,
+      key: key ?? this.key,
+      boolValue: boolValue ?? this.boolValue,
+      textValue: textValue ?? this.textValue,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (remoteId.present) {
+      map['remote_id'] = Variable<String>(remoteId.value);
+    }
+    if (syncStatus.present) {
+      map['sync_status'] = Variable<String>(syncStatus.value);
+    }
+    if (syncError.present) {
+      map['sync_error'] = Variable<String>(syncError.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (syncedAt.present) {
+      map['synced_at'] = Variable<DateTime>(syncedAt.value);
+    }
+    if (key.present) {
+      map['key'] = Variable<String>(key.value);
+    }
+    if (boolValue.present) {
+      map['bool_value'] = Variable<bool>(boolValue.value);
+    }
+    if (textValue.present) {
+      map['text_value'] = Variable<String>(textValue.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalBusinessRulesCompanion(')
+          ..write('remoteId: $remoteId, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('syncError: $syncError, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('syncedAt: $syncedAt, ')
+          ..write('key: $key, ')
+          ..write('boolValue: $boolValue, ')
+          ..write('textValue: $textValue, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $LocalSalaryAdvancesTable extends LocalSalaryAdvances
+    with TableInfo<$LocalSalaryAdvancesTable, LocalSalaryAdvance> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LocalSalaryAdvancesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _remoteIdMeta = const VerificationMeta(
+    'remoteId',
+  );
+  @override
+  late final GeneratedColumn<String> remoteId = GeneratedColumn<String>(
+    'remote_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _syncStatusMeta = const VerificationMeta(
+    'syncStatus',
+  );
+  @override
+  late final GeneratedColumn<String> syncStatus = GeneratedColumn<String>(
+    'sync_status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('pending'),
+  );
+  static const VerificationMeta _syncErrorMeta = const VerificationMeta(
+    'syncError',
+  );
+  @override
+  late final GeneratedColumn<String> syncError = GeneratedColumn<String>(
+    'sync_error',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _syncedAtMeta = const VerificationMeta(
+    'syncedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> syncedAt = GeneratedColumn<DateTime>(
+    'synced_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _employeeIdMeta = const VerificationMeta(
+    'employeeId',
+  );
+  @override
+  late final GeneratedColumn<String> employeeId = GeneratedColumn<String>(
+    'employee_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _cashRegisterSessionIdMeta =
+      const VerificationMeta('cashRegisterSessionId');
+  @override
+  late final GeneratedColumn<String> cashRegisterSessionId =
+      GeneratedColumn<String>(
+        'cash_register_session_id',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _amountInCentsMeta = const VerificationMeta(
+    'amountInCents',
+  );
+  @override
+  late final GeneratedColumn<int> amountInCents = GeneratedColumn<int>(
+    'amount_in_cents',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _affectsCashMeta = const VerificationMeta(
+    'affectsCash',
+  );
+  @override
+  late final GeneratedColumn<bool> affectsCash = GeneratedColumn<bool>(
+    'affects_cash',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("affects_cash" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _noteMeta = const VerificationMeta('note');
+  @override
+  late final GeneratedColumn<String> note = GeneratedColumn<String>(
+    'note',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdByMeta = const VerificationMeta(
+    'createdBy',
+  );
+  @override
+  late final GeneratedColumn<String> createdBy = GeneratedColumn<String>(
+    'created_by',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _deliveredAtMeta = const VerificationMeta(
+    'deliveredAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> deliveredAt = GeneratedColumn<DateTime>(
+    'delivered_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('pending'),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    remoteId,
+    syncStatus,
+    syncError,
+    createdAt,
+    updatedAt,
+    syncedAt,
+    id,
+    employeeId,
+    cashRegisterSessionId,
+    amountInCents,
+    affectsCash,
+    note,
+    createdBy,
+    deliveredAt,
+    status,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_salary_advances';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LocalSalaryAdvance> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('remote_id')) {
+      context.handle(
+        _remoteIdMeta,
+        remoteId.isAcceptableOrUnknown(data['remote_id']!, _remoteIdMeta),
+      );
+    }
+    if (data.containsKey('sync_status')) {
+      context.handle(
+        _syncStatusMeta,
+        syncStatus.isAcceptableOrUnknown(data['sync_status']!, _syncStatusMeta),
+      );
+    }
+    if (data.containsKey('sync_error')) {
+      context.handle(
+        _syncErrorMeta,
+        syncError.isAcceptableOrUnknown(data['sync_error']!, _syncErrorMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    if (data.containsKey('synced_at')) {
+      context.handle(
+        _syncedAtMeta,
+        syncedAt.isAcceptableOrUnknown(data['synced_at']!, _syncedAtMeta),
+      );
+    }
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('employee_id')) {
+      context.handle(
+        _employeeIdMeta,
+        employeeId.isAcceptableOrUnknown(data['employee_id']!, _employeeIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_employeeIdMeta);
+    }
+    if (data.containsKey('cash_register_session_id')) {
+      context.handle(
+        _cashRegisterSessionIdMeta,
+        cashRegisterSessionId.isAcceptableOrUnknown(
+          data['cash_register_session_id']!,
+          _cashRegisterSessionIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('amount_in_cents')) {
+      context.handle(
+        _amountInCentsMeta,
+        amountInCents.isAcceptableOrUnknown(
+          data['amount_in_cents']!,
+          _amountInCentsMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_amountInCentsMeta);
+    }
+    if (data.containsKey('affects_cash')) {
+      context.handle(
+        _affectsCashMeta,
+        affectsCash.isAcceptableOrUnknown(
+          data['affects_cash']!,
+          _affectsCashMeta,
+        ),
+      );
+    }
+    if (data.containsKey('note')) {
+      context.handle(
+        _noteMeta,
+        note.isAcceptableOrUnknown(data['note']!, _noteMeta),
+      );
+    }
+    if (data.containsKey('created_by')) {
+      context.handle(
+        _createdByMeta,
+        createdBy.isAcceptableOrUnknown(data['created_by']!, _createdByMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdByMeta);
+    }
+    if (data.containsKey('delivered_at')) {
+      context.handle(
+        _deliveredAtMeta,
+        deliveredAt.isAcceptableOrUnknown(
+          data['delivered_at']!,
+          _deliveredAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  LocalSalaryAdvance map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalSalaryAdvance(
+      remoteId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}remote_id'],
+      ),
+      syncStatus: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sync_status'],
+      )!,
+      syncError: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sync_error'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      syncedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}synced_at'],
+      ),
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      employeeId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}employee_id'],
+      )!,
+      cashRegisterSessionId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}cash_register_session_id'],
+      ),
+      amountInCents: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}amount_in_cents'],
+      )!,
+      affectsCash: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}affects_cash'],
+      )!,
+      note: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}note'],
+      ),
+      createdBy: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}created_by'],
+      )!,
+      deliveredAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}delivered_at'],
+      ),
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+    );
+  }
+
+  @override
+  $LocalSalaryAdvancesTable createAlias(String alias) {
+    return $LocalSalaryAdvancesTable(attachedDatabase, alias);
+  }
+}
+
+class LocalSalaryAdvance extends DataClass
+    implements Insertable<LocalSalaryAdvance> {
+  /// Remote Supabase identifier when the row has been synced.
+  final String? remoteId;
+
+  /// Local sync state.
+  final String syncStatus;
+
+  /// Last sync error, if any.
+  final String? syncError;
+
+  /// Local creation timestamp.
+  final DateTime createdAt;
+
+  /// Local update timestamp.
+  final DateTime updatedAt;
+
+  /// Last successful sync timestamp.
+  final DateTime? syncedAt;
+
+  /// Local identifier.
+  final String id;
+
+  /// Employee identifier.
+  final String employeeId;
+
+  /// Optional cash register session if the rule affects cash.
+  final String? cashRegisterSessionId;
+
+  /// Advance amount in minor currency units.
+  final int amountInCents;
+
+  /// Whether this advance affected the POS cash drawer.
+  final bool affectsCash;
+
+  /// Optional note.
+  final String? note;
+
+  /// User that registered the advance.
+  final String createdBy;
+
+  /// Date when the money was delivered.
+  final DateTime? deliveredAt;
+
+  /// Pending, synced, voided or applied.
+  final String status;
+  const LocalSalaryAdvance({
+    this.remoteId,
+    required this.syncStatus,
+    this.syncError,
+    required this.createdAt,
+    required this.updatedAt,
+    this.syncedAt,
+    required this.id,
+    required this.employeeId,
+    this.cashRegisterSessionId,
+    required this.amountInCents,
+    required this.affectsCash,
+    this.note,
+    required this.createdBy,
+    this.deliveredAt,
+    required this.status,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (!nullToAbsent || remoteId != null) {
+      map['remote_id'] = Variable<String>(remoteId);
+    }
+    map['sync_status'] = Variable<String>(syncStatus);
+    if (!nullToAbsent || syncError != null) {
+      map['sync_error'] = Variable<String>(syncError);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    if (!nullToAbsent || syncedAt != null) {
+      map['synced_at'] = Variable<DateTime>(syncedAt);
+    }
+    map['id'] = Variable<String>(id);
+    map['employee_id'] = Variable<String>(employeeId);
+    if (!nullToAbsent || cashRegisterSessionId != null) {
+      map['cash_register_session_id'] = Variable<String>(cashRegisterSessionId);
+    }
+    map['amount_in_cents'] = Variable<int>(amountInCents);
+    map['affects_cash'] = Variable<bool>(affectsCash);
+    if (!nullToAbsent || note != null) {
+      map['note'] = Variable<String>(note);
+    }
+    map['created_by'] = Variable<String>(createdBy);
+    if (!nullToAbsent || deliveredAt != null) {
+      map['delivered_at'] = Variable<DateTime>(deliveredAt);
+    }
+    map['status'] = Variable<String>(status);
+    return map;
+  }
+
+  LocalSalaryAdvancesCompanion toCompanion(bool nullToAbsent) {
+    return LocalSalaryAdvancesCompanion(
+      remoteId: remoteId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(remoteId),
+      syncStatus: Value(syncStatus),
+      syncError: syncError == null && nullToAbsent
+          ? const Value.absent()
+          : Value(syncError),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+      syncedAt: syncedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(syncedAt),
+      id: Value(id),
+      employeeId: Value(employeeId),
+      cashRegisterSessionId: cashRegisterSessionId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(cashRegisterSessionId),
+      amountInCents: Value(amountInCents),
+      affectsCash: Value(affectsCash),
+      note: note == null && nullToAbsent ? const Value.absent() : Value(note),
+      createdBy: Value(createdBy),
+      deliveredAt: deliveredAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deliveredAt),
+      status: Value(status),
+    );
+  }
+
+  factory LocalSalaryAdvance.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalSalaryAdvance(
+      remoteId: serializer.fromJson<String?>(json['remoteId']),
+      syncStatus: serializer.fromJson<String>(json['syncStatus']),
+      syncError: serializer.fromJson<String?>(json['syncError']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      syncedAt: serializer.fromJson<DateTime?>(json['syncedAt']),
+      id: serializer.fromJson<String>(json['id']),
+      employeeId: serializer.fromJson<String>(json['employeeId']),
+      cashRegisterSessionId: serializer.fromJson<String?>(
+        json['cashRegisterSessionId'],
+      ),
+      amountInCents: serializer.fromJson<int>(json['amountInCents']),
+      affectsCash: serializer.fromJson<bool>(json['affectsCash']),
+      note: serializer.fromJson<String?>(json['note']),
+      createdBy: serializer.fromJson<String>(json['createdBy']),
+      deliveredAt: serializer.fromJson<DateTime?>(json['deliveredAt']),
+      status: serializer.fromJson<String>(json['status']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'remoteId': serializer.toJson<String?>(remoteId),
+      'syncStatus': serializer.toJson<String>(syncStatus),
+      'syncError': serializer.toJson<String?>(syncError),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'syncedAt': serializer.toJson<DateTime?>(syncedAt),
+      'id': serializer.toJson<String>(id),
+      'employeeId': serializer.toJson<String>(employeeId),
+      'cashRegisterSessionId': serializer.toJson<String?>(
+        cashRegisterSessionId,
+      ),
+      'amountInCents': serializer.toJson<int>(amountInCents),
+      'affectsCash': serializer.toJson<bool>(affectsCash),
+      'note': serializer.toJson<String?>(note),
+      'createdBy': serializer.toJson<String>(createdBy),
+      'deliveredAt': serializer.toJson<DateTime?>(deliveredAt),
+      'status': serializer.toJson<String>(status),
+    };
+  }
+
+  LocalSalaryAdvance copyWith({
+    Value<String?> remoteId = const Value.absent(),
+    String? syncStatus,
+    Value<String?> syncError = const Value.absent(),
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    Value<DateTime?> syncedAt = const Value.absent(),
+    String? id,
+    String? employeeId,
+    Value<String?> cashRegisterSessionId = const Value.absent(),
+    int? amountInCents,
+    bool? affectsCash,
+    Value<String?> note = const Value.absent(),
+    String? createdBy,
+    Value<DateTime?> deliveredAt = const Value.absent(),
+    String? status,
+  }) => LocalSalaryAdvance(
+    remoteId: remoteId.present ? remoteId.value : this.remoteId,
+    syncStatus: syncStatus ?? this.syncStatus,
+    syncError: syncError.present ? syncError.value : this.syncError,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    syncedAt: syncedAt.present ? syncedAt.value : this.syncedAt,
+    id: id ?? this.id,
+    employeeId: employeeId ?? this.employeeId,
+    cashRegisterSessionId: cashRegisterSessionId.present
+        ? cashRegisterSessionId.value
+        : this.cashRegisterSessionId,
+    amountInCents: amountInCents ?? this.amountInCents,
+    affectsCash: affectsCash ?? this.affectsCash,
+    note: note.present ? note.value : this.note,
+    createdBy: createdBy ?? this.createdBy,
+    deliveredAt: deliveredAt.present ? deliveredAt.value : this.deliveredAt,
+    status: status ?? this.status,
+  );
+  LocalSalaryAdvance copyWithCompanion(LocalSalaryAdvancesCompanion data) {
+    return LocalSalaryAdvance(
+      remoteId: data.remoteId.present ? data.remoteId.value : this.remoteId,
+      syncStatus: data.syncStatus.present
+          ? data.syncStatus.value
+          : this.syncStatus,
+      syncError: data.syncError.present ? data.syncError.value : this.syncError,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      syncedAt: data.syncedAt.present ? data.syncedAt.value : this.syncedAt,
+      id: data.id.present ? data.id.value : this.id,
+      employeeId: data.employeeId.present
+          ? data.employeeId.value
+          : this.employeeId,
+      cashRegisterSessionId: data.cashRegisterSessionId.present
+          ? data.cashRegisterSessionId.value
+          : this.cashRegisterSessionId,
+      amountInCents: data.amountInCents.present
+          ? data.amountInCents.value
+          : this.amountInCents,
+      affectsCash: data.affectsCash.present
+          ? data.affectsCash.value
+          : this.affectsCash,
+      note: data.note.present ? data.note.value : this.note,
+      createdBy: data.createdBy.present ? data.createdBy.value : this.createdBy,
+      deliveredAt: data.deliveredAt.present
+          ? data.deliveredAt.value
+          : this.deliveredAt,
+      status: data.status.present ? data.status.value : this.status,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalSalaryAdvance(')
+          ..write('remoteId: $remoteId, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('syncError: $syncError, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('syncedAt: $syncedAt, ')
+          ..write('id: $id, ')
+          ..write('employeeId: $employeeId, ')
+          ..write('cashRegisterSessionId: $cashRegisterSessionId, ')
+          ..write('amountInCents: $amountInCents, ')
+          ..write('affectsCash: $affectsCash, ')
+          ..write('note: $note, ')
+          ..write('createdBy: $createdBy, ')
+          ..write('deliveredAt: $deliveredAt, ')
+          ..write('status: $status')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    remoteId,
+    syncStatus,
+    syncError,
+    createdAt,
+    updatedAt,
+    syncedAt,
+    id,
+    employeeId,
+    cashRegisterSessionId,
+    amountInCents,
+    affectsCash,
+    note,
+    createdBy,
+    deliveredAt,
+    status,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalSalaryAdvance &&
+          other.remoteId == this.remoteId &&
+          other.syncStatus == this.syncStatus &&
+          other.syncError == this.syncError &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.syncedAt == this.syncedAt &&
+          other.id == this.id &&
+          other.employeeId == this.employeeId &&
+          other.cashRegisterSessionId == this.cashRegisterSessionId &&
+          other.amountInCents == this.amountInCents &&
+          other.affectsCash == this.affectsCash &&
+          other.note == this.note &&
+          other.createdBy == this.createdBy &&
+          other.deliveredAt == this.deliveredAt &&
+          other.status == this.status);
+}
+
+class LocalSalaryAdvancesCompanion extends UpdateCompanion<LocalSalaryAdvance> {
+  final Value<String?> remoteId;
+  final Value<String> syncStatus;
+  final Value<String?> syncError;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<DateTime?> syncedAt;
+  final Value<String> id;
+  final Value<String> employeeId;
+  final Value<String?> cashRegisterSessionId;
+  final Value<int> amountInCents;
+  final Value<bool> affectsCash;
+  final Value<String?> note;
+  final Value<String> createdBy;
+  final Value<DateTime?> deliveredAt;
+  final Value<String> status;
+  final Value<int> rowid;
+  const LocalSalaryAdvancesCompanion({
+    this.remoteId = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.syncError = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.syncedAt = const Value.absent(),
+    this.id = const Value.absent(),
+    this.employeeId = const Value.absent(),
+    this.cashRegisterSessionId = const Value.absent(),
+    this.amountInCents = const Value.absent(),
+    this.affectsCash = const Value.absent(),
+    this.note = const Value.absent(),
+    this.createdBy = const Value.absent(),
+    this.deliveredAt = const Value.absent(),
+    this.status = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LocalSalaryAdvancesCompanion.insert({
+    this.remoteId = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.syncError = const Value.absent(),
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    this.syncedAt = const Value.absent(),
+    required String id,
+    required String employeeId,
+    this.cashRegisterSessionId = const Value.absent(),
+    required int amountInCents,
+    this.affectsCash = const Value.absent(),
+    this.note = const Value.absent(),
+    required String createdBy,
+    this.deliveredAt = const Value.absent(),
+    this.status = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt),
+       id = Value(id),
+       employeeId = Value(employeeId),
+       amountInCents = Value(amountInCents),
+       createdBy = Value(createdBy);
+  static Insertable<LocalSalaryAdvance> custom({
+    Expression<String>? remoteId,
+    Expression<String>? syncStatus,
+    Expression<String>? syncError,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<DateTime>? syncedAt,
+    Expression<String>? id,
+    Expression<String>? employeeId,
+    Expression<String>? cashRegisterSessionId,
+    Expression<int>? amountInCents,
+    Expression<bool>? affectsCash,
+    Expression<String>? note,
+    Expression<String>? createdBy,
+    Expression<DateTime>? deliveredAt,
+    Expression<String>? status,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (remoteId != null) 'remote_id': remoteId,
+      if (syncStatus != null) 'sync_status': syncStatus,
+      if (syncError != null) 'sync_error': syncError,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (syncedAt != null) 'synced_at': syncedAt,
+      if (id != null) 'id': id,
+      if (employeeId != null) 'employee_id': employeeId,
+      if (cashRegisterSessionId != null)
+        'cash_register_session_id': cashRegisterSessionId,
+      if (amountInCents != null) 'amount_in_cents': amountInCents,
+      if (affectsCash != null) 'affects_cash': affectsCash,
+      if (note != null) 'note': note,
+      if (createdBy != null) 'created_by': createdBy,
+      if (deliveredAt != null) 'delivered_at': deliveredAt,
+      if (status != null) 'status': status,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LocalSalaryAdvancesCompanion copyWith({
+    Value<String?>? remoteId,
+    Value<String>? syncStatus,
+    Value<String?>? syncError,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<DateTime?>? syncedAt,
+    Value<String>? id,
+    Value<String>? employeeId,
+    Value<String?>? cashRegisterSessionId,
+    Value<int>? amountInCents,
+    Value<bool>? affectsCash,
+    Value<String?>? note,
+    Value<String>? createdBy,
+    Value<DateTime?>? deliveredAt,
+    Value<String>? status,
+    Value<int>? rowid,
+  }) {
+    return LocalSalaryAdvancesCompanion(
+      remoteId: remoteId ?? this.remoteId,
+      syncStatus: syncStatus ?? this.syncStatus,
+      syncError: syncError ?? this.syncError,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      syncedAt: syncedAt ?? this.syncedAt,
+      id: id ?? this.id,
+      employeeId: employeeId ?? this.employeeId,
+      cashRegisterSessionId:
+          cashRegisterSessionId ?? this.cashRegisterSessionId,
+      amountInCents: amountInCents ?? this.amountInCents,
+      affectsCash: affectsCash ?? this.affectsCash,
+      note: note ?? this.note,
+      createdBy: createdBy ?? this.createdBy,
+      deliveredAt: deliveredAt ?? this.deliveredAt,
+      status: status ?? this.status,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (remoteId.present) {
+      map['remote_id'] = Variable<String>(remoteId.value);
+    }
+    if (syncStatus.present) {
+      map['sync_status'] = Variable<String>(syncStatus.value);
+    }
+    if (syncError.present) {
+      map['sync_error'] = Variable<String>(syncError.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (syncedAt.present) {
+      map['synced_at'] = Variable<DateTime>(syncedAt.value);
+    }
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (employeeId.present) {
+      map['employee_id'] = Variable<String>(employeeId.value);
+    }
+    if (cashRegisterSessionId.present) {
+      map['cash_register_session_id'] = Variable<String>(
+        cashRegisterSessionId.value,
+      );
+    }
+    if (amountInCents.present) {
+      map['amount_in_cents'] = Variable<int>(amountInCents.value);
+    }
+    if (affectsCash.present) {
+      map['affects_cash'] = Variable<bool>(affectsCash.value);
+    }
+    if (note.present) {
+      map['note'] = Variable<String>(note.value);
+    }
+    if (createdBy.present) {
+      map['created_by'] = Variable<String>(createdBy.value);
+    }
+    if (deliveredAt.present) {
+      map['delivered_at'] = Variable<DateTime>(deliveredAt.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalSalaryAdvancesCompanion(')
+          ..write('remoteId: $remoteId, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('syncError: $syncError, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('syncedAt: $syncedAt, ')
+          ..write('id: $id, ')
+          ..write('employeeId: $employeeId, ')
+          ..write('cashRegisterSessionId: $cashRegisterSessionId, ')
+          ..write('amountInCents: $amountInCents, ')
+          ..write('affectsCash: $affectsCash, ')
+          ..write('note: $note, ')
+          ..write('createdBy: $createdBy, ')
+          ..write('deliveredAt: $deliveredAt, ')
+          ..write('status: $status, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -23138,6 +26462,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       $LocalPosOpenTicketLinesTable(this);
   late final $LocalPosOrderContextsTable localPosOrderContexts =
       $LocalPosOrderContextsTable(this);
+  late final $LocalPosProductOrderPreferencesTable
+  localPosProductOrderPreferences = $LocalPosProductOrderPreferencesTable(this);
+  late final $LocalPosTableOrderPreferencesTable localPosTableOrderPreferences =
+      $LocalPosTableOrderPreferencesTable(this);
   late final $LocalRestaurantTablesTable localRestaurantTables =
       $LocalRestaurantTablesTable(this);
   late final $LocalTableAccountsTable localTableAccounts =
@@ -23170,6 +26498,11 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $LocalDeviceStateTable localDeviceState = $LocalDeviceStateTable(
     this,
   );
+  late final $LocalEmployeesTable localEmployees = $LocalEmployeesTable(this);
+  late final $LocalBusinessRulesTable localBusinessRules =
+      $LocalBusinessRulesTable(this);
+  late final $LocalSalaryAdvancesTable localSalaryAdvances =
+      $LocalSalaryAdvancesTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -23189,6 +26522,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     localPackagingMovements,
     localPosOpenTicketLines,
     localPosOrderContexts,
+    localPosProductOrderPreferences,
+    localPosTableOrderPreferences,
     localRestaurantTables,
     localTableAccounts,
     localSales,
@@ -23207,6 +26542,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     localAuditLogs,
     localSyncSettings,
     localDeviceState,
+    localEmployees,
+    localBusinessRules,
+    localSalaryAdvances,
   ];
 }
 
@@ -28036,6 +31374,393 @@ typedef $$LocalPosOrderContextsTableProcessedTableManager =
       LocalPosOrderContext,
       PrefetchHooks Function()
     >;
+typedef $$LocalPosProductOrderPreferencesTableCreateCompanionBuilder =
+    LocalPosProductOrderPreferencesCompanion Function({
+      required String categoryId,
+      required String productId,
+      required int displayOrder,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$LocalPosProductOrderPreferencesTableUpdateCompanionBuilder =
+    LocalPosProductOrderPreferencesCompanion Function({
+      Value<String> categoryId,
+      Value<String> productId,
+      Value<int> displayOrder,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$LocalPosProductOrderPreferencesTableFilterComposer
+    extends Composer<_$AppDatabase, $LocalPosProductOrderPreferencesTable> {
+  $$LocalPosProductOrderPreferencesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get categoryId => $composableBuilder(
+    column: $table.categoryId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get productId => $composableBuilder(
+    column: $table.productId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get displayOrder => $composableBuilder(
+    column: $table.displayOrder,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LocalPosProductOrderPreferencesTableOrderingComposer
+    extends Composer<_$AppDatabase, $LocalPosProductOrderPreferencesTable> {
+  $$LocalPosProductOrderPreferencesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get categoryId => $composableBuilder(
+    column: $table.categoryId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get productId => $composableBuilder(
+    column: $table.productId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get displayOrder => $composableBuilder(
+    column: $table.displayOrder,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LocalPosProductOrderPreferencesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LocalPosProductOrderPreferencesTable> {
+  $$LocalPosProductOrderPreferencesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get categoryId => $composableBuilder(
+    column: $table.categoryId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get productId =>
+      $composableBuilder(column: $table.productId, builder: (column) => column);
+
+  GeneratedColumn<int> get displayOrder => $composableBuilder(
+    column: $table.displayOrder,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$LocalPosProductOrderPreferencesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LocalPosProductOrderPreferencesTable,
+          LocalPosProductOrderPreference,
+          $$LocalPosProductOrderPreferencesTableFilterComposer,
+          $$LocalPosProductOrderPreferencesTableOrderingComposer,
+          $$LocalPosProductOrderPreferencesTableAnnotationComposer,
+          $$LocalPosProductOrderPreferencesTableCreateCompanionBuilder,
+          $$LocalPosProductOrderPreferencesTableUpdateCompanionBuilder,
+          (
+            LocalPosProductOrderPreference,
+            BaseReferences<
+              _$AppDatabase,
+              $LocalPosProductOrderPreferencesTable,
+              LocalPosProductOrderPreference
+            >,
+          ),
+          LocalPosProductOrderPreference,
+          PrefetchHooks Function()
+        > {
+  $$LocalPosProductOrderPreferencesTableTableManager(
+    _$AppDatabase db,
+    $LocalPosProductOrderPreferencesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LocalPosProductOrderPreferencesTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$LocalPosProductOrderPreferencesTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$LocalPosProductOrderPreferencesTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> categoryId = const Value.absent(),
+                Value<String> productId = const Value.absent(),
+                Value<int> displayOrder = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalPosProductOrderPreferencesCompanion(
+                categoryId: categoryId,
+                productId: productId,
+                displayOrder: displayOrder,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String categoryId,
+                required String productId,
+                required int displayOrder,
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => LocalPosProductOrderPreferencesCompanion.insert(
+                categoryId: categoryId,
+                productId: productId,
+                displayOrder: displayOrder,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LocalPosProductOrderPreferencesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LocalPosProductOrderPreferencesTable,
+      LocalPosProductOrderPreference,
+      $$LocalPosProductOrderPreferencesTableFilterComposer,
+      $$LocalPosProductOrderPreferencesTableOrderingComposer,
+      $$LocalPosProductOrderPreferencesTableAnnotationComposer,
+      $$LocalPosProductOrderPreferencesTableCreateCompanionBuilder,
+      $$LocalPosProductOrderPreferencesTableUpdateCompanionBuilder,
+      (
+        LocalPosProductOrderPreference,
+        BaseReferences<
+          _$AppDatabase,
+          $LocalPosProductOrderPreferencesTable,
+          LocalPosProductOrderPreference
+        >,
+      ),
+      LocalPosProductOrderPreference,
+      PrefetchHooks Function()
+    >;
+typedef $$LocalPosTableOrderPreferencesTableCreateCompanionBuilder =
+    LocalPosTableOrderPreferencesCompanion Function({
+      required String tableId,
+      required int displayOrder,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$LocalPosTableOrderPreferencesTableUpdateCompanionBuilder =
+    LocalPosTableOrderPreferencesCompanion Function({
+      Value<String> tableId,
+      Value<int> displayOrder,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$LocalPosTableOrderPreferencesTableFilterComposer
+    extends Composer<_$AppDatabase, $LocalPosTableOrderPreferencesTable> {
+  $$LocalPosTableOrderPreferencesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get tableId => $composableBuilder(
+    column: $table.tableId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get displayOrder => $composableBuilder(
+    column: $table.displayOrder,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LocalPosTableOrderPreferencesTableOrderingComposer
+    extends Composer<_$AppDatabase, $LocalPosTableOrderPreferencesTable> {
+  $$LocalPosTableOrderPreferencesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get tableId => $composableBuilder(
+    column: $table.tableId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get displayOrder => $composableBuilder(
+    column: $table.displayOrder,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LocalPosTableOrderPreferencesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LocalPosTableOrderPreferencesTable> {
+  $$LocalPosTableOrderPreferencesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get tableId =>
+      $composableBuilder(column: $table.tableId, builder: (column) => column);
+
+  GeneratedColumn<int> get displayOrder => $composableBuilder(
+    column: $table.displayOrder,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$LocalPosTableOrderPreferencesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LocalPosTableOrderPreferencesTable,
+          LocalPosTableOrderPreference,
+          $$LocalPosTableOrderPreferencesTableFilterComposer,
+          $$LocalPosTableOrderPreferencesTableOrderingComposer,
+          $$LocalPosTableOrderPreferencesTableAnnotationComposer,
+          $$LocalPosTableOrderPreferencesTableCreateCompanionBuilder,
+          $$LocalPosTableOrderPreferencesTableUpdateCompanionBuilder,
+          (
+            LocalPosTableOrderPreference,
+            BaseReferences<
+              _$AppDatabase,
+              $LocalPosTableOrderPreferencesTable,
+              LocalPosTableOrderPreference
+            >,
+          ),
+          LocalPosTableOrderPreference,
+          PrefetchHooks Function()
+        > {
+  $$LocalPosTableOrderPreferencesTableTableManager(
+    _$AppDatabase db,
+    $LocalPosTableOrderPreferencesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LocalPosTableOrderPreferencesTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$LocalPosTableOrderPreferencesTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$LocalPosTableOrderPreferencesTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> tableId = const Value.absent(),
+                Value<int> displayOrder = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalPosTableOrderPreferencesCompanion(
+                tableId: tableId,
+                displayOrder: displayOrder,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String tableId,
+                required int displayOrder,
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => LocalPosTableOrderPreferencesCompanion.insert(
+                tableId: tableId,
+                displayOrder: displayOrder,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LocalPosTableOrderPreferencesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LocalPosTableOrderPreferencesTable,
+      LocalPosTableOrderPreference,
+      $$LocalPosTableOrderPreferencesTableFilterComposer,
+      $$LocalPosTableOrderPreferencesTableOrderingComposer,
+      $$LocalPosTableOrderPreferencesTableAnnotationComposer,
+      $$LocalPosTableOrderPreferencesTableCreateCompanionBuilder,
+      $$LocalPosTableOrderPreferencesTableUpdateCompanionBuilder,
+      (
+        LocalPosTableOrderPreference,
+        BaseReferences<
+          _$AppDatabase,
+          $LocalPosTableOrderPreferencesTable,
+          LocalPosTableOrderPreference
+        >,
+      ),
+      LocalPosTableOrderPreference,
+      PrefetchHooks Function()
+    >;
 typedef $$LocalRestaurantTablesTableCreateCompanionBuilder =
     LocalRestaurantTablesCompanion Function({
       Value<String?> remoteId,
@@ -28693,6 +32418,10 @@ typedef $$LocalSalesTableCreateCompanionBuilder =
       Value<DateTime?> syncedAt,
       required String id,
       required String invoiceNumber,
+      Value<String> saleKind,
+      Value<String?> employeeId,
+      Value<int?> internalReceiptNumber,
+      Value<String?> payrollRunId,
       Value<String?> tableId,
       Value<String?> tableAccountId,
       Value<String?> cashRegisterSessionId,
@@ -28715,6 +32444,10 @@ typedef $$LocalSalesTableUpdateCompanionBuilder =
       Value<DateTime?> syncedAt,
       Value<String> id,
       Value<String> invoiceNumber,
+      Value<String> saleKind,
+      Value<String?> employeeId,
+      Value<int?> internalReceiptNumber,
+      Value<String?> payrollRunId,
       Value<String?> tableId,
       Value<String?> tableAccountId,
       Value<String?> cashRegisterSessionId,
@@ -28774,6 +32507,26 @@ class $$LocalSalesTableFilterComposer
 
   ColumnFilters<String> get invoiceNumber => $composableBuilder(
     column: $table.invoiceNumber,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get saleKind => $composableBuilder(
+    column: $table.saleKind,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get employeeId => $composableBuilder(
+    column: $table.employeeId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get internalReceiptNumber => $composableBuilder(
+    column: $table.internalReceiptNumber,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get payrollRunId => $composableBuilder(
+    column: $table.payrollRunId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -28877,6 +32630,26 @@ class $$LocalSalesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get saleKind => $composableBuilder(
+    column: $table.saleKind,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get employeeId => $composableBuilder(
+    column: $table.employeeId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get internalReceiptNumber => $composableBuilder(
+    column: $table.internalReceiptNumber,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get payrollRunId => $composableBuilder(
+    column: $table.payrollRunId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get tableId => $composableBuilder(
     column: $table.tableId,
     builder: (column) => ColumnOrderings(column),
@@ -28962,6 +32735,24 @@ class $$LocalSalesTableAnnotationComposer
 
   GeneratedColumn<String> get invoiceNumber => $composableBuilder(
     column: $table.invoiceNumber,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get saleKind =>
+      $composableBuilder(column: $table.saleKind, builder: (column) => column);
+
+  GeneratedColumn<String> get employeeId => $composableBuilder(
+    column: $table.employeeId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get internalReceiptNumber => $composableBuilder(
+    column: $table.internalReceiptNumber,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get payrollRunId => $composableBuilder(
+    column: $table.payrollRunId,
     builder: (column) => column,
   );
 
@@ -29051,6 +32842,10 @@ class $$LocalSalesTableTableManager
                 Value<DateTime?> syncedAt = const Value.absent(),
                 Value<String> id = const Value.absent(),
                 Value<String> invoiceNumber = const Value.absent(),
+                Value<String> saleKind = const Value.absent(),
+                Value<String?> employeeId = const Value.absent(),
+                Value<int?> internalReceiptNumber = const Value.absent(),
+                Value<String?> payrollRunId = const Value.absent(),
                 Value<String?> tableId = const Value.absent(),
                 Value<String?> tableAccountId = const Value.absent(),
                 Value<String?> cashRegisterSessionId = const Value.absent(),
@@ -29071,6 +32866,10 @@ class $$LocalSalesTableTableManager
                 syncedAt: syncedAt,
                 id: id,
                 invoiceNumber: invoiceNumber,
+                saleKind: saleKind,
+                employeeId: employeeId,
+                internalReceiptNumber: internalReceiptNumber,
+                payrollRunId: payrollRunId,
                 tableId: tableId,
                 tableAccountId: tableAccountId,
                 cashRegisterSessionId: cashRegisterSessionId,
@@ -29093,6 +32892,10 @@ class $$LocalSalesTableTableManager
                 Value<DateTime?> syncedAt = const Value.absent(),
                 required String id,
                 required String invoiceNumber,
+                Value<String> saleKind = const Value.absent(),
+                Value<String?> employeeId = const Value.absent(),
+                Value<int?> internalReceiptNumber = const Value.absent(),
+                Value<String?> payrollRunId = const Value.absent(),
                 Value<String?> tableId = const Value.absent(),
                 Value<String?> tableAccountId = const Value.absent(),
                 Value<String?> cashRegisterSessionId = const Value.absent(),
@@ -29113,6 +32916,10 @@ class $$LocalSalesTableTableManager
                 syncedAt: syncedAt,
                 id: id,
                 invoiceNumber: invoiceNumber,
+                saleKind: saleKind,
+                employeeId: employeeId,
+                internalReceiptNumber: internalReceiptNumber,
+                payrollRunId: payrollRunId,
                 tableId: tableId,
                 tableAccountId: tableAccountId,
                 cashRegisterSessionId: cashRegisterSessionId,
@@ -30281,6 +34088,7 @@ typedef $$LocalExpenseCategoriesTableCreateCompanionBuilder =
       required String name,
       Value<String?> parentId,
       Value<bool> isActive,
+      Value<bool> includeInGrossProfitCoverage,
       Value<int> rowid,
     });
 typedef $$LocalExpenseCategoriesTableUpdateCompanionBuilder =
@@ -30295,6 +34103,7 @@ typedef $$LocalExpenseCategoriesTableUpdateCompanionBuilder =
       Value<String> name,
       Value<String?> parentId,
       Value<bool> isActive,
+      Value<bool> includeInGrossProfitCoverage,
       Value<int> rowid,
     });
 
@@ -30354,6 +34163,11 @@ class $$LocalExpenseCategoriesTableFilterComposer
 
   ColumnFilters<bool> get isActive => $composableBuilder(
     column: $table.isActive,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get includeInGrossProfitCoverage => $composableBuilder(
+    column: $table.includeInGrossProfitCoverage,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -30416,6 +34230,11 @@ class $$LocalExpenseCategoriesTableOrderingComposer
     column: $table.isActive,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<bool> get includeInGrossProfitCoverage => $composableBuilder(
+    column: $table.includeInGrossProfitCoverage,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$LocalExpenseCategoriesTableAnnotationComposer
@@ -30458,6 +34277,11 @@ class $$LocalExpenseCategoriesTableAnnotationComposer
 
   GeneratedColumn<bool> get isActive =>
       $composableBuilder(column: $table.isActive, builder: (column) => column);
+
+  GeneratedColumn<bool> get includeInGrossProfitCoverage => $composableBuilder(
+    column: $table.includeInGrossProfitCoverage,
+    builder: (column) => column,
+  );
 }
 
 class $$LocalExpenseCategoriesTableTableManager
@@ -30516,6 +34340,7 @@ class $$LocalExpenseCategoriesTableTableManager
                 Value<String> name = const Value.absent(),
                 Value<String?> parentId = const Value.absent(),
                 Value<bool> isActive = const Value.absent(),
+                Value<bool> includeInGrossProfitCoverage = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => LocalExpenseCategoriesCompanion(
                 remoteId: remoteId,
@@ -30528,6 +34353,7 @@ class $$LocalExpenseCategoriesTableTableManager
                 name: name,
                 parentId: parentId,
                 isActive: isActive,
+                includeInGrossProfitCoverage: includeInGrossProfitCoverage,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -30542,6 +34368,7 @@ class $$LocalExpenseCategoriesTableTableManager
                 required String name,
                 Value<String?> parentId = const Value.absent(),
                 Value<bool> isActive = const Value.absent(),
+                Value<bool> includeInGrossProfitCoverage = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => LocalExpenseCategoriesCompanion.insert(
                 remoteId: remoteId,
@@ -30554,6 +34381,7 @@ class $$LocalExpenseCategoriesTableTableManager
                 name: name,
                 parentId: parentId,
                 isActive: isActive,
+                includeInGrossProfitCoverage: includeInGrossProfitCoverage,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -30596,6 +34424,9 @@ typedef $$LocalOperatingExpensesTableCreateCompanionBuilder =
       required String id,
       required String categoryId,
       Value<String?> cashRegisterSessionId,
+      Value<String> expenseKind,
+      Value<String?> employeeId,
+      Value<bool> affectsCash,
       required int amountInCents,
       required String description,
       required String createdBy,
@@ -30612,6 +34443,9 @@ typedef $$LocalOperatingExpensesTableUpdateCompanionBuilder =
       Value<String> id,
       Value<String> categoryId,
       Value<String?> cashRegisterSessionId,
+      Value<String> expenseKind,
+      Value<String?> employeeId,
+      Value<bool> affectsCash,
       Value<int> amountInCents,
       Value<String> description,
       Value<String> createdBy,
@@ -30669,6 +34503,21 @@ class $$LocalOperatingExpensesTableFilterComposer
 
   ColumnFilters<String> get cashRegisterSessionId => $composableBuilder(
     column: $table.cashRegisterSessionId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get expenseKind => $composableBuilder(
+    column: $table.expenseKind,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get employeeId => $composableBuilder(
+    column: $table.employeeId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get affectsCash => $composableBuilder(
+    column: $table.affectsCash,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -30742,6 +34591,21 @@ class $$LocalOperatingExpensesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get expenseKind => $composableBuilder(
+    column: $table.expenseKind,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get employeeId => $composableBuilder(
+    column: $table.employeeId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get affectsCash => $composableBuilder(
+    column: $table.affectsCash,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get amountInCents => $composableBuilder(
     column: $table.amountInCents,
     builder: (column) => ColumnOrderings(column),
@@ -30797,6 +34661,21 @@ class $$LocalOperatingExpensesTableAnnotationComposer
 
   GeneratedColumn<String> get cashRegisterSessionId => $composableBuilder(
     column: $table.cashRegisterSessionId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get expenseKind => $composableBuilder(
+    column: $table.expenseKind,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get employeeId => $composableBuilder(
+    column: $table.employeeId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get affectsCash => $composableBuilder(
+    column: $table.affectsCash,
     builder: (column) => column,
   );
 
@@ -30869,6 +34748,9 @@ class $$LocalOperatingExpensesTableTableManager
                 Value<String> id = const Value.absent(),
                 Value<String> categoryId = const Value.absent(),
                 Value<String?> cashRegisterSessionId = const Value.absent(),
+                Value<String> expenseKind = const Value.absent(),
+                Value<String?> employeeId = const Value.absent(),
+                Value<bool> affectsCash = const Value.absent(),
                 Value<int> amountInCents = const Value.absent(),
                 Value<String> description = const Value.absent(),
                 Value<String> createdBy = const Value.absent(),
@@ -30883,6 +34765,9 @@ class $$LocalOperatingExpensesTableTableManager
                 id: id,
                 categoryId: categoryId,
                 cashRegisterSessionId: cashRegisterSessionId,
+                expenseKind: expenseKind,
+                employeeId: employeeId,
+                affectsCash: affectsCash,
                 amountInCents: amountInCents,
                 description: description,
                 createdBy: createdBy,
@@ -30899,6 +34784,9 @@ class $$LocalOperatingExpensesTableTableManager
                 required String id,
                 required String categoryId,
                 Value<String?> cashRegisterSessionId = const Value.absent(),
+                Value<String> expenseKind = const Value.absent(),
+                Value<String?> employeeId = const Value.absent(),
+                Value<bool> affectsCash = const Value.absent(),
                 required int amountInCents,
                 required String description,
                 required String createdBy,
@@ -30913,6 +34801,9 @@ class $$LocalOperatingExpensesTableTableManager
                 id: id,
                 categoryId: categoryId,
                 cashRegisterSessionId: cashRegisterSessionId,
+                expenseKind: expenseKind,
+                employeeId: employeeId,
+                affectsCash: affectsCash,
                 amountInCents: amountInCents,
                 description: description,
                 createdBy: createdBy,
@@ -34201,6 +38092,1056 @@ typedef $$LocalDeviceStateTableProcessedTableManager =
       LocalDeviceStateData,
       PrefetchHooks Function()
     >;
+typedef $$LocalEmployeesTableCreateCompanionBuilder =
+    LocalEmployeesCompanion Function({
+      Value<String?> remoteId,
+      Value<String> syncStatus,
+      Value<String?> syncError,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+      Value<DateTime?> syncedAt,
+      required String id,
+      Value<String?> code,
+      required String fullName,
+      Value<String?> positionName,
+      Value<int> baseSalaryInCents,
+      Value<bool> isActive,
+      Value<int> rowid,
+    });
+typedef $$LocalEmployeesTableUpdateCompanionBuilder =
+    LocalEmployeesCompanion Function({
+      Value<String?> remoteId,
+      Value<String> syncStatus,
+      Value<String?> syncError,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<DateTime?> syncedAt,
+      Value<String> id,
+      Value<String?> code,
+      Value<String> fullName,
+      Value<String?> positionName,
+      Value<int> baseSalaryInCents,
+      Value<bool> isActive,
+      Value<int> rowid,
+    });
+
+class $$LocalEmployeesTableFilterComposer
+    extends Composer<_$AppDatabase, $LocalEmployeesTable> {
+  $$LocalEmployeesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get remoteId => $composableBuilder(
+    column: $table.remoteId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncError => $composableBuilder(
+    column: $table.syncError,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get syncedAt => $composableBuilder(
+    column: $table.syncedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get code => $composableBuilder(
+    column: $table.code,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get fullName => $composableBuilder(
+    column: $table.fullName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get positionName => $composableBuilder(
+    column: $table.positionName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get baseSalaryInCents => $composableBuilder(
+    column: $table.baseSalaryInCents,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isActive => $composableBuilder(
+    column: $table.isActive,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LocalEmployeesTableOrderingComposer
+    extends Composer<_$AppDatabase, $LocalEmployeesTable> {
+  $$LocalEmployeesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get remoteId => $composableBuilder(
+    column: $table.remoteId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncError => $composableBuilder(
+    column: $table.syncError,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get syncedAt => $composableBuilder(
+    column: $table.syncedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get code => $composableBuilder(
+    column: $table.code,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get fullName => $composableBuilder(
+    column: $table.fullName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get positionName => $composableBuilder(
+    column: $table.positionName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get baseSalaryInCents => $composableBuilder(
+    column: $table.baseSalaryInCents,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isActive => $composableBuilder(
+    column: $table.isActive,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LocalEmployeesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LocalEmployeesTable> {
+  $$LocalEmployeesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get remoteId =>
+      $composableBuilder(column: $table.remoteId, builder: (column) => column);
+
+  GeneratedColumn<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get syncError =>
+      $composableBuilder(column: $table.syncError, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get syncedAt =>
+      $composableBuilder(column: $table.syncedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get code =>
+      $composableBuilder(column: $table.code, builder: (column) => column);
+
+  GeneratedColumn<String> get fullName =>
+      $composableBuilder(column: $table.fullName, builder: (column) => column);
+
+  GeneratedColumn<String> get positionName => $composableBuilder(
+    column: $table.positionName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get baseSalaryInCents => $composableBuilder(
+    column: $table.baseSalaryInCents,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get isActive =>
+      $composableBuilder(column: $table.isActive, builder: (column) => column);
+}
+
+class $$LocalEmployeesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LocalEmployeesTable,
+          LocalEmployee,
+          $$LocalEmployeesTableFilterComposer,
+          $$LocalEmployeesTableOrderingComposer,
+          $$LocalEmployeesTableAnnotationComposer,
+          $$LocalEmployeesTableCreateCompanionBuilder,
+          $$LocalEmployeesTableUpdateCompanionBuilder,
+          (
+            LocalEmployee,
+            BaseReferences<_$AppDatabase, $LocalEmployeesTable, LocalEmployee>,
+          ),
+          LocalEmployee,
+          PrefetchHooks Function()
+        > {
+  $$LocalEmployeesTableTableManager(
+    _$AppDatabase db,
+    $LocalEmployeesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LocalEmployeesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LocalEmployeesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$LocalEmployeesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String?> remoteId = const Value.absent(),
+                Value<String> syncStatus = const Value.absent(),
+                Value<String?> syncError = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<DateTime?> syncedAt = const Value.absent(),
+                Value<String> id = const Value.absent(),
+                Value<String?> code = const Value.absent(),
+                Value<String> fullName = const Value.absent(),
+                Value<String?> positionName = const Value.absent(),
+                Value<int> baseSalaryInCents = const Value.absent(),
+                Value<bool> isActive = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalEmployeesCompanion(
+                remoteId: remoteId,
+                syncStatus: syncStatus,
+                syncError: syncError,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                syncedAt: syncedAt,
+                id: id,
+                code: code,
+                fullName: fullName,
+                positionName: positionName,
+                baseSalaryInCents: baseSalaryInCents,
+                isActive: isActive,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                Value<String?> remoteId = const Value.absent(),
+                Value<String> syncStatus = const Value.absent(),
+                Value<String?> syncError = const Value.absent(),
+                required DateTime createdAt,
+                required DateTime updatedAt,
+                Value<DateTime?> syncedAt = const Value.absent(),
+                required String id,
+                Value<String?> code = const Value.absent(),
+                required String fullName,
+                Value<String?> positionName = const Value.absent(),
+                Value<int> baseSalaryInCents = const Value.absent(),
+                Value<bool> isActive = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalEmployeesCompanion.insert(
+                remoteId: remoteId,
+                syncStatus: syncStatus,
+                syncError: syncError,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                syncedAt: syncedAt,
+                id: id,
+                code: code,
+                fullName: fullName,
+                positionName: positionName,
+                baseSalaryInCents: baseSalaryInCents,
+                isActive: isActive,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LocalEmployeesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LocalEmployeesTable,
+      LocalEmployee,
+      $$LocalEmployeesTableFilterComposer,
+      $$LocalEmployeesTableOrderingComposer,
+      $$LocalEmployeesTableAnnotationComposer,
+      $$LocalEmployeesTableCreateCompanionBuilder,
+      $$LocalEmployeesTableUpdateCompanionBuilder,
+      (
+        LocalEmployee,
+        BaseReferences<_$AppDatabase, $LocalEmployeesTable, LocalEmployee>,
+      ),
+      LocalEmployee,
+      PrefetchHooks Function()
+    >;
+typedef $$LocalBusinessRulesTableCreateCompanionBuilder =
+    LocalBusinessRulesCompanion Function({
+      Value<String?> remoteId,
+      Value<String> syncStatus,
+      Value<String?> syncError,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+      Value<DateTime?> syncedAt,
+      required String key,
+      Value<bool?> boolValue,
+      Value<String?> textValue,
+      Value<int> rowid,
+    });
+typedef $$LocalBusinessRulesTableUpdateCompanionBuilder =
+    LocalBusinessRulesCompanion Function({
+      Value<String?> remoteId,
+      Value<String> syncStatus,
+      Value<String?> syncError,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<DateTime?> syncedAt,
+      Value<String> key,
+      Value<bool?> boolValue,
+      Value<String?> textValue,
+      Value<int> rowid,
+    });
+
+class $$LocalBusinessRulesTableFilterComposer
+    extends Composer<_$AppDatabase, $LocalBusinessRulesTable> {
+  $$LocalBusinessRulesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get remoteId => $composableBuilder(
+    column: $table.remoteId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncError => $composableBuilder(
+    column: $table.syncError,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get syncedAt => $composableBuilder(
+    column: $table.syncedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get key => $composableBuilder(
+    column: $table.key,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get boolValue => $composableBuilder(
+    column: $table.boolValue,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get textValue => $composableBuilder(
+    column: $table.textValue,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LocalBusinessRulesTableOrderingComposer
+    extends Composer<_$AppDatabase, $LocalBusinessRulesTable> {
+  $$LocalBusinessRulesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get remoteId => $composableBuilder(
+    column: $table.remoteId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncError => $composableBuilder(
+    column: $table.syncError,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get syncedAt => $composableBuilder(
+    column: $table.syncedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get key => $composableBuilder(
+    column: $table.key,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get boolValue => $composableBuilder(
+    column: $table.boolValue,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get textValue => $composableBuilder(
+    column: $table.textValue,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LocalBusinessRulesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LocalBusinessRulesTable> {
+  $$LocalBusinessRulesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get remoteId =>
+      $composableBuilder(column: $table.remoteId, builder: (column) => column);
+
+  GeneratedColumn<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get syncError =>
+      $composableBuilder(column: $table.syncError, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get syncedAt =>
+      $composableBuilder(column: $table.syncedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get key =>
+      $composableBuilder(column: $table.key, builder: (column) => column);
+
+  GeneratedColumn<bool> get boolValue =>
+      $composableBuilder(column: $table.boolValue, builder: (column) => column);
+
+  GeneratedColumn<String> get textValue =>
+      $composableBuilder(column: $table.textValue, builder: (column) => column);
+}
+
+class $$LocalBusinessRulesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LocalBusinessRulesTable,
+          LocalBusinessRule,
+          $$LocalBusinessRulesTableFilterComposer,
+          $$LocalBusinessRulesTableOrderingComposer,
+          $$LocalBusinessRulesTableAnnotationComposer,
+          $$LocalBusinessRulesTableCreateCompanionBuilder,
+          $$LocalBusinessRulesTableUpdateCompanionBuilder,
+          (
+            LocalBusinessRule,
+            BaseReferences<
+              _$AppDatabase,
+              $LocalBusinessRulesTable,
+              LocalBusinessRule
+            >,
+          ),
+          LocalBusinessRule,
+          PrefetchHooks Function()
+        > {
+  $$LocalBusinessRulesTableTableManager(
+    _$AppDatabase db,
+    $LocalBusinessRulesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LocalBusinessRulesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LocalBusinessRulesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$LocalBusinessRulesTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String?> remoteId = const Value.absent(),
+                Value<String> syncStatus = const Value.absent(),
+                Value<String?> syncError = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<DateTime?> syncedAt = const Value.absent(),
+                Value<String> key = const Value.absent(),
+                Value<bool?> boolValue = const Value.absent(),
+                Value<String?> textValue = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalBusinessRulesCompanion(
+                remoteId: remoteId,
+                syncStatus: syncStatus,
+                syncError: syncError,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                syncedAt: syncedAt,
+                key: key,
+                boolValue: boolValue,
+                textValue: textValue,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                Value<String?> remoteId = const Value.absent(),
+                Value<String> syncStatus = const Value.absent(),
+                Value<String?> syncError = const Value.absent(),
+                required DateTime createdAt,
+                required DateTime updatedAt,
+                Value<DateTime?> syncedAt = const Value.absent(),
+                required String key,
+                Value<bool?> boolValue = const Value.absent(),
+                Value<String?> textValue = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalBusinessRulesCompanion.insert(
+                remoteId: remoteId,
+                syncStatus: syncStatus,
+                syncError: syncError,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                syncedAt: syncedAt,
+                key: key,
+                boolValue: boolValue,
+                textValue: textValue,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LocalBusinessRulesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LocalBusinessRulesTable,
+      LocalBusinessRule,
+      $$LocalBusinessRulesTableFilterComposer,
+      $$LocalBusinessRulesTableOrderingComposer,
+      $$LocalBusinessRulesTableAnnotationComposer,
+      $$LocalBusinessRulesTableCreateCompanionBuilder,
+      $$LocalBusinessRulesTableUpdateCompanionBuilder,
+      (
+        LocalBusinessRule,
+        BaseReferences<
+          _$AppDatabase,
+          $LocalBusinessRulesTable,
+          LocalBusinessRule
+        >,
+      ),
+      LocalBusinessRule,
+      PrefetchHooks Function()
+    >;
+typedef $$LocalSalaryAdvancesTableCreateCompanionBuilder =
+    LocalSalaryAdvancesCompanion Function({
+      Value<String?> remoteId,
+      Value<String> syncStatus,
+      Value<String?> syncError,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+      Value<DateTime?> syncedAt,
+      required String id,
+      required String employeeId,
+      Value<String?> cashRegisterSessionId,
+      required int amountInCents,
+      Value<bool> affectsCash,
+      Value<String?> note,
+      required String createdBy,
+      Value<DateTime?> deliveredAt,
+      Value<String> status,
+      Value<int> rowid,
+    });
+typedef $$LocalSalaryAdvancesTableUpdateCompanionBuilder =
+    LocalSalaryAdvancesCompanion Function({
+      Value<String?> remoteId,
+      Value<String> syncStatus,
+      Value<String?> syncError,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<DateTime?> syncedAt,
+      Value<String> id,
+      Value<String> employeeId,
+      Value<String?> cashRegisterSessionId,
+      Value<int> amountInCents,
+      Value<bool> affectsCash,
+      Value<String?> note,
+      Value<String> createdBy,
+      Value<DateTime?> deliveredAt,
+      Value<String> status,
+      Value<int> rowid,
+    });
+
+class $$LocalSalaryAdvancesTableFilterComposer
+    extends Composer<_$AppDatabase, $LocalSalaryAdvancesTable> {
+  $$LocalSalaryAdvancesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get remoteId => $composableBuilder(
+    column: $table.remoteId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncError => $composableBuilder(
+    column: $table.syncError,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get syncedAt => $composableBuilder(
+    column: $table.syncedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get employeeId => $composableBuilder(
+    column: $table.employeeId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get cashRegisterSessionId => $composableBuilder(
+    column: $table.cashRegisterSessionId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get amountInCents => $composableBuilder(
+    column: $table.amountInCents,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get affectsCash => $composableBuilder(
+    column: $table.affectsCash,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get createdBy => $composableBuilder(
+    column: $table.createdBy,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get deliveredAt => $composableBuilder(
+    column: $table.deliveredAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LocalSalaryAdvancesTableOrderingComposer
+    extends Composer<_$AppDatabase, $LocalSalaryAdvancesTable> {
+  $$LocalSalaryAdvancesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get remoteId => $composableBuilder(
+    column: $table.remoteId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncError => $composableBuilder(
+    column: $table.syncError,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get syncedAt => $composableBuilder(
+    column: $table.syncedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get employeeId => $composableBuilder(
+    column: $table.employeeId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get cashRegisterSessionId => $composableBuilder(
+    column: $table.cashRegisterSessionId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get amountInCents => $composableBuilder(
+    column: $table.amountInCents,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get affectsCash => $composableBuilder(
+    column: $table.affectsCash,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get createdBy => $composableBuilder(
+    column: $table.createdBy,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get deliveredAt => $composableBuilder(
+    column: $table.deliveredAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LocalSalaryAdvancesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LocalSalaryAdvancesTable> {
+  $$LocalSalaryAdvancesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get remoteId =>
+      $composableBuilder(column: $table.remoteId, builder: (column) => column);
+
+  GeneratedColumn<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get syncError =>
+      $composableBuilder(column: $table.syncError, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get syncedAt =>
+      $composableBuilder(column: $table.syncedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get employeeId => $composableBuilder(
+    column: $table.employeeId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get cashRegisterSessionId => $composableBuilder(
+    column: $table.cashRegisterSessionId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get amountInCents => $composableBuilder(
+    column: $table.amountInCents,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get affectsCash => $composableBuilder(
+    column: $table.affectsCash,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get note =>
+      $composableBuilder(column: $table.note, builder: (column) => column);
+
+  GeneratedColumn<String> get createdBy =>
+      $composableBuilder(column: $table.createdBy, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get deliveredAt => $composableBuilder(
+    column: $table.deliveredAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+}
+
+class $$LocalSalaryAdvancesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LocalSalaryAdvancesTable,
+          LocalSalaryAdvance,
+          $$LocalSalaryAdvancesTableFilterComposer,
+          $$LocalSalaryAdvancesTableOrderingComposer,
+          $$LocalSalaryAdvancesTableAnnotationComposer,
+          $$LocalSalaryAdvancesTableCreateCompanionBuilder,
+          $$LocalSalaryAdvancesTableUpdateCompanionBuilder,
+          (
+            LocalSalaryAdvance,
+            BaseReferences<
+              _$AppDatabase,
+              $LocalSalaryAdvancesTable,
+              LocalSalaryAdvance
+            >,
+          ),
+          LocalSalaryAdvance,
+          PrefetchHooks Function()
+        > {
+  $$LocalSalaryAdvancesTableTableManager(
+    _$AppDatabase db,
+    $LocalSalaryAdvancesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LocalSalaryAdvancesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LocalSalaryAdvancesTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$LocalSalaryAdvancesTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String?> remoteId = const Value.absent(),
+                Value<String> syncStatus = const Value.absent(),
+                Value<String?> syncError = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<DateTime?> syncedAt = const Value.absent(),
+                Value<String> id = const Value.absent(),
+                Value<String> employeeId = const Value.absent(),
+                Value<String?> cashRegisterSessionId = const Value.absent(),
+                Value<int> amountInCents = const Value.absent(),
+                Value<bool> affectsCash = const Value.absent(),
+                Value<String?> note = const Value.absent(),
+                Value<String> createdBy = const Value.absent(),
+                Value<DateTime?> deliveredAt = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalSalaryAdvancesCompanion(
+                remoteId: remoteId,
+                syncStatus: syncStatus,
+                syncError: syncError,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                syncedAt: syncedAt,
+                id: id,
+                employeeId: employeeId,
+                cashRegisterSessionId: cashRegisterSessionId,
+                amountInCents: amountInCents,
+                affectsCash: affectsCash,
+                note: note,
+                createdBy: createdBy,
+                deliveredAt: deliveredAt,
+                status: status,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                Value<String?> remoteId = const Value.absent(),
+                Value<String> syncStatus = const Value.absent(),
+                Value<String?> syncError = const Value.absent(),
+                required DateTime createdAt,
+                required DateTime updatedAt,
+                Value<DateTime?> syncedAt = const Value.absent(),
+                required String id,
+                required String employeeId,
+                Value<String?> cashRegisterSessionId = const Value.absent(),
+                required int amountInCents,
+                Value<bool> affectsCash = const Value.absent(),
+                Value<String?> note = const Value.absent(),
+                required String createdBy,
+                Value<DateTime?> deliveredAt = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalSalaryAdvancesCompanion.insert(
+                remoteId: remoteId,
+                syncStatus: syncStatus,
+                syncError: syncError,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                syncedAt: syncedAt,
+                id: id,
+                employeeId: employeeId,
+                cashRegisterSessionId: cashRegisterSessionId,
+                amountInCents: amountInCents,
+                affectsCash: affectsCash,
+                note: note,
+                createdBy: createdBy,
+                deliveredAt: deliveredAt,
+                status: status,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LocalSalaryAdvancesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LocalSalaryAdvancesTable,
+      LocalSalaryAdvance,
+      $$LocalSalaryAdvancesTableFilterComposer,
+      $$LocalSalaryAdvancesTableOrderingComposer,
+      $$LocalSalaryAdvancesTableAnnotationComposer,
+      $$LocalSalaryAdvancesTableCreateCompanionBuilder,
+      $$LocalSalaryAdvancesTableUpdateCompanionBuilder,
+      (
+        LocalSalaryAdvance,
+        BaseReferences<
+          _$AppDatabase,
+          $LocalSalaryAdvancesTable,
+          LocalSalaryAdvance
+        >,
+      ),
+      LocalSalaryAdvance,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -34249,6 +39190,18 @@ class $AppDatabaseManager {
       );
   $$LocalPosOrderContextsTableTableManager get localPosOrderContexts =>
       $$LocalPosOrderContextsTableTableManager(_db, _db.localPosOrderContexts);
+  $$LocalPosProductOrderPreferencesTableTableManager
+  get localPosProductOrderPreferences =>
+      $$LocalPosProductOrderPreferencesTableTableManager(
+        _db,
+        _db.localPosProductOrderPreferences,
+      );
+  $$LocalPosTableOrderPreferencesTableTableManager
+  get localPosTableOrderPreferences =>
+      $$LocalPosTableOrderPreferencesTableTableManager(
+        _db,
+        _db.localPosTableOrderPreferences,
+      );
   $$LocalRestaurantTablesTableTableManager get localRestaurantTables =>
       $$LocalRestaurantTablesTableTableManager(_db, _db.localRestaurantTables);
   $$LocalTableAccountsTableTableManager get localTableAccounts =>
@@ -34294,4 +39247,10 @@ class $AppDatabaseManager {
       $$LocalSyncSettingsTableTableManager(_db, _db.localSyncSettings);
   $$LocalDeviceStateTableTableManager get localDeviceState =>
       $$LocalDeviceStateTableTableManager(_db, _db.localDeviceState);
+  $$LocalEmployeesTableTableManager get localEmployees =>
+      $$LocalEmployeesTableTableManager(_db, _db.localEmployees);
+  $$LocalBusinessRulesTableTableManager get localBusinessRules =>
+      $$LocalBusinessRulesTableTableManager(_db, _db.localBusinessRules);
+  $$LocalSalaryAdvancesTableTableManager get localSalaryAdvances =>
+      $$LocalSalaryAdvancesTableTableManager(_db, _db.localSalaryAdvances);
 }

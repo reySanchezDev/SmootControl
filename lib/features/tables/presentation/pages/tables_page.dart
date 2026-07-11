@@ -5,6 +5,7 @@ import 'package:smoo_control/core/design_system/app_loading_page.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
 import 'package:smoo_control/core/design_system/app_searchable_list_section.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
+import 'package:smoo_control/core/design_system/app_tile_actions.dart';
 import 'package:smoo_control/core/design_system/confirm_deactivate_dialog.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/features/tables/domain/entities/restaurant_table.dart';
@@ -151,30 +152,41 @@ class _TableTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
 
-    return ListTile(
-      leading: const Icon(Icons.table_restaurant_outlined),
-      subtitle: AppText(
-        _statusLabel(l10n, table),
-        variant: AppTextVariant.label,
-      ),
-      title: AppText(table.name),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (table.isActive)
-            IconButton(
-              color: Theme.of(context).colorScheme.error,
-              icon: const Icon(Icons.delete_outline),
-              onPressed: onDeactivate,
-              tooltip: l10n.deactivateAction,
-            ),
-          IconButton(
-            icon: const Icon(Icons.edit_outlined),
-            onPressed: onEdit,
-            tooltip: l10n.editAction,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 560;
+        return ListTile(
+          leading: const Icon(Icons.table_restaurant_outlined),
+          subtitle: AppText(
+            _statusLabel(l10n, table),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            variant: AppTextVariant.label,
           ),
-        ],
-      ),
+          title: AppText(
+            table.name,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          trailing: AppTileActions(
+            compact: compact,
+            actions: [
+              if (table.isActive)
+                AppTileAction(
+                  color: Theme.of(context).colorScheme.error,
+                  icon: Icons.delete_outline,
+                  label: l10n.deactivateAction,
+                  onPressed: onDeactivate,
+                ),
+              AppTileAction(
+                icon: Icons.edit_outlined,
+                label: l10n.editAction,
+                onPressed: onEdit,
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

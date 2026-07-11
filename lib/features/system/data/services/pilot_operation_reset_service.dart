@@ -9,6 +9,53 @@ import 'package:smoo_control/core/result/app_result.dart';
 import 'package:smoo_control/core/session/current_remote_session_service.dart';
 import 'package:smoo_control/core/session/current_restaurant_service.dart';
 
+part 'pilot_operation_reset_local_part.dart';
+part 'pilot_operation_reset_sql_part.dart';
+
+/// Controlled cleanup scope available from the administrative utilities page.
+enum PilotCleanupScope {
+  /// Normal POS sales, open tickets, table accounts and sale movements.
+  sales,
+
+  /// Operational expenses only.
+  expenses,
+
+  /// Salary advances and their technical cash expenses.
+  salaryAdvances,
+
+  /// Payroll runs and payroll lines.
+  payroll,
+
+  /// Staff consumption receipts and related movements.
+  staffConsumptions,
+
+  /// Payroll, staff consumption and salary advances together.
+  staffOperations,
+}
+
+/// UI/runtime metadata for a cleanup scope.
+extension PilotCleanupScopeDetails on PilotCleanupScope {
+  /// Exact confirmation required for this cleanup.
+  String get confirmationText => switch (this) {
+    PilotCleanupScope.sales => 'BORRAR VENTAS',
+    PilotCleanupScope.expenses => 'BORRAR GASTOS',
+    PilotCleanupScope.salaryAdvances => 'BORRAR ADELANTOS',
+    PilotCleanupScope.payroll => 'BORRAR PLANILLA',
+    PilotCleanupScope.staffConsumptions => 'BORRAR CONSUMOS',
+    PilotCleanupScope.staffOperations => 'BORRAR PERSONAL OPERATIVO',
+  };
+
+  /// RPC scope value.
+  String get remoteValue => switch (this) {
+    PilotCleanupScope.sales => 'sales',
+    PilotCleanupScope.expenses => 'expenses',
+    PilotCleanupScope.salaryAdvances => 'salary_advances',
+    PilotCleanupScope.payroll => 'payroll',
+    PilotCleanupScope.staffConsumptions => 'staff_consumptions',
+    PilotCleanupScope.staffOperations => 'staff_operations',
+  };
+}
+
 /// Result summary for a pilot operation reset.
 final class PilotOperationResetSummary {
   /// Creates a pilot reset summary.
@@ -65,8 +112,8 @@ final class PilotOperationResetService {
         );
       }
 
-      final remoteRows = await _resetRemote(normalizedConfirmation);
       final localRows = await _resetLocal();
+      final remoteRows = await _resetRemote(normalizedConfirmation);
       return AppSuccess(
         PilotOperationResetSummary(
           localRows: localRows,
@@ -80,6 +127,49 @@ final class PilotOperationResetService {
           message:
               'No se pudo cerrar la operacion piloto. No se marco como '
               'completada.',
+          cause: error,
+        ),
+      );
+    }
+  }
+
+  /// Deletes one operational scope locally first and then in Supabase.
+  Future<AppResult<PilotOperationResetSummary>> resetScope({
+    required PilotCleanupScope scope,
+    required String confirmation,
+  }) async {
+    try {
+      final normalizedConfirmation = confirmation.trim();
+      if (normalizedConfirmation != scope.confirmationText) {
+        return AppFailureResult(
+          AppFailure(
+            code: 'invalid_pilot_cleanup_confirmation',
+            message:
+                'Para ejecutar esta limpieza debes escribir exactamente '
+                '${scope.confirmationText}.',
+          ),
+        );
+      }
+
+      final localRows = await _resetLocalScope(scope);
+      final remoteRows = await _resetRemoteScope(
+        confirmation: normalizedConfirmation,
+        scope: scope,
+      );
+      return AppSuccess(
+        PilotOperationResetSummary(
+          localRows: localRows,
+          remoteRows: remoteRows,
+        ),
+      );
+    } on Object catch (error) {
+      return AppFailureResult(
+        AppFailure(
+          code: 'pilot_scope_cleanup_failed',
+          message:
+              'No se pudo completar la limpieza. La limpieza local se ejecuta '
+              'primero para evitar reenvios desde este movil; puedes repetir '
+              'la accion para completar Supabase.',
           cause: error,
         ),
       );
@@ -124,111 +214,45 @@ final class PilotOperationResetService {
     return 0;
   }
 
-  Future<int> _resetLocal() {
-    return _database.transaction(() async {
-      final rowsBefore = await _countOperationalRows();
-      final now = DateTime.now();
-
-      await _database.delete(_database.localSyncQueue).go();
-      await _database.delete(_database.localPosOpenTicketLines).go();
-      await _database.delete(_database.localPosOrderContexts).go();
-      await _database.delete(_database.localSaleVoids).go();
-      await _database.delete(_database.localSaleItems).go();
-      await _database.delete(_database.localSales).go();
-      await _database.delete(_database.localOperatingExpenses).go();
-      await _database.delete(_database.localTableAccounts).go();
-      await _database.delete(_database.localCashRegisterSessions).go();
-      await _database.delete(_database.localInventoryMovements).go();
-      await _database.delete(_database.localPackagingMovements).go();
-
-      await _database
-          .update(_database.localInventoryStock)
-          .write(
-            LocalInventoryStockCompanion(
-              quantityOnHand: const Value(0),
-              syncStatus: const Value('synced'),
-              syncError: const Value(null),
-              updatedAt: Value(now),
-              syncedAt: Value(now),
-            ),
-          );
-      await _database
-          .update(_database.localPackagingStock)
-          .write(
-            LocalPackagingStockCompanion(
-              quantityOnHand: const Value(0),
-              syncStatus: const Value('synced'),
-              syncError: const Value(null),
-              updatedAt: Value(now),
-              syncedAt: Value(now),
-            ),
-          );
-      await _database
-          .update(_database.localRestaurantTables)
-          .write(
-            LocalRestaurantTablesCompanion(
-              status: const Value('available'),
-              displayName: const Value(null),
-              syncStatus: const Value('synced'),
-              syncError: const Value(null),
-              updatedAt: Value(now),
-              syncedAt: Value(now),
-            ),
-          );
-
-      final settings = await _database
-          .select(_database.localBusinessSettings)
-          .getSingleOrNull();
-      if (settings != null) {
-        await (_database.update(
-          _database.localBusinessSettings,
-        )..where((table) => table.id.equals(settings.id))).write(
-          LocalBusinessSettingsCompanion(
-            nextInvoiceNumber: Value(settings.initialInvoiceNumber),
-            syncStatus: const Value('synced'),
-            syncError: const Value(null),
-            updatedAt: Value(now),
-            syncedAt: Value(now),
-          ),
-        );
-      }
-
-      return rowsBefore;
-    });
-  }
-
-  Future<int> _countOperationalRows() async {
-    var total = 0;
-    for (final table in _operationalTables) {
-      total += await _count(table);
+  Future<int> _resetRemoteScope({
+    required String confirmation,
+    required PilotCleanupScope scope,
+  }) async {
+    final token = _remoteSessionService.accessToken;
+    if (!_config.isConfigured ||
+        !_restaurantService.isConfigured ||
+        token == null) {
+      throw StateError(
+        'Se requiere conexion y sesion administrativa remota.',
+      );
     }
-    return total;
-  }
 
-  Future<int> _count(String tableName) async {
-    final row = await _database
-        .customSelect('SELECT COUNT(*) AS row_count FROM $tableName')
-        .getSingle();
-    return _int(row.data['row_count']);
-  }
+    final response = await _client.post(
+      _config.rpcUri('reset_pilot_operation_scope'),
+      headers: {
+        'apikey': _config.publishableKey,
+        'authorization': 'Bearer $token',
+        'content-type': 'application/json',
+        'accept': 'application/json',
+      },
+      body: jsonEncode({
+        'p_restaurant_id': _restaurantService.restaurantId,
+        'p_confirmation': confirmation,
+        'p_scope': scope.remoteValue,
+      }),
+    );
 
-  int _int(Object? value) {
-    if (value is int) return value;
-    if (value is num) return value.round();
-    return int.tryParse(value?.toString() ?? '') ?? 0;
-  }
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw StateError(
+        'Supabase rechazo limpieza ${scope.remoteValue} '
+        '(${response.statusCode}): ${response.body}',
+      );
+    }
 
-  static const _operationalTables = [
-    'local_sync_queue',
-    'local_pos_open_ticket_lines',
-    'local_pos_order_contexts',
-    'local_sale_voids',
-    'local_sale_items',
-    'local_sales',
-    'local_operating_expenses',
-    'local_table_accounts',
-    'local_cash_register_sessions',
-    'local_inventory_movements',
-    'local_packaging_movements',
-  ];
+    final decoded = jsonDecode(response.body);
+    if (decoded is Map<String, Object?>) {
+      return _int(decoded['total_rows']);
+    }
+    return 0;
+  }
 }

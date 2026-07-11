@@ -91,6 +91,12 @@ class _SyncContent extends StatelessWidget {
                 'Pendientes: ${state.items.length}',
                 variant: AppTextVariant.label,
               ),
+              const AppText(
+                'Los enviados correctamente no quedan listados como '
+                'pendientes.',
+                maxLines: 2,
+                variant: AppTextVariant.label,
+              ),
             ],
           ),
         ),

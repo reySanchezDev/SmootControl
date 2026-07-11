@@ -8,6 +8,9 @@ final class InventoryStockItem extends Equatable {
     required this.productName,
     required this.quantityOnHand,
     required this.updatedAt,
+    this.categoryName,
+    this.categoryPath,
+    this.costInCents = 0,
   });
 
   /// Product identifier.
@@ -19,6 +22,15 @@ final class InventoryStockItem extends Equatable {
   /// Current stock.
   final int quantityOnHand;
 
+  /// Current unit cost in minor currency units.
+  final int costInCents;
+
+  /// Direct category or subcategory name.
+  final String? categoryName;
+
+  /// Full category path used by administrative filters.
+  final String? categoryPath;
+
   /// Last stock update.
   final DateTime updatedAt;
 
@@ -27,6 +39,9 @@ final class InventoryStockItem extends Equatable {
     productId,
     productName,
     quantityOnHand,
+    costInCents,
+    categoryName,
+    categoryPath,
     updatedAt,
   ];
 }

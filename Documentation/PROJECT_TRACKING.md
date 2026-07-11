@@ -78,6 +78,49 @@
   - [x] Roles.
   - [x] Usuarios.
 
+## Version 2 - Pendientes Fuera De Alcance V1
+
+### KDS remoto por estaciones
+
+- Estado: Pendiente para V2.
+- Decision actual: no implementar en V1 por riesgo operativo y alcance.
+- Objetivo: crear una pantalla KDS conectada 100% a Supabase para que cocina,
+  mostrador/baño maria u otras estaciones reciban pedidos casi en tiempo real.
+- Enfoque recomendado:
+  - Mantener el POS como offline-first para vender.
+  - Hacer KDS remote-first en Supabase.
+  - Sincronizar pedidos abiertos hacia tablas KDS cuando el POS tenga internet;
+    no esperar a que la venta este cobrada.
+  - Si no hay internet, el proceso operativo sera manual: el encargado comunica
+    el pedido a cocina/mostrador.
+- Modelo funcional propuesto:
+  - Catalogo de estaciones KDS configurable (`Cocina`, `Mostrador/Baño Maria`,
+    futuras estaciones como `Barra` o `Parrilla`).
+  - Producto con configuracion:
+    - `applies_to_kds`: indica si aparece en KDS.
+    - `kds_station_id`: estacion destino cuando aplica.
+  - Ejemplos:
+    - `Hamburguesa`: aplica KDS, estacion `Cocina`.
+    - `Comida > Asados > Res`: aplica KDS, estacion `Mostrador/Baño Maria`.
+    - `Coca Cola`: no aplica KDS.
+- Roles/permisos propuestos:
+  - Rol `KDS_COCINA` con permiso de ver la estacion cocina.
+  - Rol `KDS_MOSTRADOR` con permiso de ver la estacion mostrador.
+  - Permitir un rol supervisor con acceso a varias estaciones.
+- Arquitectura recomendada:
+  - Implementar dentro del mismo proyecto como `lib/features/kds/`.
+  - Reutilizar login, roles, permisos, Supabase, productos, mesas y
+    modificadores.
+  - Evaluar luego si conviene una app separada si KDS crece o necesita ciclo de
+    despliegue independiente.
+- Riesgos a resolver antes de implementar:
+  - Definir consistencia entre pedidos abiertos locales y KDS remoto.
+  - Evitar duplicar items KDS por reintentos de sync.
+  - Definir estados KDS propios (`pending`, `in_progress`, `ready`, `served`,
+    `cancelled`) sin reutilizar `isServed` del ticket POS.
+  - Diseñar cancelaciones/cambios de cantidad/modificadores en pedidos ya
+    enviados.
+
 ### Fase 5 - Offline-First
 
 - [x] Crear base Drift/SQLite.

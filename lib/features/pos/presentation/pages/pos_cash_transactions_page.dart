@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:smoo_control/core/design_system/app_button.dart';
 import 'package:smoo_control/core/design_system/app_empty_state.dart';
@@ -13,10 +15,15 @@ import 'package:smoo_control/features/payment_methods/domain/entities/payment_me
 import 'package:smoo_control/features/payment_methods/domain/repositories/i_payment_methods_repository.dart';
 import 'package:smoo_control/features/roles/domain/services/access_control_service.dart';
 import 'package:smoo_control/features/sales/domain/entities/sale.dart';
+import 'package:smoo_control/features/sales/domain/entities/sale_item.dart';
 import 'package:smoo_control/features/sales/domain/repositories/i_sales_repository.dart';
 import 'package:smoo_control/features/sync/domain/repositories/i_sync_queue_repository.dart';
 import 'package:smoo_control/features/sync/domain/services/sync_scheduler_service.dart';
 import 'package:smoo_control/l10n/app_localizations.dart';
+
+part 'pos_cash_transactions_detail_part.dart';
+part 'pos_cash_transactions_table_part.dart';
+part 'pos_cash_transactions_widgets_part.dart';
 
 /// Shows completed transactions for the current open cash register.
 class PosCashTransactionsPage extends StatefulWidget {
@@ -105,6 +112,9 @@ class _PosCashTransactionsPageState extends State<PosCashTransactionsPage> {
               const Divider(height: 1),
               Expanded(
                 child: _TransactionsTable(
+                  canRunManualSync: data.canRunManualSync,
+                  onOpenDetails: _openSaleDetail,
+                  onRetry: _syncNow,
                   sales: data.sales,
                   paymentMethods: data.paymentMethods,
                 ),
@@ -217,329 +227,37 @@ class _PosCashTransactionsPageState extends State<PosCashTransactionsPage> {
     if (value.length <= maxLength) return value;
     return '${value.substring(0, maxLength)}...';
   }
-}
 
-class _TransactionsTable extends StatelessWidget {
-  const _TransactionsTable({
-    required this.sales,
-    required this.paymentMethods,
-  });
+  Future<void> _openSaleDetail(Sale sale) async {
+    final itemsResult = await serviceLocator<ISalesRepository>().getSaleItems(
+      sale.id,
+    );
+    if (!mounted) return;
 
-  final List<Sale> sales;
-  final Map<String, String> paymentMethods;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        if (constraints.maxWidth < 760) {
-          return ListView.separated(
-            itemBuilder: (context, index) {
-              final sale = sales[index];
-              return _TransactionCard(
-                methodName: paymentMethods[sale.paymentMethodId] ?? '',
-                sale: sale,
-              );
-            },
-            itemCount: sales.length,
-            padding: const EdgeInsets.all(10),
-            separatorBuilder: (_, _) => const SizedBox(height: 8),
-          );
-        }
-
-        return SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: ConstrainedBox(
-            constraints: BoxConstraints(minWidth: constraints.maxWidth),
-            child: SizedBox(
-              width: constraints.maxWidth < 900 ? 900 : constraints.maxWidth,
-              child: Column(
-                children: [
-                  _TransactionsHeader(background: colorScheme.primaryContainer),
-                  Expanded(
-                    child: ListView.builder(
-                      itemBuilder: (context, index) {
-                        final sale = sales[index];
-                        return _TransactionRow(
-                          methodName:
-                              paymentMethods[sale.paymentMethodId] ?? '',
-                          sale: sale,
-                        );
-                      },
-                      itemCount: sales.length,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+    switch (itemsResult) {
+      case AppSuccess<List<SaleItem>>(:final value):
+        await showDialog<void>(
+          context: context,
+          builder: (_) => _LocalSaleDetailDialog(
+            canRetry: sale.syncStatus == SaleSyncStatus.error && mounted,
+            items: value,
+            onRetry: _retryFromDialog,
+            sale: sale,
           ),
         );
-      },
-    );
+      case AppFailureResult(:final error):
+        await showAppMessageDialog(
+          context: context,
+          message: error.message,
+          title: 'Detalle ${sale.invoiceNumber}',
+        );
+    }
   }
-}
 
-class _TransactionsHeader extends StatelessWidget {
-  const _TransactionsHeader({required this.background});
-
-  final Color background;
-
-  @override
-  Widget build(BuildContext context) {
-    final color = Theme.of(context).colorScheme.onPrimaryContainer;
-    return Container(
-      decoration: BoxDecoration(
-        color: background,
-        border: Border(
-          bottom: BorderSide(
-            color: Theme.of(context).colorScheme.outlineVariant,
-          ),
-        ),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: DefaultTextStyle.merge(
-        style: TextStyle(color: color, fontWeight: FontWeight.w700),
-        child: const Row(
-          children: [
-            _HeaderCell('Factura', flex: 18),
-            _HeaderCell('Fecha', flex: 14),
-            _HeaderCell('Hora', flex: 10),
-            _HeaderCell('Metodo', flex: 18),
-            _HeaderCell('Estado', flex: 18),
-            _HeaderCell('Monto', flex: 14, textAlign: TextAlign.right),
-          ],
-        ),
-      ),
-    );
+  Future<void> _retryFromDialog() async {
+    if (mounted) {
+      await Navigator.of(context, rootNavigator: true).maybePop();
+    }
+    await _syncNow();
   }
-}
-
-class _TransactionCard extends StatelessWidget {
-  const _TransactionCard({
-    required this.methodName,
-    required this.sale,
-  });
-
-  final String methodName;
-  final Sale sale;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        border: Border.all(color: colorScheme.outlineVariant),
-        borderRadius: BorderRadius.circular(8),
-        color: colorScheme.surface,
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: AppText(
-                    sale.invoiceNumber,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    variant: AppTextVariant.titleMedium,
-                  ),
-                ),
-                AppText(
-                  MoneyFormatter.format(sale.totalInCents),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.end,
-                  variant: AppTextVariant.titleMedium,
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Wrap(
-              crossAxisAlignment: WrapCrossAlignment.center,
-              runSpacing: 8,
-              spacing: 12,
-              children: [
-                AppText(
-                  '${_dateText(sale.createdAt)} ${_timeText(sale.createdAt)}',
-                  variant: AppTextVariant.label,
-                ),
-                AppText(methodName, variant: AppTextVariant.label),
-                _SyncStatusChip(status: sale.syncStatus),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _TransactionRow extends StatelessWidget {
-  const _TransactionRow({
-    required this.methodName,
-    required this.sale,
-  });
-
-  final String methodName;
-  final Sale sale;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(
-            color: Theme.of(context).colorScheme.outlineVariant,
-          ),
-        ),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      child: Row(
-        children: [
-          _BodyCell(sale.invoiceNumber, flex: 18),
-          _BodyCell(_dateText(sale.createdAt), flex: 14),
-          _BodyCell(_timeText(sale.createdAt), flex: 10),
-          _BodyCell(methodName, flex: 18),
-          Expanded(
-            flex: 18,
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: _SyncStatusChip(status: sale.syncStatus),
-            ),
-          ),
-          _BodyCell(
-            MoneyFormatter.format(sale.totalInCents),
-            flex: 14,
-            textAlign: TextAlign.right,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-String _dateText(DateTime date) {
-  final day = date.day.toString().padLeft(2, '0');
-  final month = date.month.toString().padLeft(2, '0');
-  return '$day/$month/${date.year}';
-}
-
-String _timeText(DateTime date) {
-  final hour = date.hour.toString().padLeft(2, '0');
-  final minute = date.minute.toString().padLeft(2, '0');
-  return '$hour:$minute';
-}
-
-class _HeaderCell extends StatelessWidget {
-  const _HeaderCell(
-    this.text, {
-    required this.flex,
-    this.textAlign = TextAlign.left,
-  });
-
-  final String text;
-  final int flex;
-  final TextAlign textAlign;
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      flex: flex,
-      child: Text(
-        text,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        textAlign: textAlign,
-      ),
-    );
-  }
-}
-
-class _BodyCell extends StatelessWidget {
-  const _BodyCell(
-    this.text, {
-    required this.flex,
-    this.textAlign = TextAlign.left,
-  });
-
-  final String text;
-  final int flex;
-  final TextAlign textAlign;
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      flex: flex,
-      child: AppText(
-        text,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        textAlign: textAlign,
-      ),
-    );
-  }
-}
-
-class _SyncStatusChip extends StatelessWidget {
-  const _SyncStatusChip({required this.status});
-
-  final SaleSyncStatus status;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final colorScheme = Theme.of(context).colorScheme;
-    final style = switch (status) {
-      SaleSyncStatus.synced => (
-        icon: Icons.cloud_done_outlined,
-        label: l10n.syncStatusSynced,
-        color: colorScheme.primary,
-      ),
-      SaleSyncStatus.syncing => (
-        icon: Icons.cloud_sync_outlined,
-        label: l10n.syncStatusSyncing,
-        color: colorScheme.tertiary,
-      ),
-      SaleSyncStatus.error => (
-        icon: Icons.cloud_off_outlined,
-        label: l10n.syncStatusError,
-        color: colorScheme.error,
-      ),
-      SaleSyncStatus.pending => (
-        icon: Icons.cloud_queue_outlined,
-        label: l10n.syncStatusPending,
-        color: colorScheme.onSurfaceVariant,
-      ),
-    };
-
-    return Chip(
-      avatar: Icon(style.icon, size: 16, color: style.color),
-      label: Text(style.label),
-      side: BorderSide(color: style.color),
-      visualDensity: VisualDensity.compact,
-    );
-  }
-}
-
-class _TransactionsData {
-  const _TransactionsData({
-    required this.sales,
-    required this.paymentMethods,
-    required this.canRunManualSync,
-  }) : failure = null;
-
-  const _TransactionsData.failure(String message)
-    : sales = const [],
-      paymentMethods = const {},
-      canRunManualSync = false,
-      failure = message;
-
-  final List<Sale> sales;
-  final Map<String, String> paymentMethods;
-  final bool canRunManualSync;
-  final String? failure;
 }

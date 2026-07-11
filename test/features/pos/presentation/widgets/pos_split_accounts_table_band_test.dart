@@ -10,7 +10,7 @@ import 'package:smoo_control/features/tables/domain/entities/restaurant_table.da
 import 'package:smoo_control/l10n/app_localizations.dart';
 
 void main() {
-  testWidgets('orders occupied tables before free tables', (tester) async {
+  testWidgets('orders tables by local POS preference', (tester) async {
     await tester.binding.setSurfaceSize(const Size(1366, 768));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
@@ -108,6 +108,7 @@ const _table9 = RestaurantTable(
 const _tableOrderState = PosReady(
   products: [_product],
   tables: [_table, _table7, _table9],
+  tableOrderByTableId: {'table-9': 0, 'table-7': 1, 'table-1': 2},
   paymentMethods: [_cashMethod],
   cartLines: [PosCartLine(product: _product, quantity: 1)],
   cartLinesByTable: {

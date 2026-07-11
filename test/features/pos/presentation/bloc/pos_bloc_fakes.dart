@@ -39,6 +39,56 @@ final class _ProductsRepositoryFake implements IProductsRepository {
   }
 }
 
+final class _ProductOrderDataSourceFake implements IPosProductOrderDataSource {
+  final _orderByProductId = <String, int>{};
+  final _orderByTableId = <String, int>{};
+
+  @override
+  Future<Map<String, int>> getProductOrderById() async {
+    return {..._orderByProductId};
+  }
+
+  @override
+  Future<Map<String, int>> saveCategoryOrder({
+    required String categoryId,
+    required List<String> productIds,
+  }) async {
+    _orderByProductId
+      ..clear()
+      ..addEntries(
+        productIds.indexed.map(
+          (entry) => MapEntry(entry.$2, entry.$1),
+        ),
+      );
+    return {..._orderByProductId};
+  }
+
+  @override
+  Future<Map<String, int>> resetCategoryOrder(String categoryId) async {
+    _orderByProductId.clear();
+    return const {};
+  }
+
+  @override
+  Future<Map<String, int>> getTableOrderById() async {
+    return {..._orderByTableId};
+  }
+
+  @override
+  Future<Map<String, int>> saveTableOrder({
+    required List<String> tableIds,
+  }) async {
+    _orderByTableId
+      ..clear()
+      ..addEntries(
+        tableIds.indexed.map(
+          (entry) => MapEntry(entry.$2, entry.$1),
+        ),
+      );
+    return {..._orderByTableId};
+  }
+}
+
 final class _InventoryRepositoryFake implements IInventoryRepository {
   const _InventoryRepositoryFake({
     this.stockResult = const AppSuccess([]),

@@ -7,6 +7,14 @@ Supabase y POS offline-first en la tableta.
 
 ## Antes De Instalar El APK Final
 
+- Ejecutar el preflight V1:
+  `powershell -ExecutionPolicy Bypass -File .\tool\production_preflight.ps1`.
+- Reconstruir el APK siguiendo
+  `Documentation/APK_RELEASE_BUILD_PROCEDURE.md`.
+- Usar solamente:
+  `powershell -ExecutionPolicy Bypass -File .\tool\build_android_release.ps1`.
+- No usar `flutter build apk --release` directo para APK entregable, porque no
+  inyecta Supabase/restaurante.
 - Confirmar que el APK release mantiene el mismo `applicationId`.
 - Confirmar que se usa la misma firma release para futuras actualizaciones.
 - Confirmar que las migraciones locales Drift son no destructivas.
@@ -14,6 +22,10 @@ Supabase y POS offline-first en la tableta.
   migraciones requeridas.
 - Confirmar que el APK fue compilado con URL y anon key del proyecto Supabase
   correcto.
+- Confirmar que existe
+  `release\SmooControl-produccion.buildinfo.txt`.
+- Confirmar que `buildinfo` reporta
+  `InjectedDartDefines=SMOO_SUPABASE_URL,SMOO_SUPABASE_PUBLISHABLE_KEY,SMOO_RESTAURANT_ID`.
 - Confirmar que el APK release contiene permiso de internet:
   `uses-permission: name='android.permission.INTERNET'`.
 - Confirmar con `aapt dump permissions release\SmooControl-produccion.apk`
@@ -36,6 +48,7 @@ $aapt = Get-ChildItem -Path "$env:LOCALAPPDATA\Android\Sdk\build-tools" `
 & $aapt.FullName dump permissions release\SmooControl-produccion.apk
 & $aapt.FullName dump badging release\SmooControl-produccion.apk |
   Select-String -Pattern "package:"
+Get-Content release\SmooControl-produccion.buildinfo.txt
 ```
 
 Debe confirmarse:
@@ -43,6 +56,11 @@ Debe confirmarse:
 - `android.permission.INTERNET` existe en el APK.
 - `versionCode` aumento respecto al APK anterior.
 - `applicationId` sigue siendo `com.smoocontrol.pos`.
+- `buildinfo` confirma `InternetPermission=PRESENTE`.
+- `buildinfo` confirma los tres `InjectedDartDefines`.
+- `buildinfo` confirma `SqliteNativeLibrary=PRESENTE`.
+- El APK contiene `libsqlite3.so`; si falta, no instalar en tablet porque la
+  base local Drift/SQLite puede fallar.
 - La pantalla de login/inicializacion muestra la marca visible del build
   esperado.
 
@@ -119,6 +137,7 @@ lograron sincronizar antes de perder o borrar la tableta.
 
 La version puede salir a produccion cuando:
 
+- el checklist `Documentation/V1_RELEASE_CANDIDATE_CHECKLIST.md` esta completo;
 - el POS vende con internet;
 - el POS vende sin internet;
 - las ventas offline se conservan localmente;

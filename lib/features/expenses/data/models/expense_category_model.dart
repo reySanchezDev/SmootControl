@@ -9,6 +9,7 @@ final class ExpenseCategoryModel extends Equatable {
     required this.id,
     required this.name,
     required this.isActive,
+    this.includeInGrossProfitCoverage = false,
     this.parentId,
   });
 
@@ -19,6 +20,7 @@ final class ExpenseCategoryModel extends Equatable {
       name: row.name,
       parentId: row.parentId,
       isActive: row.isActive,
+      includeInGrossProfitCoverage: row.includeInGrossProfitCoverage,
     );
   }
 
@@ -29,6 +31,7 @@ final class ExpenseCategoryModel extends Equatable {
       name: entity.name,
       parentId: entity.parentId,
       isActive: entity.isActive,
+      includeInGrossProfitCoverage: entity.includeInGrossProfitCoverage,
     );
   }
 
@@ -44,6 +47,9 @@ final class ExpenseCategoryModel extends Equatable {
   /// Whether the category can be used.
   final bool isActive;
 
+  /// Whether this category subtracts from gross profit coverage reports.
+  final bool includeInGrossProfitCoverage;
+
   /// Converts this model to a domain entity.
   ExpenseCategory toEntity() {
     return ExpenseCategory(
@@ -51,9 +57,16 @@ final class ExpenseCategoryModel extends Equatable {
       name: name,
       parentId: parentId,
       isActive: isActive,
+      includeInGrossProfitCoverage: includeInGrossProfitCoverage,
     );
   }
 
   @override
-  List<Object?> get props => [id, name, parentId, isActive];
+  List<Object?> get props => [
+    id,
+    name,
+    parentId,
+    isActive,
+    includeInGrossProfitCoverage,
+  ];
 }

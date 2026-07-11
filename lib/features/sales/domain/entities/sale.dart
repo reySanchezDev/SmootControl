@@ -24,6 +24,15 @@ enum SaleSyncStatus {
   error,
 }
 
+/// Business meaning for a local sale row.
+enum SaleKind {
+  /// Normal customer sale.
+  sale,
+
+  /// Internal staff consumption that deducts stock but is not fiscal revenue.
+  staffConsumption,
+}
+
 /// Completed sale summary.
 final class Sale extends Equatable {
   /// Creates a sale.
@@ -35,13 +44,18 @@ final class Sale extends Equatable {
     required this.subtotalInCents,
     required this.totalInCents,
     required this.createdAt,
+    this.saleKind = SaleKind.sale,
     this.syncStatus = SaleSyncStatus.pending,
+    this.syncError,
     this.paymentReference,
     this.tableId,
     this.tableAccountId,
     this.cashRegisterSessionId,
     this.salesTypeId,
     this.salesTypeName,
+    this.employeeId,
+    this.internalReceiptNumber,
+    this.payrollRunId,
   });
 
   /// Unique sale identifier.
@@ -49,6 +63,9 @@ final class Sale extends Equatable {
 
   /// Sequential invoice or receipt number.
   final String invoiceNumber;
+
+  /// Business meaning for this row.
+  final SaleKind saleKind;
 
   /// Original table identifier when the sale came from a table.
   final String? tableId;
@@ -68,6 +85,15 @@ final class Sale extends Equatable {
   /// Historical selected sales type name.
   final String? salesTypeName;
 
+  /// Employee linked to an internal staff consumption.
+  final String? employeeId;
+
+  /// Remote staff-consumption consecutive.
+  final int? internalReceiptNumber;
+
+  /// Payroll run that applied this internal consumption.
+  final String? payrollRunId;
+
   /// Optional payment reference.
   final String? paymentReference;
 
@@ -86,21 +112,29 @@ final class Sale extends Equatable {
   /// Remote synchronization state.
   final SaleSyncStatus syncStatus;
 
+  /// Last synchronization error captured for this sale.
+  final String? syncError;
+
   @override
   List<Object?> get props => [
     id,
     invoiceNumber,
+    saleKind,
     tableId,
     tableAccountId,
     cashRegisterSessionId,
     paymentMethodId,
     salesTypeId,
     salesTypeName,
+    employeeId,
+    internalReceiptNumber,
+    payrollRunId,
     paymentReference,
     status,
     subtotalInCents,
     totalInCents,
     createdAt,
     syncStatus,
+    syncError,
   ];
 }

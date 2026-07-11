@@ -39,6 +39,10 @@ class LocalExpenseCategories extends Table with SyncColumns {
   /// Whether the category can be used.
   BoolColumn get isActive => boolean().withDefault(const Constant(true))();
 
+  /// Whether this category subtracts from gross profit coverage reports.
+  BoolColumn get includeInGrossProfitCoverage =>
+      boolean().withDefault(const Constant(false))();
+
   @override
   Set<Column<Object>> get primaryKey => {id};
 }
@@ -53,6 +57,16 @@ class LocalOperatingExpenses extends Table with SyncColumns {
 
   /// Cash register session identifier when paid from cash.
   TextColumn get cashRegisterSessionId => text().nullable()();
+
+  /// operational or salary_advance.
+  TextColumn get expenseKind =>
+      text().withDefault(const Constant('operational'))();
+
+  /// Employee linked to salary advances.
+  TextColumn get employeeId => text().nullable()();
+
+  /// Whether this row affected POS cash.
+  BoolColumn get affectsCash => boolean().withDefault(const Constant(true))();
 
   /// Amount in minor currency units.
   IntColumn get amountInCents => integer()();

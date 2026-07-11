@@ -464,12 +464,17 @@ void main() {
     },
   );
 
-  test('orders phone table navigation with occupied tables first', () {
+  test('orders phone table navigation with local POS preference', () {
     final ordered = orderMobilePosTables(
       cartLinesByTable: const {
         'table-2': [PosCartLine(product: _product, quantity: 1)],
       },
       splitAccountsByTable: const {},
+      tableOrderByTableId: const {
+        'table-2': 0,
+        'table-3': 1,
+        'table-1': 2,
+      },
       tables: const [
         RestaurantTable(
           id: 'table-1',

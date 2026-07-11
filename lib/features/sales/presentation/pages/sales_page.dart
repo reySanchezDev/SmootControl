@@ -9,7 +9,7 @@ import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/core/result/app_result.dart';
 import 'package:smoo_control/core/session/current_operator_service.dart';
-import 'package:smoo_control/features/payment_methods/domain/repositories/i_payment_methods_repository.dart';
+import 'package:smoo_control/features/admin_remote/data/repositories/supabase_admin_repository.dart';
 import 'package:smoo_control/features/sales/data/repositories/supabase_sales_admin_repository.dart';
 import 'package:smoo_control/features/sales/domain/entities/sale.dart';
 import 'package:smoo_control/features/sales/domain/entities/sale_item.dart';
@@ -24,7 +24,6 @@ import 'package:smoo_control/features/sales/presentation/widgets/sales_date_sele
 import 'package:smoo_control/features/sales/presentation/widgets/sales_searchable_list.dart';
 import 'package:smoo_control/features/sales/presentation/widgets/void_sale_dialog.dart';
 import 'package:smoo_control/features/settings/domain/entities/business_settings.dart';
-import 'package:smoo_control/features/settings/domain/repositories/i_business_settings_repository.dart';
 import 'package:smoo_control/l10n/app_localizations.dart';
 
 /// Daily sales and transaction page.
@@ -149,9 +148,7 @@ class _SalesPageState extends State<SalesPage> {
   Future<void> _previewPdf(BuildContext context, Sale sale) async {
     final l10n = AppLocalizations.of(context);
     final salesRepository = serviceLocator<SupabaseSalesAdminRepository>();
-    final settingsRepository = serviceLocator<IBusinessSettingsRepository>();
-    final paymentMethodsRepository =
-        serviceLocator<IPaymentMethodsRepository>();
+    final adminRepository = serviceLocator<SupabaseAdminRepository>();
     final pdfService = serviceLocator<SaleInvoicePdfService>();
 
     final items = await _loadSaleItems(salesRepository, sale.id);
@@ -162,9 +159,9 @@ class _SalesPageState extends State<SalesPage> {
       return;
     }
 
-    final settings = await _loadSettings(settingsRepository);
+    final settings = await _loadSettings(adminRepository);
     final paymentMethodName = await _loadPaymentMethodName(
-      paymentMethodsRepository,
+      adminRepository,
       sale.paymentMethodId,
       l10n.paymentMethodField,
     );
@@ -229,7 +226,7 @@ class _SalesPageState extends State<SalesPage> {
   }
 
   Future<BusinessSettings> _loadSettings(
-    IBusinessSettingsRepository repository,
+    SupabaseAdminRepository repository,
   ) async {
     final result = await repository.getSettings();
 
@@ -240,7 +237,7 @@ class _SalesPageState extends State<SalesPage> {
   }
 
   Future<String> _loadPaymentMethodName(
-    IPaymentMethodsRepository repository,
+    SupabaseAdminRepository repository,
     String paymentMethodId,
     String fallback,
   ) async {

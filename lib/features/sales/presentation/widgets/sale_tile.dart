@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
+import 'package:smoo_control/core/design_system/app_tile_actions.dart';
 import 'package:smoo_control/core/formatters/money_formatter.dart';
 import 'package:smoo_control/features/sales/domain/entities/sale.dart';
 import 'package:smoo_control/l10n/app_localizations.dart';
@@ -37,36 +38,47 @@ class SaleTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
 
-    return ListTile(
-      leading: const Icon(Icons.receipt_long_outlined),
-      onTap: onOpenDetails,
-      subtitle: AppText(statusLabel, variant: AppTextVariant.label),
-      title: AppText(sale.invoiceNumber),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          AppText(
-            MoneyFormatter.format(sale.totalInCents),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 560;
+        final total = MoneyFormatter.format(sale.totalInCents);
+        return ListTile(
+          leading: const Icon(Icons.receipt_long_outlined),
+          onTap: onOpenDetails,
+          subtitle: AppText(
+            compact ? '$statusLabel - $total' : statusLabel,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
             variant: AppTextVariant.label,
           ),
-          IconButton(
-            icon: const Icon(Icons.picture_as_pdf_outlined),
-            onPressed: () {
-              unawaited(onPreviewPdf());
-            },
-            tooltip: l10n.previewPdfAction,
+          title: AppText(
+            sale.invoiceNumber,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
-          IconButton(
-            icon: const Icon(Icons.block_outlined),
-            onPressed: onVoid == null
-                ? null
-                : () {
-                    unawaited(onVoid!());
-                  },
-            tooltip: l10n.voidSaleAction,
+          trailing: AppTileActions(
+            compact: compact,
+            inlineLeading: AppText(total, variant: AppTextVariant.label),
+            actions: [
+              AppTileAction(
+                icon: Icons.picture_as_pdf_outlined,
+                label: l10n.previewPdfAction,
+                onPressed: () {
+                  unawaited(onPreviewPdf());
+                },
+              ),
+              AppTileAction(
+                enabled: onVoid != null,
+                icon: Icons.block_outlined,
+                label: l10n.voidSaleAction,
+                onPressed: () {
+                  unawaited(onVoid!());
+                },
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

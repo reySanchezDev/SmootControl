@@ -29,6 +29,7 @@ final class SyncQueueRepository implements ISyncQueueRepository {
   final ISyncSettingsRepository? _settingsRepository;
   final Duration _immediateSyncTimeout;
   final Uuid _uuid;
+  static Future<void> _immediateSyncTail = Future<void>.value();
 
   @override
   Future<AppResult<SyncQueueItem>> enqueue({
@@ -52,7 +53,7 @@ final class SyncQueueRepository implements ISyncQueueRepository {
       );
 
       final saved = await _localDataSource.saveItem(item);
-      unawaited(_trySyncImmediately(saved.toEntity()));
+      _scheduleImmediateSync(saved.toEntity());
 
       return AppSuccess(saved.toEntity());
     } on Object catch (error) {
@@ -104,6 +105,14 @@ final class SyncQueueRepository implements ISyncQueueRepository {
     return _runStatusUpdate(() => _localDataSource.markSyncing(itemId));
   }
 
+  void _scheduleImmediateSync(SyncQueueItem item) {
+    final run = _immediateSyncTail
+        .catchError((Object _) {})
+        .then((_) => _trySyncImmediately(item));
+    _immediateSyncTail = run;
+    unawaited(run);
+  }
+
   Future<void> _trySyncImmediately(SyncQueueItem item) async {
     try {
       final remoteSender = _remoteSender;
@@ -116,6 +125,13 @@ final class SyncQueueRepository implements ISyncQueueRepository {
         );
         if (!shouldSync) return;
       }
+
+      final pendingResult = await getPendingItems(limit: 1);
+      final canProcessThisItem = pendingResult.when(
+        success: (items) => items.isNotEmpty && items.first.id == item.id,
+        failure: (_) => false,
+      );
+      if (!canProcessThisItem) return;
 
       await _localDataSource.markSyncing(item.id);
       await remoteSender.push(item).timeout(_immediateSyncTimeout);

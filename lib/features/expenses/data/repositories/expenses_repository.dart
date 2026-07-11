@@ -68,8 +68,9 @@ final class ExpensesRepository implements IExpensesRepository {
     ExpenseCategory category,
   ) async {
     try {
-      final model = ExpenseCategoryModel.fromEntity(category);
-      await _pushCategoryRemote(category);
+      final normalizedCategory = _normalizeCoverageFlag(category);
+      final model = ExpenseCategoryModel.fromEntity(normalizedCategory);
+      await _pushCategoryRemote(normalizedCategory);
       final saved = await _localDataSource.saveCategory(model);
       final entity = saved.toEntity();
       if (_remoteSender == null) {
@@ -145,6 +146,12 @@ final class ExpensesRepository implements IExpensesRepository {
         'id': expense.id,
         'categoryId': expense.categoryId,
         'cashRegisterSessionId': expense.cashRegisterSessionId,
+        'expenseKind': switch (expense.kind) {
+          OperatingExpenseKind.operational => 'operational',
+          OperatingExpenseKind.salaryAdvance => 'salary_advance',
+        },
+        'employeeId': expense.employeeId,
+        'affectsCash': expense.affectsCash,
         'amountInCents': expense.amountInCents,
         'description': expense.description,
         'createdAt': expense.createdAt.toIso8601String(),
@@ -154,15 +161,18 @@ final class ExpensesRepository implements IExpensesRepository {
   }
 
   Future<void> _enqueueCategory(ExpenseCategory category) async {
+    final normalizedCategory = _normalizeCoverageFlag(category);
     await _syncQueueRepository?.enqueue(
       entityType: 'expense_categories',
-      entityId: category.id,
+      entityId: normalizedCategory.id,
       operation: SyncOperation.create,
       payload: {
-        'id': category.id,
-        'name': category.name,
-        'parentId': category.parentId,
-        'isActive': category.isActive,
+        'id': normalizedCategory.id,
+        'name': normalizedCategory.name,
+        'parentId': normalizedCategory.parentId,
+        'isActive': normalizedCategory.isActive,
+        'includeInGrossProfitCoverage':
+            normalizedCategory.includeInGrossProfitCoverage,
       },
     );
   }
@@ -170,25 +180,40 @@ final class ExpensesRepository implements IExpensesRepository {
   Future<void> _pushCategoryRemote(ExpenseCategory category) async {
     final remoteSender = _remoteSender;
     if (remoteSender == null) return;
+    final normalizedCategory = _normalizeCoverageFlag(category);
 
     final now = DateTime.now();
     await remoteSender.push(
       SyncQueueItem(
-        id: 'admin-direct-expense_categories-${category.id}',
+        id: 'admin-direct-expense_categories-${normalizedCategory.id}',
         entityType: 'expense_categories',
-        entityId: category.id,
+        entityId: normalizedCategory.id,
         operation: SyncOperation.create,
         payload: {
-          'id': category.id,
-          'name': category.name,
-          'parentId': category.parentId,
-          'isActive': category.isActive,
+          'id': normalizedCategory.id,
+          'name': normalizedCategory.name,
+          'parentId': normalizedCategory.parentId,
+          'isActive': normalizedCategory.isActive,
+          'includeInGrossProfitCoverage':
+              normalizedCategory.includeInGrossProfitCoverage,
         },
         status: SyncQueueStatus.pending,
         retryCount: 0,
         createdAt: now,
         updatedAt: now,
       ),
+    );
+  }
+
+  ExpenseCategory _normalizeCoverageFlag(ExpenseCategory category) {
+    if (category.parentId == null || !category.includeInGrossProfitCoverage) {
+      return category;
+    }
+    return ExpenseCategory(
+      id: category.id,
+      name: category.name,
+      parentId: category.parentId,
+      isActive: category.isActive,
     );
   }
 

@@ -7,6 +7,7 @@ final class ExpenseCategory extends Equatable {
     required this.id,
     required this.name,
     required this.isActive,
+    this.includeInGrossProfitCoverage = false,
     this.parentId,
   });
 
@@ -22,6 +23,15 @@ final class ExpenseCategory extends Equatable {
   /// Whether the category is available for new expenses.
   final bool isActive;
 
+  /// Whether expenses under this category should reduce coverage reports.
+  final bool includeInGrossProfitCoverage;
+
   @override
-  List<Object?> get props => [id, name, parentId, isActive];
+  List<Object?> get props => [
+    id,
+    name,
+    parentId,
+    isActive,
+    includeInGrossProfitCoverage,
+  ];
 }

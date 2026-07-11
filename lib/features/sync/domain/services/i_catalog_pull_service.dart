@@ -34,6 +34,9 @@ enum CatalogPullScope {
 
   /// Open/closed cash register sessions needed by POS devices.
   cashRegisterSessions,
+
+  /// Employees and operational business rules used by POS.
+  staff,
 }
 
 /// Pulls remote operational catalog data into the local POS database.

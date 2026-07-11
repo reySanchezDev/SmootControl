@@ -76,6 +76,50 @@ final class PosCategorySelected extends PosEvent {
   List<Object?> get props => [categoryId];
 }
 
+/// Saves a local-only product order for one POS category.
+final class PosProductsReordered extends PosEvent {
+  /// Creates a product reorder event.
+  const PosProductsReordered({
+    required this.categoryId,
+    required this.productIds,
+  });
+
+  /// Category whose visual product order changed.
+  final String categoryId;
+
+  /// Product identifiers in the new visual order.
+  final List<String> productIds;
+
+  @override
+  List<Object?> get props => [categoryId, productIds];
+}
+
+/// Clears the local-only product order for one POS category.
+final class PosProductOrderReset extends PosEvent {
+  /// Creates a product order reset event.
+  const PosProductOrderReset(this.categoryId);
+
+  /// Category whose local visual order is reset.
+  final String categoryId;
+
+  @override
+  List<Object?> get props => [categoryId];
+}
+
+/// Saves a local-only table order for the POS table band.
+final class PosTablesReordered extends PosEvent {
+  /// Creates a table reorder event.
+  const PosTablesReordered({
+    required this.tableIds,
+  });
+
+  /// Physical table identifiers in the new visual order.
+  final List<String> tableIds;
+
+  @override
+  List<Object?> get props => [tableIds];
+}
+
 /// Removes a product from the cart.
 final class PosProductRemoved extends PosEvent {
   /// Creates a product removed event.
@@ -266,6 +310,24 @@ final class PosCheckoutRequested extends PosEvent {
 
   @override
   List<Object?> get props => [paymentReference];
+}
+
+/// Saves the current cart as staff consumption.
+final class PosStaffConsumptionRequested extends PosEvent {
+  /// Creates the event.
+  const PosStaffConsumptionRequested({
+    required this.employeeId,
+    required this.deliveredAt,
+  });
+
+  /// Employee that receives the consumption.
+  final String employeeId;
+
+  /// Date when the consumption was delivered.
+  final DateTime deliveredAt;
+
+  @override
+  List<Object?> get props => [employeeId, deliveredAt];
 }
 
 /// Clears the POS cart.

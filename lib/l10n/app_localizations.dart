@@ -788,6 +788,12 @@ abstract class AppLocalizations {
   /// **'Guardar'**
   String get saveAction;
 
+  /// No description provided for @reloadAction.
+  ///
+  /// In es, this message translates to:
+  /// **'Recargar'**
+  String get reloadAction;
+
   /// No description provided for @backAction.
   ///
   /// In es, this message translates to:
@@ -1111,6 +1117,180 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Editar categoría de gasto'**
   String get editExpenseCategoryTitle;
+
+  /// No description provided for @expenseCategoryCoverageField.
+  ///
+  /// In es, this message translates to:
+  /// **'Restar en cobertura de utilidad'**
+  String get expenseCategoryCoverageField;
+
+  /// No description provided for @expenseCategoryCoverageHelp.
+  ///
+  /// In es, this message translates to:
+  /// **'Actívalo solo para gastos operativos reales. No usar en nómina ni compras de inventario.'**
+  String get expenseCategoryCoverageHelp;
+
+  /// No description provided for @expenseCategoryCoverageIncluded.
+  ///
+  /// In es, this message translates to:
+  /// **'Entra en cobertura'**
+  String get expenseCategoryCoverageIncluded;
+
+  /// No description provided for @expenseCategoryCoverageExcluded.
+  ///
+  /// In es, this message translates to:
+  /// **'Fuera de cobertura'**
+  String get expenseCategoryCoverageExcluded;
+
+  /// No description provided for @inventoryValueReportTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Valor de inventario'**
+  String get inventoryValueReportTitle;
+
+  /// No description provided for @inventoryValueReportSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Costo actual, venta potencial y utilidad estimada del inventario.'**
+  String get inventoryValueReportSubtitle;
+
+  /// No description provided for @inventoryValueSearchLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Buscar producto o categoría'**
+  String get inventoryValueSearchLabel;
+
+  /// No description provided for @inventoryOnlyWithStockFilter.
+  ///
+  /// In es, this message translates to:
+  /// **'Solo con stock'**
+  String get inventoryOnlyWithStockFilter;
+
+  /// No description provided for @inventoryValueLoadErrorTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo cargar'**
+  String get inventoryValueLoadErrorTitle;
+
+  /// No description provided for @inventoryValueEmptyTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin datos'**
+  String get inventoryValueEmptyTitle;
+
+  /// No description provided for @inventoryValueEmptyMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay productos de inventario para el filtro seleccionado.'**
+  String get inventoryValueEmptyMessage;
+
+  /// No description provided for @inventoryCostMetric.
+  ///
+  /// In es, this message translates to:
+  /// **'Costo inventario'**
+  String get inventoryCostMetric;
+
+  /// No description provided for @inventoryPotentialSalesMetric.
+  ///
+  /// In es, this message translates to:
+  /// **'Venta potencial'**
+  String get inventoryPotentialSalesMetric;
+
+  /// No description provided for @inventoryPotentialProfitMetric.
+  ///
+  /// In es, this message translates to:
+  /// **'Utilidad potencial'**
+  String get inventoryPotentialProfitMetric;
+
+  /// No description provided for @inventoryMarginMetric.
+  ///
+  /// In es, this message translates to:
+  /// **'Margen'**
+  String get inventoryMarginMetric;
+
+  /// No description provided for @inventoryWithStockMetric.
+  ///
+  /// In es, this message translates to:
+  /// **'Con stock'**
+  String get inventoryWithStockMetric;
+
+  /// No description provided for @inventoryMissingCostMetric.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin costo'**
+  String get inventoryMissingCostMetric;
+
+  /// No description provided for @inventoryMissingPriceMetric.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin precio'**
+  String get inventoryMissingPriceMetric;
+
+  /// No description provided for @inventoryLowMarginMetric.
+  ///
+  /// In es, this message translates to:
+  /// **'Margen bajo'**
+  String get inventoryLowMarginMetric;
+
+  /// No description provided for @inventoryCategoryValueTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Valor por categoría'**
+  String get inventoryCategoryValueTitle;
+
+  /// No description provided for @inventoryCapitalPercentLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'{percent}% del capital en inventario'**
+  String inventoryCapitalPercentLabel(String percent);
+
+  /// No description provided for @inventoryProductColumn.
+  ///
+  /// In es, this message translates to:
+  /// **'Producto'**
+  String get inventoryProductColumn;
+
+  /// No description provided for @inventoryCategoryColumn.
+  ///
+  /// In es, this message translates to:
+  /// **'Categoría'**
+  String get inventoryCategoryColumn;
+
+  /// No description provided for @inventoryStockColumn.
+  ///
+  /// In es, this message translates to:
+  /// **'Stock'**
+  String get inventoryStockColumn;
+
+  /// No description provided for @inventoryCostColumn.
+  ///
+  /// In es, this message translates to:
+  /// **'Costo'**
+  String get inventoryCostColumn;
+
+  /// No description provided for @inventoryPriceColumn.
+  ///
+  /// In es, this message translates to:
+  /// **'Precio'**
+  String get inventoryPriceColumn;
+
+  /// No description provided for @inventoryCostValueColumn.
+  ///
+  /// In es, this message translates to:
+  /// **'Valor costo'**
+  String get inventoryCostValueColumn;
+
+  /// No description provided for @inventoryPotentialSalesColumn.
+  ///
+  /// In es, this message translates to:
+  /// **'Venta potencial'**
+  String get inventoryPotentialSalesColumn;
+
+  /// No description provided for @inventoryProfitColumn.
+  ///
+  /// In es, this message translates to:
+  /// **'Utilidad'**
+  String get inventoryProfitColumn;
 
   /// No description provided for @deleteExpenseCategoryTitle.
   ///

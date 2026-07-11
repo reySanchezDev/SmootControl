@@ -7,9 +7,8 @@ import 'package:smoo_control/core/design_system/app_text.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/core/formatters/money_formatter.dart';
 import 'package:smoo_control/core/result/app_result.dart';
+import 'package:smoo_control/features/admin_remote/data/repositories/supabase_admin_repository.dart';
 import 'package:smoo_control/features/exchange_rates/domain/entities/exchange_rate.dart';
-import 'package:smoo_control/features/exchange_rates/domain/repositories/i_exchange_rate_repository.dart';
-import 'package:smoo_control/features/sync/domain/services/admin_data_refresh_service.dart';
 import 'package:smoo_control/l10n/app_localizations.dart';
 
 /// Exchange rate management page for the current month.
@@ -25,10 +24,8 @@ class _ExchangeRatesPageState extends State<ExchangeRatesPage> {
   static const _currencyCode = 'USD';
 
   final _monthlyRateController = TextEditingController();
-  final IExchangeRateRepository _repository =
-      serviceLocator<IExchangeRateRepository>();
-  final AdminDataRefreshService _remoteRefreshService =
-      serviceLocator<AdminDataRefreshService>();
+  final SupabaseAdminRepository _repository =
+      serviceLocator<SupabaseAdminRepository>();
   late DateTime _month;
   late Future<AppResult<List<ExchangeRate>>> _future;
 
@@ -97,23 +94,40 @@ class _ExchangeRatesPageState extends State<ExchangeRatesPage> {
           variant: AppTextVariant.titleMedium,
         ),
         const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: TextField(
-                controller: _monthlyRateController,
-                decoration: InputDecoration(
-                  labelText: l10n.exchangeRateMonthlyField,
-                ),
-                keyboardType: TextInputType.number,
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final isCompact = constraints.maxWidth < 520;
+            final input = TextField(
+              controller: _monthlyRateController,
+              decoration: InputDecoration(
+                labelText: l10n.exchangeRateMonthlyField,
               ),
-            ),
-            const SizedBox(width: 12),
-            AppButton(
+              keyboardType: TextInputType.number,
+            );
+            final action = AppButton(
               label: l10n.exchangeRateApplyMonthAction,
               onPressed: _applyMonthRate,
-            ),
-          ],
+            );
+
+            if (isCompact) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  input,
+                  const SizedBox(height: 12),
+                  action,
+                ],
+              );
+            }
+
+            return Row(
+              children: [
+                Expanded(child: input),
+                const SizedBox(width: 12),
+                action,
+              ],
+            );
+          },
         ),
         const SizedBox(height: 16),
         for (var day = 1; day <= days; day += 1)
@@ -134,11 +148,6 @@ class _ExchangeRatesPageState extends State<ExchangeRatesPage> {
   }
 
   Future<AppResult<List<ExchangeRate>>> _loadRates() async {
-    final refreshResult = await _remoteRefreshService.refreshExchangeRates();
-    if (refreshResult case AppFailureResult(:final error)) {
-      return AppFailureResult(error);
-    }
-
     return _repository.getRatesForMonth(
       currencyCode: _currencyCode,
       month: _month,
@@ -230,31 +239,80 @@ class _RateTileState extends State<_RateTile> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      title: AppText(
-        '${widget.date.day}/${widget.date.month}/${widget.date.year}',
-      ),
-      subtitle: AppText('${widget.currencyCode} -> ${MoneyFormatter.symbol}'),
-      trailing: SizedBox(
-        width: 180,
-        child: Row(
-          children: [
-            Expanded(
-              child: TextField(
-                controller: _controller,
-                decoration: InputDecoration(labelText: l10n.exchangeRateField),
-                keyboardType: TextInputType.number,
-              ),
+    final title = '${widget.date.day}/${widget.date.month}/${widget.date.year}';
+    final subtitle = '${widget.currencyCode} -> ${MoneyFormatter.symbol}';
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isCompact = constraints.maxWidth < 420;
+        if (isCompact) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                AppText(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                AppText(
+                  subtitle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  variant: AppTextVariant.label,
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(child: _rateField(l10n)),
+                    IconButton(
+                      icon: const Icon(Icons.save_outlined),
+                      onPressed: _save,
+                      tooltip: l10n.saveAction,
+                    ),
+                  ],
+                ),
+              ],
             ),
-            IconButton(
-              icon: const Icon(Icons.save_outlined),
-              onPressed: _save,
-              tooltip: l10n.saveAction,
+          );
+        }
+
+        return ListTile(
+          contentPadding: EdgeInsets.zero,
+          title: AppText(
+            title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          subtitle: AppText(
+            subtitle,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          trailing: SizedBox(
+            width: 180,
+            child: Row(
+              children: [
+                Expanded(child: _rateField(l10n)),
+                IconButton(
+                  icon: const Icon(Icons.save_outlined),
+                  onPressed: _save,
+                  tooltip: l10n.saveAction,
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _rateField(AppLocalizations l10n) {
+    return TextField(
+      controller: _controller,
+      decoration: InputDecoration(labelText: l10n.exchangeRateField),
+      keyboardType: TextInputType.number,
     );
   }
 

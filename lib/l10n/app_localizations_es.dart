@@ -368,6 +368,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get saveAction => 'Guardar';
 
   @override
+  String get reloadAction => 'Recargar';
+
+  @override
   String get backAction => 'Volver';
 
   @override
@@ -540,6 +543,98 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get editExpenseCategoryTitle => 'Editar categoría de gasto';
+
+  @override
+  String get expenseCategoryCoverageField => 'Restar en cobertura de utilidad';
+
+  @override
+  String get expenseCategoryCoverageHelp =>
+      'Actívalo solo para gastos operativos reales. No usar en nómina ni compras de inventario.';
+
+  @override
+  String get expenseCategoryCoverageIncluded => 'Entra en cobertura';
+
+  @override
+  String get expenseCategoryCoverageExcluded => 'Fuera de cobertura';
+
+  @override
+  String get inventoryValueReportTitle => 'Valor de inventario';
+
+  @override
+  String get inventoryValueReportSubtitle =>
+      'Costo actual, venta potencial y utilidad estimada del inventario.';
+
+  @override
+  String get inventoryValueSearchLabel => 'Buscar producto o categoría';
+
+  @override
+  String get inventoryOnlyWithStockFilter => 'Solo con stock';
+
+  @override
+  String get inventoryValueLoadErrorTitle => 'No se pudo cargar';
+
+  @override
+  String get inventoryValueEmptyTitle => 'Sin datos';
+
+  @override
+  String get inventoryValueEmptyMessage =>
+      'No hay productos de inventario para el filtro seleccionado.';
+
+  @override
+  String get inventoryCostMetric => 'Costo inventario';
+
+  @override
+  String get inventoryPotentialSalesMetric => 'Venta potencial';
+
+  @override
+  String get inventoryPotentialProfitMetric => 'Utilidad potencial';
+
+  @override
+  String get inventoryMarginMetric => 'Margen';
+
+  @override
+  String get inventoryWithStockMetric => 'Con stock';
+
+  @override
+  String get inventoryMissingCostMetric => 'Sin costo';
+
+  @override
+  String get inventoryMissingPriceMetric => 'Sin precio';
+
+  @override
+  String get inventoryLowMarginMetric => 'Margen bajo';
+
+  @override
+  String get inventoryCategoryValueTitle => 'Valor por categoría';
+
+  @override
+  String inventoryCapitalPercentLabel(String percent) {
+    return '$percent% del capital en inventario';
+  }
+
+  @override
+  String get inventoryProductColumn => 'Producto';
+
+  @override
+  String get inventoryCategoryColumn => 'Categoría';
+
+  @override
+  String get inventoryStockColumn => 'Stock';
+
+  @override
+  String get inventoryCostColumn => 'Costo';
+
+  @override
+  String get inventoryPriceColumn => 'Precio';
+
+  @override
+  String get inventoryCostValueColumn => 'Valor costo';
+
+  @override
+  String get inventoryPotentialSalesColumn => 'Venta potencial';
+
+  @override
+  String get inventoryProfitColumn => 'Utilidad';
 
   @override
   String get deleteExpenseCategoryTitle => 'Eliminar categoría de gasto';

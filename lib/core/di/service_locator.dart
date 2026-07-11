@@ -8,6 +8,8 @@ import 'package:smoo_control/core/di/register_pos_dependencies.dart';
 import 'package:smoo_control/core/session/current_operator_service.dart';
 import 'package:smoo_control/core/session/current_remote_session_service.dart';
 import 'package:smoo_control/core/session/current_restaurant_service.dart';
+import 'package:smoo_control/features/admin_remote/data/repositories/supabase_admin_expenses_repository.dart';
+import 'package:smoo_control/features/admin_remote/data/repositories/supabase_admin_repository.dart';
 import 'package:smoo_control/features/audit/data/datasources/local_audit_log_datasource.dart';
 import 'package:smoo_control/features/audit/data/repositories/audit_log_repository.dart';
 import 'package:smoo_control/features/audit/domain/repositories/i_audit_log_repository.dart';
@@ -32,6 +34,7 @@ import 'package:smoo_control/features/expenses/presentation/bloc/expenses_bloc.d
 import 'package:smoo_control/features/inventory/data/datasources/local_inventory_datasource.dart';
 import 'package:smoo_control/features/inventory/data/repositories/inventory_repository.dart';
 import 'package:smoo_control/features/inventory/data/services/supabase_inventory_admin_read_service.dart';
+import 'package:smoo_control/features/inventory/data/services/supabase_inventory_admin_write_service.dart';
 import 'package:smoo_control/features/inventory/domain/repositories/i_inventory_repository.dart';
 import 'package:smoo_control/features/modifiers/data/datasources/local_modifiers_datasource.dart';
 import 'package:smoo_control/features/modifiers/data/repositories/modifiers_repository.dart';
@@ -48,6 +51,9 @@ import 'package:smoo_control/features/products/data/datasources/local_products_d
 import 'package:smoo_control/features/products/data/repositories/products_repository.dart';
 import 'package:smoo_control/features/products/domain/repositories/i_products_repository.dart';
 import 'package:smoo_control/features/products/presentation/bloc/products_bloc.dart';
+import 'package:smoo_control/features/reports/data/services/supabase_daily_sales_report_service.dart';
+import 'package:smoo_control/features/reports/data/services/supabase_expenses_report_service.dart';
+import 'package:smoo_control/features/reports/data/services/supabase_inventory_value_report_service.dart';
 import 'package:smoo_control/features/reports/data/services/supabase_report_summary_service.dart';
 import 'package:smoo_control/features/reports/domain/services/i_remote_report_summary_service.dart';
 import 'package:smoo_control/features/reports/domain/services/report_summary_service.dart';
@@ -68,6 +74,10 @@ import 'package:smoo_control/features/settings/data/datasources/local_business_s
 import 'package:smoo_control/features/settings/data/repositories/business_settings_repository.dart';
 import 'package:smoo_control/features/settings/domain/repositories/i_business_settings_repository.dart';
 import 'package:smoo_control/features/settings/presentation/bloc/business_settings_bloc.dart';
+import 'package:smoo_control/features/staff/data/datasources/local_staff_datasource.dart';
+import 'package:smoo_control/features/staff/data/repositories/staff_pos_repository.dart';
+import 'package:smoo_control/features/staff/data/repositories/supabase_staff_admin_repository.dart';
+import 'package:smoo_control/features/staff/domain/repositories/i_staff_repository.dart';
 import 'package:smoo_control/features/sync/data/datasources/local_sync_queue_datasource.dart';
 import 'package:smoo_control/features/sync/data/datasources/local_sync_settings_datasource.dart';
 import 'package:smoo_control/features/sync/data/datasources/supabase_catalog_pull_service.dart';
@@ -92,395 +102,23 @@ import 'package:smoo_control/features/users/data/repositories/users_repository.d
 import 'package:smoo_control/features/users/domain/repositories/i_users_repository.dart';
 import 'package:smoo_control/features/users/presentation/bloc/users_bloc.dart';
 
+part 'service_locator_catalog_part.dart';
+part 'service_locator_core_part.dart';
+part 'service_locator_operations_part.dart';
+part 'service_locator_settings_part.dart';
+part 'service_locator_sync_part.dart';
+
 /// Global dependency container for the application.
 final GetIt serviceLocator = GetIt.instance;
 
 /// Registers application dependencies.
 Future<void> configureDependencies() async {
   await serviceLocator.reset();
-  serviceLocator
-    ..registerLazySingleton<SupabaseAppConfig>(SupabaseAppConfig.new)
-    ..registerLazySingleton<CurrentRestaurantService>(
-      CurrentRestaurantService.new,
-    )
-    ..registerLazySingleton<CurrentRemoteSessionService>(
-      CurrentRemoteSessionService.new,
-    )
-    ..registerLazySingleton<http.Client>(
-      http.Client.new,
-      dispose: (client) => client.close(),
-    )
-    ..registerLazySingleton<AppDatabase>(
-      () => AppDatabase(openDatabaseConnection()),
-      dispose: (database) => database.close(),
-    )
-    ..registerLazySingleton<LocalCatalogDataSource>(
-      () => LocalCatalogDataSource(serviceLocator<AppDatabase>()),
-    )
-    ..registerLazySingleton<ICatalogRepository>(
-      () => CatalogRepository(
-        serviceLocator<LocalCatalogDataSource>(),
-        syncQueueRepository: serviceLocator<ISyncQueueRepository>(),
-        remoteSender: serviceLocator<ISyncRemoteSender>(),
-      ),
-    )
-    ..registerFactory<CatalogBloc>(
-      () => CatalogBloc(
-        repository: serviceLocator<ICatalogRepository>(),
-        auditLogRepository: serviceLocator<IAuditLogRepository>(),
-        remoteRefreshService: serviceLocator<AdminDataRefreshService>(),
-      ),
-    )
-    ..registerLazySingleton<LocalProductsDataSource>(
-      () => LocalProductsDataSource(serviceLocator<AppDatabase>()),
-    )
-    ..registerLazySingleton<IProductsRepository>(
-      () => ProductsRepository(
-        serviceLocator<LocalProductsDataSource>(),
-        syncQueueRepository: serviceLocator<ISyncQueueRepository>(),
-        remoteSender: serviceLocator<ISyncRemoteSender>(),
-      ),
-    )
-    ..registerFactory<ProductsBloc>(
-      () => ProductsBloc(
-        repository: serviceLocator<IProductsRepository>(),
-        auditLogRepository: serviceLocator<IAuditLogRepository>(),
-        remoteRefreshService: serviceLocator<AdminDataRefreshService>(),
-      ),
-    )
-    ..registerLazySingleton<LocalInventoryDataSource>(
-      () => LocalInventoryDataSource(serviceLocator<AppDatabase>()),
-    )
-    ..registerLazySingleton<IInventoryRepository>(
-      () => InventoryRepository(
-        serviceLocator<LocalInventoryDataSource>(),
-        syncQueueRepository: serviceLocator<ISyncQueueRepository>(),
-        remoteSender: serviceLocator<ISyncRemoteSender>(),
-      ),
-    )
-    ..registerLazySingleton<SupabaseInventoryAdminReadService>(
-      () => SupabaseInventoryAdminReadService(
-        config: serviceLocator<SupabaseAppConfig>(),
-        restaurantService: serviceLocator<CurrentRestaurantService>(),
-        remoteSessionService: serviceLocator<CurrentRemoteSessionService>(),
-        client: serviceLocator<http.Client>(),
-      ),
-    )
-    ..registerLazySingleton<LocalPackagingDataSource>(
-      () => LocalPackagingDataSource(serviceLocator<AppDatabase>()),
-    )
-    ..registerLazySingleton<IPackagingRepository>(
-      () => PackagingRepository(
-        serviceLocator<LocalPackagingDataSource>(),
-        syncQueueRepository: serviceLocator<ISyncQueueRepository>(),
-        remoteSender: serviceLocator<ISyncRemoteSender>(),
-      ),
-    )
-    ..registerLazySingleton<LocalModifiersDataSource>(
-      () => LocalModifiersDataSource(serviceLocator<AppDatabase>()),
-    )
-    ..registerLazySingleton<IModifiersRepository>(
-      () => ModifiersRepository(
-        serviceLocator<LocalModifiersDataSource>(),
-        syncQueueRepository: serviceLocator<ISyncQueueRepository>(),
-        remoteSender: serviceLocator<ISyncRemoteSender>(),
-      ),
-    )
-    ..registerFactory<ModifiersBloc>(
-      () => ModifiersBloc(
-        repository: serviceLocator<IModifiersRepository>(),
-        auditLogRepository: serviceLocator<IAuditLogRepository>(),
-        remoteRefreshService: serviceLocator<AdminDataRefreshService>(),
-      ),
-    )
-    ..registerLazySingleton<LocalPaymentMethodsDataSource>(
-      () => LocalPaymentMethodsDataSource(serviceLocator<AppDatabase>()),
-    )
-    ..registerLazySingleton<IPaymentMethodsRepository>(
-      () => PaymentMethodsRepository(
-        serviceLocator<LocalPaymentMethodsDataSource>(),
-        syncQueueRepository: serviceLocator<ISyncQueueRepository>(),
-        remoteSender: serviceLocator<ISyncRemoteSender>(),
-      ),
-    )
-    ..registerFactory<PaymentMethodsBloc>(
-      () => PaymentMethodsBloc(
-        repository: serviceLocator<IPaymentMethodsRepository>(),
-        auditLogRepository: serviceLocator<IAuditLogRepository>(),
-        remoteRefreshService: serviceLocator<AdminDataRefreshService>(),
-      ),
-    )
-    ..registerLazySingleton<LocalTablesDataSource>(
-      () => LocalTablesDataSource(serviceLocator<AppDatabase>()),
-    )
-    ..registerLazySingleton<ITablesRepository>(
-      () => TablesRepository(
-        serviceLocator<LocalTablesDataSource>(),
-        syncQueueRepository: serviceLocator<ISyncQueueRepository>(),
-        remoteSender: serviceLocator<ISyncRemoteSender>(),
-      ),
-    )
-    ..registerFactory<TablesBloc>(
-      () => TablesBloc(
-        repository: serviceLocator<ITablesRepository>(),
-        auditLogRepository: serviceLocator<IAuditLogRepository>(),
-        remoteRefreshService: serviceLocator<AdminDataRefreshService>(),
-      ),
-    )
-    ..registerLazySingleton<LocalCashRegisterDataSource>(
-      () => LocalCashRegisterDataSource(serviceLocator<AppDatabase>()),
-    )
-    ..registerLazySingleton<ICashRegisterRepository>(
-      () => CashRegisterRepository(
-        serviceLocator<LocalCashRegisterDataSource>(),
-        syncQueueRepository: serviceLocator<ISyncQueueRepository>(),
-      ),
-    )
-    ..registerFactory<CashRegisterBloc>(
-      () => CashRegisterBloc(
-        repository: serviceLocator<ICashRegisterRepository>(),
-        auditLogRepository: serviceLocator<IAuditLogRepository>(),
-      ),
-    )
-    ..registerLazySingleton<LocalExpensesDataSource>(
-      () => LocalExpensesDataSource(serviceLocator<AppDatabase>()),
-    )
-    ..registerLazySingleton<IExpensesRepository>(
-      () => ExpensesRepository(
-        serviceLocator<LocalExpensesDataSource>(),
-        syncQueueRepository: serviceLocator<ISyncQueueRepository>(),
-        remoteSender: serviceLocator<ISyncRemoteSender>(),
-      ),
-    )
-    ..registerFactory<ExpensesBloc>(
-      () => ExpensesBloc(
-        repository: serviceLocator<IExpensesRepository>(),
-        auditLogRepository: serviceLocator<IAuditLogRepository>(),
-        remoteRefreshService: serviceLocator<AdminDataRefreshService>(),
-      ),
-    )
-    ..registerLazySingleton<LocalExchangeRateDataSource>(
-      () => LocalExchangeRateDataSource(serviceLocator<AppDatabase>()),
-    )
-    ..registerLazySingleton<IExchangeRateRepository>(
-      () => ExchangeRateRepository(
-        serviceLocator<LocalExchangeRateDataSource>(),
-        syncQueueRepository: serviceLocator<ISyncQueueRepository>(),
-        remoteSender: serviceLocator<ISyncRemoteSender>(),
-      ),
-    )
-    ..registerLazySingleton<ReportSummaryService>(
-      () => ReportSummaryService(
-        cashRegisterRepository: serviceLocator<ICashRegisterRepository>(),
-        salesRepository: serviceLocator<ISalesRepository>(),
-        expensesRepository: serviceLocator<IExpensesRepository>(),
-        remoteReportSummaryService:
-            serviceLocator<IRemoteReportSummaryService>(),
-      ),
-    )
-    ..registerLazySingleton<IRemoteReportSummaryService>(
-      () => SupabaseReportSummaryService(
-        config: serviceLocator<SupabaseAppConfig>(),
-        restaurantService: serviceLocator<CurrentRestaurantService>(),
-        remoteSessionService: serviceLocator<CurrentRemoteSessionService>(),
-        client: serviceLocator<http.Client>(),
-      ),
-    )
-    ..registerFactory<ReportsBloc>(
-      () => ReportsBloc(serviceLocator<ReportSummaryService>()),
-    )
-    ..registerLazySingleton<LocalBusinessSettingsDataSource>(
-      () => LocalBusinessSettingsDataSource(serviceLocator<AppDatabase>()),
-    )
-    ..registerLazySingleton<IBusinessSettingsRepository>(
-      () => BusinessSettingsRepository(
-        serviceLocator<LocalBusinessSettingsDataSource>(),
-        syncQueueRepository: serviceLocator<ISyncQueueRepository>(),
-        remoteSender: serviceLocator<ISyncRemoteSender>(),
-      ),
-    )
-    ..registerFactory<BusinessSettingsBloc>(
-      () => BusinessSettingsBloc(
-        repository: serviceLocator<IBusinessSettingsRepository>(),
-        auditLogRepository: serviceLocator<IAuditLogRepository>(),
-        remoteRefreshService: serviceLocator<AdminDataRefreshService>(),
-      ),
-    )
-    ..registerLazySingleton<LocalRolesDataSource>(
-      () => LocalRolesDataSource(serviceLocator<AppDatabase>()),
-    )
-    ..registerLazySingleton<IRolesRepository>(
-      () => RolesRepository(
-        serviceLocator<LocalRolesDataSource>(),
-        syncQueueRepository: serviceLocator<ISyncQueueRepository>(),
-        remoteSender: serviceLocator<ISyncRemoteSender>(),
-      ),
-    )
-    ..registerLazySingleton<AccessControlService>(
-      () => AccessControlService(serviceLocator<IRolesRepository>()),
-    )
-    ..registerLazySingleton<AccessSeedService>(
-      () => AccessSeedService(serviceLocator<IRolesRepository>()),
-    )
-    ..registerFactory<RolesBloc>(
-      () => RolesBloc(
-        repository: serviceLocator<IRolesRepository>(),
-        seedService: serviceLocator<AccessSeedService>(),
-        auditLogRepository: serviceLocator<IAuditLogRepository>(),
-        remoteRefreshService: serviceLocator<AdminDataRefreshService>(),
-      ),
-    )
-    ..registerLazySingleton<LocalUsersDataSource>(
-      () => LocalUsersDataSource(serviceLocator<AppDatabase>()),
-    )
-    ..registerLazySingleton<IUsersRepository>(
-      () => UsersRepository(
-        serviceLocator<LocalUsersDataSource>(),
-        syncQueueRepository: serviceLocator<ISyncQueueRepository>(),
-        remoteSender: serviceLocator<ISyncRemoteSender>(),
-      ),
-    )
-    ..registerFactory<UsersBloc>(
-      () => UsersBloc(
-        usersRepository: serviceLocator<IUsersRepository>(),
-        rolesRepository: serviceLocator<IRolesRepository>(),
-        seedService: serviceLocator<AccessSeedService>(),
-        auditLogRepository: serviceLocator<IAuditLogRepository>(),
-        remoteRefreshService: serviceLocator<AdminDataRefreshService>(),
-      ),
-    )
-    ..registerLazySingleton<LocalAuditLogDataSource>(
-      () => LocalAuditLogDataSource(serviceLocator<AppDatabase>()),
-    )
-    ..registerLazySingleton<IAuditLogRepository>(
-      () => AuditLogRepository(
-        serviceLocator<LocalAuditLogDataSource>(),
-        syncQueueRepository: serviceLocator<ISyncQueueRepository>(),
-      ),
-    )
-    ..registerFactory<AuditLogBloc>(
-      () => AuditLogBloc(serviceLocator<IAuditLogRepository>()),
-    )
-    ..registerLazySingleton<SaleInvoicePdfService>(SaleInvoicePdfService.new)
-    ..registerLazySingleton<PilotOperationResetService>(
-      () => PilotOperationResetService(
-        database: serviceLocator<AppDatabase>(),
-        config: serviceLocator<SupabaseAppConfig>(),
-        restaurantService: serviceLocator<CurrentRestaurantService>(),
-        remoteSessionService: serviceLocator<CurrentRemoteSessionService>(),
-        client: serviceLocator<http.Client>(),
-      ),
-    )
-    ..registerLazySingleton<LocalSalesDataSource>(
-      () => LocalSalesDataSource(
-        serviceLocator<AppDatabase>(),
-        inventoryDataSource: serviceLocator<LocalInventoryDataSource>(),
-        packagingDataSource: serviceLocator<LocalPackagingDataSource>(),
-      ),
-    )
-    ..registerLazySingleton<ISalesRepository>(
-      () => SalesRepository(
-        serviceLocator<LocalSalesDataSource>(),
-        syncQueueRepository: serviceLocator<ISyncQueueRepository>(),
-        inventoryDataSource: serviceLocator<LocalInventoryDataSource>(),
-        packagingDataSource: serviceLocator<LocalPackagingDataSource>(),
-        currentOperatorService: serviceLocator<CurrentOperatorService>(),
-      ),
-    )
-    ..registerLazySingleton<SupabaseSalesAdminRepository>(
-      () => SupabaseSalesAdminRepository(
-        config: serviceLocator<SupabaseAppConfig>(),
-        restaurantService: serviceLocator<CurrentRestaurantService>(),
-        remoteSessionService: serviceLocator<CurrentRemoteSessionService>(),
-        client: serviceLocator<http.Client>(),
-      ),
-    )
-    ..registerFactory<SalesBloc>(
-      () => SalesBloc(
-        repository: serviceLocator<SupabaseSalesAdminRepository>(),
-        auditLogRepository: serviceLocator<IAuditLogRepository>(),
-      ),
-    )
-    ..registerLazySingleton<LocalSyncQueueDataSource>(
-      () => LocalSyncQueueDataSource(serviceLocator<AppDatabase>()),
-    )
-    ..registerLazySingleton<LocalSyncSettingsDataSource>(
-      () => LocalSyncSettingsDataSource(serviceLocator<AppDatabase>()),
-    )
-    ..registerLazySingleton<ISyncSettingsRepository>(
-      () => SyncSettingsRepository(
-        serviceLocator<LocalSyncSettingsDataSource>(),
-      ),
-    )
-    ..registerLazySingleton<ISyncRemoteSender>(
-      () => SupabaseSyncRemoteSender(
-        database: serviceLocator<AppDatabase>(),
-        config: serviceLocator<SupabaseAppConfig>(),
-        restaurantService: serviceLocator<CurrentRestaurantService>(),
-        remoteSessionService: serviceLocator<CurrentRemoteSessionService>(),
-        client: serviceLocator<http.Client>(),
-      ),
-    )
-    ..registerLazySingleton<SupabaseCatalogPullService>(
-      () => SupabaseCatalogPullService(
-        database: serviceLocator<AppDatabase>(),
-        config: serviceLocator<SupabaseAppConfig>(),
-        restaurantService: serviceLocator<CurrentRestaurantService>(),
-        remoteSessionService: serviceLocator<CurrentRemoteSessionService>(),
-        client: serviceLocator<http.Client>(),
-      ),
-    )
-    ..registerLazySingleton<ICatalogPullService>(
-      serviceLocator.get<SupabaseCatalogPullService>,
-    )
-    ..registerLazySingleton<RemoteBootstrapAuthService>(
-      () => RemoteBootstrapAuthService(
-        config: serviceLocator<SupabaseAppConfig>(),
-        restaurantService: serviceLocator<CurrentRestaurantService>(),
-        remoteSessionService: serviceLocator<CurrentRemoteSessionService>(),
-        client: serviceLocator<http.Client>(),
-      ),
-    )
-    ..registerLazySingleton<DeviceInitializationService>(
-      () => DeviceInitializationService(
-        database: serviceLocator<AppDatabase>(),
-        config: serviceLocator<SupabaseAppConfig>(),
-        restaurantService: serviceLocator<CurrentRestaurantService>(),
-        remoteAuthService: serviceLocator<RemoteBootstrapAuthService>(),
-        catalogPullService: serviceLocator<SupabaseCatalogPullService>(),
-      ),
-    )
-    ..registerLazySingleton<AdminDataRefreshService>(
-      () => AdminDataRefreshService(serviceLocator<ICatalogPullService>()),
-    )
-    ..registerLazySingleton<ISyncQueueRepository>(
-      () => SyncQueueRepository(
-        serviceLocator<LocalSyncQueueDataSource>(),
-        remoteSender: serviceLocator<ISyncRemoteSender>(),
-        settingsRepository: serviceLocator<ISyncSettingsRepository>(),
-      ),
-    )
-    ..registerLazySingleton<SyncQueueProcessor>(
-      () => SyncQueueProcessor(
-        repository: serviceLocator<ISyncQueueRepository>(),
-        remoteSender: serviceLocator<ISyncRemoteSender>(),
-      ),
-    )
-    ..registerLazySingleton<SyncSchedulerService>(
-      () => SyncSchedulerService(
-        settingsRepository: serviceLocator<ISyncSettingsRepository>(),
-        processor: serviceLocator<SyncQueueProcessor>(),
-      ),
-      dispose: (scheduler) => scheduler.dispose(),
-    )
-    ..registerFactory<SyncBloc>(
-      () => SyncBloc(
-        repository: serviceLocator<ISyncQueueRepository>(),
-        settingsRepository: serviceLocator<ISyncSettingsRepository>(),
-        processor: serviceLocator<SyncQueueProcessor>(),
-        scheduler: serviceLocator<SyncSchedulerService>(),
-      ),
-    );
+  _registerCoreDependencies();
+  _registerCatalogDependencies();
+  _registerOperationsDependencies();
+  _registerSettingsAndAdminDependencies();
+  _registerSalesAndSyncDependencies();
 
   registerAuthDependencies(serviceLocator);
   registerPosDependencies(serviceLocator);

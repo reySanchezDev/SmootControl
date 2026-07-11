@@ -55,3 +55,36 @@ class LocalPosOrderContexts extends Table {
   @override
   Set<Column<Object>> get primaryKey => {orderKey};
 }
+
+/// Local-only visual product ordering preferences for the POS grid.
+class LocalPosProductOrderPreferences extends Table {
+  /// Category where the order applies.
+  TextColumn get categoryId => text()();
+
+  /// Product shown in the category.
+  TextColumn get productId => text()();
+
+  /// Visual order inside the category.
+  IntColumn get displayOrder => integer()();
+
+  /// Last local update timestamp.
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {categoryId, productId};
+}
+
+/// Local-only visual table ordering preferences for the POS table band.
+class LocalPosTableOrderPreferences extends Table {
+  /// Physical table shown in the POS band.
+  TextColumn get tableId => text()();
+
+  /// Visual order selected by the POS operator.
+  IntColumn get displayOrder => integer()();
+
+  /// Last local update timestamp.
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {tableId};
+}

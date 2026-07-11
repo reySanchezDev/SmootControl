@@ -30,6 +30,7 @@ class _CreateExpenseCategoryDialogState
     extends State<CreateExpenseCategoryDialog> {
   final _nameController = TextEditingController();
   bool _isActive = true;
+  bool _includeInGrossProfitCoverage = false;
   String? _error;
   String? _parentId;
 
@@ -43,6 +44,7 @@ class _CreateExpenseCategoryDialogState
 
     _nameController.text = category.name;
     _isActive = category.isActive;
+    _includeInGrossProfitCoverage = category.includeInGrossProfitCoverage;
     _parentId = category.parentId;
   }
 
@@ -83,7 +85,12 @@ class _CreateExpenseCategoryDialogState
                     child: AppText(category.name),
                   ),
               ],
-              onChanged: (value) => setState(() => _parentId = value),
+              onChanged: (value) => setState(() {
+                _parentId = value;
+                if (_parentId != null) {
+                  _includeInGrossProfitCoverage = false;
+                }
+              }),
             ),
             const SizedBox(height: 8),
             CheckboxListTile(
@@ -92,6 +99,20 @@ class _CreateExpenseCategoryDialogState
               value: _isActive,
               onChanged: (value) => setState(() => _isActive = value ?? true),
             ),
+            if (_parentId == null)
+              CheckboxListTile(
+                contentPadding: EdgeInsets.zero,
+                title: AppText(l10n.expenseCategoryCoverageField),
+                subtitle: AppText(
+                  l10n.expenseCategoryCoverageHelp,
+                  maxLines: 3,
+                  variant: AppTextVariant.label,
+                ),
+                value: _includeInGrossProfitCoverage,
+                onChanged: (value) => setState(
+                  () => _includeInGrossProfitCoverage = value ?? false,
+                ),
+              ),
             if (_error != null) AppText(_error!, maxLines: 2),
           ],
         ),
@@ -122,6 +143,8 @@ class _CreateExpenseCategoryDialogState
         name: name,
         parentId: _parentId,
         isActive: _isActive,
+        includeInGrossProfitCoverage:
+            _parentId == null && _includeInGrossProfitCoverage,
       ),
     );
   }

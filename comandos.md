@@ -15,6 +15,66 @@ powershell -ExecutionPolicy Bypass -File .\tool\build_web_release.ps1
 Este script genera `build\web`, compila `web\drift_worker.dart` y copia los
 assets necesarios de Drift/SQLite (`sqlite3.wasm` y `drift_worker.js`).
 
+## Reconstruir El APK Release Correctamente
+
+Antes de construir un APK que se va a instalar en tablet/telefono, subir el
+`versionCode` en `pubspec.yaml`:
+
+```yaml
+version: 0.1.18+23
+```
+
+Luego construir solo con:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\tool\build_android_release.ps1
+```
+
+Salida esperada:
+
+```text
+release\SmooControl-produccion.apk
+release\SmooControl-produccion.buildinfo.txt
+```
+
+No usar para APK entregable:
+
+```powershell
+flutter build apk --release
+```
+
+Ese comando directo no inyecta `SMOO_SUPABASE_URL`,
+`SMOO_SUPABASE_PUBLISHABLE_KEY` ni `SMOO_RESTAURANT_ID`. El APK puede abrir,
+pero falla login/inicializacion con mensajes como:
+
+```text
+Supabase no esta configurado para inicializar este dispositivo.
+```
+
+Validar despues del build:
+
+```powershell
+$aapt = Get-ChildItem -Path "$env:LOCALAPPDATA\Android\Sdk\build-tools" `
+  -Recurse -Filter aapt.exe |
+  Sort-Object FullName -Descending |
+  Select-Object -First 1
+
+& $aapt.FullName dump permissions release\SmooControl-produccion.apk
+& $aapt.FullName dump badging release\SmooControl-produccion.apk |
+  Select-String -Pattern "package:|application-label:"
+Get-Content release\SmooControl-produccion.buildinfo.txt
+```
+
+Debe verse `InternetPermission=PRESENTE` y:
+
+```text
+InjectedDartDefines=SMOO_SUPABASE_URL,SMOO_SUPABASE_PUBLISHABLE_KEY,SMOO_RESTAURANT_ID
+SqliteNativeLibrary=PRESENTE
+```
+
+Tambien deben existir entradas `libsqlite3.so` dentro del APK. Si faltan, no
+instalar ese APK porque puede fallar Drift/SQLite en Android.
+
 ## Enlistar Instancias Levantadas
 
 Ver que proceso esta escuchando en el puerto 8080:

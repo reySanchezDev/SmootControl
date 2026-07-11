@@ -32,6 +32,8 @@ class PosCatalogPanel extends StatelessWidget {
     return PosMenuGrid(
       canAddProducts: state.selectedTableId != null,
       categories: categories,
+      categoryId: activeCategoryId,
+      productOrderByProductId: state.productOrderByProductId,
       products: products,
     );
   }
@@ -61,9 +63,12 @@ class PosCatalogPanel extends StatelessWidget {
     final visibleProducts = state.products.where(_isVisibleProduct).toList();
     if (state.categories.isEmpty) return visibleProducts;
     if (categoryId == null) return const [];
-    return visibleProducts
-        .where((product) => product.categoryId == categoryId)
-        .toList();
+    final products =
+        visibleProducts
+            .where((product) => product.categoryId == categoryId)
+            .toList()
+          ..sort(_compareProducts);
+    return products;
   }
 
   bool _isVisibleProduct(Product product) {
@@ -75,5 +80,19 @@ class PosCatalogPanel extends StatelessWidget {
       if (category.id == id) return category;
     }
     return null;
+  }
+
+  int _compareProducts(Product first, Product second) {
+    final firstOrder = state.productOrderByProductId[first.id];
+    final secondOrder = state.productOrderByProductId[second.id];
+    if (firstOrder != null && secondOrder != null) {
+      final order = firstOrder.compareTo(secondOrder);
+      if (order != 0) return order;
+    } else if (firstOrder != null) {
+      return -1;
+    } else if (secondOrder != null) {
+      return 1;
+    }
+    return first.name.compareTo(second.name);
   }
 }

@@ -78,6 +78,7 @@ class SyncQueueTile extends StatelessWidget {
       'permissions' || 'role_permissions' => l10n.permissionsSection,
       'profiles' => l10n.moduleUsers,
       'audit_logs' => l10n.moduleAudit,
+      'salary_advances' => 'Adelantos de salario',
       _ => l10n.moduleSync,
     };
   }

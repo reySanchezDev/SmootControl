@@ -37,7 +37,11 @@ final class SupabaseInventoryAdminReadService {
         'restaurant_id': 'eq.${_restaurantService.restaurantId}',
         'tracks_inventory': 'eq.true',
         'is_active': 'eq.true',
-        'select': 'id,name',
+        'select': 'id,name,cost,category_id',
+      });
+      final categories = await _getRows('product_categories', {
+        'restaurant_id': 'eq.${_restaurantService.restaurantId}',
+        'select': 'id,parent_id,name',
       });
       final stockRows = await _getRows('inventory_stock', {
         'restaurant_id': 'eq.${_restaurantService.restaurantId}',
@@ -46,15 +50,23 @@ final class SupabaseInventoryAdminReadService {
       final stockByProduct = {
         for (final row in stockRows) _text(row['product_id']): row,
       };
+      final categoriesById = {
+        for (final row in categories) _text(row['id']): row,
+      };
 
       final items = <InventoryStockItem>[];
       for (final product in products) {
         final productId = _text(product['id']);
         final stock = stockByProduct[productId];
+        final categoryId = _text(product['category_id']);
+        final categoryPath = _categoryPath(categoryId, categoriesById);
         items.add(
           InventoryStockItem(
             productId: productId,
             productName: _text(product['name'], fallback: 'Producto'),
+            categoryName: categoryPath.isEmpty ? null : categoryPath.last,
+            categoryPath: categoryPath.join(' / '),
+            costInCents: _moneyToCents(product['cost']),
             quantityOnHand: _int(stock?['quantity_on_hand']),
             updatedAt: _date(stock?['updated_at']),
           ),
@@ -82,7 +94,7 @@ final class SupabaseInventoryAdminReadService {
         'restaurant_id': 'eq.${_restaurantService.restaurantId}',
         'tracks_stock': 'eq.true',
         'is_active': 'eq.true',
-        'select': 'id,name',
+        'select': 'id,name,cost',
       });
       final stockRows = await _getRows('packaging_stock', {
         'restaurant_id': 'eq.${_restaurantService.restaurantId}',
@@ -100,6 +112,7 @@ final class SupabaseInventoryAdminReadService {
           PackagingStockItem(
             packagingItemId: packagingItemId,
             packagingName: _text(packaging['name'], fallback: 'Empaque'),
+            costInCents: _moneyToCents(packaging['cost']),
             quantityOnHand: _int(stock?['quantity_on_hand']),
             updatedAt: _date(stock?['updated_at']),
           ),
@@ -162,6 +175,31 @@ final class SupabaseInventoryAdminReadService {
     if (value is int) return value;
     if (value is num) return value.round();
     return int.tryParse(value?.toString() ?? '') ?? 0;
+  }
+
+  int _moneyToCents(Object? value) {
+    if (value is int) return value * 100;
+    if (value is num) return (value * 100).round();
+    final text = value?.toString();
+    if (text == null || text.isEmpty) return 0;
+    return ((num.tryParse(text) ?? 0) * 100).round();
+  }
+
+  List<String> _categoryPath(
+    String categoryId,
+    Map<String, Map<String, Object?>> categoriesById,
+  ) {
+    final path = <String>[];
+    var currentId = categoryId;
+    final visited = <String>{};
+    while (currentId.isNotEmpty && visited.add(currentId)) {
+      final row = categoriesById[currentId];
+      if (row == null) break;
+      final name = _text(row['name']);
+      if (name.isNotEmpty) path.insert(0, name);
+      currentId = _text(row['parent_id']);
+    }
+    return path;
   }
 
   DateTime _date(Object? value) {

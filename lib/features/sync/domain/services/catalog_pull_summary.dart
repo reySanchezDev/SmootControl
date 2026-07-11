@@ -20,6 +20,8 @@ final class CatalogPullSummary {
     required this.tables,
     required this.users,
     this.cashRegisterSessions = 0,
+    this.businessRules = 0,
+    this.employees = 0,
     this.inventoryStock = 0,
   });
 
@@ -42,6 +44,8 @@ final class CatalogPullSummary {
       rolePermissions = 0,
       roles = 0,
       cashRegisterSessions = 0,
+      businessRules = 0,
+      employees = 0,
       tables = 0,
       users = 0;
 
@@ -96,6 +100,12 @@ final class CatalogPullSummary {
   /// Cash register sessions updated locally.
   final int cashRegisterSessions;
 
+  /// Business rules updated locally.
+  final int businessRules;
+
+  /// Employee rows updated locally.
+  final int employees;
+
   /// Restaurant tables updated locally.
   final int tables;
 
@@ -121,6 +131,8 @@ final class CatalogPullSummary {
         rolePermissions +
         roles +
         cashRegisterSessions +
+        businessRules +
+        employees +
         tables +
         users;
   }

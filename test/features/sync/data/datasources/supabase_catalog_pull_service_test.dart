@@ -309,6 +309,72 @@ void main() {
         );
       },
     );
+
+    test(
+      'does not lower local invoice counter below pending local sales',
+      () async {
+        final now = DateTime(2026, 7, 8, 14, 55);
+        await database
+            .into(database.localBusinessSettings)
+            .insert(
+              LocalBusinessSettingsCompanion.insert(
+                id: 'default',
+                businessName: 'Smoo Test',
+                invoicePrefix: const Value('F'),
+                initialInvoiceNumber: const Value(1),
+                nextInvoiceNumber: const Value(37),
+                createdAt: now,
+                updatedAt: now,
+              ),
+            );
+        await database
+            .into(database.localSales)
+            .insert(
+              LocalSalesCompanion.insert(
+                id: 'sale-local-f36',
+                invoiceNumber: 'F-36',
+                paymentMethodId: 'payment-cash',
+                subtotalInCents: 17000,
+                totalInCents: 17000,
+                syncStatus: const Value('error'),
+                createdAt: now,
+                updatedAt: now,
+              ),
+            );
+        final service = SupabaseCatalogPullService(
+          database: database,
+          config: const SupabaseAppConfig(
+            supabaseUrl: 'https://smoo.test',
+            publishableKey: 'publishable-key',
+          ),
+          restaurantService: const CurrentRestaurantService(
+            restaurantId: 'restaurant-1',
+          ),
+          remoteSessionService: _remoteSession(),
+          client: _catalogMockClient(
+            overrides: {
+              'invoice_number_settings': [
+                {
+                  'id': 'invoice-settings-1',
+                  'restaurant_id': 'restaurant-1',
+                  'prefix': 'F',
+                  'initial_number': 1,
+                  'next_number': 36,
+                },
+              ],
+            },
+          ),
+        );
+
+        await service.pullScopes({CatalogPullScope.businessSettings});
+
+        final settings = await database
+            .select(database.localBusinessSettings)
+            .getSingle();
+        expect(settings.nextInvoiceNumber, 37);
+      },
+    );
+
     test(
       'preserves pending local inventory deltas when stock is downloaded',
       () async {
@@ -421,6 +487,7 @@ void main() {
                   'parent_id': null,
                   'name': 'Gasto nuevo',
                   'is_active': true,
+                  'include_in_gross_profit_coverage': true,
                 },
               ],
             },
@@ -456,6 +523,54 @@ void main() {
           expenseRows.singleWhere((row) => row.id == 'expense-new').isActive,
           isTrue,
         );
+        expect(
+          expenseRows
+              .singleWhere((row) => row.id == 'expense-new')
+              .includeInGrossProfitCoverage,
+          isTrue,
+        );
+      },
+    );
+
+    test(
+      'deactivates every stale local expense category when remote is empty',
+      () async {
+        final now = DateTime(2026, 7, 9, 12);
+        await database
+            .into(database.localExpenseCategories)
+            .insert(
+              LocalExpenseCategoriesCompanion.insert(
+                id: 'expense-old',
+                name: 'Adelantos de salario',
+                createdAt: now,
+                updatedAt: now,
+              ),
+            );
+        final service = SupabaseCatalogPullService(
+          database: database,
+          config: const SupabaseAppConfig(
+            supabaseUrl: 'https://smoo.test',
+            publishableKey: 'publishable-key',
+          ),
+          restaurantService: const CurrentRestaurantService(
+            restaurantId: 'restaurant-1',
+          ),
+          remoteSessionService: _remoteSession(),
+          client: _catalogMockClient(
+            overrides: const {'expense_categories': []},
+          ),
+        );
+
+        final summary = await service.pullScopes({
+          CatalogPullScope.expenseCategories,
+        });
+
+        expect(summary.expenseCategories, 0);
+        final rows = await database
+            .select(database.localExpenseCategories)
+            .get();
+        expect(rows.single.id, 'expense-old');
+        expect(rows.single.isActive, isFalse);
       },
     );
 
@@ -715,6 +830,7 @@ final _rowsByTable = <String, List<Map<String, Object?>>>{
       'parent_id': null,
       'name': 'Administrativos',
       'is_active': true,
+      'include_in_gross_profit_coverage': false,
     },
   ],
   'exchange_rates': [

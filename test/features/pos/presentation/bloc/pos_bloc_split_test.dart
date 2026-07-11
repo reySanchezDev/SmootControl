@@ -23,6 +23,7 @@ import 'package:smoo_control/features/packaging/domain/entities/sales_type.dart'
 import 'package:smoo_control/features/packaging/domain/repositories/i_packaging_repository.dart';
 import 'package:smoo_control/features/payment_methods/domain/entities/payment_method.dart';
 import 'package:smoo_control/features/payment_methods/domain/repositories/i_payment_methods_repository.dart';
+import 'package:smoo_control/features/pos/data/datasources/local_pos_product_order_datasource.dart';
 import 'package:smoo_control/features/pos/domain/entities/account_split_draft.dart';
 import 'package:smoo_control/features/pos/domain/entities/pos_cart_line.dart';
 import 'package:smoo_control/features/pos/domain/entities/pos_open_ticket_line.dart';
@@ -267,5 +268,6 @@ PosBloc _buildBloc() {
     auditLogRepository: _AuditLogFake(),
     currentOperatorService: const CurrentOperatorService(),
     openTicketRepository: _PosOpenTicketFake(),
+    productOrderDataSource: _ProductOrderDataSourceFake(),
   );
 }

@@ -13,10 +13,12 @@ import 'package:smoo_control/features/packaging/presentation/pages/packaging_pag
 import 'package:smoo_control/features/payment_methods/presentation/pages/payment_methods_page.dart';
 import 'package:smoo_control/features/pos/presentation/pages/pos_page.dart';
 import 'package:smoo_control/features/products/presentation/pages/products_page.dart';
+import 'package:smoo_control/features/reports/presentation/pages/inventory_value_report_page.dart';
 import 'package:smoo_control/features/reports/presentation/pages/reports_page.dart';
 import 'package:smoo_control/features/roles/presentation/pages/roles_page.dart';
 import 'package:smoo_control/features/sales/presentation/pages/sales_page.dart';
 import 'package:smoo_control/features/settings/presentation/pages/settings_page.dart';
+import 'package:smoo_control/features/staff/presentation/pages/staff_admin_pages.dart';
 import 'package:smoo_control/features/sync/presentation/pages/sync_page.dart';
 import 'package:smoo_control/features/system/presentation/pages/pilot_operation_reset_page.dart';
 import 'package:smoo_control/features/tables/presentation/pages/tables_page.dart';
@@ -35,6 +37,10 @@ Widget _guardedPage(String? routeName) {
     AppRoutes.dashboard || null => const DashboardPage(),
     AppRoutes.pos => const PosPage(),
     AppRoutes.reports => const ReportsPage(),
+    AppRoutes.reportSummary => const ReportSummaryPage(),
+    AppRoutes.dailySalesReport => const DailySalesReportPage(),
+    AppRoutes.expensesReport => const ExpensesReportPage(),
+    AppRoutes.inventoryValueReport => const InventoryValueReportPage(),
     AppRoutes.catalog => const CatalogPage(),
     AppRoutes.products => const ProductsPage(),
     AppRoutes.inventory => const InventoryPage(),
@@ -49,6 +55,12 @@ Widget _guardedPage(String? routeName) {
     AppRoutes.roles => const RolesPage(),
     AppRoutes.users => const UsersPage(),
     AppRoutes.audit => const AuditLogPage(),
+    AppRoutes.staff => const StaffPage(),
+    AppRoutes.staffPositions => const StaffPositionsPage(),
+    AppRoutes.staffConsumptions => const StaffConsumptionsPage(),
+    AppRoutes.salaryAdvances => const SalaryAdvancesPage(),
+    AppRoutes.payroll => const PayrollPage(),
+    AppRoutes.businessRules => const BusinessRulesPage(),
     AppRoutes.sync => const SyncPage(),
     AppRoutes.systemMaintenance => const PilotOperationResetPage(),
     _ => const DashboardPage(),
@@ -78,8 +90,18 @@ bool _requiresOnlineAdmin(String? routeName) {
     AppRoutes.roles ||
     AppRoutes.users ||
     AppRoutes.audit ||
+    AppRoutes.staff ||
+    AppRoutes.staffPositions ||
+    AppRoutes.staffConsumptions ||
+    AppRoutes.salaryAdvances ||
+    AppRoutes.payroll ||
+    AppRoutes.businessRules ||
     AppRoutes.systemMaintenance ||
-    AppRoutes.reports => true,
+    AppRoutes.reports ||
+    AppRoutes.reportSummary ||
+    AppRoutes.dailySalesReport ||
+    AppRoutes.expensesReport ||
+    AppRoutes.inventoryValueReport => true,
     _ => false,
   };
 }

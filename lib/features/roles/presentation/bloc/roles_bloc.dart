@@ -7,7 +7,6 @@ import 'package:smoo_control/features/roles/domain/repositories/i_roles_reposito
 import 'package:smoo_control/features/roles/domain/services/access_seed_service.dart';
 import 'package:smoo_control/features/roles/presentation/bloc/roles_event.dart';
 import 'package:smoo_control/features/roles/presentation/bloc/roles_state.dart';
-import 'package:smoo_control/features/sync/domain/services/admin_data_refresh_service.dart';
 import 'package:uuid/uuid.dart';
 
 /// BLoC for roles and permissions.
@@ -17,12 +16,12 @@ final class RolesBloc extends Bloc<RolesEvent, RolesState> {
     required IRolesRepository repository,
     required AccessSeedService seedService,
     required IAuditLogRepository auditLogRepository,
-    AdminDataRefreshService? remoteRefreshService,
+    bool seedDefaults = true,
     Uuid uuid = const Uuid(),
   }) : _repository = repository,
        _seedService = seedService,
        _auditLogRepository = auditLogRepository,
-       _remoteRefreshService = remoteRefreshService,
+       _seedDefaults = seedDefaults,
        _uuid = uuid,
        super(const RolesInitial()) {
     on<RolesLoadRequested>(_onLoadRequested);
@@ -32,7 +31,7 @@ final class RolesBloc extends Bloc<RolesEvent, RolesState> {
   final IRolesRepository _repository;
   final AccessSeedService _seedService;
   final IAuditLogRepository _auditLogRepository;
-  final AdminDataRefreshService? _remoteRefreshService;
+  final bool _seedDefaults;
   final Uuid _uuid;
 
   Future<void> _onLoadRequested(
@@ -84,12 +83,12 @@ final class RolesBloc extends Bloc<RolesEvent, RolesState> {
   }
 
   Future<void> _load(Emitter<RolesState> emit) async {
-    if (!await _refreshRemoteCache(emit)) return;
-
-    final seedResult = await _seedService.ensureSeeded();
-    if (seedResult case AppFailureResult(:final error)) {
-      emit(RolesFailure(error));
-      return;
+    if (_seedDefaults) {
+      final seedResult = await _seedService.ensureSeeded();
+      if (seedResult case AppFailureResult(:final error)) {
+        emit(RolesFailure(error));
+        return;
+      }
     }
 
     final rolesResult = await _repository.getRoles();
@@ -122,14 +121,5 @@ final class RolesBloc extends Bloc<RolesEvent, RolesState> {
       case (_, AppFailureResult(:final error)):
         emit(RolesFailure(error));
     }
-  }
-
-  Future<bool> _refreshRemoteCache(Emitter<RolesState> emit) async {
-    final result = await _remoteRefreshService?.refreshAccessControl();
-    if (result case AppFailureResult(:final error)) {
-      emit(RolesFailure(error));
-      return false;
-    }
-    return true;
   }
 }

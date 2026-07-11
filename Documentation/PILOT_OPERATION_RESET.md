@@ -38,6 +38,30 @@ La limpieza remota se ejecuta mediante la funcion Supabase
 permiso antes de borrar datos. Luego la app limpia su copia local para que el
 POS quede alineado.
 
+## Limpieza Modular
+
+La pantalla `Utilidades` tambien permite limpiar modulos por separado durante
+preproduccion:
+
+- ventas POS;
+- gastos;
+- consumos de personal;
+- adelantos;
+- planilla;
+- personal operativo, que agrupa planilla, consumos y adelantos.
+
+Estas acciones conservan catalogos, empleados, puestos, usuarios, roles,
+permisos y configuracion. Cada accion exige una confirmacion exacta propia.
+
+Por seguridad, cada limpieza modular ejecutada desde el movil hace primero la
+limpieza local y borra la cola de sincronizacion relacionada. Despues llama a
+Supabase para limpiar el remoto. Este orden evita que el dispositivo vuelva a
+enviar datos de prueba que ya se decidieron borrar.
+
+La limpieza remota modular se ejecuta mediante la funcion Supabase
+`reset_pilot_operation_scope`, que valida restaurante, sesion administrativa y
+permiso antes de borrar datos.
+
 ## Uso
 
 Entrar como administrador remoto y abrir:

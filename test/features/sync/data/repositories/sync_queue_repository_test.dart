@@ -298,6 +298,71 @@ void main() {
         await _waitForQueueStatus(database, item.id, SyncQueueStatus.synced);
       },
     );
+
+    test('serializes immediate sync in queue order', () async {
+      final sender = _BlockingSender();
+      repository = SyncQueueRepository(
+        LocalSyncQueueDataSource(database),
+        remoteSender: sender,
+      );
+
+      final firstResult = await repository.enqueue(
+        entityType: 'sales',
+        entityId: 'sale-1',
+        operation: SyncOperation.create,
+        payload: const {'id': 'sale-1'},
+      );
+      final first = (firstResult as AppSuccess<SyncQueueItem>).value;
+      await sender.pushStarted.future.timeout(const Duration(seconds: 1));
+
+      final secondResult = await repository.enqueue(
+        entityType: 'sales',
+        entityId: 'sale-2',
+        operation: SyncOperation.create,
+        payload: const {'id': 'sale-2'},
+      );
+      final second = (secondResult as AppSuccess<SyncQueueItem>).value;
+      await Future<void>.delayed(const Duration(milliseconds: 30));
+
+      expect(sender.pushed.map((item) => item.entityId), ['sale-1']);
+
+      sender.complete();
+      await _waitForQueueStatus(database, first.id, SyncQueueStatus.synced);
+      await _waitForQueueStatus(database, second.id, SyncQueueStatus.synced);
+      expect(sender.pushed.map((item) => item.entityId), ['sale-1', 'sale-2']);
+    });
+
+    test('does not bypass an older failed queue item', () async {
+      final sender = _FailFirstSender();
+      repository = SyncQueueRepository(
+        LocalSyncQueueDataSource(database),
+        remoteSender: sender,
+      );
+
+      final firstResult = await repository.enqueue(
+        entityType: 'sales',
+        entityId: 'sale-1',
+        operation: SyncOperation.create,
+        payload: const {'id': 'sale-1'},
+      );
+      final first = (firstResult as AppSuccess<SyncQueueItem>).value;
+      await _waitForQueueStatus(database, first.id, SyncQueueStatus.error);
+
+      await repository.enqueue(
+        entityType: 'sales',
+        entityId: 'sale-2',
+        operation: SyncOperation.create,
+        payload: const {'id': 'sale-2'},
+      );
+      await Future<void>.delayed(const Duration(milliseconds: 30));
+
+      expect(sender.pushed.map((item) => item.entityId), ['sale-1']);
+      final pending =
+          (await repository.getPendingItems()
+                  as AppSuccess<List<SyncQueueItem>>)
+              .value;
+      expect(pending.map((item) => item.entityId), ['sale-1', 'sale-2']);
+    });
   });
 }
 
@@ -336,6 +401,18 @@ final class _BlockingSender implements ISyncRemoteSender {
   void complete() {
     if (!_release.isCompleted) {
       _release.complete();
+    }
+  }
+}
+
+final class _FailFirstSender implements ISyncRemoteSender {
+  final List<SyncQueueItem> pushed = [];
+
+  @override
+  Future<void> push(SyncQueueItem item) async {
+    pushed.add(item);
+    if (pushed.length == 1) {
+      throw StateError('Sin conexion');
     }
   }
 }

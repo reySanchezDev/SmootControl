@@ -277,11 +277,18 @@ final class SalesRepository implements ISalesRepository {
     return {
       'id': sale.id,
       'invoiceNumber': sale.invoiceNumber,
+      'saleKind': switch (sale.saleKind) {
+        SaleKind.sale => 'sale',
+        SaleKind.staffConsumption => 'staff_consumption',
+      },
       'tableId': sale.tableId,
       'tableAccountId': sale.tableAccountId,
       'paymentMethodId': sale.paymentMethodId,
       'salesTypeId': sale.salesTypeId,
       'salesTypeName': sale.salesTypeName,
+      'employeeId': sale.employeeId,
+      'internalReceiptNumber': sale.internalReceiptNumber,
+      'payrollRunId': sale.payrollRunId,
       'paymentReference': sale.paymentReference,
       'cashRegisterSessionId': sale.cashRegisterSessionId,
       'cashierId': _currentOperatorService?.userId,

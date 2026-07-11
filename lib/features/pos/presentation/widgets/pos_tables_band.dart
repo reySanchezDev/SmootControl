@@ -10,6 +10,26 @@ import 'package:smoo_control/features/pos/presentation/bloc/pos_state.dart';
 import 'package:smoo_control/features/tables/domain/entities/restaurant_table.dart';
 import 'package:smoo_control/l10n/app_localizations.dart';
 
+part 'pos_tables_band_button_part.dart';
+part 'pos_tables_band_entry_part.dart';
+
+/// Returns a copy where the dragged table swaps position with the target.
+@visibleForTesting
+List<String> swapPosTablesForDrop({
+  required String draggedTableId,
+  required List<String> tableIds,
+  required String targetTableId,
+}) {
+  final fromIndex = tableIds.indexOf(draggedTableId);
+  final toIndex = tableIds.indexOf(targetTableId);
+  if (fromIndex < 0 || toIndex < 0 || fromIndex == toIndex) return tableIds;
+
+  final reordered = [...tableIds];
+  reordered[fromIndex] = tableIds[toIndex];
+  reordered[toIndex] = draggedTableId;
+  return reordered;
+}
+
 /// Dynamic table selector band for tablet POS.
 class PosTablesBand extends StatelessWidget {
   /// Creates the table band.
@@ -41,6 +61,9 @@ class PosTablesBand extends StatelessWidget {
     }
 
     final entries = _orderedEntries();
+    final physicalTableIds = _orderedPhysicalTables()
+        .map((table) => table.id)
+        .toList();
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -75,6 +98,7 @@ class PosTablesBand extends StatelessWidget {
                 entry: entries[index],
                 onEntrySelected: onEntrySelected,
                 state: state,
+                physicalTableIds: physicalTableIds,
                 onRename: _renameTable,
               );
             },
@@ -93,6 +117,7 @@ class PosTablesBand extends StatelessWidget {
                 entry: entries[index],
                 onEntrySelected: onEntrySelected,
                 state: state,
+                physicalTableIds: physicalTableIds,
                 onRename: _renameTable,
               ),
             );
@@ -105,35 +130,32 @@ class PosTablesBand extends StatelessWidget {
   }
 
   List<_TableBandEntry> _orderedEntries() {
-    final byId = {
-      for (final table in state.tables) table.id: table,
-    };
     final entries = <_TableBandEntry>[];
-    final tableIds = {
-      ...state.cartLinesByTable.keys,
-      ...state.splitAccountsByTable.keys,
-    };
-    for (final tableId in tableIds) {
-      if (!_isOccupied(tableId)) continue;
-      final table = byId[tableId];
-      if (table == null) continue;
-      entries.add(_TableBandEntry.table(table, occupied: true));
+    for (final table in _orderedPhysicalTables()) {
+      entries.add(
+        _TableBandEntry.table(table, occupied: _isOccupied(table.id)),
+      );
       final accounts =
           state.splitAccountsByTable[table.id] ?? const <AccountSplitDraft>[];
       for (final account in accounts) {
         entries.add(_TableBandEntry.account(table.id, account));
       }
     }
+    return entries;
+  }
 
-    final occupiedIds = entries.map((entry) => entry.tableId).toSet();
-    final free =
-        state.tables.where((table) => !occupiedIds.contains(table.id)).toList()
-          ..sort(_compareTableNames);
-
-    return [
-      ...entries,
-      for (final table in free) _TableBandEntry.table(table),
-    ];
+  List<RestaurantTable> _orderedPhysicalTables() {
+    return [...state.tables]..sort((first, second) {
+      final firstOrder = state.tableOrderByTableId[first.id];
+      final secondOrder = state.tableOrderByTableId[second.id];
+      if (firstOrder != null && secondOrder != null) {
+        final order = firstOrder.compareTo(secondOrder);
+        if (order != 0) return order;
+      }
+      if (firstOrder != null) return -1;
+      if (secondOrder != null) return 1;
+      return _compareTableNames(first, second);
+    });
   }
 
   bool _isOccupied(String tableId) {
@@ -188,213 +210,5 @@ class PosTablesBand extends StatelessWidget {
       if (table.id == tableId) return table;
     }
     return null;
-  }
-}
-
-class _TableEntryButton extends StatelessWidget {
-  const _TableEntryButton({
-    required this.entry,
-    required this.onRename,
-    required this.state,
-    this.onEntrySelected,
-  });
-
-  final _TableBandEntry entry;
-  final VoidCallback? onEntrySelected;
-  final Future<void> Function(BuildContext context, String tableId) onRename;
-  final PosReady state;
-
-  @override
-  Widget build(BuildContext context) {
-    return _TableButton(
-      indicator: entry.indicator,
-      isOccupied: entry.isOccupied,
-      isSelected: entry.isSelected(
-        tableId: state.selectedTableId,
-        splitAccountId: state.selectedSplitAccountId,
-      ),
-      label: entry.label,
-      onRename: entry.isAccount ? null : () => onRename(context, entry.tableId),
-      onPressed: () {
-        final bloc = context.read<PosBloc>();
-        if (entry.accountId == null) {
-          bloc.add(PosTableSelected(entry.tableId));
-        } else {
-          bloc.add(
-            PosSplitAccountSelected(
-              tableId: entry.tableId,
-              accountId: entry.accountId!,
-            ),
-          );
-        }
-        onEntrySelected?.call();
-      },
-    );
-  }
-}
-
-class _TableBandEntry {
-  const _TableBandEntry({
-    required this.tableId,
-    required this.accountId,
-    required this.label,
-    required this.isOccupied,
-    required this.isAccount,
-  });
-
-  factory _TableBandEntry.table(
-    RestaurantTable table, {
-    bool occupied = false,
-  }) {
-    return _TableBandEntry(
-      tableId: table.id,
-      accountId: null,
-      label: table.operationalName,
-      isOccupied: occupied,
-      isAccount: false,
-    );
-  }
-
-  factory _TableBandEntry.account(
-    String tableId,
-    AccountSplitDraft account,
-  ) {
-    return _TableBandEntry(
-      tableId: tableId,
-      accountId: account.id,
-      label: account.name,
-      isOccupied: true,
-      isAccount: true,
-    );
-  }
-
-  final String tableId;
-  final String? accountId;
-  final String label;
-  final bool isOccupied;
-  final bool isAccount;
-
-  String? get indicator => isAccount ? 'Cuenta' : null;
-
-  bool isSelected({
-    required String? tableId,
-    required String? splitAccountId,
-  }) {
-    if (isAccount) return splitAccountId == accountId;
-    return splitAccountId == null && tableId == this.tableId;
-  }
-}
-
-class _TableButton extends StatelessWidget {
-  const _TableButton({
-    required this.indicator,
-    required this.isOccupied,
-    required this.isSelected,
-    required this.label,
-    required this.onRename,
-    required this.onPressed,
-  });
-
-  final String? indicator;
-  final bool isOccupied;
-  final bool isSelected;
-  final String label;
-  final VoidCallback? onRename;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final colorScheme = Theme.of(context).colorScheme;
-    final semanticColors = context.semanticColors;
-    final background = _backgroundColor(colorScheme, semanticColors);
-    final foreground = isSelected || isOccupied
-        ? semanticColors.tableOnStatus
-        : colorScheme.onSurface;
-
-    return Material(
-      color: background,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(4),
-        side: BorderSide(color: colorScheme.outlineVariant),
-      ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(4),
-        onLongPress: onRename,
-        onTap: onPressed,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-          child: DefaultTextStyle.merge(
-            style: TextStyle(color: foreground),
-            child: Stack(
-              children: [
-                Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      AppText(
-                        label,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.center,
-                        variant: AppTextVariant.label,
-                      ),
-                      if (isOccupied) ...[
-                        const SizedBox(height: 4),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(999),
-                            color: semanticColors.tableBadgeBackground,
-                          ),
-                          child: AppText(
-                            indicator ?? l10n.tableOccupiedLabel,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: semanticColors.tableOnStatus,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                            ),
-                            variant: AppTextVariant.label,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-                if (onRename != null && isSelected)
-                  Positioned(
-                    right: 0,
-                    top: 0,
-                    child: IconButton(
-                      icon: const Icon(Icons.edit_outlined),
-                      iconSize: 16,
-                      onPressed: onRename,
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints.tightFor(
-                        height: 28,
-                        width: 28,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Color _backgroundColor(
-    ColorScheme colorScheme,
-    AppSemanticColors semanticColors,
-  ) {
-    if (isSelected) return semanticColors.tableSelectedBackground;
-    if (isOccupied) return semanticColors.tableOccupiedBackground;
-    return colorScheme.surface;
   }
 }

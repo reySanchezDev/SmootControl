@@ -5,6 +5,7 @@ import 'package:smoo_control/core/design_system/app_loading_page.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
 import 'package:smoo_control/core/design_system/app_searchable_list_section.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
+import 'package:smoo_control/core/design_system/app_tile_actions.dart';
 import 'package:smoo_control/core/design_system/confirm_deactivate_dialog.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/features/roles/domain/entities/access_role.dart';
@@ -179,30 +180,41 @@ class _RoleTile extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final status = role.isActive ? l10n.activeStatus : l10n.inactiveStatus;
 
-    return ListTile(
-      leading: const Icon(Icons.admin_panel_settings_outlined),
-      subtitle: AppText(
-        '$status · $permissionCount ${l10n.permissionsSection}',
-        variant: AppTextVariant.label,
-      ),
-      title: AppText(role.name),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (role.isActive && !role.isSystem)
-            IconButton(
-              color: Theme.of(context).colorScheme.error,
-              icon: const Icon(Icons.delete_outline),
-              onPressed: onDeactivate,
-              tooltip: l10n.deactivateAction,
-            ),
-          IconButton(
-            icon: const Icon(Icons.edit_outlined),
-            onPressed: onEdit,
-            tooltip: l10n.editAction,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 560;
+        return ListTile(
+          leading: const Icon(Icons.admin_panel_settings_outlined),
+          subtitle: AppText(
+            '$status · $permissionCount ${l10n.permissionsSection}',
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            variant: AppTextVariant.label,
           ),
-        ],
-      ),
+          title: AppText(
+            role.name,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          trailing: AppTileActions(
+            compact: compact,
+            actions: [
+              if (role.isActive && !role.isSystem)
+                AppTileAction(
+                  color: Theme.of(context).colorScheme.error,
+                  icon: Icons.delete_outline,
+                  label: l10n.deactivateAction,
+                  onPressed: onDeactivate,
+                ),
+              AppTileAction(
+                icon: Icons.edit_outlined,
+                label: l10n.editAction,
+                onPressed: onEdit,
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

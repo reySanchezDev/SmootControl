@@ -16,7 +16,11 @@ abstract final class RouteAccess {
   static List<String> anyPermissionsFor(String? route) {
     return switch (route) {
       AppRoutes.pos => const ['ventas.registrar'],
-      AppRoutes.reports => const ['reportes.ver'],
+      AppRoutes.reports ||
+      AppRoutes.reportSummary ||
+      AppRoutes.dailySalesReport ||
+      AppRoutes.expensesReport ||
+      AppRoutes.inventoryValueReport => const ['reportes.ver'],
       AppRoutes.catalog || AppRoutes.products => const ['productos.gestionar'],
       AppRoutes.inventory => const ['inventario.gestionar'],
       AppRoutes.packaging => const [
@@ -40,6 +44,12 @@ abstract final class RouteAccess {
       AppRoutes.roles => const ['roles.gestionar'],
       AppRoutes.users => const ['usuarios.gestionar'],
       AppRoutes.audit => const ['auditoria.ver'],
+      AppRoutes.staff => const ['personal.gestionar'],
+      AppRoutes.staffPositions => const ['personal.gestionar'],
+      AppRoutes.staffConsumptions => const ['personal.consumos.ver'],
+      AppRoutes.salaryAdvances => const ['personal.adelantos.gestionar'],
+      AppRoutes.payroll => const ['planilla.gestionar'],
+      AppRoutes.businessRules => const ['reglas_negocio.gestionar'],
       AppRoutes.sync => const ['sync.configurar'],
       AppRoutes.systemMaintenance => const ['sistema.reiniciar_operacion'],
       _ => const <String>[],

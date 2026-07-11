@@ -43,41 +43,77 @@ class ModifierGroupTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return ExpansionTile(
-      leading: const Icon(Icons.tune_outlined),
-      subtitle: AppText(
-        _groupStatusLabel(l10n),
-        variant: AppTextVariant.label,
-      ),
-      title: AppText(group.name),
-      trailing: _GroupActions(
-        isActive: group.isActive,
-        onAddOption: onAddOption,
-        onDeactivateGroup: onDeactivateGroup,
-        onEditGroup: onEditGroup,
-        optionsLabel: _optionsCountLabel(l10n),
-      ),
-      children: [
-        for (final option in options)
-          ListTile(
-            leading: const Icon(Icons.restaurant_menu_outlined),
-            subtitle: AppText(
-              _optionStatusLabel(l10n, option),
-              variant: AppTextVariant.label,
-            ),
-            title: AppText(option.name),
-            trailing: _OptionActions(
-              isActive: option.isActive,
-              onDeactivate: () => onDeactivateOption(option),
-              onEdit: () => onEditOption(option),
-            ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isCompact = constraints.maxWidth < 560;
+        return ExpansionTile(
+          leading: const Icon(Icons.tune_outlined),
+          subtitle: AppText(
+            isCompact
+                ? '${_optionsCountLabel(l10n)} - ${_groupStatusLabel(l10n)}'
+                : _groupStatusLabel(l10n),
+            maxLines: isCompact ? 2 : 1,
+            overflow: TextOverflow.ellipsis,
+            variant: AppTextVariant.label,
           ),
-        TextButton.icon(
-          icon: const Icon(Icons.add),
-          label: AppText(l10n.addModifierOptionAction),
-          onPressed: onAddOption,
-        ),
-      ],
+          title: AppText(
+            group.name,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          trailing: isCompact
+              ? _GroupPopupActions(
+                  isActive: group.isActive,
+                  onAddOption: onAddOption,
+                  onDeactivateGroup: onDeactivateGroup,
+                  onEditGroup: onEditGroup,
+                )
+              : _GroupActions(
+                  isActive: group.isActive,
+                  onAddOption: onAddOption,
+                  onDeactivateGroup: onDeactivateGroup,
+                  onEditGroup: onEditGroup,
+                  optionsLabel: _optionsCountLabel(l10n),
+                ),
+          children: [
+            for (final option in options)
+              ListTile(
+                contentPadding: EdgeInsetsDirectional.only(
+                  start: isCompact ? 32 : 56,
+                  end: 16,
+                ),
+                leading: const Icon(Icons.restaurant_menu_outlined),
+                subtitle: AppText(
+                  _optionStatusLabel(l10n, option),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  variant: AppTextVariant.label,
+                ),
+                title: AppText(
+                  option.name,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                trailing: isCompact
+                    ? _OptionPopupActions(
+                        isActive: option.isActive,
+                        onDeactivate: () => onDeactivateOption(option),
+                        onEdit: () => onEditOption(option),
+                      )
+                    : _OptionActions(
+                        isActive: option.isActive,
+                        onDeactivate: () => onDeactivateOption(option),
+                        onEdit: () => onEditOption(option),
+                      ),
+              ),
+            TextButton.icon(
+              icon: const Icon(Icons.add),
+              label: AppText(l10n.addModifierOptionAction),
+              onPressed: onAddOption,
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -106,6 +142,65 @@ class ModifierGroupTile extends StatelessWidget {
     if (count == 0) return l10n.modifierGroupNoOptions;
     if (count == 1) return l10n.modifierGroupOneOption;
     return l10n.modifierGroupManyOptions(count);
+  }
+}
+
+enum _GroupAction { add, deactivate, edit }
+
+class _GroupPopupActions extends StatelessWidget {
+  const _GroupPopupActions({
+    required this.isActive,
+    required this.onAddOption,
+    required this.onDeactivateGroup,
+    required this.onEditGroup,
+  });
+
+  final bool isActive;
+  final VoidCallback onAddOption;
+  final VoidCallback onDeactivateGroup;
+  final VoidCallback onEditGroup;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return PopupMenuButton<_GroupAction>(
+      icon: const Icon(Icons.more_vert),
+      onSelected: (action) {
+        switch (action) {
+          case _GroupAction.add:
+            onAddOption();
+          case _GroupAction.deactivate:
+            onDeactivateGroup();
+          case _GroupAction.edit:
+            onEditGroup();
+        }
+      },
+      itemBuilder: (context) => [
+        PopupMenuItem(
+          value: _GroupAction.add,
+          child: _PopupActionLabel(
+            icon: Icons.add,
+            label: l10n.addModifierOptionAction,
+          ),
+        ),
+        if (isActive)
+          PopupMenuItem(
+            value: _GroupAction.deactivate,
+            child: _PopupActionLabel(
+              icon: Icons.delete_outline,
+              label: l10n.deactivateAction,
+            ),
+          ),
+        PopupMenuItem(
+          value: _GroupAction.edit,
+          child: _PopupActionLabel(
+            icon: Icons.edit_outlined,
+            label: l10n.editAction,
+          ),
+        ),
+      ],
+      tooltip: l10n.moreOptionsAction,
+    );
   }
 }
 
@@ -154,6 +249,54 @@ class _GroupActions extends StatelessWidget {
   }
 }
 
+enum _OptionAction { deactivate, edit }
+
+class _OptionPopupActions extends StatelessWidget {
+  const _OptionPopupActions({
+    required this.isActive,
+    required this.onDeactivate,
+    required this.onEdit,
+  });
+
+  final bool isActive;
+  final VoidCallback onDeactivate;
+  final VoidCallback onEdit;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return PopupMenuButton<_OptionAction>(
+      icon: const Icon(Icons.more_vert),
+      onSelected: (action) {
+        switch (action) {
+          case _OptionAction.deactivate:
+            onDeactivate();
+          case _OptionAction.edit:
+            onEdit();
+        }
+      },
+      itemBuilder: (context) => [
+        if (isActive)
+          PopupMenuItem(
+            value: _OptionAction.deactivate,
+            child: _PopupActionLabel(
+              icon: Icons.delete_outline,
+              label: l10n.deactivateAction,
+            ),
+          ),
+        PopupMenuItem(
+          value: _OptionAction.edit,
+          child: _PopupActionLabel(
+            icon: Icons.edit_outlined,
+            label: l10n.editAction,
+          ),
+        ),
+      ],
+      tooltip: l10n.moreOptionsAction,
+    );
+  }
+}
+
 class _OptionActions extends StatelessWidget {
   const _OptionActions({
     required this.isActive,
@@ -184,6 +327,27 @@ class _OptionActions extends StatelessWidget {
           onPressed: onEdit,
           tooltip: l10n.editAction,
         ),
+      ],
+    );
+  }
+}
+
+class _PopupActionLabel extends StatelessWidget {
+  const _PopupActionLabel({
+    required this.icon,
+    required this.label,
+  });
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon),
+        const SizedBox(width: 12),
+        Expanded(child: AppText(label)),
       ],
     );
   }

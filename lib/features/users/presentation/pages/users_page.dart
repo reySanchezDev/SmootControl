@@ -5,6 +5,7 @@ import 'package:smoo_control/core/design_system/app_loading_page.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
 import 'package:smoo_control/core/design_system/app_searchable_list_section.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
+import 'package:smoo_control/core/design_system/app_tile_actions.dart';
 import 'package:smoo_control/core/design_system/confirm_deactivate_dialog.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/features/users/domain/entities/app_user_profile.dart';
@@ -161,30 +162,41 @@ class _UserTile extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final status = user.isActive ? l10n.activeStatus : l10n.inactiveStatus;
 
-    return ListTile(
-      leading: const Icon(Icons.person_outline),
-      subtitle: AppText(
-        '$roleName · $status',
-        variant: AppTextVariant.label,
-      ),
-      title: AppText(user.displayName),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (user.isActive)
-            IconButton(
-              color: Theme.of(context).colorScheme.error,
-              icon: const Icon(Icons.delete_outline),
-              onPressed: onDeactivate,
-              tooltip: l10n.deactivateAction,
-            ),
-          IconButton(
-            icon: const Icon(Icons.edit_outlined),
-            onPressed: onEdit,
-            tooltip: l10n.editAction,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 560;
+        return ListTile(
+          leading: const Icon(Icons.person_outline),
+          subtitle: AppText(
+            '$roleName · $status',
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            variant: AppTextVariant.label,
           ),
-        ],
-      ),
+          title: AppText(
+            user.displayName,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          trailing: AppTileActions(
+            compact: compact,
+            actions: [
+              if (user.isActive)
+                AppTileAction(
+                  color: Theme.of(context).colorScheme.error,
+                  icon: Icons.delete_outline,
+                  label: l10n.deactivateAction,
+                  onPressed: onDeactivate,
+                ),
+              AppTileAction(
+                icon: Icons.edit_outlined,
+                label: l10n.editAction,
+                onPressed: onEdit,
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
