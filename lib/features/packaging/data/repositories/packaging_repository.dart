@@ -12,6 +12,8 @@ import 'package:smoo_control/features/sync/domain/entities/sync_queue_item.dart'
 import 'package:smoo_control/features/sync/domain/repositories/i_sync_queue_repository.dart';
 import 'package:smoo_control/features/sync/domain/services/i_sync_remote_sender.dart';
 
+part 'packaging_repository_sync_support.dart';
+
 /// Packaging repository backed by local storage and optional remote sync.
 final class PackagingRepository implements IPackagingRepository {
   /// Creates the repository.
@@ -224,67 +226,6 @@ final class PackagingRepository implements IPackagingRepository {
     }
   }
 
-  Future<void> _pushOrQueue({
-    required String entityType,
-    required String entityId,
-    required Map<String, Object?> payload,
-  }) async {
-    final item = _syncItem(
-      entityType: entityType,
-      entityId: entityId,
-      payload: payload,
-    );
-    final sender = _remoteSender;
-    if (sender != null) {
-      await sender.push(item);
-      return;
-    }
-    await _syncQueueRepository?.enqueue(
-      entityType: entityType,
-      entityId: entityId,
-      operation: SyncOperation.create,
-      payload: payload,
-    );
-  }
-
-  Future<void> _pushOrQueueMovement(PackagingMovement movement) async {
-    final item = _syncItem(
-      entityType: 'packaging_movements',
-      entityId: movement.id,
-      payload: movementPayload(movement),
-    );
-    final sender = _remoteSender;
-    if (sender != null) {
-      await sender.push(item);
-      return;
-    }
-    await _syncQueueRepository?.enqueue(
-      entityType: item.entityType,
-      entityId: item.entityId,
-      operation: item.operation,
-      payload: item.payload,
-    );
-  }
-
-  SyncQueueItem _syncItem({
-    required String entityType,
-    required String entityId,
-    required Map<String, Object?> payload,
-  }) {
-    final now = DateTime.now();
-    return SyncQueueItem(
-      id: 'admin-direct-$entityType-$entityId',
-      entityType: entityType,
-      entityId: entityId,
-      operation: SyncOperation.create,
-      payload: payload,
-      status: SyncQueueStatus.pending,
-      retryCount: 0,
-      createdAt: now,
-      updatedAt: now,
-    );
-  }
-
   /// Converts a packaging movement to a synchronization payload.
   static Map<String, Object?> movementPayload(PackagingMovement movement) {
     return {
@@ -298,38 +239,6 @@ final class PackagingRepository implements IPackagingRepository {
       'userId': movement.userId,
       'notes': movement.notes,
       'createdAt': movement.createdAt.toIso8601String(),
-    };
-  }
-
-  Map<String, Object?> _salesTypePayload(SalesType salesType) {
-    return {
-      'id': salesType.id,
-      'code': salesType.code,
-      'name': salesType.name,
-      'displayOrder': salesType.displayOrder,
-      'isDefault': salesType.isDefault,
-      'isActive': salesType.isActive,
-    };
-  }
-
-  Map<String, Object?> _packagingItemPayload(PackagingItem item) {
-    return {
-      'id': item.id,
-      'name': item.name,
-      'costInCents': item.costInCents,
-      'tracksStock': item.tracksStock,
-      'isActive': item.isActive,
-    };
-  }
-
-  Map<String, Object?> _rulePayload(ProductPackagingRule rule) {
-    return {
-      'id': rule.id,
-      'productId': rule.productId,
-      'salesTypeId': rule.salesTypeId,
-      'packagingItemId': rule.packagingItemId,
-      'quantityPerUnit': rule.quantityPerUnit,
-      'isActive': rule.isActive,
     };
   }
 }

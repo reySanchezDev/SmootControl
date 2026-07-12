@@ -16,6 +16,9 @@ import 'package:smoo_control/features/pos/presentation/widgets/pos_danger_confir
 import 'package:smoo_control/l10n/app_localizations.dart';
 
 part 'pos_ticket_panel_parts.dart';
+part 'pos_ticket_line_controls.dart';
+part 'pos_ticket_sales_type_controls.dart';
+part 'pos_ticket_exchange_rate_text.dart';
 part 'pos_ticket_total_band.dart';
 
 /// Ticket table displayed at the top of the POS.

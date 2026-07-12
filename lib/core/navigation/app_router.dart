@@ -3,6 +3,7 @@ import 'package:smoo_control/core/navigation/admin_online_guard.dart';
 import 'package:smoo_control/core/navigation/app_routes.dart';
 import 'package:smoo_control/core/navigation/route_access.dart';
 import 'package:smoo_control/features/audit/presentation/pages/audit_log_page.dart';
+import 'package:smoo_control/features/cash_register/presentation/pages/cash_register_admin_page.dart';
 import 'package:smoo_control/features/catalog/presentation/pages/catalog_page.dart';
 import 'package:smoo_control/features/dashboard/presentation/pages/dashboard_page.dart';
 import 'package:smoo_control/features/exchange_rates/presentation/pages/exchange_rates_page.dart';
@@ -49,6 +50,7 @@ Widget _guardedPage(String? routeName) {
     AppRoutes.paymentMethods => const PaymentMethodsPage(),
     AppRoutes.tables => const TablesPage(),
     AppRoutes.sales => const SalesPage(),
+    AppRoutes.cashRegisters => const CashRegisterAdminPage(),
     AppRoutes.expenses => const ExpensesPage(),
     AppRoutes.settings => const SettingsPage(),
     AppRoutes.exchangeRates => const ExchangeRatesPage(),
@@ -84,6 +86,7 @@ bool _requiresOnlineAdmin(String? routeName) {
     AppRoutes.paymentMethods ||
     AppRoutes.tables ||
     AppRoutes.sales ||
+    AppRoutes.cashRegisters ||
     AppRoutes.expenses ||
     AppRoutes.settings ||
     AppRoutes.exchangeRates ||

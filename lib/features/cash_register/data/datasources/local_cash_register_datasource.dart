@@ -73,6 +73,35 @@ final class LocalCashRegisterDataSource {
     return row == null ? null : CashRegisterSessionModel.fromLocal(row);
   }
 
+  /// Returns any cash register session for one cashier and business date.
+  Future<CashRegisterSessionModel?> getSessionForCashierOnDate({
+    required DateTime businessDate,
+    required String cashierId,
+  }) async {
+    final businessDateValue = BusinessDateFormatter.format(businessDate);
+    final query = _database.select(_database.localCashRegisterSessions)
+      ..where((session) {
+        return session.businessDate.equals(businessDateValue) &
+            session.cashierId.equals(cashierId);
+      })
+      ..orderBy([(session) => OrderingTerm.desc(session.createdAt)])
+      ..limit(1);
+    final row = await query.getSingleOrNull();
+
+    return row == null ? null : CashRegisterSessionModel.fromLocal(row);
+  }
+
+  /// Returns one cash register session by id.
+  Future<CashRegisterSessionModel?> getSessionById(String sessionId) async {
+    final row =
+        await (_database.select(_database.localCashRegisterSessions)..where(
+              (session) => session.id.equals(sessionId),
+            ))
+            .getSingleOrNull();
+
+    return row == null ? null : CashRegisterSessionModel.fromLocal(row);
+  }
+
   /// Returns any open cash register session for one cashier, if any.
   Future<CashRegisterSessionModel?> getAnyOpenSessionForCashier(
     String cashierId,

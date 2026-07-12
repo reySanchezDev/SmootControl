@@ -128,6 +128,11 @@ class _DashboardContent extends StatelessWidget {
             route: AppRoutes.sales,
           ),
           _ModuleDefinition(
+            icon: Icons.point_of_sale_outlined,
+            label: l10n.moduleCashRegister,
+            route: AppRoutes.cashRegisters,
+          ),
+          _ModuleDefinition(
             icon: Icons.request_quote_outlined,
             label: l10n.moduleExpenses,
             route: AppRoutes.expenses,

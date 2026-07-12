@@ -212,6 +212,60 @@ abstract class AppLocalizations {
   /// **'Caja diaria'**
   String get moduleCashRegister;
 
+  /// No description provided for @cashRegisterAdminTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Transacciones de caja'**
+  String get cashRegisterAdminTitle;
+
+  /// No description provided for @cashRegisterAdminEmpty.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay cajas en este rango.'**
+  String get cashRegisterAdminEmpty;
+
+  /// No description provided for @cashRegisterAdminEdit.
+  ///
+  /// In es, this message translates to:
+  /// **'Editar caja'**
+  String get cashRegisterAdminEdit;
+
+  /// No description provided for @cashRegisterAdminDelete.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar caja'**
+  String get cashRegisterAdminDelete;
+
+  /// No description provided for @cashRegisterAdminDeleted.
+  ///
+  /// In es, this message translates to:
+  /// **'Caja eliminada.'**
+  String get cashRegisterAdminDeleted;
+
+  /// No description provided for @cashRegisterAdminSaved.
+  ///
+  /// In es, this message translates to:
+  /// **'Caja actualizada.'**
+  String get cashRegisterAdminSaved;
+
+  /// No description provided for @cashRegisterAdminDeleteConfirm.
+  ///
+  /// In es, this message translates to:
+  /// **'Esta accion elimina la caja en Supabase. Si tiene ventas o gastos vinculados, la operacion sera rechazada.'**
+  String get cashRegisterAdminDeleteConfirm;
+
+  /// No description provided for @cashRegisterAdminOpened.
+  ///
+  /// In es, this message translates to:
+  /// **'Aperturada'**
+  String get cashRegisterAdminOpened;
+
+  /// No description provided for @cashRegisterAdminClosed.
+  ///
+  /// In es, this message translates to:
+  /// **'Cerrada'**
+  String get cashRegisterAdminClosed;
+
   /// No description provided for @moduleExpenses.
   ///
   /// In es, this message translates to:

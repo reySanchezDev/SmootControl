@@ -244,6 +244,8 @@ ahora requiero un reporte de inventario, quiero saber cuanto cuesta mi inventari
 
 Analiza el siguiente escenario:
 
+recordar cumplir las rules.
+
 El dìa de ayer 10 de junio 2026, se hiso un cierre con toda normalidad y se declaro un monto de 7000 cordobas y el sistema mostro mensaje de cierre correctamente, pero resulta que en ese mismo momento por pura casualidad se intento ingresar al POS y el sistema ingreso normalmente sin pedir apertura de caja, como si la caja permaciera abierta y me llamamo la atencion y revise las transacciones , pero ahi no se ve nada de cierre, entonces yo pense que no se habia hecho, despues revise en modo admin para ver si el cierre habia viajado y no encontre nada, en el reporte "RESUMEN GENERAL" en campo de conteo fisico me salia en 0. Asi que procedi a realizar el cierre nuevamente desde el POS y el sistema me dejo hacerlo normalmente y quise entrar al POS y ahi ya me salia que debia aperturar, eso ya era señal clara del cierre. Pero mas luego revise el modo admin y en el reporte "RESUMEN GENERAL" de ese dìa me salia 14000, lo cual me indica que el cierre se hiso 2 veces.
 
 Debido a eso, debes revisar 2 cosas:
@@ -259,3 +261,4 @@ Debido a eso, debes revisar 2 cosas:
 5. En el modo admin en el apartado de "OPERACIONES" agregar una pantalla para ver las transacciones de cajas , es decir cajas aperturadaS, cajas cerradas, cada registro debe tener opciones de ELIMINAR y EDITAR
 
 6. Hacer una auditoria en el POS para asegurar de que las transacciones como APERTURA y CIERRES  de cajas viajen hasta el remoto, mediante la sincronizacion.
+

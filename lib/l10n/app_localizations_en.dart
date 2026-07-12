@@ -69,6 +69,35 @@ class AppLocalizationsEn extends AppLocalizations {
   String get moduleCashRegister => 'Daily cash register';
 
   @override
+  String get cashRegisterAdminTitle => 'Cash register transactions';
+
+  @override
+  String get cashRegisterAdminEmpty =>
+      'There are no cash registers in this range.';
+
+  @override
+  String get cashRegisterAdminEdit => 'Edit cash register';
+
+  @override
+  String get cashRegisterAdminDelete => 'Delete cash register';
+
+  @override
+  String get cashRegisterAdminDeleted => 'Cash register deleted.';
+
+  @override
+  String get cashRegisterAdminSaved => 'Cash register updated.';
+
+  @override
+  String get cashRegisterAdminDeleteConfirm =>
+      'This action deletes the cash register in Supabase. If it has linked sales or expenses, the operation will be rejected.';
+
+  @override
+  String get cashRegisterAdminOpened => 'Opened';
+
+  @override
+  String get cashRegisterAdminClosed => 'Closed';
+
+  @override
   String get moduleExpenses => 'Expenses';
 
   @override

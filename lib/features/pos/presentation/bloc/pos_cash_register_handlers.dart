@@ -108,7 +108,8 @@ Future<void> _closeCashRegisterSession({
         case AppSuccess():
           break;
         case AppFailureResult(:final error):
-          onFailure(error);
+          emit(PosFailure(error));
+          onSuccess();
           return;
       }
       onSuccess();

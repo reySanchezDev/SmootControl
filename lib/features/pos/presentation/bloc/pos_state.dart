@@ -15,6 +15,7 @@ import 'package:smoo_control/features/sales/domain/entities/sale_item_draft.dart
 import 'package:smoo_control/features/tables/domain/entities/restaurant_table.dart';
 
 part 'pos_ready_state.dart';
+part 'pos_ready_state_derived.dart';
 
 /// Base POS state.
 sealed class PosState extends Equatable {

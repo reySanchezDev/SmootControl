@@ -69,6 +69,34 @@ class AppLocalizationsEs extends AppLocalizations {
   String get moduleCashRegister => 'Caja diaria';
 
   @override
+  String get cashRegisterAdminTitle => 'Transacciones de caja';
+
+  @override
+  String get cashRegisterAdminEmpty => 'No hay cajas en este rango.';
+
+  @override
+  String get cashRegisterAdminEdit => 'Editar caja';
+
+  @override
+  String get cashRegisterAdminDelete => 'Eliminar caja';
+
+  @override
+  String get cashRegisterAdminDeleted => 'Caja eliminada.';
+
+  @override
+  String get cashRegisterAdminSaved => 'Caja actualizada.';
+
+  @override
+  String get cashRegisterAdminDeleteConfirm =>
+      'Esta accion elimina la caja en Supabase. Si tiene ventas o gastos vinculados, la operacion sera rechazada.';
+
+  @override
+  String get cashRegisterAdminOpened => 'Aperturada';
+
+  @override
+  String get cashRegisterAdminClosed => 'Cerrada';
+
+  @override
   String get moduleExpenses => 'Gastos';
 
   @override

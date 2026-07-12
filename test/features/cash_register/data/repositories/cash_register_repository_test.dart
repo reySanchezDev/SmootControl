@@ -105,7 +105,6 @@ void main() {
         final sessions =
             (sessionsResult as AppSuccess<List<CashRegisterSession>>).value;
         final syncItems = (syncResult as AppSuccess<List<SyncQueueItem>>).value;
-
         expect(secondResult, isA<AppFailureResult<CashRegisterSession>>());
         expect(
           (secondResult as AppFailureResult<CashRegisterSession>).error.code,
@@ -142,7 +141,6 @@ void main() {
         );
         final anyOpen =
             (anyOpenResult as AppSuccess<CashRegisterSession?>).value;
-
         expect(todayResult, isA<AppFailureResult<CashRegisterSession>>());
         expect(
           (todayResult as AppFailureResult<CashRegisterSession>).error.code,
@@ -182,7 +180,6 @@ void main() {
           (sessionsResult as AppSuccess<List<CashRegisterSession>>).value;
       final cashierSession =
           (cashierSessionResult as AppSuccess<CashRegisterSession?>).value;
-
       expect(secondResult, isA<AppSuccess<CashRegisterSession>>());
       expect(cashierSession?.id, 'session-2');
       expect(sessions, hasLength(2));

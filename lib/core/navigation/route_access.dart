@@ -35,6 +35,7 @@ abstract final class RouteAccess {
         'ventas.anular',
         'pdf.generar',
       ],
+      AppRoutes.cashRegisters => const ['caja.aperturar', 'caja.cerrar'],
       AppRoutes.expenses => const [
         'gastos.registrar',
         'gastos.categorias.gestionar',

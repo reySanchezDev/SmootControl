@@ -1,0 +1,190 @@
+---
+trigger: always_on
+project: SmooControl
+source_of_truth: rules.md
+---
+
+# Reglas Obligatorias Para Agentes
+
+Este archivo resume las reglas que todo agente debe leer antes de tocar
+SmooControl. `rules.md` sigue siendo la fuente completa y obligatoria.
+
+## Idioma Y Forma De Trabajo
+
+- Responder siempre en espanol.
+- Ser breve, preciso y accionable.
+- No inventar datos: si falta informacion, declarar el supuesto o pedir lo
+  minimo indispensable.
+- Antes de editar, revisar el contexto real del codigo y respetar la
+  arquitectura existente.
+- No hacer limpiezas, refactors o cambios fuera del alcance pedido.
+
+## Regla De 300 Lineas
+
+- Ningun archivo mantenido manualmente debe superar 300 lineas.
+- Antes de entregar, auditar los archivos modificados.
+- Si un archivo queda cerca del limite, extraer widgets, helpers, servicios o
+  partes cohesivas.
+- Excepciones permitidas:
+  - archivos generados: `*.g.dart`, `*.freezed.dart`,
+    `app_localizations*.dart`;
+  - assets binarios o generados;
+  - migraciones SQL historicas ya aplicadas, salvo que se este editando esa
+    migracion.
+- Los tests tambien deben tender a menos de 300 lineas; si se editan tests
+  grandes, dividirlos por flujo o escenario cuando sea seguro.
+
+Comando recomendado:
+
+```powershell
+$exclude = @('*.g.dart','*.freezed.dart','app_localizations*.dart')
+Get-ChildItem -Path lib -Recurse -File -Filter *.dart |
+  Where-Object {
+    $name = $_.Name
+    -not ($exclude | Where-Object { $name -like $_ })
+  } |
+  ForEach-Object {
+    [pscustomobject]@{
+      Lines = (Get-Content -LiteralPath $_.FullName | Measure-Object -Line).Lines
+      Path = $_.FullName.Replace((Get-Location).Path + '\','')
+    }
+  } |
+  Where-Object Lines -gt 300 |
+  Sort-Object Lines -Descending
+```
+
+## Arquitectura SmooControl
+
+- El proyecto tiene dos modos en el mismo APK:
+  - Admin: online/remoto primero.
+  - POS: offline/local primero.
+- No mezclar esas reglas.
+
+### Admin
+
+- Las pantallas admin leen, crean, editan y eliminan directamente en Supabase.
+- Despues de guardar, refrescar desde Supabase.
+- No guardar en Drift/local desde Admin.
+- No usar la cola de sincronizacion como ruta principal de Admin.
+- No mostrar ni pedir IDs tecnicos: `id`, UUID, local id, remote id,
+  secuencias o sync ids.
+- Supabase/RPC debe asignar IDs y consecutivos tecnicos.
+
+### POS
+
+- POS trabaja local/offline con Drift.
+- Ventas, gastos POS, caja, tickets, mesas operativas y disponibilidad diaria
+  de modificadores se guardan local y luego se sincronizan.
+- La sincronizacion de ventas debe ser FIFO y de un solo carril.
+- No empujar ventas saltando `local_sync_queue`.
+- Reintentos deben ser idempotentes por ID local estable, no por texto de
+  factura.
+- El consecutivo final de factura lo controla Supabase; no quemar
+  consecutivos localmente.
+- Valores POS local-only no suben al remoto salvo solicitud explicita:
+  - nombre temporal de mesa;
+  - disponibilidad POS de modificadores;
+  - orden local de productos/mesas si aplica.
+
+## Supabase Y Migraciones
+
+- Si una mejora requiere tablas, columnas, RPC, politicas o permisos en
+  Supabase, crear y aplicar la migracion en la misma sesion.
+- No esperar a que el usuario diga "haz la migracion".
+- Verificar proyecto y migraciones pendientes antes de aplicar.
+- No imprimir ni hardcodear secretos.
+- Credenciales solo desde `Requerimiento/CredencialesSupabase.md` y scripts.
+
+## APK Y Builds
+
+- No construir APK con:
+
+```powershell
+flutter build apk --release
+```
+
+- Para APK de telefono/tablet usar siempre:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\tool\production_preflight.ps1
+powershell -ExecutionPolicy Bypass -File .\tool\build_android_release.ps1
+```
+
+- Antes de entregar APK validar:
+  - `INTERNET` presente;
+  - package `com.smoocontrol.pos`;
+  - `versionCode` mayor al instalado;
+  - dart-defines de Supabase inyectados;
+  - `libsqlite3.so` presente;
+  - build info correcto.
+- Nunca pedir desinstalar si puede haber ventas/gastos/sync pendientes.
+
+## Drift Y Datos Locales
+
+- No subir `schemaVersion` sin migracion no destructiva.
+- No borrar ni recrear tablas locales operativas.
+- No perder ventas pendientes, tickets abiertos, caja, gastos o cola sync.
+- Todo cambio de esquema requiere test de migracion.
+
+## UI, Diseno Y Localizacion
+
+- No hardcodear textos visibles: usar ARB/l10n.
+- No hardcodear colores: usar `ColorScheme`, `AppPalette` o tokens del sistema.
+- No usar `Text()` directo si existe componente de texto del design system.
+- Validar que no haya overflow en movil.
+- Controles deben sentirse operables en movil y web cuando aplique.
+
+## POS Mobile Reglas Criticas
+
+- Fila de pagos rapidos:
+
+```text
+DOLAR | MAS OPCIONES | CORDOBA
+```
+
+- No quemar nombres de metodos de pago; resolver desde catalogo.
+- `Mas opciones` conserva todos los metodos.
+- Selector movil de modo:
+  - detalle: detalle visible, productos ocultos, categorias visibles;
+  - carrito: detalle oculto, productos visibles, categorias visibles.
+- No reintroducir la franja `Ocultar productos`.
+- Tipo de venta en `Mas opciones` es critico:
+  - `Comer aqui` por defecto;
+  - `GO/Para llevar` debe actualizar `selectedSalesTypeId`;
+  - empaque depende de esa seleccion.
+
+## KDS
+
+- KDS queda diferido a Version 2.
+- No crear tablas, rutas, permisos, roles o UI KDS en V1 salvo orden explicita.
+
+## Validacion Antes De Entregar
+
+- Ejecutar `flutter analyze` para cambios generales.
+- Ejecutar tests focalizados segun el area tocada.
+- Para POS UI/pagos:
+
+```powershell
+flutter test test\features\pos\presentation\widgets\pos_ready_view_test.dart test\features\pos\presentation\bloc\pos_bloc_test.dart
+```
+
+- Para auth/inicializacion:
+
+```powershell
+flutter test test\features\auth\domain\services\device_initialization_service_test.dart test\core\database\app_database_test.dart
+```
+
+## Git
+
+- Commits pequenos y por alcance.
+- POS UI separado de auth/base de datos/build.
+- Antes de commit:
+
+```powershell
+git diff --stat
+git diff --name-status
+```
+
+- No subir APK salvo solicitud explicita.
+- No revertir cambios del usuario sin permiso.
+

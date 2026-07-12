@@ -45,6 +45,9 @@ abstract final class AppRoutes {
   /// Sales route.
   static const sales = '/sales';
 
+  /// Cash register admin route.
+  static const cashRegisters = '/cash-registers';
+
   /// Expenses route.
   static const expenses = '/expenses';
 

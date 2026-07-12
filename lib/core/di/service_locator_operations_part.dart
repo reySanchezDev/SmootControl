@@ -84,6 +84,14 @@ void _registerOperationsDependencies() {
         client: serviceLocator<http.Client>(),
       ),
     )
+    ..registerLazySingleton<SupabaseCashRegisterAdminService>(
+      () => SupabaseCashRegisterAdminService(
+        client: serviceLocator<http.Client>(),
+        config: serviceLocator<SupabaseAppConfig>(),
+        remoteSessionService: serviceLocator<CurrentRemoteSessionService>(),
+        restaurantService: serviceLocator<CurrentRestaurantService>(),
+      ),
+    )
     ..registerFactory<ReportsBloc>(
       () => ReportsBloc(serviceLocator<ReportSummaryService>()),
     );

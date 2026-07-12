@@ -25,6 +25,23 @@ final class CashRegisterRepository implements ICashRegisterRepository {
     CashRegisterSession session,
   ) async {
     try {
+      final sameDaySession = await _localDataSource.getSessionForCashierOnDate(
+        businessDate: session.businessDate,
+        cashierId: session.cashierId,
+      );
+      if (sameDaySession != null && sameDaySession.id != session.id) {
+        return AppFailureResult(
+          AppFailure(
+            code: sameDaySession.status == CashRegisterStatus.open
+                ? 'cash_register_already_open'
+                : 'cash_register_day_already_closed',
+            message: sameDaySession.status == CashRegisterStatus.open
+                ? 'Este usuario ya tiene una caja abierta para este dia.'
+                : 'La caja de este usuario ya fue cerrada para este dia.',
+          ),
+        );
+      }
+
       final existingSession = await _localDataSource
           .getAnyOpenSessionForCashier(session.cashierId);
       if (existingSession != null && existingSession.id != session.id) {
@@ -168,6 +185,11 @@ final class CashRegisterRepository implements ICashRegisterRepository {
     required int physicalClosingCashInCents,
   }) async {
     try {
+      final current = await _localDataSource.getSessionById(sessionId);
+      if (current?.status == CashRegisterStatus.closed) {
+        return AppSuccess(current!.toEntity());
+      }
+
       final session = await _localDataSource.closeSession(
         sessionId: sessionId,
         physicalClosingCashInCents: physicalClosingCashInCents,

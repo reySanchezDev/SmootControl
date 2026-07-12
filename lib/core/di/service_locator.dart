@@ -18,6 +18,7 @@ import 'package:smoo_control/features/auth/data/services/remote_bootstrap_auth_s
 import 'package:smoo_control/features/auth/domain/services/device_initialization_service.dart';
 import 'package:smoo_control/features/cash_register/data/datasources/local_cash_register_datasource.dart';
 import 'package:smoo_control/features/cash_register/data/repositories/cash_register_repository.dart';
+import 'package:smoo_control/features/cash_register/data/services/supabase_cash_register_admin_service.dart';
 import 'package:smoo_control/features/cash_register/domain/repositories/i_cash_register_repository.dart';
 import 'package:smoo_control/features/cash_register/presentation/bloc/cash_register_bloc.dart';
 import 'package:smoo_control/features/catalog/data/datasources/local_catalog_datasource.dart';

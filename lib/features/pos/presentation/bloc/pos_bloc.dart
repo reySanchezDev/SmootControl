@@ -37,12 +37,15 @@ import 'package:smoo_control/features/tables/domain/repositories/i_tables_reposi
 import 'package:uuid/uuid.dart';
 part 'pos_checkout_handlers.dart';
 part 'pos_checkout_helpers.dart';
+part 'pos_sale_item_builders.dart';
+part 'pos_bulk_split_checkout_handlers.dart';
 part 'pos_split_checkout_handlers.dart';
 part 'pos_cash_register_handlers.dart';
 part 'pos_cart_handlers.dart';
 part 'pos_split_handlers.dart';
 part 'pos_start_handlers.dart';
 part 'pos_table_handlers.dart';
+part 'pos_handler_registration.dart';
 
 /// BLoC for basic POS checkout.
 final class PosBloc extends Bloc<PosEvent, PosState> {
@@ -79,60 +82,7 @@ final class PosBloc extends Bloc<PosEvent, PosState> {
        _openTicketRepository = openTicketRepository,
        _productOrderDataSource = productOrderDataSource,
        super(const PosInitial()) {
-    on<PosStarted>((event, emit) => _handlePosStarted(this, event, emit));
-    on<PosCashRegisterOpened>(
-      (event, emit) => _handlePosCashRegisterOpened(this, event, emit),
-    );
-    on<PosCashRegisterClosed>(
-      (event, emit) => _handlePosCashRegisterClosed(this, event, emit),
-    );
-    on<PosCategorySelected>(_onCategorySelected);
-    on<PosProductsReordered>(_onProductsReordered);
-    on<PosProductOrderReset>(_onProductOrderReset);
-    on<PosTablesReordered>(_onTablesReordered);
-    on<PosProductAdded>(
-      (event, emit) => _handleProductAdded(this, event, emit),
-    );
-    on<PosProductRemoved>(
-      (event, emit) => _handleProductRemoved(this, event, emit),
-    );
-    on<PosCartLineIncremented>(
-      (event, emit) => _handleCartLineIncremented(this, event, emit),
-    );
-    on<PosCartLineDecremented>(
-      (event, emit) => _handleCartLineDecremented(this, event, emit),
-    );
-    on<PosCartLineServedToggled>(
-      (event, emit) => _handleCartLineServedToggled(this, event, emit),
-    );
-    on<PosModifierCatalogRefreshed>(_onModifierCatalogRefreshed);
-    on<PosPaymentMethodSelected>(_onPaymentMethodSelected);
-    on<PosSalesTypeSelected>(
-      (event, emit) => _handleSalesTypeSelected(this, event, emit),
-    );
-    on<PosTableSelected>(
-      (event, emit) => _handleTableSelected(this, event, emit),
-    );
-    on<PosTableDisplayNameChanged>(
-      (event, emit) => _handleTableDisplayNameChanged(this, event, emit),
-    );
-    on<PosSplitAccountSelected>(
-      (event, emit) => _handleSplitAccountSelected(this, event, emit),
-    );
-    on<PosAccountsSplitConfirmed>(
-      (event, emit) => _handleAccountsSplitConfirmed(this, event, emit),
-    );
-    on<PosSplitAccountPaymentSelected>(_onSplitAccountPaymentSelected);
-    on<PosSplitAccountReferenceChanged>(_onSplitAccountReferenceChanged);
-    on<PosCheckoutRequested>(
-      (event, emit) => _handleCheckoutRequested(this, event, emit),
-    );
-    on<PosStaffConsumptionRequested>(
-      (event, emit) => _handleStaffConsumptionRequested(this, event, emit),
-    );
-    on<PosCartCleared>(
-      (event, emit) => _handleCartCleared(this, event, emit),
-    );
+    _registerPosHandlers(this);
   }
 
   final ICatalogRepository _catalogRepository;

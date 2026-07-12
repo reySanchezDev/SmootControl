@@ -20,6 +20,8 @@ import 'package:smoo_control/features/products/presentation/bloc/products_state.
 import 'package:smoo_control/features/products/presentation/widgets/create_product_dialog.dart';
 import 'package:smoo_control/l10n/app_localizations.dart';
 
+part 'product_tile.dart';
+
 /// Product management page.
 class ProductsPage extends StatelessWidget {
   /// Creates the products page.
@@ -224,78 +226,5 @@ class ProductsPage extends StatelessWidget {
     }
 
     return null;
-  }
-}
-
-class _ProductTile extends StatelessWidget {
-  const _ProductTile({
-    required this.categoryPath,
-    required this.onDeactivate,
-    required this.onEdit,
-    required this.product,
-  });
-
-  final String categoryPath;
-  final VoidCallback onDeactivate;
-  final VoidCallback onEdit;
-  final Product product;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final compact = constraints.maxWidth < 560;
-        final price = MoneyFormatter.format(product.priceInCents);
-        return ListTile(
-          leading: const Icon(Icons.local_cafe_outlined),
-          subtitle: AppText(
-            compact ? '$price - ${_subtitle(l10n)}' : _subtitle(l10n),
-            maxLines: compact ? 3 : 2,
-            overflow: TextOverflow.ellipsis,
-            variant: AppTextVariant.label,
-          ),
-          title: AppText(
-            product.name,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-          trailing: AppTileActions(
-            compact: compact,
-            inlineLeading: AppText(price, variant: AppTextVariant.label),
-            actions: [
-              if (product.isActive)
-                AppTileAction(
-                  color: Theme.of(context).colorScheme.error,
-                  icon: Icons.delete_outline,
-                  label: l10n.deactivateAction,
-                  onPressed: onDeactivate,
-                ),
-              AppTileAction(
-                icon: Icons.edit_outlined,
-                label: l10n.editAction,
-                onPressed: onEdit,
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  String _subtitle(AppLocalizations l10n) {
-    final status = [
-      if (product.isActive) l10n.activeStatus else l10n.inactiveStatus,
-      if (product.isAvailableInPos)
-        l10n.availableInPosStatus
-      else
-        l10n.unavailableInPosStatus,
-      if (product.requiresOptionSelection) l10n.productHasOptionsStatus,
-      if (product.tracksInventory) 'Controla inventario',
-    ].join(' - ');
-    if (categoryPath.isEmpty) return status;
-
-    return '$categoryPath - $status';
   }
 }
