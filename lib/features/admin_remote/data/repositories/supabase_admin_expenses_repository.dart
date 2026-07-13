@@ -10,6 +10,8 @@ import 'package:smoo_control/features/expenses/domain/entities/expense_category.
 import 'package:smoo_control/features/expenses/domain/entities/operating_expense.dart';
 import 'package:smoo_control/features/expenses/domain/repositories/i_expenses_repository.dart';
 
+part 'supabase_admin_expenses_repository_support.dart';
+
 /// Remote-only expenses repository used by administrative screens.
 final class SupabaseAdminExpensesRepository implements IExpensesRepository {
   /// Creates the repository.
@@ -37,7 +39,10 @@ final class SupabaseAdminExpensesRepository implements IExpensesRepository {
         final rows = await _getRows('expense_categories', {
           'restaurant_id': 'eq.$_restaurantId',
           'select':
-              'id,parent_id,name,is_active,include_in_gross_profit_coverage',
+              'id,parent_id,name,is_active,include_in_gross_profit_coverage,'
+              'coverage_expense_type,coverage_estimated_amount,'
+              'coverage_frequency,coverage_due_days,coverage_notes,'
+              'coverage_is_active',
           'order': 'name.asc',
         });
         return rows
@@ -49,6 +54,19 @@ final class SupabaseAdminExpensesRepository implements IExpensesRepository {
                 isActive: _bool(row['is_active'], fallback: true),
                 includeInGrossProfitCoverage: _bool(
                   row['include_in_gross_profit_coverage'],
+                ),
+                coverageType: _coverageType(row['coverage_expense_type']),
+                coverageEstimatedAmountInCents: _nullableMoneyToCents(
+                  row['coverage_estimated_amount'],
+                ),
+                coverageFrequency: _coverageFrequency(
+                  row['coverage_frequency'],
+                ),
+                coverageDueDays: _intList(row['coverage_due_days']),
+                coverageNotes: _nullableText(row['coverage_notes']),
+                coverageIsActive: _bool(
+                  row['coverage_is_active'],
+                  fallback: true,
                 ),
               ),
             )
@@ -103,24 +121,27 @@ final class SupabaseAdminExpensesRepository implements IExpensesRepository {
       'expense_category_save_failed',
       'No se pudo guardar categoria de gasto.',
       () async {
-        final includeInCoverage =
-            category.parentId == null && category.includeInGrossProfitCoverage;
+        final normalized = _normalizedCategory(category);
         await _upsert('expense_categories', {
-          'id': category.id,
+          'id': normalized.id,
           'restaurant_id': _restaurantId,
-          'parent_id': category.parentId,
-          'name': category.name,
-          'is_active': category.isActive,
-          'include_in_gross_profit_coverage': includeInCoverage,
+          'parent_id': normalized.parentId,
+          'name': normalized.name,
+          'is_active': normalized.isActive,
+          'include_in_gross_profit_coverage':
+              normalized.includeInGrossProfitCoverage,
+          'coverage_expense_type': normalized.coverageType?.name,
+          'coverage_estimated_amount':
+              normalized.coverageEstimatedAmountInCents == null
+              ? null
+              : _money(normalized.coverageEstimatedAmountInCents!),
+          'coverage_frequency': normalized.coverageFrequency?.name,
+          'coverage_due_days': normalized.coverageDueDays,
+          'coverage_notes': normalized.coverageNotes,
+          'coverage_is_active': normalized.coverageIsActive,
           'updated_at': DateTime.now().toIso8601String(),
         });
-        return ExpenseCategory(
-          id: category.id,
-          name: category.name,
-          parentId: category.parentId,
-          isActive: category.isActive,
-          includeInGrossProfitCoverage: includeInCoverage,
-        );
+        return normalized;
       },
     );
   }
@@ -251,39 +272,12 @@ final class SupabaseAdminExpensesRepository implements IExpensesRepository {
 
   void _ensureSuccess(http.Response response, String operation) {
     if (response.statusCode >= 200 && response.statusCode < 300) return;
+    if (response.statusCode == 401 || response.statusCode == 403) {
+      _remoteSessionService.expire();
+    }
     throw StateError(
       'Supabase rechazo $operation (${response.statusCode}): ${response.body}',
     );
-  }
-
-  String _text(Object? value, {String fallback = ''}) {
-    final text = value?.toString().trim();
-    return text == null || text.isEmpty ? fallback : text;
-  }
-
-  String? _nullableText(Object? value) {
-    final text = value?.toString().trim();
-    return text == null || text.isEmpty ? null : text;
-  }
-
-  bool _bool(Object? value, {bool fallback = false}) {
-    if (value is bool) return value;
-    if (value == null) return fallback;
-    return value.toString().toLowerCase() == 'true';
-  }
-
-  int _moneyToCents(Object? value) {
-    if (value is int) return value * 100;
-    if (value is num) return (value * 100).round();
-    return ((num.tryParse(value?.toString() ?? '') ?? 0) * 100).round();
-  }
-
-  num _money(int cents) => cents / 100;
-
-  DateTime _date(Object? value) {
-    final text = value?.toString();
-    if (text == null || text.isEmpty) return DateTime.now();
-    return DateTime.tryParse(text) ?? DateTime.now();
   }
 
   String get _restaurantId => _restaurantService.restaurantId;

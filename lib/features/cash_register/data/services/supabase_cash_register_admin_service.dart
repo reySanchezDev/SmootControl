@@ -177,6 +177,9 @@ final class SupabaseCashRegisterAdminService {
 
   void _ensureSuccess(http.Response response, String table) {
     if (response.statusCode < 200 || response.statusCode >= 300) {
+      if (response.statusCode == 401 || response.statusCode == 403) {
+        _remoteSessionService.expire();
+      }
       throw StateError(
         'Supabase rechazo operacion de $table '
         '(${response.statusCode}): ${response.body}',

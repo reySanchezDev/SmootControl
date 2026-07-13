@@ -1,3 +1,5 @@
+import 'dart:async';
+
 /// Keeps the current remote administrator session in memory.
 ///
 /// Administrative screens use this token to read/write Supabase directly after
@@ -7,6 +9,10 @@ final class CurrentRemoteSessionService {
   String? _accessToken;
   String? _userId;
   DateTime? _expiresAt;
+  final _expiredController = StreamController<void>.broadcast();
+
+  /// Emits when the remote admin session is no longer usable.
+  Stream<void> get onExpired => _expiredController.stream;
 
   /// Current remote user id, when a remote admin session is active.
   String? get userId => _userId;
@@ -19,7 +25,7 @@ final class CurrentRemoteSessionService {
     final expiration = _expiresAt;
     if (expiration != null &&
         !expiration.isAfter(DateTime.now().add(const Duration(minutes: 2)))) {
-      clear();
+      expire();
       return null;
     }
 
@@ -45,5 +51,19 @@ final class CurrentRemoteSessionService {
     _accessToken = null;
     _userId = null;
     _expiresAt = null;
+  }
+
+  /// Clears the session and notifies listeners that login is required again.
+  void expire() {
+    final hadSession = _accessToken != null || _userId != null;
+    clear();
+    if (hadSession && !_expiredController.isClosed) {
+      _expiredController.add(null);
+    }
+  }
+
+  /// Releases the expiration stream.
+  void dispose() {
+    unawaited(_expiredController.close());
   }
 }

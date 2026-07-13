@@ -580,10 +580,63 @@ class AppLocalizationsEs extends AppLocalizations {
       'Actívalo solo para gastos operativos reales. No usar en nómina ni compras de inventario.';
 
   @override
+  String get expenseCategoryCoverageSubcategoryHelp =>
+      'Actívalo solo en subcategorías que deban medirse contra la utilidad bruta.';
+
+  @override
   String get expenseCategoryCoverageIncluded => 'Entra en cobertura';
 
   @override
   String get expenseCategoryCoverageExcluded => 'Fuera de cobertura';
+
+  @override
+  String get expenseCoverageTypeField => 'Tipo de gasto';
+
+  @override
+  String get expenseCoverageTypeFixed => 'Fijo';
+
+  @override
+  String get expenseCoverageTypeVariable => 'Variable';
+
+  @override
+  String get expenseCoverageAmountField => 'Monto estimado';
+
+  @override
+  String get expenseCoverageFrequencyField => 'Frecuencia';
+
+  @override
+  String get expenseCoverageFrequencyWeekly => 'Semanal';
+
+  @override
+  String get expenseCoverageFrequencyBiweekly => 'Quincenal';
+
+  @override
+  String get expenseCoverageFrequencyMonthly => 'Mensual';
+
+  @override
+  String get expenseCoverageFrequencyCustom => 'Personalizada';
+
+  @override
+  String get expenseCoverageDueDaysField => 'Días de pago';
+
+  @override
+  String get expenseCoverageNotesField => 'Notas de cobertura';
+
+  @override
+  String get expenseCoverageAmountRequiredError =>
+      'El monto es obligatorio para gastos fijos.';
+
+  @override
+  String get expenseCoverageAmountInvalidError =>
+      'El monto de cobertura no es válido.';
+
+  @override
+  String get expenseCoverageDueDaysRequiredError =>
+      'Indica al menos un día de pago.';
+
+  @override
+  String get expenseCoverageDueDaysInvalidError =>
+      'Los días de pago deben estar entre 1 y 31.';
 
   @override
   String get inventoryValueReportTitle => 'Valor de inventario';
@@ -591,6 +644,61 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get inventoryValueReportSubtitle =>
       'Costo actual, venta potencial y utilidad estimada del inventario.';
+
+  @override
+  String get monthlyOperationalReportTitle => 'Resultado operativo';
+
+  @override
+  String get monthlyOperationalReportSubtitle =>
+      'Ventas del mes contra gastos, planilla y utilidad disponible.';
+
+  @override
+  String get monthlyOperationalEmptyMessage =>
+      'No hay ventas, gastos ni planilla para el rango seleccionado.';
+
+  @override
+  String get monthlyOperationalProductCost => 'Costo productos';
+
+  @override
+  String get monthlyOperationalConsideredExpenses => 'Gastos operativos';
+
+  @override
+  String get monthlyOperationalPayroll => 'Planilla';
+
+  @override
+  String get monthlyOperationalResult => 'Resultado';
+
+  @override
+  String get monthlyOperationalRiskTitle => 'Utilidad insuficiente';
+
+  @override
+  String get monthlyOperationalRiskMessage =>
+      'La utilidad bruta aun no cubre los gastos operativos y la planilla del periodo.';
+
+  @override
+  String get monthlyOperationalHealthyTitle => 'Cobertura saludable';
+
+  @override
+  String get monthlyOperationalHealthyMessage =>
+      'La utilidad bruta cubre gastos operativos y planilla del periodo.';
+
+  @override
+  String get monthlyOperationalCoverage => 'Cobertura usada';
+
+  @override
+  String get monthlyOperationalPayrollPending => 'Planilla pendiente';
+
+  @override
+  String get monthlyOperationalAdvances => 'Adelantos entregados';
+
+  @override
+  String get monthlyOperationalPendingConsumption => 'Consumos pendientes';
+
+  @override
+  String get monthlyOperationalExpensesTitle => 'Gastos considerados';
+
+  @override
+  String get monthlyOperationalExcludedExpenses => 'Gastos excluidos';
 
   @override
   String get inventoryValueSearchLabel => 'Buscar producto o categoría';

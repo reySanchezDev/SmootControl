@@ -38,6 +38,9 @@ extension _SupabaseReportSummaryHttp on SupabaseReportSummaryService {
 
   void _ensureSuccess(http.Response response, String table) {
     if (response.statusCode >= 200 && response.statusCode < 300) return;
+    if (response.statusCode == 401 || response.statusCode == 403) {
+      _remoteSessionService.expire();
+    }
 
     throw StateError(
       'Supabase rechazo consulta de reportes en $table '

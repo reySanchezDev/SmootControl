@@ -46,6 +46,9 @@ extension on SupabaseCatalogPullService {
       headers: await _headers(),
     );
     if (response.statusCode < 200 || response.statusCode >= 300) {
+      if (response.statusCode == 401 || response.statusCode == 403) {
+        _remoteSessionService.expire();
+      }
       throw StateError(
         'Supabase rechazo descarga de $table (${response.statusCode}): '
         '${response.body}',
@@ -185,6 +188,9 @@ extension on SupabaseCatalogPullService {
       }),
     );
     if (response.statusCode < 200 || response.statusCode >= 300) {
+      if (response.statusCode == 401 || response.statusCode == 403) {
+        _remoteSessionService.expire();
+      }
       throw StateError(
         'Supabase rechazo creacion de tipos de venta base '
         '(${response.statusCode}): ${response.body}',

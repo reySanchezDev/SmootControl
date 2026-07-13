@@ -116,6 +116,9 @@ abstract class _SupabaseStaffAdminRepositoryBase {
 
   void _ensureSuccess(http.Response response, String context) {
     if (response.statusCode >= 200 && response.statusCode < 300) return;
+    if (response.statusCode == 401 || response.statusCode == 403) {
+      _remoteSessionService.expire();
+    }
     throw StateError('Supabase rechazo $context: ${response.body}');
   }
 

@@ -262,3 +262,46 @@ Debido a eso, debes revisar 2 cosas:
 
 6. Hacer una auditoria en el POS para asegurar de que las transacciones como APERTURA y CIERRES  de cajas viajen hasta el remoto, mediante la sincronizacion.
 
+
+
+
+Haz lo siguiente:
+
+1. Quiero que analises y me digas o me proponagas  un nuevo reporte donde pueda tener un comparativo de las ventas del mes vz los gastos del mes para poder ir tomando desiciones en base a lo que vaya ganando 
+
+
+
+
+Haz lo siguiente:
+
+1. Crear un nuevo catalogo para gestionar estaciones de concina, por ejemplo: barra, mostrador, cocina.
+
+1. En el catalogo de producto agregar un nuevo campo que indique a que estacion debe caer el producto
+
+3. Crear una nueva pantalla que muestre las  estaciones de cocina como pestañas arriba y que segun el usuario seleccione , muestre los productos de cada estacion. Pero debe mostrar solo los producto a la cual corresponde el producto,  
+
+1. EN el POS, EN mas opciones , en el apartado mas opciones, ahi hay que hubicar una nueva pantalla que nombraras como :"MONITOR" en esa pantalla debe ir cayendo las ordenes en orden de creacion, 
+
+
+
+
+
+
+Revisa el tema de vencimiento de login, sucede que cuando ingreso al admin y quizas mas luego vuelvo a entrar, el sistema me permite navegar, pero al entrar a una pantalla por ejemplo pantalla de gastos, me sale un mensaje: "No se pudieron leer categorias de gastos". Lo correcto debe ser que si hay vencimiento de login el sistema debe cerrarse automaticamente y mostrar el login. 
+
+
+
+
+
+Leé y analiza cohesivamente el siguiente caso y en base al analisis y lo que ya tenemos desarrollado, proponer una propuesta de mejora donde podamos cubrir la necesidad de forma segura, cohesiva y escalable.
+
+Anteriormente agregamos a las categorias de gastos un campo que definia si esa categoria de gastos entraba en la cobertura, y si entraba entonces todas sus sub categorias de gastos entraban a la caobertura.
+
+Esto se hizo por que estabamos pensando un hacer un reporte de cobertura que basicamente buscaba ir midiento la cobertura de los gastos segun se fueran haciendo ventas y ver si las ganancias generadas cubrian esos gastos.
+
+Despues surguio que de esa forma no podiamos obtener un reporte proyectado ya que , se tenian que grabar los gastos para que el reporte pudiera ser valioso, pero resulta que los gastos no tiene monto en el catalgo, si no que toman su valor hasta ser ingresados. Entonces consideramos que la mejor forma de hacerlo para poder ir midiendo una cobertura en tiempo real , es trasladar ese campo de la categoria hacia las sub categorias y a las sub categoria extenderlas y agregar mas campos, de modo que el flujo que de la siguiente forma:
+
+
+Si la categoria a grabar estara dentro de otra categoria, entonces, usuario debera indicar si entra a la cobertura, si entra a cobertura entonces, indicar si es fijo o variable, si es fijo debera de meter el monto, si es variabla debera de meter un monto aproximado pero no es exigido.
+
+La idea es que podamos tener datos para que mas adelante hagamos un reporte con indicadores que nos vaya indicando si con lo que se va generando como gancias brutas , resultados de las ventas, se va cubriendo los gastos. 

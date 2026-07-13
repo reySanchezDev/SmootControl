@@ -15886,6 +15886,77 @@ class $LocalExpenseCategoriesTable extends LocalExpenseCategories
         ),
         defaultValue: const Constant(false),
       );
+  static const VerificationMeta _coverageExpenseTypeMeta =
+      const VerificationMeta('coverageExpenseType');
+  @override
+  late final GeneratedColumn<String> coverageExpenseType =
+      GeneratedColumn<String>(
+        'coverage_expense_type',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _coverageEstimatedAmountInCentsMeta =
+      const VerificationMeta('coverageEstimatedAmountInCents');
+  @override
+  late final GeneratedColumn<int> coverageEstimatedAmountInCents =
+      GeneratedColumn<int>(
+        'coverage_estimated_amount_in_cents',
+        aliasedName,
+        true,
+        type: DriftSqlType.int,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _coverageFrequencyMeta = const VerificationMeta(
+    'coverageFrequency',
+  );
+  @override
+  late final GeneratedColumn<String> coverageFrequency =
+      GeneratedColumn<String>(
+        'coverage_frequency',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _coverageDueDaysJsonMeta =
+      const VerificationMeta('coverageDueDaysJson');
+  @override
+  late final GeneratedColumn<String> coverageDueDaysJson =
+      GeneratedColumn<String>(
+        'coverage_due_days_json',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _coverageNotesMeta = const VerificationMeta(
+    'coverageNotes',
+  );
+  @override
+  late final GeneratedColumn<String> coverageNotes = GeneratedColumn<String>(
+    'coverage_notes',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _coverageIsActiveMeta = const VerificationMeta(
+    'coverageIsActive',
+  );
+  @override
+  late final GeneratedColumn<bool> coverageIsActive = GeneratedColumn<bool>(
+    'coverage_is_active',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("coverage_is_active" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     remoteId,
@@ -15899,6 +15970,12 @@ class $LocalExpenseCategoriesTable extends LocalExpenseCategories
     parentId,
     isActive,
     includeInGrossProfitCoverage,
+    coverageExpenseType,
+    coverageEstimatedAmountInCents,
+    coverageFrequency,
+    coverageDueDaysJson,
+    coverageNotes,
+    coverageIsActive,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -15986,6 +16063,60 @@ class $LocalExpenseCategoriesTable extends LocalExpenseCategories
         ),
       );
     }
+    if (data.containsKey('coverage_expense_type')) {
+      context.handle(
+        _coverageExpenseTypeMeta,
+        coverageExpenseType.isAcceptableOrUnknown(
+          data['coverage_expense_type']!,
+          _coverageExpenseTypeMeta,
+        ),
+      );
+    }
+    if (data.containsKey('coverage_estimated_amount_in_cents')) {
+      context.handle(
+        _coverageEstimatedAmountInCentsMeta,
+        coverageEstimatedAmountInCents.isAcceptableOrUnknown(
+          data['coverage_estimated_amount_in_cents']!,
+          _coverageEstimatedAmountInCentsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('coverage_frequency')) {
+      context.handle(
+        _coverageFrequencyMeta,
+        coverageFrequency.isAcceptableOrUnknown(
+          data['coverage_frequency']!,
+          _coverageFrequencyMeta,
+        ),
+      );
+    }
+    if (data.containsKey('coverage_due_days_json')) {
+      context.handle(
+        _coverageDueDaysJsonMeta,
+        coverageDueDaysJson.isAcceptableOrUnknown(
+          data['coverage_due_days_json']!,
+          _coverageDueDaysJsonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('coverage_notes')) {
+      context.handle(
+        _coverageNotesMeta,
+        coverageNotes.isAcceptableOrUnknown(
+          data['coverage_notes']!,
+          _coverageNotesMeta,
+        ),
+      );
+    }
+    if (data.containsKey('coverage_is_active')) {
+      context.handle(
+        _coverageIsActiveMeta,
+        coverageIsActive.isAcceptableOrUnknown(
+          data['coverage_is_active']!,
+          _coverageIsActiveMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -16039,6 +16170,30 @@ class $LocalExpenseCategoriesTable extends LocalExpenseCategories
         DriftSqlType.bool,
         data['${effectivePrefix}include_in_gross_profit_coverage'],
       )!,
+      coverageExpenseType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}coverage_expense_type'],
+      ),
+      coverageEstimatedAmountInCents: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}coverage_estimated_amount_in_cents'],
+      ),
+      coverageFrequency: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}coverage_frequency'],
+      ),
+      coverageDueDaysJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}coverage_due_days_json'],
+      ),
+      coverageNotes: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}coverage_notes'],
+      ),
+      coverageIsActive: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}coverage_is_active'],
+      )!,
     );
   }
 
@@ -16082,6 +16237,24 @@ class LocalExpenseCategory extends DataClass
 
   /// Whether this category subtracts from gross profit coverage reports.
   final bool includeInGrossProfitCoverage;
+
+  /// fixed or variable for projected coverage.
+  final String? coverageExpenseType;
+
+  /// Estimated coverage amount in minor currency units.
+  final int? coverageEstimatedAmountInCents;
+
+  /// weekly, biweekly, monthly or custom.
+  final String? coverageFrequency;
+
+  /// JSON encoded due days for projected coverage.
+  final String? coverageDueDaysJson;
+
+  /// Optional note for projected coverage.
+  final String? coverageNotes;
+
+  /// Whether the projected coverage configuration is active.
+  final bool coverageIsActive;
   const LocalExpenseCategory({
     this.remoteId,
     required this.syncStatus,
@@ -16094,6 +16267,12 @@ class LocalExpenseCategory extends DataClass
     this.parentId,
     required this.isActive,
     required this.includeInGrossProfitCoverage,
+    this.coverageExpenseType,
+    this.coverageEstimatedAmountInCents,
+    this.coverageFrequency,
+    this.coverageDueDaysJson,
+    this.coverageNotes,
+    required this.coverageIsActive,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -16119,6 +16298,24 @@ class LocalExpenseCategory extends DataClass
     map['include_in_gross_profit_coverage'] = Variable<bool>(
       includeInGrossProfitCoverage,
     );
+    if (!nullToAbsent || coverageExpenseType != null) {
+      map['coverage_expense_type'] = Variable<String>(coverageExpenseType);
+    }
+    if (!nullToAbsent || coverageEstimatedAmountInCents != null) {
+      map['coverage_estimated_amount_in_cents'] = Variable<int>(
+        coverageEstimatedAmountInCents,
+      );
+    }
+    if (!nullToAbsent || coverageFrequency != null) {
+      map['coverage_frequency'] = Variable<String>(coverageFrequency);
+    }
+    if (!nullToAbsent || coverageDueDaysJson != null) {
+      map['coverage_due_days_json'] = Variable<String>(coverageDueDaysJson);
+    }
+    if (!nullToAbsent || coverageNotes != null) {
+      map['coverage_notes'] = Variable<String>(coverageNotes);
+    }
+    map['coverage_is_active'] = Variable<bool>(coverageIsActive);
     return map;
   }
 
@@ -16143,6 +16340,23 @@ class LocalExpenseCategory extends DataClass
           : Value(parentId),
       isActive: Value(isActive),
       includeInGrossProfitCoverage: Value(includeInGrossProfitCoverage),
+      coverageExpenseType: coverageExpenseType == null && nullToAbsent
+          ? const Value.absent()
+          : Value(coverageExpenseType),
+      coverageEstimatedAmountInCents:
+          coverageEstimatedAmountInCents == null && nullToAbsent
+          ? const Value.absent()
+          : Value(coverageEstimatedAmountInCents),
+      coverageFrequency: coverageFrequency == null && nullToAbsent
+          ? const Value.absent()
+          : Value(coverageFrequency),
+      coverageDueDaysJson: coverageDueDaysJson == null && nullToAbsent
+          ? const Value.absent()
+          : Value(coverageDueDaysJson),
+      coverageNotes: coverageNotes == null && nullToAbsent
+          ? const Value.absent()
+          : Value(coverageNotes),
+      coverageIsActive: Value(coverageIsActive),
     );
   }
 
@@ -16165,6 +16379,20 @@ class LocalExpenseCategory extends DataClass
       includeInGrossProfitCoverage: serializer.fromJson<bool>(
         json['includeInGrossProfitCoverage'],
       ),
+      coverageExpenseType: serializer.fromJson<String?>(
+        json['coverageExpenseType'],
+      ),
+      coverageEstimatedAmountInCents: serializer.fromJson<int?>(
+        json['coverageEstimatedAmountInCents'],
+      ),
+      coverageFrequency: serializer.fromJson<String?>(
+        json['coverageFrequency'],
+      ),
+      coverageDueDaysJson: serializer.fromJson<String?>(
+        json['coverageDueDaysJson'],
+      ),
+      coverageNotes: serializer.fromJson<String?>(json['coverageNotes']),
+      coverageIsActive: serializer.fromJson<bool>(json['coverageIsActive']),
     );
   }
   @override
@@ -16184,6 +16412,14 @@ class LocalExpenseCategory extends DataClass
       'includeInGrossProfitCoverage': serializer.toJson<bool>(
         includeInGrossProfitCoverage,
       ),
+      'coverageExpenseType': serializer.toJson<String?>(coverageExpenseType),
+      'coverageEstimatedAmountInCents': serializer.toJson<int?>(
+        coverageEstimatedAmountInCents,
+      ),
+      'coverageFrequency': serializer.toJson<String?>(coverageFrequency),
+      'coverageDueDaysJson': serializer.toJson<String?>(coverageDueDaysJson),
+      'coverageNotes': serializer.toJson<String?>(coverageNotes),
+      'coverageIsActive': serializer.toJson<bool>(coverageIsActive),
     };
   }
 
@@ -16199,6 +16435,12 @@ class LocalExpenseCategory extends DataClass
     Value<String?> parentId = const Value.absent(),
     bool? isActive,
     bool? includeInGrossProfitCoverage,
+    Value<String?> coverageExpenseType = const Value.absent(),
+    Value<int?> coverageEstimatedAmountInCents = const Value.absent(),
+    Value<String?> coverageFrequency = const Value.absent(),
+    Value<String?> coverageDueDaysJson = const Value.absent(),
+    Value<String?> coverageNotes = const Value.absent(),
+    bool? coverageIsActive,
   }) => LocalExpenseCategory(
     remoteId: remoteId.present ? remoteId.value : this.remoteId,
     syncStatus: syncStatus ?? this.syncStatus,
@@ -16212,6 +16454,22 @@ class LocalExpenseCategory extends DataClass
     isActive: isActive ?? this.isActive,
     includeInGrossProfitCoverage:
         includeInGrossProfitCoverage ?? this.includeInGrossProfitCoverage,
+    coverageExpenseType: coverageExpenseType.present
+        ? coverageExpenseType.value
+        : this.coverageExpenseType,
+    coverageEstimatedAmountInCents: coverageEstimatedAmountInCents.present
+        ? coverageEstimatedAmountInCents.value
+        : this.coverageEstimatedAmountInCents,
+    coverageFrequency: coverageFrequency.present
+        ? coverageFrequency.value
+        : this.coverageFrequency,
+    coverageDueDaysJson: coverageDueDaysJson.present
+        ? coverageDueDaysJson.value
+        : this.coverageDueDaysJson,
+    coverageNotes: coverageNotes.present
+        ? coverageNotes.value
+        : this.coverageNotes,
+    coverageIsActive: coverageIsActive ?? this.coverageIsActive,
   );
   LocalExpenseCategory copyWithCompanion(LocalExpenseCategoriesCompanion data) {
     return LocalExpenseCategory(
@@ -16230,6 +16488,25 @@ class LocalExpenseCategory extends DataClass
       includeInGrossProfitCoverage: data.includeInGrossProfitCoverage.present
           ? data.includeInGrossProfitCoverage.value
           : this.includeInGrossProfitCoverage,
+      coverageExpenseType: data.coverageExpenseType.present
+          ? data.coverageExpenseType.value
+          : this.coverageExpenseType,
+      coverageEstimatedAmountInCents:
+          data.coverageEstimatedAmountInCents.present
+          ? data.coverageEstimatedAmountInCents.value
+          : this.coverageEstimatedAmountInCents,
+      coverageFrequency: data.coverageFrequency.present
+          ? data.coverageFrequency.value
+          : this.coverageFrequency,
+      coverageDueDaysJson: data.coverageDueDaysJson.present
+          ? data.coverageDueDaysJson.value
+          : this.coverageDueDaysJson,
+      coverageNotes: data.coverageNotes.present
+          ? data.coverageNotes.value
+          : this.coverageNotes,
+      coverageIsActive: data.coverageIsActive.present
+          ? data.coverageIsActive.value
+          : this.coverageIsActive,
     );
   }
 
@@ -16246,7 +16523,17 @@ class LocalExpenseCategory extends DataClass
           ..write('name: $name, ')
           ..write('parentId: $parentId, ')
           ..write('isActive: $isActive, ')
-          ..write('includeInGrossProfitCoverage: $includeInGrossProfitCoverage')
+          ..write(
+            'includeInGrossProfitCoverage: $includeInGrossProfitCoverage, ',
+          )
+          ..write('coverageExpenseType: $coverageExpenseType, ')
+          ..write(
+            'coverageEstimatedAmountInCents: $coverageEstimatedAmountInCents, ',
+          )
+          ..write('coverageFrequency: $coverageFrequency, ')
+          ..write('coverageDueDaysJson: $coverageDueDaysJson, ')
+          ..write('coverageNotes: $coverageNotes, ')
+          ..write('coverageIsActive: $coverageIsActive')
           ..write(')'))
         .toString();
   }
@@ -16264,6 +16551,12 @@ class LocalExpenseCategory extends DataClass
     parentId,
     isActive,
     includeInGrossProfitCoverage,
+    coverageExpenseType,
+    coverageEstimatedAmountInCents,
+    coverageFrequency,
+    coverageDueDaysJson,
+    coverageNotes,
+    coverageIsActive,
   );
   @override
   bool operator ==(Object other) =>
@@ -16280,7 +16573,14 @@ class LocalExpenseCategory extends DataClass
           other.parentId == this.parentId &&
           other.isActive == this.isActive &&
           other.includeInGrossProfitCoverage ==
-              this.includeInGrossProfitCoverage);
+              this.includeInGrossProfitCoverage &&
+          other.coverageExpenseType == this.coverageExpenseType &&
+          other.coverageEstimatedAmountInCents ==
+              this.coverageEstimatedAmountInCents &&
+          other.coverageFrequency == this.coverageFrequency &&
+          other.coverageDueDaysJson == this.coverageDueDaysJson &&
+          other.coverageNotes == this.coverageNotes &&
+          other.coverageIsActive == this.coverageIsActive);
 }
 
 class LocalExpenseCategoriesCompanion
@@ -16296,6 +16596,12 @@ class LocalExpenseCategoriesCompanion
   final Value<String?> parentId;
   final Value<bool> isActive;
   final Value<bool> includeInGrossProfitCoverage;
+  final Value<String?> coverageExpenseType;
+  final Value<int?> coverageEstimatedAmountInCents;
+  final Value<String?> coverageFrequency;
+  final Value<String?> coverageDueDaysJson;
+  final Value<String?> coverageNotes;
+  final Value<bool> coverageIsActive;
   final Value<int> rowid;
   const LocalExpenseCategoriesCompanion({
     this.remoteId = const Value.absent(),
@@ -16309,6 +16615,12 @@ class LocalExpenseCategoriesCompanion
     this.parentId = const Value.absent(),
     this.isActive = const Value.absent(),
     this.includeInGrossProfitCoverage = const Value.absent(),
+    this.coverageExpenseType = const Value.absent(),
+    this.coverageEstimatedAmountInCents = const Value.absent(),
+    this.coverageFrequency = const Value.absent(),
+    this.coverageDueDaysJson = const Value.absent(),
+    this.coverageNotes = const Value.absent(),
+    this.coverageIsActive = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   LocalExpenseCategoriesCompanion.insert({
@@ -16323,6 +16635,12 @@ class LocalExpenseCategoriesCompanion
     this.parentId = const Value.absent(),
     this.isActive = const Value.absent(),
     this.includeInGrossProfitCoverage = const Value.absent(),
+    this.coverageExpenseType = const Value.absent(),
+    this.coverageEstimatedAmountInCents = const Value.absent(),
+    this.coverageFrequency = const Value.absent(),
+    this.coverageDueDaysJson = const Value.absent(),
+    this.coverageNotes = const Value.absent(),
+    this.coverageIsActive = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : createdAt = Value(createdAt),
        updatedAt = Value(updatedAt),
@@ -16340,6 +16658,12 @@ class LocalExpenseCategoriesCompanion
     Expression<String>? parentId,
     Expression<bool>? isActive,
     Expression<bool>? includeInGrossProfitCoverage,
+    Expression<String>? coverageExpenseType,
+    Expression<int>? coverageEstimatedAmountInCents,
+    Expression<String>? coverageFrequency,
+    Expression<String>? coverageDueDaysJson,
+    Expression<String>? coverageNotes,
+    Expression<bool>? coverageIsActive,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -16355,6 +16679,15 @@ class LocalExpenseCategoriesCompanion
       if (isActive != null) 'is_active': isActive,
       if (includeInGrossProfitCoverage != null)
         'include_in_gross_profit_coverage': includeInGrossProfitCoverage,
+      if (coverageExpenseType != null)
+        'coverage_expense_type': coverageExpenseType,
+      if (coverageEstimatedAmountInCents != null)
+        'coverage_estimated_amount_in_cents': coverageEstimatedAmountInCents,
+      if (coverageFrequency != null) 'coverage_frequency': coverageFrequency,
+      if (coverageDueDaysJson != null)
+        'coverage_due_days_json': coverageDueDaysJson,
+      if (coverageNotes != null) 'coverage_notes': coverageNotes,
+      if (coverageIsActive != null) 'coverage_is_active': coverageIsActive,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -16371,6 +16704,12 @@ class LocalExpenseCategoriesCompanion
     Value<String?>? parentId,
     Value<bool>? isActive,
     Value<bool>? includeInGrossProfitCoverage,
+    Value<String?>? coverageExpenseType,
+    Value<int?>? coverageEstimatedAmountInCents,
+    Value<String?>? coverageFrequency,
+    Value<String?>? coverageDueDaysJson,
+    Value<String?>? coverageNotes,
+    Value<bool>? coverageIsActive,
     Value<int>? rowid,
   }) {
     return LocalExpenseCategoriesCompanion(
@@ -16386,6 +16725,13 @@ class LocalExpenseCategoriesCompanion
       isActive: isActive ?? this.isActive,
       includeInGrossProfitCoverage:
           includeInGrossProfitCoverage ?? this.includeInGrossProfitCoverage,
+      coverageExpenseType: coverageExpenseType ?? this.coverageExpenseType,
+      coverageEstimatedAmountInCents:
+          coverageEstimatedAmountInCents ?? this.coverageEstimatedAmountInCents,
+      coverageFrequency: coverageFrequency ?? this.coverageFrequency,
+      coverageDueDaysJson: coverageDueDaysJson ?? this.coverageDueDaysJson,
+      coverageNotes: coverageNotes ?? this.coverageNotes,
+      coverageIsActive: coverageIsActive ?? this.coverageIsActive,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -16428,6 +16774,30 @@ class LocalExpenseCategoriesCompanion
         includeInGrossProfitCoverage.value,
       );
     }
+    if (coverageExpenseType.present) {
+      map['coverage_expense_type'] = Variable<String>(
+        coverageExpenseType.value,
+      );
+    }
+    if (coverageEstimatedAmountInCents.present) {
+      map['coverage_estimated_amount_in_cents'] = Variable<int>(
+        coverageEstimatedAmountInCents.value,
+      );
+    }
+    if (coverageFrequency.present) {
+      map['coverage_frequency'] = Variable<String>(coverageFrequency.value);
+    }
+    if (coverageDueDaysJson.present) {
+      map['coverage_due_days_json'] = Variable<String>(
+        coverageDueDaysJson.value,
+      );
+    }
+    if (coverageNotes.present) {
+      map['coverage_notes'] = Variable<String>(coverageNotes.value);
+    }
+    if (coverageIsActive.present) {
+      map['coverage_is_active'] = Variable<bool>(coverageIsActive.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -16450,6 +16820,14 @@ class LocalExpenseCategoriesCompanion
           ..write(
             'includeInGrossProfitCoverage: $includeInGrossProfitCoverage, ',
           )
+          ..write('coverageExpenseType: $coverageExpenseType, ')
+          ..write(
+            'coverageEstimatedAmountInCents: $coverageEstimatedAmountInCents, ',
+          )
+          ..write('coverageFrequency: $coverageFrequency, ')
+          ..write('coverageDueDaysJson: $coverageDueDaysJson, ')
+          ..write('coverageNotes: $coverageNotes, ')
+          ..write('coverageIsActive: $coverageIsActive, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -34089,6 +34467,12 @@ typedef $$LocalExpenseCategoriesTableCreateCompanionBuilder =
       Value<String?> parentId,
       Value<bool> isActive,
       Value<bool> includeInGrossProfitCoverage,
+      Value<String?> coverageExpenseType,
+      Value<int?> coverageEstimatedAmountInCents,
+      Value<String?> coverageFrequency,
+      Value<String?> coverageDueDaysJson,
+      Value<String?> coverageNotes,
+      Value<bool> coverageIsActive,
       Value<int> rowid,
     });
 typedef $$LocalExpenseCategoriesTableUpdateCompanionBuilder =
@@ -34104,6 +34488,12 @@ typedef $$LocalExpenseCategoriesTableUpdateCompanionBuilder =
       Value<String?> parentId,
       Value<bool> isActive,
       Value<bool> includeInGrossProfitCoverage,
+      Value<String?> coverageExpenseType,
+      Value<int?> coverageEstimatedAmountInCents,
+      Value<String?> coverageFrequency,
+      Value<String?> coverageDueDaysJson,
+      Value<String?> coverageNotes,
+      Value<bool> coverageIsActive,
       Value<int> rowid,
     });
 
@@ -34168,6 +34558,36 @@ class $$LocalExpenseCategoriesTableFilterComposer
 
   ColumnFilters<bool> get includeInGrossProfitCoverage => $composableBuilder(
     column: $table.includeInGrossProfitCoverage,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get coverageExpenseType => $composableBuilder(
+    column: $table.coverageExpenseType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get coverageEstimatedAmountInCents => $composableBuilder(
+    column: $table.coverageEstimatedAmountInCents,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get coverageFrequency => $composableBuilder(
+    column: $table.coverageFrequency,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get coverageDueDaysJson => $composableBuilder(
+    column: $table.coverageDueDaysJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get coverageNotes => $composableBuilder(
+    column: $table.coverageNotes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get coverageIsActive => $composableBuilder(
+    column: $table.coverageIsActive,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -34235,6 +34655,36 @@ class $$LocalExpenseCategoriesTableOrderingComposer
     column: $table.includeInGrossProfitCoverage,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get coverageExpenseType => $composableBuilder(
+    column: $table.coverageExpenseType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get coverageEstimatedAmountInCents => $composableBuilder(
+    column: $table.coverageEstimatedAmountInCents,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get coverageFrequency => $composableBuilder(
+    column: $table.coverageFrequency,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get coverageDueDaysJson => $composableBuilder(
+    column: $table.coverageDueDaysJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get coverageNotes => $composableBuilder(
+    column: $table.coverageNotes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get coverageIsActive => $composableBuilder(
+    column: $table.coverageIsActive,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$LocalExpenseCategoriesTableAnnotationComposer
@@ -34280,6 +34730,36 @@ class $$LocalExpenseCategoriesTableAnnotationComposer
 
   GeneratedColumn<bool> get includeInGrossProfitCoverage => $composableBuilder(
     column: $table.includeInGrossProfitCoverage,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get coverageExpenseType => $composableBuilder(
+    column: $table.coverageExpenseType,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get coverageEstimatedAmountInCents => $composableBuilder(
+    column: $table.coverageEstimatedAmountInCents,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get coverageFrequency => $composableBuilder(
+    column: $table.coverageFrequency,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get coverageDueDaysJson => $composableBuilder(
+    column: $table.coverageDueDaysJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get coverageNotes => $composableBuilder(
+    column: $table.coverageNotes,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get coverageIsActive => $composableBuilder(
+    column: $table.coverageIsActive,
     builder: (column) => column,
   );
 }
@@ -34341,6 +34821,13 @@ class $$LocalExpenseCategoriesTableTableManager
                 Value<String?> parentId = const Value.absent(),
                 Value<bool> isActive = const Value.absent(),
                 Value<bool> includeInGrossProfitCoverage = const Value.absent(),
+                Value<String?> coverageExpenseType = const Value.absent(),
+                Value<int?> coverageEstimatedAmountInCents =
+                    const Value.absent(),
+                Value<String?> coverageFrequency = const Value.absent(),
+                Value<String?> coverageDueDaysJson = const Value.absent(),
+                Value<String?> coverageNotes = const Value.absent(),
+                Value<bool> coverageIsActive = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => LocalExpenseCategoriesCompanion(
                 remoteId: remoteId,
@@ -34354,6 +34841,12 @@ class $$LocalExpenseCategoriesTableTableManager
                 parentId: parentId,
                 isActive: isActive,
                 includeInGrossProfitCoverage: includeInGrossProfitCoverage,
+                coverageExpenseType: coverageExpenseType,
+                coverageEstimatedAmountInCents: coverageEstimatedAmountInCents,
+                coverageFrequency: coverageFrequency,
+                coverageDueDaysJson: coverageDueDaysJson,
+                coverageNotes: coverageNotes,
+                coverageIsActive: coverageIsActive,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -34369,6 +34862,13 @@ class $$LocalExpenseCategoriesTableTableManager
                 Value<String?> parentId = const Value.absent(),
                 Value<bool> isActive = const Value.absent(),
                 Value<bool> includeInGrossProfitCoverage = const Value.absent(),
+                Value<String?> coverageExpenseType = const Value.absent(),
+                Value<int?> coverageEstimatedAmountInCents =
+                    const Value.absent(),
+                Value<String?> coverageFrequency = const Value.absent(),
+                Value<String?> coverageDueDaysJson = const Value.absent(),
+                Value<String?> coverageNotes = const Value.absent(),
+                Value<bool> coverageIsActive = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => LocalExpenseCategoriesCompanion.insert(
                 remoteId: remoteId,
@@ -34382,6 +34882,12 @@ class $$LocalExpenseCategoriesTableTableManager
                 parentId: parentId,
                 isActive: isActive,
                 includeInGrossProfitCoverage: includeInGrossProfitCoverage,
+                coverageExpenseType: coverageExpenseType,
+                coverageEstimatedAmountInCents: coverageEstimatedAmountInCents,
+                coverageFrequency: coverageFrequency,
+                coverageDueDaysJson: coverageDueDaysJson,
+                coverageNotes: coverageNotes,
+                coverageIsActive: coverageIsActive,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

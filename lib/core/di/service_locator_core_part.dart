@@ -8,6 +8,7 @@ void _registerCoreDependencies() {
     )
     ..registerLazySingleton<CurrentRemoteSessionService>(
       CurrentRemoteSessionService.new,
+      dispose: (service) => service.dispose(),
     )
     ..registerLazySingleton<http.Client>(
       http.Client.new,

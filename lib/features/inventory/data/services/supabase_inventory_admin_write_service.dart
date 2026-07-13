@@ -147,6 +147,9 @@ final class SupabaseInventoryAdminWriteService {
       if (response.statusCode >= 200 && response.statusCode < 300) {
         return const AppSuccess<void>(null);
       }
+      if (response.statusCode == 401 || response.statusCode == 403) {
+        _remoteSessionService.expire();
+      }
       return AppFailureResult(
         AppFailure(
           code: 'remote_inventory_batch_failed',

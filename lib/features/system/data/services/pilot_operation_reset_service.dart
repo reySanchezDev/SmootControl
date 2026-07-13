@@ -201,6 +201,9 @@ final class PilotOperationResetService {
     );
 
     if (response.statusCode < 200 || response.statusCode >= 300) {
+      if (response.statusCode == 401 || response.statusCode == 403) {
+        _remoteSessionService.expire();
+      }
       throw StateError(
         'Supabase rechazo cierre de piloto (${response.statusCode}): '
         '${response.body}',
@@ -243,6 +246,9 @@ final class PilotOperationResetService {
     );
 
     if (response.statusCode < 200 || response.statusCode >= 300) {
+      if (response.statusCode == 401 || response.statusCode == 403) {
+        _remoteSessionService.expire();
+      }
       throw StateError(
         'Supabase rechazo limpieza ${scope.remoteValue} '
         '(${response.statusCode}): ${response.body}',

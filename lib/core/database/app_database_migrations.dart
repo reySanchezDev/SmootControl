@@ -27,6 +27,7 @@ extension _AppDatabaseMigrations on AppDatabase {
     await _upgradeSchemaFrom7To20(migrator, from);
     await _upgradeSchemaFrom21To24(migrator, from);
     await _upgradeSchemaFrom25To28(migrator, from);
+    await _upgradeSchemaFrom29(migrator, from);
   }
 
   Future<void> _upgradeSchemaFrom7To20(Migrator migrator, int from) async {
@@ -184,6 +185,13 @@ extension _AppDatabaseMigrations on AppDatabase {
           localExpenseCategories.includeInGrossProfitCoverage,
         );
       }
+    }
+  }
+
+  Future<void> _upgradeSchemaFrom29(Migrator migrator, int from) async {
+    if (from < 29) {
+      await _addExpenseCoverageProjectionColumns(migrator);
+      await _moveExpenseCoverageToChildren();
     }
   }
 }

@@ -153,6 +153,9 @@ final class SupabaseInventoryAdminReadService {
       },
     );
     if (response.statusCode < 200 || response.statusCode >= 300) {
+      if (response.statusCode == 401 || response.statusCode == 403) {
+        _remoteSessionService.expire();
+      }
       throw StateError(
         'Supabase rechazo lectura en $table (${response.statusCode}): '
         '${response.body}',

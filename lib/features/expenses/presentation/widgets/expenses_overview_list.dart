@@ -4,6 +4,7 @@ import 'package:smoo_control/core/design_system/app_list_section.dart';
 import 'package:smoo_control/core/design_system/app_search_field.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
 import 'package:smoo_control/core/design_system/app_tile_actions.dart';
+import 'package:smoo_control/core/formatters/money_formatter.dart';
 import 'package:smoo_control/core/utils/search_text.dart';
 import 'package:smoo_control/features/expenses/domain/entities/expense_category.dart';
 import 'package:smoo_control/l10n/app_localizations.dart';
@@ -94,7 +95,7 @@ class _ExpensesOverviewListState extends State<ExpensesOverviewList> {
         category.name,
         _parentName(category),
         if (category.isActive) l10n.activeStatus else l10n.inactiveStatus,
-        if (category.parentId == null)
+        if (category.parentId != null)
           category.includeInGrossProfitCoverage
               ? l10n.expenseCategoryCoverageIncluded
               : l10n.expenseCategoryCoverageExcluded,
@@ -189,9 +190,9 @@ class _ExpenseCategoryTile extends StatelessWidget {
           subtitle: AppText(
             [
               statusLabel,
-              if (category.parentId == null)
+              if (category.parentId != null)
                 if (category.includeInGrossProfitCoverage)
-                  l10n.expenseCategoryCoverageIncluded
+                  _coverageLabel(l10n)
                 else
                   l10n.expenseCategoryCoverageExcluded,
             ].join(' - '),
@@ -223,5 +224,16 @@ class _ExpenseCategoryTile extends StatelessWidget {
         );
       },
     );
+  }
+
+  String _coverageLabel(AppLocalizations l10n) {
+    final amount = category.coverageEstimatedAmountInCents;
+    final type = switch (category.coverageType) {
+      ExpenseCoverageType.fixed => l10n.expenseCoverageTypeFixed,
+      ExpenseCoverageType.variable => l10n.expenseCoverageTypeVariable,
+      null => l10n.expenseCategoryCoverageIncluded,
+    };
+    if (amount == null) return type;
+    return '$type ${MoneyFormatter.format(amount)}';
   }
 }

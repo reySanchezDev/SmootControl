@@ -18,6 +18,9 @@ abstract final class AppRoutes {
   /// Expenses report route.
   static const expensesReport = '/reports/expenses';
 
+  /// Monthly operational report route.
+  static const monthlyOperationalReport = '/reports/monthly-operational';
+
   /// Inventory value report route.
   static const inventoryValueReport = '/reports/inventory-value';
 

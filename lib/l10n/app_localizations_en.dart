@@ -579,10 +579,63 @@ class AppLocalizationsEn extends AppLocalizations {
       'Enable only for real operating expenses. Do not use for payroll or inventory purchases.';
 
   @override
+  String get expenseCategoryCoverageSubcategoryHelp =>
+      'Enable only on subcategories that should be measured against gross profit.';
+
+  @override
   String get expenseCategoryCoverageIncluded => 'Included in coverage';
 
   @override
   String get expenseCategoryCoverageExcluded => 'Excluded from coverage';
+
+  @override
+  String get expenseCoverageTypeField => 'Expense type';
+
+  @override
+  String get expenseCoverageTypeFixed => 'Fixed';
+
+  @override
+  String get expenseCoverageTypeVariable => 'Variable';
+
+  @override
+  String get expenseCoverageAmountField => 'Estimated amount';
+
+  @override
+  String get expenseCoverageFrequencyField => 'Frequency';
+
+  @override
+  String get expenseCoverageFrequencyWeekly => 'Weekly';
+
+  @override
+  String get expenseCoverageFrequencyBiweekly => 'Biweekly';
+
+  @override
+  String get expenseCoverageFrequencyMonthly => 'Monthly';
+
+  @override
+  String get expenseCoverageFrequencyCustom => 'Custom';
+
+  @override
+  String get expenseCoverageDueDaysField => 'Payment days';
+
+  @override
+  String get expenseCoverageNotesField => 'Coverage notes';
+
+  @override
+  String get expenseCoverageAmountRequiredError =>
+      'Amount is required for fixed expenses.';
+
+  @override
+  String get expenseCoverageAmountInvalidError =>
+      'Coverage amount is not valid.';
+
+  @override
+  String get expenseCoverageDueDaysRequiredError =>
+      'Enter at least one payment day.';
+
+  @override
+  String get expenseCoverageDueDaysInvalidError =>
+      'Payment days must be between 1 and 31.';
 
   @override
   String get inventoryValueReportTitle => 'Inventory value';
@@ -590,6 +643,61 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get inventoryValueReportSubtitle =>
       'Current cost, potential sales, and estimated inventory profit.';
+
+  @override
+  String get monthlyOperationalReportTitle => 'Operational result';
+
+  @override
+  String get monthlyOperationalReportSubtitle =>
+      'Monthly sales compared with expenses, payroll and available profit.';
+
+  @override
+  String get monthlyOperationalEmptyMessage =>
+      'There are no sales, expenses or payroll for the selected range.';
+
+  @override
+  String get monthlyOperationalProductCost => 'Product cost';
+
+  @override
+  String get monthlyOperationalConsideredExpenses => 'Operating expenses';
+
+  @override
+  String get monthlyOperationalPayroll => 'Payroll';
+
+  @override
+  String get monthlyOperationalResult => 'Result';
+
+  @override
+  String get monthlyOperationalRiskTitle => 'Insufficient profit';
+
+  @override
+  String get monthlyOperationalRiskMessage =>
+      'Gross profit does not yet cover operating expenses and payroll for the period.';
+
+  @override
+  String get monthlyOperationalHealthyTitle => 'Healthy coverage';
+
+  @override
+  String get monthlyOperationalHealthyMessage =>
+      'Gross profit covers operating expenses and payroll for the period.';
+
+  @override
+  String get monthlyOperationalCoverage => 'Coverage used';
+
+  @override
+  String get monthlyOperationalPayrollPending => 'Pending payroll';
+
+  @override
+  String get monthlyOperationalAdvances => 'Advances delivered';
+
+  @override
+  String get monthlyOperationalPendingConsumption => 'Pending consumptions';
+
+  @override
+  String get monthlyOperationalExpensesTitle => 'Considered expenses';
+
+  @override
+  String get monthlyOperationalExcludedExpenses => 'Excluded expenses';
 
   @override
   String get inventoryValueSearchLabel => 'Search product or category';

@@ -129,6 +129,11 @@ extension on SupabaseCatalogPullService {
     return 0;
   }
 
+  int? _moneyCentsOrNull(Object? value) {
+    if (value == null) return null;
+    return _moneyCents(value);
+  }
+
   DateTime? _date(Object? value) {
     final text = _optionalText(value);
     if (text == null) return null;

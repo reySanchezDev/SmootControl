@@ -147,6 +147,9 @@ final class SupabaseDailySalesReportService {
       headers: _headers(),
     );
     if (response.statusCode < 200 || response.statusCode >= 300) {
+      if (response.statusCode == 401 || response.statusCode == 403) {
+        _remoteSessionService.expire();
+      }
       throw StateError(
         'Supabase rechazo consulta de $table '
         '(${response.statusCode}): ${response.body}',

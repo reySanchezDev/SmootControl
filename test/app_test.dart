@@ -5,6 +5,7 @@ import 'package:smoo_control/core/app/smoo_control_app.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/core/result/app_failure.dart';
 import 'package:smoo_control/core/result/app_result.dart';
+import 'package:smoo_control/core/session/current_remote_session_service.dart';
 import 'package:smoo_control/features/auth/domain/entities/auth_session.dart';
 import 'package:smoo_control/features/auth/domain/repositories/i_auth_repository.dart';
 import 'package:smoo_control/features/auth/presentation/bloc/auth_bloc.dart';
@@ -17,6 +18,7 @@ void main() {
     serviceLocator.registerFactory<AuthBloc>(
       () => AuthBloc(const _AuthRepositoryFake()),
     );
+    _registerRemoteSession();
 
     await tester.pumpWidget(const SmooControlApp());
     await tester.pumpAndSettle();
@@ -35,6 +37,7 @@ void main() {
     serviceLocator.registerFactory<AuthBloc>(
       () => AuthBloc(const _AuthRepositoryFake()),
     );
+    _registerRemoteSession();
 
     await tester.pumpWidget(const SmooControlApp());
     await tester.pumpAndSettle();
@@ -54,6 +57,10 @@ void main() {
       'nuevo@smoo.test',
     );
   });
+}
+
+void _registerRemoteSession() {
+  serviceLocator.registerLazySingleton(CurrentRemoteSessionService.new);
 }
 
 final class _AuthRepositoryFake implements IAuthRepository {

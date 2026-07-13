@@ -1184,6 +1184,12 @@ abstract class AppLocalizations {
   /// **'Actívalo solo para gastos operativos reales. No usar en nómina ni compras de inventario.'**
   String get expenseCategoryCoverageHelp;
 
+  /// No description provided for @expenseCategoryCoverageSubcategoryHelp.
+  ///
+  /// In es, this message translates to:
+  /// **'Actívalo solo en subcategorías que deban medirse contra la utilidad bruta.'**
+  String get expenseCategoryCoverageSubcategoryHelp;
+
   /// No description provided for @expenseCategoryCoverageIncluded.
   ///
   /// In es, this message translates to:
@@ -1196,6 +1202,96 @@ abstract class AppLocalizations {
   /// **'Fuera de cobertura'**
   String get expenseCategoryCoverageExcluded;
 
+  /// No description provided for @expenseCoverageTypeField.
+  ///
+  /// In es, this message translates to:
+  /// **'Tipo de gasto'**
+  String get expenseCoverageTypeField;
+
+  /// No description provided for @expenseCoverageTypeFixed.
+  ///
+  /// In es, this message translates to:
+  /// **'Fijo'**
+  String get expenseCoverageTypeFixed;
+
+  /// No description provided for @expenseCoverageTypeVariable.
+  ///
+  /// In es, this message translates to:
+  /// **'Variable'**
+  String get expenseCoverageTypeVariable;
+
+  /// No description provided for @expenseCoverageAmountField.
+  ///
+  /// In es, this message translates to:
+  /// **'Monto estimado'**
+  String get expenseCoverageAmountField;
+
+  /// No description provided for @expenseCoverageFrequencyField.
+  ///
+  /// In es, this message translates to:
+  /// **'Frecuencia'**
+  String get expenseCoverageFrequencyField;
+
+  /// No description provided for @expenseCoverageFrequencyWeekly.
+  ///
+  /// In es, this message translates to:
+  /// **'Semanal'**
+  String get expenseCoverageFrequencyWeekly;
+
+  /// No description provided for @expenseCoverageFrequencyBiweekly.
+  ///
+  /// In es, this message translates to:
+  /// **'Quincenal'**
+  String get expenseCoverageFrequencyBiweekly;
+
+  /// No description provided for @expenseCoverageFrequencyMonthly.
+  ///
+  /// In es, this message translates to:
+  /// **'Mensual'**
+  String get expenseCoverageFrequencyMonthly;
+
+  /// No description provided for @expenseCoverageFrequencyCustom.
+  ///
+  /// In es, this message translates to:
+  /// **'Personalizada'**
+  String get expenseCoverageFrequencyCustom;
+
+  /// No description provided for @expenseCoverageDueDaysField.
+  ///
+  /// In es, this message translates to:
+  /// **'Días de pago'**
+  String get expenseCoverageDueDaysField;
+
+  /// No description provided for @expenseCoverageNotesField.
+  ///
+  /// In es, this message translates to:
+  /// **'Notas de cobertura'**
+  String get expenseCoverageNotesField;
+
+  /// No description provided for @expenseCoverageAmountRequiredError.
+  ///
+  /// In es, this message translates to:
+  /// **'El monto es obligatorio para gastos fijos.'**
+  String get expenseCoverageAmountRequiredError;
+
+  /// No description provided for @expenseCoverageAmountInvalidError.
+  ///
+  /// In es, this message translates to:
+  /// **'El monto de cobertura no es válido.'**
+  String get expenseCoverageAmountInvalidError;
+
+  /// No description provided for @expenseCoverageDueDaysRequiredError.
+  ///
+  /// In es, this message translates to:
+  /// **'Indica al menos un día de pago.'**
+  String get expenseCoverageDueDaysRequiredError;
+
+  /// No description provided for @expenseCoverageDueDaysInvalidError.
+  ///
+  /// In es, this message translates to:
+  /// **'Los días de pago deben estar entre 1 y 31.'**
+  String get expenseCoverageDueDaysInvalidError;
+
   /// No description provided for @inventoryValueReportTitle.
   ///
   /// In es, this message translates to:
@@ -1207,6 +1303,108 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Costo actual, venta potencial y utilidad estimada del inventario.'**
   String get inventoryValueReportSubtitle;
+
+  /// No description provided for @monthlyOperationalReportTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Resultado operativo'**
+  String get monthlyOperationalReportTitle;
+
+  /// No description provided for @monthlyOperationalReportSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Ventas del mes contra gastos, planilla y utilidad disponible.'**
+  String get monthlyOperationalReportSubtitle;
+
+  /// No description provided for @monthlyOperationalEmptyMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay ventas, gastos ni planilla para el rango seleccionado.'**
+  String get monthlyOperationalEmptyMessage;
+
+  /// No description provided for @monthlyOperationalProductCost.
+  ///
+  /// In es, this message translates to:
+  /// **'Costo productos'**
+  String get monthlyOperationalProductCost;
+
+  /// No description provided for @monthlyOperationalConsideredExpenses.
+  ///
+  /// In es, this message translates to:
+  /// **'Gastos operativos'**
+  String get monthlyOperationalConsideredExpenses;
+
+  /// No description provided for @monthlyOperationalPayroll.
+  ///
+  /// In es, this message translates to:
+  /// **'Planilla'**
+  String get monthlyOperationalPayroll;
+
+  /// No description provided for @monthlyOperationalResult.
+  ///
+  /// In es, this message translates to:
+  /// **'Resultado'**
+  String get monthlyOperationalResult;
+
+  /// No description provided for @monthlyOperationalRiskTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Utilidad insuficiente'**
+  String get monthlyOperationalRiskTitle;
+
+  /// No description provided for @monthlyOperationalRiskMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'La utilidad bruta aun no cubre los gastos operativos y la planilla del periodo.'**
+  String get monthlyOperationalRiskMessage;
+
+  /// No description provided for @monthlyOperationalHealthyTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Cobertura saludable'**
+  String get monthlyOperationalHealthyTitle;
+
+  /// No description provided for @monthlyOperationalHealthyMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'La utilidad bruta cubre gastos operativos y planilla del periodo.'**
+  String get monthlyOperationalHealthyMessage;
+
+  /// No description provided for @monthlyOperationalCoverage.
+  ///
+  /// In es, this message translates to:
+  /// **'Cobertura usada'**
+  String get monthlyOperationalCoverage;
+
+  /// No description provided for @monthlyOperationalPayrollPending.
+  ///
+  /// In es, this message translates to:
+  /// **'Planilla pendiente'**
+  String get monthlyOperationalPayrollPending;
+
+  /// No description provided for @monthlyOperationalAdvances.
+  ///
+  /// In es, this message translates to:
+  /// **'Adelantos entregados'**
+  String get monthlyOperationalAdvances;
+
+  /// No description provided for @monthlyOperationalPendingConsumption.
+  ///
+  /// In es, this message translates to:
+  /// **'Consumos pendientes'**
+  String get monthlyOperationalPendingConsumption;
+
+  /// No description provided for @monthlyOperationalExpensesTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Gastos considerados'**
+  String get monthlyOperationalExpensesTitle;
+
+  /// No description provided for @monthlyOperationalExcludedExpenses.
+  ///
+  /// In es, this message translates to:
+  /// **'Gastos excluidos'**
+  String get monthlyOperationalExcludedExpenses;
 
   /// No description provided for @inventoryValueSearchLabel.
   ///

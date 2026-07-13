@@ -90,10 +90,24 @@ extension on SupabaseCatalogPullService {
               parentId: Value(parentId),
               isActive: Value(_bool(row['is_active'], defaultValue: true)),
               includeInGrossProfitCoverage: Value(
-                parentId == null &&
-                    _bool(
-                      row['include_in_gross_profit_coverage'],
-                    ),
+                parentId != null &&
+                    _bool(row['include_in_gross_profit_coverage']),
+              ),
+              coverageExpenseType: Value(
+                _optionalText(row['coverage_expense_type']),
+              ),
+              coverageEstimatedAmountInCents: Value(
+                _moneyCentsOrNull(row['coverage_estimated_amount']),
+              ),
+              coverageFrequency: Value(
+                _optionalText(row['coverage_frequency']),
+              ),
+              coverageDueDaysJson: Value(
+                _jsonListText(row['coverage_due_days']),
+              ),
+              coverageNotes: Value(_optionalText(row['coverage_notes'])),
+              coverageIsActive: Value(
+                _bool(row['coverage_is_active'], defaultValue: true),
               ),
               remoteId: Value(id),
               syncStatus: const Value('synced'),

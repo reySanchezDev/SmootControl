@@ -173,6 +173,7 @@ final class ExpensesRepository implements IExpensesRepository {
         'isActive': normalizedCategory.isActive,
         'includeInGrossProfitCoverage':
             normalizedCategory.includeInGrossProfitCoverage,
+        ..._coveragePayload(normalizedCategory),
       },
     );
   }
@@ -196,6 +197,7 @@ final class ExpensesRepository implements IExpensesRepository {
           'isActive': normalizedCategory.isActive,
           'includeInGrossProfitCoverage':
               normalizedCategory.includeInGrossProfitCoverage,
+          ..._coveragePayload(normalizedCategory),
         },
         status: SyncQueueStatus.pending,
         retryCount: 0,
@@ -206,7 +208,7 @@ final class ExpensesRepository implements IExpensesRepository {
   }
 
   ExpenseCategory _normalizeCoverageFlag(ExpenseCategory category) {
-    if (category.parentId == null || !category.includeInGrossProfitCoverage) {
+    if (category.parentId != null && category.includeInGrossProfitCoverage) {
       return category;
     }
     return ExpenseCategory(
@@ -215,6 +217,18 @@ final class ExpensesRepository implements IExpensesRepository {
       parentId: category.parentId,
       isActive: category.isActive,
     );
+  }
+
+  Map<String, Object?> _coveragePayload(ExpenseCategory category) {
+    return {
+      'coverageType': category.coverageType?.name,
+      'coverageEstimatedAmountInCents':
+          category.coverageEstimatedAmountInCents,
+      'coverageFrequency': category.coverageFrequency?.name,
+      'coverageDueDays': category.coverageDueDays,
+      'coverageNotes': category.coverageNotes,
+      'coverageIsActive': category.coverageIsActive,
+    };
   }
 
   Future<void> _pushRemovedCategoryRemote(String categoryId) async {

@@ -143,14 +143,31 @@ extension on SupabaseSyncRemoteSender {
   Map<String, Object?> _expenseCategoryPayload(SyncQueueItem item) {
     final payload = item.payload;
     final parentId = payload['parentId'];
+    final includeInCoverage =
+        parentId != null && payload['includeInGrossProfitCoverage'] == true;
     return {
       'id': payload['id'],
       'restaurant_id': _restaurantId,
       'parent_id': parentId,
       'name': payload['name'],
       'is_active': payload['isActive'],
-      'include_in_gross_profit_coverage':
-          parentId == null && payload['includeInGrossProfitCoverage'] == true,
+      'include_in_gross_profit_coverage': includeInCoverage,
+      'coverage_expense_type': includeInCoverage
+          ? payload['coverageType']
+          : null,
+      'coverage_estimated_amount': includeInCoverage
+          ? _optionalMoney(payload['coverageEstimatedAmountInCents'])
+          : null,
+      'coverage_frequency': includeInCoverage
+          ? payload['coverageFrequency']
+          : null,
+      'coverage_due_days': includeInCoverage
+          ? payload['coverageDueDays'] ?? const <Object?>[]
+          : const <Object?>[],
+      'coverage_notes': includeInCoverage ? payload['coverageNotes'] : null,
+      'coverage_is_active': includeInCoverage
+          ? payload['coverageIsActive'] ?? true
+          : true,
       'updated_at': DateTime.now().toIso8601String(),
     };
   }

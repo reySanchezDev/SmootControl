@@ -43,6 +43,26 @@ class LocalExpenseCategories extends Table with SyncColumns {
   BoolColumn get includeInGrossProfitCoverage =>
       boolean().withDefault(const Constant(false))();
 
+  /// fixed or variable for projected coverage.
+  TextColumn get coverageExpenseType => text().nullable()();
+
+  /// Estimated coverage amount in minor currency units.
+  IntColumn get coverageEstimatedAmountInCents => integer().nullable()();
+
+  /// weekly, biweekly, monthly or custom.
+  TextColumn get coverageFrequency => text().nullable()();
+
+  /// JSON encoded due days for projected coverage.
+  TextColumn get coverageDueDaysJson => text().nullable()();
+
+  /// Optional note for projected coverage.
+  TextColumn get coverageNotes => text().nullable()();
+
+  /// Whether the projected coverage configuration is active.
+  BoolColumn get coverageIsActive => boolean().withDefault(
+    const Constant(true),
+  )();
+
   @override
   Set<Column<Object>> get primaryKey => {id};
 }

@@ -52,6 +52,14 @@ final class LocalExpensesDataSource {
             includeInGrossProfitCoverage: Value(
               category.includeInGrossProfitCoverage,
             ),
+            coverageExpenseType: Value(category.coverageType?.name),
+            coverageEstimatedAmountInCents: Value(
+              category.coverageEstimatedAmountInCents,
+            ),
+            coverageFrequency: Value(category.coverageFrequency?.name),
+            coverageDueDaysJson: Value(category.coverageDueDaysJson),
+            coverageNotes: Value(category.coverageNotes),
+            coverageIsActive: Value(category.coverageIsActive),
             createdAt: Value(now),
             updatedAt: Value(now),
           ),

@@ -160,4 +160,43 @@ extension _AppDatabaseMigrationHelpers on AppDatabase {
       "datetime('now'), datetime('now'))",
     );
   }
+
+  Future<void> _addExpenseCoverageProjectionColumns(
+    Migrator migrator,
+  ) async {
+    final columns = [
+      localExpenseCategories.coverageExpenseType,
+      localExpenseCategories.coverageEstimatedAmountInCents,
+      localExpenseCategories.coverageFrequency,
+      localExpenseCategories.coverageDueDaysJson,
+      localExpenseCategories.coverageNotes,
+      localExpenseCategories.coverageIsActive,
+    ];
+    for (final column in columns) {
+      if (!await _columnExists(
+        localExpenseCategories.actualTableName,
+        column.$name,
+      )) {
+        await migrator.addColumn(localExpenseCategories, column);
+      }
+    }
+  }
+
+  Future<void> _moveExpenseCoverageToChildren() async {
+    await customStatement(
+      'UPDATE local_expense_categories '
+      'SET include_in_gross_profit_coverage = 1, '
+      "coverage_expense_type = COALESCE(coverage_expense_type, 'variable'), "
+      "coverage_is_active = 1, updated_at = datetime('now') "
+      'WHERE parent_id IN ( '
+      'SELECT id FROM local_expense_categories '
+      'WHERE parent_id IS NULL AND include_in_gross_profit_coverage = 1 '
+      ')',
+    );
+    await customStatement(
+      'UPDATE local_expense_categories '
+      "SET include_in_gross_profit_coverage = 0, updated_at = datetime('now') "
+      'WHERE parent_id IS NULL AND include_in_gross_profit_coverage = 1',
+    );
+  }
 }
