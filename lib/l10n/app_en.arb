@@ -237,7 +237,7 @@
   "inventoryValueReportTitle": "Inventory value",
   "inventoryValueReportSubtitle": "Current cost, potential sales, and estimated inventory profit.",
   "monthlyOperationalReportTitle": "Operational result",
-  "monthlyOperationalReportSubtitle": "Monthly sales compared with expenses, payroll and available profit.",
+  "monthlyOperationalReportSubtitle": "Monthly sales compared with expenses, payroll and estimated coverage.",
   "monthlyOperationalEmptyMessage": "There are no sales, expenses or payroll for the selected range.",
   "monthlyOperationalProductCost": "Product cost",
   "monthlyOperationalConsideredExpenses": "Operating expenses",
@@ -245,12 +245,42 @@
   "monthlyOperationalResult": "Result",
   "monthlyOperationalRiskTitle": "Insufficient profit",
   "monthlyOperationalRiskMessage": "Gross profit does not yet cover operating expenses and payroll for the period.",
+  "monthlyOperationalMissingMessage": "Accumulated gross profit covers {percent}% of period obligations. {amount} is still missing to cover them.",
+  "@monthlyOperationalMissingMessage": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
   "monthlyOperationalHealthyTitle": "Healthy coverage",
   "monthlyOperationalHealthyMessage": "Gross profit covers operating expenses and payroll for the period.",
+  "monthlyOperationalSurplusMessage": "Period obligations are covered and the estimated surplus is {amount}.",
+  "@monthlyOperationalSurplusMessage": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
   "monthlyOperationalCoverage": "Coverage used",
   "monthlyOperationalProjectedCoverage": "Coverage goal",
   "monthlyOperationalActualCoverage": "Executed",
-  "monthlyOperationalAvailableCoverage": "Available",
+  "monthlyOperationalAvailableCoverage": "Estimated surplus",
+  "monthlyOperationalReserveCost": "Product cost reserve",
+  "monthlyOperationalMonthlyObligations": "Period obligations",
+  "monthlyOperationalPendingDisbursement": "Pending disbursement",
+  "monthlyOperationalEstimatedSurplus": "Estimated surplus",
+  "monthlyOperationalMissingToCover": "Missing to cover",
+  "monthlyOperationalFortnightCuts": "Tracking cuts",
+  "monthlyOperationalCurrentMonth": "Current month",
+  "monthlyOperationalPreviousMonth": "Previous month",
+  "monthlyOperationalOtherMonth": "Other month",
+  "monthlyOperationalFirstHalf": "First half",
+  "monthlyOperationalSecondHalf": "Second half",
   "monthlyOperationalPayrollPending": "Pending payroll",
   "monthlyOperationalAdvances": "Advances delivered",
   "monthlyOperationalPendingConsumption": "Pending consumptions",

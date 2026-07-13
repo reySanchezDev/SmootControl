@@ -650,7 +650,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get monthlyOperationalReportSubtitle =>
-      'Ventas del mes contra gastos, planilla y utilidad disponible.';
+      'Ventas del mes contra gastos, planilla y cobertura estimada.';
 
   @override
   String get monthlyOperationalEmptyMessage =>
@@ -676,11 +676,21 @@ class AppLocalizationsEs extends AppLocalizations {
       'La utilidad bruta aun no cubre los gastos operativos y la planilla del periodo.';
 
   @override
+  String monthlyOperationalMissingMessage(String percent, String amount) {
+    return 'La utilidad bruta acumulada cubre el $percent% de las obligaciones del periodo. Todavia faltan $amount para cubrirlas.';
+  }
+
+  @override
   String get monthlyOperationalHealthyTitle => 'Cobertura saludable';
 
   @override
   String get monthlyOperationalHealthyMessage =>
       'La utilidad bruta cubre gastos operativos y planilla del periodo.';
+
+  @override
+  String monthlyOperationalSurplusMessage(String amount) {
+    return 'Las obligaciones del periodo estan cubiertas y queda un excedente estimado de $amount.';
+  }
 
   @override
   String get monthlyOperationalCoverage => 'Cobertura usada';
@@ -692,7 +702,40 @@ class AppLocalizationsEs extends AppLocalizations {
   String get monthlyOperationalActualCoverage => 'Ejecutado';
 
   @override
-  String get monthlyOperationalAvailableCoverage => 'Disponible';
+  String get monthlyOperationalAvailableCoverage => 'Excedente estimado';
+
+  @override
+  String get monthlyOperationalReserveCost => 'Reserva costo productos';
+
+  @override
+  String get monthlyOperationalMonthlyObligations => 'Obligaciones del periodo';
+
+  @override
+  String get monthlyOperationalPendingDisbursement => 'Pendiente de entregar';
+
+  @override
+  String get monthlyOperationalEstimatedSurplus => 'Excedente estimado';
+
+  @override
+  String get monthlyOperationalMissingToCover => 'Faltante para cubrir';
+
+  @override
+  String get monthlyOperationalFortnightCuts => 'Cortes de seguimiento';
+
+  @override
+  String get monthlyOperationalCurrentMonth => 'Mes actual';
+
+  @override
+  String get monthlyOperationalPreviousMonth => 'Mes anterior';
+
+  @override
+  String get monthlyOperationalOtherMonth => 'Otro mes';
+
+  @override
+  String get monthlyOperationalFirstHalf => 'Primera quincena';
+
+  @override
+  String get monthlyOperationalSecondHalf => 'Segunda quincena';
 
   @override
   String get monthlyOperationalPayrollPending => 'Planilla pendiente';

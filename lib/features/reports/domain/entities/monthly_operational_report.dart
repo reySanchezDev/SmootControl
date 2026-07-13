@@ -104,6 +104,59 @@ final class MonthlyOperationalCoverageRow extends Equatable {
   ];
 }
 
+/// Internal cut used to follow the month by payroll-friendly periods.
+final class MonthlyOperationalPeriodCut extends Equatable {
+  /// Creates one operational period cut.
+  const MonthlyOperationalPeriodCut({
+    required this.from,
+    required this.grossProfitInCents,
+    required this.labelKey,
+    required this.obligationInCents,
+    required this.pendingDisbursementInCents,
+    required this.to,
+  });
+
+  /// Stable label key resolved by the UI.
+  final String labelKey;
+
+  /// Inclusive start date.
+  final DateTime from;
+
+  /// Inclusive end date.
+  final DateTime to;
+
+  /// Gross profit generated in the cut.
+  final int grossProfitInCents;
+
+  /// Obligations expected in the cut.
+  final int obligationInCents;
+
+  /// Cash still expected to be delivered for the cut.
+  final int pendingDisbursementInCents;
+
+  /// Estimated surplus or missing amount after obligations.
+  int get balanceInCents => grossProfitInCents - obligationInCents;
+
+  /// Portion of obligations covered by gross profit.
+  double get coveragePercent {
+    if (obligationInCents <= 0) return 100;
+    return grossProfitInCents / obligationInCents * 100;
+  }
+
+  /// True when the cut already covers expected obligations.
+  bool get isCovered => balanceInCents >= 0;
+
+  @override
+  List<Object?> get props => [
+    labelKey,
+    from,
+    to,
+    grossProfitInCents,
+    obligationInCents,
+    pendingDisbursementInCents,
+  ];
+}
+
 /// Monthly comparison between sales, expenses and payroll.
 final class MonthlyOperationalReport extends Equatable {
   /// Creates an operational monthly report.
@@ -118,6 +171,7 @@ final class MonthlyOperationalReport extends Equatable {
     required this.payrollNetInCents,
     required this.payrollPaidInCents,
     required this.pendingStaffConsumptionInCents,
+    required this.periodCuts,
     required this.totalCostInCents,
     required this.totalSalesInCents,
     required this.to,
@@ -162,6 +216,9 @@ final class MonthlyOperationalReport extends Equatable {
   /// Daily comparison rows.
   final List<MonthlyOperationalDailyRow> dailyRows;
 
+  /// Internal cuts, normally first and second fortnight.
+  final List<MonthlyOperationalPeriodCut> periodCuts;
+
   /// Gross profit before expenses and payroll.
   int get grossProfitInCents => totalSalesInCents - totalCostInCents;
 
@@ -194,25 +251,34 @@ final class MonthlyOperationalReport extends Equatable {
     );
   }
 
-  /// Gross profit remaining after configured coverage obligations.
-  int get coverageAvailableInCents {
-    return grossProfitInCents - coverageObligationInCents;
+  /// Total obligations expected for the selected period.
+  int get monthlyObligationInCents =>
+      coverageObligationInCents + payrollNetInCents;
+
+  /// Money still expected to be delivered for payroll and expenses.
+  int get pendingDisbursementInCents {
+    final pendingCoverage = coverageRows.fold(
+      0,
+      (total, row) => total + row.pendingInCents,
+    );
+    return payrollBalanceInCents + pendingCoverage;
   }
+
+  /// Estimated surplus or missing amount after obligations.
+  int get monthlyBalanceInCents =>
+      grossProfitInCents - monthlyObligationInCents;
 
   /// Gross profit after expenses and payroll commitment.
-  int get operationalResultInCents {
-    return grossProfitInCents - coverageObligationInCents - payrollNetInCents;
-  }
+  int get operationalResultInCents => monthlyBalanceInCents;
 
-  /// Percentage of gross profit already consumed by expenses and payroll.
+  /// Percentage of obligations covered by gross profit.
   double get coveragePercent {
-    if (grossProfitInCents <= 0) return 0;
-    final obligations = coverageObligationInCents + payrollNetInCents;
-    return obligations / grossProfitInCents * 100;
+    if (monthlyObligationInCents <= 0) return 100;
+    return grossProfitInCents / monthlyObligationInCents * 100;
   }
 
   /// True when gross profit does not cover expenses plus payroll.
-  bool get hasCoverageRisk => operationalResultInCents < 0;
+  bool get hasCoverageRisk => monthlyBalanceInCents < 0;
 
   @override
   List<Object?> get props => [
@@ -229,5 +295,6 @@ final class MonthlyOperationalReport extends Equatable {
     advancesDeliveredInCents,
     pendingStaffConsumptionInCents,
     dailyRows,
+    periodCuts,
   ];
 }

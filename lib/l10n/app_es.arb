@@ -237,7 +237,7 @@
   "inventoryValueReportTitle": "Valor de inventario",
   "inventoryValueReportSubtitle": "Costo actual, venta potencial y utilidad estimada del inventario.",
   "monthlyOperationalReportTitle": "Resultado operativo",
-  "monthlyOperationalReportSubtitle": "Ventas del mes contra gastos, planilla y utilidad disponible.",
+  "monthlyOperationalReportSubtitle": "Ventas del mes contra gastos, planilla y cobertura estimada.",
   "monthlyOperationalEmptyMessage": "No hay ventas, gastos ni planilla para el rango seleccionado.",
   "monthlyOperationalProductCost": "Costo productos",
   "monthlyOperationalConsideredExpenses": "Gastos operativos",
@@ -245,12 +245,42 @@
   "monthlyOperationalResult": "Resultado",
   "monthlyOperationalRiskTitle": "Utilidad insuficiente",
   "monthlyOperationalRiskMessage": "La utilidad bruta aun no cubre los gastos operativos y la planilla del periodo.",
+  "monthlyOperationalMissingMessage": "La utilidad bruta acumulada cubre el {percent}% de las obligaciones del periodo. Todavia faltan {amount} para cubrirlas.",
+  "@monthlyOperationalMissingMessage": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
   "monthlyOperationalHealthyTitle": "Cobertura saludable",
   "monthlyOperationalHealthyMessage": "La utilidad bruta cubre gastos operativos y planilla del periodo.",
+  "monthlyOperationalSurplusMessage": "Las obligaciones del periodo estan cubiertas y queda un excedente estimado de {amount}.",
+  "@monthlyOperationalSurplusMessage": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
   "monthlyOperationalCoverage": "Cobertura usada",
   "monthlyOperationalProjectedCoverage": "Meta cobertura",
   "monthlyOperationalActualCoverage": "Ejecutado",
-  "monthlyOperationalAvailableCoverage": "Disponible",
+  "monthlyOperationalAvailableCoverage": "Excedente estimado",
+  "monthlyOperationalReserveCost": "Reserva costo productos",
+  "monthlyOperationalMonthlyObligations": "Obligaciones del periodo",
+  "monthlyOperationalPendingDisbursement": "Pendiente de entregar",
+  "monthlyOperationalEstimatedSurplus": "Excedente estimado",
+  "monthlyOperationalMissingToCover": "Faltante para cubrir",
+  "monthlyOperationalFortnightCuts": "Cortes de seguimiento",
+  "monthlyOperationalCurrentMonth": "Mes actual",
+  "monthlyOperationalPreviousMonth": "Mes anterior",
+  "monthlyOperationalOtherMonth": "Otro mes",
+  "monthlyOperationalFirstHalf": "Primera quincena",
+  "monthlyOperationalSecondHalf": "Segunda quincena",
   "monthlyOperationalPayrollPending": "Planilla pendiente",
   "monthlyOperationalAdvances": "Adelantos entregados",
   "monthlyOperationalPendingConsumption": "Consumos pendientes",

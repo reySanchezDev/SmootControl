@@ -649,7 +649,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get monthlyOperationalReportSubtitle =>
-      'Monthly sales compared with expenses, payroll and available profit.';
+      'Monthly sales compared with expenses, payroll and estimated coverage.';
 
   @override
   String get monthlyOperationalEmptyMessage =>
@@ -675,11 +675,21 @@ class AppLocalizationsEn extends AppLocalizations {
       'Gross profit does not yet cover operating expenses and payroll for the period.';
 
   @override
+  String monthlyOperationalMissingMessage(String percent, String amount) {
+    return 'Accumulated gross profit covers $percent% of period obligations. $amount is still missing to cover them.';
+  }
+
+  @override
   String get monthlyOperationalHealthyTitle => 'Healthy coverage';
 
   @override
   String get monthlyOperationalHealthyMessage =>
       'Gross profit covers operating expenses and payroll for the period.';
+
+  @override
+  String monthlyOperationalSurplusMessage(String amount) {
+    return 'Period obligations are covered and the estimated surplus is $amount.';
+  }
 
   @override
   String get monthlyOperationalCoverage => 'Coverage used';
@@ -691,7 +701,40 @@ class AppLocalizationsEn extends AppLocalizations {
   String get monthlyOperationalActualCoverage => 'Executed';
 
   @override
-  String get monthlyOperationalAvailableCoverage => 'Available';
+  String get monthlyOperationalAvailableCoverage => 'Estimated surplus';
+
+  @override
+  String get monthlyOperationalReserveCost => 'Product cost reserve';
+
+  @override
+  String get monthlyOperationalMonthlyObligations => 'Period obligations';
+
+  @override
+  String get monthlyOperationalPendingDisbursement => 'Pending disbursement';
+
+  @override
+  String get monthlyOperationalEstimatedSurplus => 'Estimated surplus';
+
+  @override
+  String get monthlyOperationalMissingToCover => 'Missing to cover';
+
+  @override
+  String get monthlyOperationalFortnightCuts => 'Tracking cuts';
+
+  @override
+  String get monthlyOperationalCurrentMonth => 'Current month';
+
+  @override
+  String get monthlyOperationalPreviousMonth => 'Previous month';
+
+  @override
+  String get monthlyOperationalOtherMonth => 'Other month';
+
+  @override
+  String get monthlyOperationalFirstHalf => 'First half';
+
+  @override
+  String get monthlyOperationalSecondHalf => 'Second half';
 
   @override
   String get monthlyOperationalPayrollPending => 'Pending payroll';

@@ -1313,7 +1313,7 @@ abstract class AppLocalizations {
   /// No description provided for @monthlyOperationalReportSubtitle.
   ///
   /// In es, this message translates to:
-  /// **'Ventas del mes contra gastos, planilla y utilidad disponible.'**
+  /// **'Ventas del mes contra gastos, planilla y cobertura estimada.'**
   String get monthlyOperationalReportSubtitle;
 
   /// No description provided for @monthlyOperationalEmptyMessage.
@@ -1358,6 +1358,12 @@ abstract class AppLocalizations {
   /// **'La utilidad bruta aun no cubre los gastos operativos y la planilla del periodo.'**
   String get monthlyOperationalRiskMessage;
 
+  /// No description provided for @monthlyOperationalMissingMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'La utilidad bruta acumulada cubre el {percent}% de las obligaciones del periodo. Todavia faltan {amount} para cubrirlas.'**
+  String monthlyOperationalMissingMessage(String percent, String amount);
+
   /// No description provided for @monthlyOperationalHealthyTitle.
   ///
   /// In es, this message translates to:
@@ -1369,6 +1375,12 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'La utilidad bruta cubre gastos operativos y planilla del periodo.'**
   String get monthlyOperationalHealthyMessage;
+
+  /// No description provided for @monthlyOperationalSurplusMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Las obligaciones del periodo estan cubiertas y queda un excedente estimado de {amount}.'**
+  String monthlyOperationalSurplusMessage(String amount);
 
   /// No description provided for @monthlyOperationalCoverage.
   ///
@@ -1391,8 +1403,74 @@ abstract class AppLocalizations {
   /// No description provided for @monthlyOperationalAvailableCoverage.
   ///
   /// In es, this message translates to:
-  /// **'Disponible'**
+  /// **'Excedente estimado'**
   String get monthlyOperationalAvailableCoverage;
+
+  /// No description provided for @monthlyOperationalReserveCost.
+  ///
+  /// In es, this message translates to:
+  /// **'Reserva costo productos'**
+  String get monthlyOperationalReserveCost;
+
+  /// No description provided for @monthlyOperationalMonthlyObligations.
+  ///
+  /// In es, this message translates to:
+  /// **'Obligaciones del periodo'**
+  String get monthlyOperationalMonthlyObligations;
+
+  /// No description provided for @monthlyOperationalPendingDisbursement.
+  ///
+  /// In es, this message translates to:
+  /// **'Pendiente de entregar'**
+  String get monthlyOperationalPendingDisbursement;
+
+  /// No description provided for @monthlyOperationalEstimatedSurplus.
+  ///
+  /// In es, this message translates to:
+  /// **'Excedente estimado'**
+  String get monthlyOperationalEstimatedSurplus;
+
+  /// No description provided for @monthlyOperationalMissingToCover.
+  ///
+  /// In es, this message translates to:
+  /// **'Faltante para cubrir'**
+  String get monthlyOperationalMissingToCover;
+
+  /// No description provided for @monthlyOperationalFortnightCuts.
+  ///
+  /// In es, this message translates to:
+  /// **'Cortes de seguimiento'**
+  String get monthlyOperationalFortnightCuts;
+
+  /// No description provided for @monthlyOperationalCurrentMonth.
+  ///
+  /// In es, this message translates to:
+  /// **'Mes actual'**
+  String get monthlyOperationalCurrentMonth;
+
+  /// No description provided for @monthlyOperationalPreviousMonth.
+  ///
+  /// In es, this message translates to:
+  /// **'Mes anterior'**
+  String get monthlyOperationalPreviousMonth;
+
+  /// No description provided for @monthlyOperationalOtherMonth.
+  ///
+  /// In es, this message translates to:
+  /// **'Otro mes'**
+  String get monthlyOperationalOtherMonth;
+
+  /// No description provided for @monthlyOperationalFirstHalf.
+  ///
+  /// In es, this message translates to:
+  /// **'Primera quincena'**
+  String get monthlyOperationalFirstHalf;
+
+  /// No description provided for @monthlyOperationalSecondHalf.
+  ///
+  /// In es, this message translates to:
+  /// **'Segunda quincena'**
+  String get monthlyOperationalSecondHalf;
 
   /// No description provided for @monthlyOperationalPayrollPending.
   ///

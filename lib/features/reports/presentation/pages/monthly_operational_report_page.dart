@@ -34,7 +34,7 @@ class _MonthlyOperationalReportPageState
     super.initState();
     final now = DateTime.now();
     _from = DateTime(now.year, now.month);
-    _to = DateTime(now.year, now.month, now.day);
+    _to = DateTime(now.year, now.month + 1, 0);
     _future = _load();
   }
 
@@ -48,10 +48,13 @@ class _MonthlyOperationalReportPageState
         children: [
           _MonthlyOperationalFilterCard(
             from: _from,
-            onMonthSelected: _selectCurrentMonth,
-            onRangeChanged: _selectRange,
+            onCurrentMonthSelected: _selectCurrentMonth,
+            onCustomRangeSelected: _selectCustomRange,
+            onFirstHalfSelected: _selectFirstHalf,
+            onOtherMonthSelected: _selectOtherMonth,
+            onPreviousMonthSelected: _selectPreviousMonth,
             onReload: _reload,
-            onTodaySelected: _selectToday,
+            onSecondHalfSelected: _selectSecondHalf,
             to: _to,
           ),
           const SizedBox(height: 12),
@@ -87,25 +90,55 @@ class _MonthlyOperationalReportPageState
 
   void _selectCurrentMonth() {
     final now = DateTime.now();
+    _setMonth(now.year, now.month);
+  }
+
+  void _selectPreviousMonth() {
+    final base = DateTime(_from.year, _from.month - 1);
+    _setMonth(base.year, base.month);
+  }
+
+  Future<void> _selectOtherMonth() async {
+    final selected = await showDatePicker(
+      context: context,
+      firstDate: DateTime(2020),
+      initialDate: _from,
+      lastDate: DateTime(2100),
+    );
+    if (selected == null) return;
+    _setMonth(selected.year, selected.month);
+  }
+
+  void _selectFirstHalf() {
+    final monthStart = DateTime(_from.year, _from.month);
     setState(() {
-      _from = DateTime(now.year, now.month);
-      _to = DateTime(now.year, now.month, now.day);
+      _from = monthStart;
+      _to = DateTime(monthStart.year, monthStart.month, 15);
       _future = _load();
     });
   }
 
-  void _selectRange(DateTimeRange range) {
+  void _selectSecondHalf() {
+    final monthStart = DateTime(_from.year, _from.month);
     setState(() {
-      _from = range.start;
-      _to = range.end;
+      _from = DateTime(monthStart.year, monthStart.month, 16);
+      _to = DateTime(monthStart.year, monthStart.month + 1, 0);
+      _future = _load();
     });
   }
 
-  void _selectToday() {
-    final now = DateTime.now();
+  void _setMonth(int year, int month) {
     setState(() {
-      _from = DateTime(now.year, now.month, now.day);
-      _to = _from;
+      _from = DateTime(year, month);
+      _to = DateTime(year, month + 1, 0);
+      _future = _load();
+    });
+  }
+
+  void _selectCustomRange(DateTimeRange range) {
+    setState(() {
+      _from = range.start;
+      _to = range.end;
       _future = _load();
     });
   }
@@ -114,18 +147,24 @@ class _MonthlyOperationalReportPageState
 class _MonthlyOperationalFilterCard extends StatelessWidget {
   const _MonthlyOperationalFilterCard({
     required this.from,
-    required this.onMonthSelected,
-    required this.onRangeChanged,
+    required this.onCurrentMonthSelected,
+    required this.onCustomRangeSelected,
+    required this.onFirstHalfSelected,
+    required this.onOtherMonthSelected,
+    required this.onPreviousMonthSelected,
     required this.onReload,
-    required this.onTodaySelected,
+    required this.onSecondHalfSelected,
     required this.to,
   });
 
   final DateTime from;
-  final VoidCallback onMonthSelected;
-  final ValueChanged<DateTimeRange> onRangeChanged;
+  final VoidCallback onCurrentMonthSelected;
+  final ValueChanged<DateTimeRange> onCustomRangeSelected;
+  final VoidCallback onFirstHalfSelected;
+  final VoidCallback onOtherMonthSelected;
+  final VoidCallback onPreviousMonthSelected;
   final VoidCallback onReload;
-  final VoidCallback onTodaySelected;
+  final VoidCallback onSecondHalfSelected;
   final DateTime to;
 
   @override
@@ -139,7 +178,7 @@ class _MonthlyOperationalFilterCard extends StatelessWidget {
             final compact = constraints.maxWidth < 620;
             final range = _DateRangeButton(
               from: from,
-              onChanged: onRangeChanged,
+              onChanged: onCustomRangeSelected,
               to: to,
             );
             final reload = FilledButton.icon(
@@ -152,14 +191,27 @@ class _MonthlyOperationalFilterCard extends StatelessWidget {
               runSpacing: 8,
               children: [
                 ActionChip(
-                  avatar: const Icon(Icons.today_outlined, size: 18),
-                  label: AppText(l10n.reportPeriodToday),
-                  onPressed: onTodaySelected,
+                  avatar: const Icon(Icons.calendar_month_outlined, size: 18),
+                  label: AppText(l10n.monthlyOperationalCurrentMonth),
+                  onPressed: onCurrentMonthSelected,
                 ),
                 ActionChip(
-                  avatar: const Icon(Icons.calendar_view_month, size: 18),
-                  label: AppText(l10n.reportPeriodMonth),
-                  onPressed: onMonthSelected,
+                  avatar: const Icon(Icons.history_outlined, size: 18),
+                  label: AppText(l10n.monthlyOperationalPreviousMonth),
+                  onPressed: onPreviousMonthSelected,
+                ),
+                ActionChip(
+                  avatar: const Icon(Icons.event_outlined, size: 18),
+                  label: AppText(l10n.monthlyOperationalOtherMonth),
+                  onPressed: onOtherMonthSelected,
+                ),
+                ActionChip(
+                  label: AppText(l10n.monthlyOperationalFirstHalf),
+                  onPressed: onFirstHalfSelected,
+                ),
+                ActionChip(
+                  label: AppText(l10n.monthlyOperationalSecondHalf),
+                  onPressed: onSecondHalfSelected,
                 ),
               ],
             );

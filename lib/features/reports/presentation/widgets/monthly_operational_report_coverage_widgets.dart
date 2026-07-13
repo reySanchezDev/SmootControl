@@ -7,34 +7,40 @@ import 'package:smoo_control/l10n/app_localizations.dart';
 /// Coverage indicator card for the operational report.
 class MonthlyOperationalCoverageCard extends StatelessWidget {
   /// Creates the coverage card.
-  const MonthlyOperationalCoverageCard({required this.report, super.key});
+  const MonthlyOperationalCoverageCard({
+    required this.report,
+    this.framed = true,
+    super.key,
+  });
 
   /// Report data.
   final MonthlyOperationalReport report;
 
+  /// Whether the content should render inside a card.
+  final bool framed;
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            AppText(
-              l10n.monthlyOperationalCoverageIndicators,
-              variant: AppTextVariant.titleMedium,
-            ),
-            const SizedBox(height: 8),
-            if (report.coverageRows.isEmpty)
-              AppText(l10n.monthlyOperationalNoCoverageConfigured)
-            else
-              for (final row in report.coverageRows)
-                _CoverageObligationTile(row: row),
-          ],
-        ),
+    final content = Padding(
+      padding: const EdgeInsets.all(14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          AppText(
+            l10n.monthlyOperationalCoverageIndicators,
+            variant: AppTextVariant.titleMedium,
+          ),
+          const SizedBox(height: 8),
+          if (report.coverageRows.isEmpty)
+            AppText(l10n.monthlyOperationalNoCoverageConfigured)
+          else
+            for (final row in report.coverageRows)
+              _CoverageObligationTile(row: row),
+        ],
       ),
     );
+    return framed ? Card(child: content) : content;
   }
 }
 
