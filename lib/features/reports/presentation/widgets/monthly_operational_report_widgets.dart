@@ -31,68 +31,12 @@ class MonthlyOperationalReportView extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _OperationalDecisionCard(report: report),
-        const SizedBox(height: 12),
         _OperationalTotalsCard(report: report),
         const SizedBox(height: 12),
         MonthlyOperationalPeriodCutsCard(report: report),
         const SizedBox(height: 12),
         _OperationalDetailsCard(report: report),
       ],
-    );
-  }
-}
-
-class _OperationalDecisionCard extends StatelessWidget {
-  const _OperationalDecisionCard({required this.report});
-
-  final MonthlyOperationalReport report;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final colorScheme = Theme.of(context).colorScheme;
-    final risk = report.hasCoverageRisk;
-    final balance = report.monthlyBalanceInCents.abs();
-    return Card(
-      color: risk ? colorScheme.errorContainer : colorScheme.primaryContainer,
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(risk ? Icons.warning_amber : Icons.check_circle_outline),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: AppText(
-                    risk
-                        ? l10n.monthlyOperationalRiskTitle
-                        : l10n.monthlyOperationalHealthyTitle,
-                    variant: AppTextVariant.titleMedium,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            AppText(
-              risk
-                  ? l10n.monthlyOperationalMissingMessage(
-                      report.coveragePercent.toStringAsFixed(1),
-                      MoneyFormatter.format(balance),
-                    )
-                  : l10n.monthlyOperationalSurplusMessage(
-                      MoneyFormatter.format(balance),
-                    ),
-            ),
-            const SizedBox(height: 10),
-            LinearProgressIndicator(
-              value: (report.coveragePercent / 100).clamp(0, 1),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
@@ -105,38 +49,80 @@ class _OperationalTotalsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final colorScheme = Theme.of(context).colorScheme;
+    final risk = report.hasCoverageRisk;
+    final balanceLabel = risk
+        ? l10n.monthlyOperationalMissingToCover
+        : l10n.monthlyOperationalEstimatedSurplus;
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Wrap(
-          spacing: 8,
-          runSpacing: 8,
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _Metric(
+            Row(
+              children: [
+                Icon(
+                  risk ? Icons.warning_amber : Icons.check_circle_outline,
+                  color: risk ? colorScheme.error : colorScheme.primary,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: AppText(
+                    risk
+                        ? l10n.monthlyOperationalRiskTitle
+                        : l10n.monthlyOperationalHealthyTitle,
+                    variant: AppTextVariant.titleMedium,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            AppText(
+              risk
+                  ? l10n.monthlyOperationalMissingMessage(
+                      report.coveragePercent.toStringAsFixed(1),
+                      MoneyFormatter.format(report.monthlyBalanceInCents.abs()),
+                    )
+                  : l10n.monthlyOperationalSurplusMessage(
+                      MoneyFormatter.format(report.monthlyBalanceInCents.abs()),
+                    ),
+            ),
+            const SizedBox(height: 12),
+            LinearProgressIndicator(
+              value: (report.coveragePercent / 100).clamp(0, 1),
+            ),
+            const SizedBox(height: 12),
+            _SummaryLine(
               label: l10n.reportGrossSales,
               value: report.totalSalesInCents,
             ),
-            _Metric(
+            _SummaryLine(
               label: l10n.monthlyOperationalReserveCost,
               value: report.totalCostInCents,
             ),
-            _Metric(
+            _SummaryLine(
+              emphasized: true,
               label: l10n.reportGrossProfit,
               value: report.grossProfitInCents,
             ),
-            _Metric(
-              label: l10n.monthlyOperationalMonthlyObligations,
-              value: report.monthlyObligationInCents,
+            const Divider(),
+            _SummaryLine(
+              label: l10n.monthlyOperationalPayroll,
+              value: report.payrollNetInCents,
             ),
-            _Metric(
+            _SummaryLine(
+              label: l10n.monthlyOperationalCoverageIndicators,
+              value: report.coverageObligationInCents,
+            ),
+            _SummaryLine(
               label: l10n.monthlyOperationalPendingDisbursement,
               value: report.pendingDisbursementInCents,
             ),
-            _Metric(
+            const Divider(),
+            _SummaryLine(
               emphasized: true,
-              label: report.hasCoverageRisk
-                  ? l10n.monthlyOperationalMissingToCover
-                  : l10n.monthlyOperationalEstimatedSurplus,
+              label: balanceLabel,
               value: report.monthlyBalanceInCents.abs(),
             ),
           ],
@@ -200,8 +186,8 @@ class _OperationalExpenseBreakdown extends StatelessWidget {
   }
 }
 
-class _Metric extends StatelessWidget {
-  const _Metric({
+class _SummaryLine extends StatelessWidget {
+  const _SummaryLine({
     required this.label,
     required this.value,
     this.emphasized = false,
@@ -213,26 +199,29 @@ class _Metric extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Container(
-      constraints: const BoxConstraints(minWidth: 145, maxWidth: 210),
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: emphasized
-            ? colorScheme.primary.withValues(alpha: 0.14)
-            : colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 3),
+      child: Row(
         children: [
-          AppText(label, maxLines: 2, variant: AppTextVariant.label),
-          const SizedBox(height: 2),
+          Expanded(
+            child: AppText(
+              label,
+              maxLines: 2,
+              variant: emphasized
+                  ? AppTextVariant.titleMedium
+                  : AppTextVariant.body,
+            ),
+          ),
           AppText(
             MoneyFormatter.format(value),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            variant: AppTextVariant.titleMedium,
+            style: emphasized
+                ? const TextStyle(fontWeight: FontWeight.w700)
+                : null,
+            variant: emphasized
+                ? AppTextVariant.titleMedium
+                : AppTextVariant.body,
           ),
         ],
       ),

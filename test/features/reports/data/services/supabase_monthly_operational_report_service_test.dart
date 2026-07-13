@@ -41,8 +41,14 @@ void main() {
       expect(report.payrollBalanceInCents, 3000);
       expect(report.advancesDeliveredInCents, 1000);
       expect(report.pendingStaffConsumptionInCents, 1200);
-      expect(report.operationalResultInCents, 1500);
+      expect(report.operationalResultInCents, -8500);
       expect(report.dailyRows.first.resultInCents, 7500);
+      expect(report.coverageObligationInCents, 12500);
+      expect(report.periodCuts.single.obligationInCents, 18500);
+      expect(
+        report.coverageRows.map((row) => row.categoryName),
+        contains('Operativo / CASA CLARO'),
+      );
       expect(
         report.consideredExpensesByCategory.single.categoryName,
         'Operativo / Transporte',
@@ -72,12 +78,17 @@ Future<http.Response> _responseFor(http.BaseRequest request) async {
   if (path.endsWith('/operating_expenses')) return _expensesResponse();
   if (path.endsWith('/payroll_runs')) {
     return _json([
-      {'id': 'payroll-1'},
+      {
+        'id': 'payroll-1',
+        'period_start': '2026-07-01',
+        'period_end': '2026-07-15',
+      },
     ]);
   }
   if (path.endsWith('/payroll_run_lines')) {
     return _json([
       {
+        'payroll_run_id': 'payroll-1',
         'net_pay': 60,
         'paid_amount': 30,
         'balance_amount': 30,
@@ -120,6 +131,17 @@ http.Response _categoriesResponse() {
       'name': 'Transporte',
       'parent_id': 'root-ops',
       'include_in_gross_profit_coverage': true,
+    },
+    {
+      'id': 'child-casa-claro',
+      'name': 'CASA CLARO',
+      'parent_id': 'root-ops',
+      'include_in_gross_profit_coverage': true,
+      'coverage_expense_type': 'fixed',
+      'coverage_estimated_amount': 100,
+      'coverage_frequency': 'monthly',
+      'coverage_due_days': [15],
+      'coverage_is_active': true,
     },
     {
       'id': 'root-provider',

@@ -30,12 +30,46 @@ final class _ExpenseCategory {
   final String? parentId;
 }
 
+final class _PayrollPeriodTotal {
+  const _PayrollPeriodTotal({
+    required this.balance,
+    required this.from,
+    required this.net,
+    required this.paid,
+    required this.to,
+  });
+
+  final int balance;
+  final DateTime from;
+  final int net;
+  final int paid;
+  final DateTime to;
+}
+
 final class _PayrollTotals {
-  const _PayrollTotals({this.balance = 0, this.net = 0, this.paid = 0});
+  const _PayrollTotals({
+    this.balance = 0,
+    this.net = 0,
+    this.paid = 0,
+    this.periods = const [],
+  });
 
   final int balance;
   final int net;
   final int paid;
+  final List<_PayrollPeriodTotal> periods;
+}
+
+final class _PayrollPeriodAccumulator {
+  int balance = 0;
+  int net = 0;
+  int paid = 0;
+
+  void add({required int balance, required int net, required int paid}) {
+    this.balance += balance;
+    this.net += net;
+    this.paid += paid;
+  }
 }
 
 final class _RemoteExpense {

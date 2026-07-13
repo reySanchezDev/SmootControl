@@ -1,7 +1,7 @@
 ﻿SmooControl Android Release Build
-GeneratedAt=2026-07-13T15:56:47.8172879-06:00
+GeneratedAt=2026-07-13T16:33:42.0902766-06:00
 Output=release\SmooControl-produccion.apk
-PubspecVersion=0.1.47+52
+PubspecVersion=0.1.48+53
 CredentialSource=Requerimiento/CredencialesSupabase.md
 InjectedDartDefines=SMOO_SUPABASE_URL,SMOO_SUPABASE_PUBLISHABLE_KEY,SMOO_RESTAURANT_ID
 InternetPermission=PRESENTE
@@ -12,5 +12,5 @@ CorrectCommand=powershell -ExecutionPolicy Bypass -File .\tool\build_android_rel
 ForbiddenCommand=flutter build apk --release
 
 AaptBadging:
-package: name='com.smoocontrol.pos' versionCode='52' versionName='0.1.47' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'
+package: name='com.smoocontrol.pos' versionCode='53' versionName='0.1.48' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'
 application-label:'SmooControl'

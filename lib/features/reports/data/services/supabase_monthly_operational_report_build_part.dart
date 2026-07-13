@@ -87,13 +87,14 @@ extension _MonthlyOperationalReportBuilder
   }) {
     final firstEnd = DateTime(from.year, from.month, 15);
     final monthEnd = DateTime(from.year, from.month + 1, 0);
+    final firstTo = to.isBefore(firstEnd) ? to : firstEnd;
     final first = _periodCut(
       coverageRows: coverageRows,
       dailyRows: dailyRows,
       from: from,
       labelKey: 'first_half',
-      payroll: _halfPayroll(payroll),
-      to: to.isBefore(firstEnd) ? to : firstEnd,
+      payroll: _payrollForPeriod(payroll, from, firstTo),
+      to: firstTo,
     );
     final secondStart = DateTime(from.year, from.month, 16);
     final secondFrom = from.isAfter(secondStart) ? from : secondStart;
@@ -105,7 +106,7 @@ extension _MonthlyOperationalReportBuilder
             dailyRows: dailyRows,
             from: secondFrom,
             labelKey: 'second_half',
-            payroll: payroll.net - _halfPayroll(payroll),
+            payroll: _payrollForPeriod(payroll, secondFrom, secondTo),
             to: secondTo,
           );
     return [first, ?second];
@@ -150,7 +151,15 @@ extension _MonthlyOperationalReportBuilder
     return dueInPeriod ? row.obligationInCents : 0;
   }
 
-  int _halfPayroll(_PayrollTotals payroll) => (payroll.net / 2).round();
+  int _payrollForPeriod(_PayrollTotals payroll, DateTime from, DateTime to) {
+    final total = payroll.periods
+        .where(
+          (period) => !period.to.isBefore(from) && !period.from.isAfter(to),
+        )
+        .fold(0, (sum, period) => sum + period.net);
+    if (payroll.periods.isNotEmpty) return total;
+    return payroll.net;
+  }
 
   Map<String, int> _actualByCategory(
     List<_RemoteExpense> expenses,
