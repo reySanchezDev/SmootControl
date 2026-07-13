@@ -1376,6 +1376,24 @@ abstract class AppLocalizations {
   /// **'Cobertura usada'**
   String get monthlyOperationalCoverage;
 
+  /// No description provided for @monthlyOperationalProjectedCoverage.
+  ///
+  /// In es, this message translates to:
+  /// **'Meta cobertura'**
+  String get monthlyOperationalProjectedCoverage;
+
+  /// No description provided for @monthlyOperationalActualCoverage.
+  ///
+  /// In es, this message translates to:
+  /// **'Ejecutado'**
+  String get monthlyOperationalActualCoverage;
+
+  /// No description provided for @monthlyOperationalAvailableCoverage.
+  ///
+  /// In es, this message translates to:
+  /// **'Disponible'**
+  String get monthlyOperationalAvailableCoverage;
+
   /// No description provided for @monthlyOperationalPayrollPending.
   ///
   /// In es, this message translates to:
@@ -1405,6 +1423,60 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Gastos excluidos'**
   String get monthlyOperationalExcludedExpenses;
+
+  /// No description provided for @monthlyOperationalCoverageIndicators.
+  ///
+  /// In es, this message translates to:
+  /// **'Indicadores de cobertura'**
+  String get monthlyOperationalCoverageIndicators;
+
+  /// No description provided for @monthlyOperationalNoCoverageConfigured.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay obligaciones configuradas para este periodo.'**
+  String get monthlyOperationalNoCoverageConfigured;
+
+  /// No description provided for @monthlyOperationalCoverageGoal.
+  ///
+  /// In es, this message translates to:
+  /// **'Meta del periodo'**
+  String get monthlyOperationalCoverageGoal;
+
+  /// No description provided for @monthlyOperationalCoverageActual.
+  ///
+  /// In es, this message translates to:
+  /// **'Registrado'**
+  String get monthlyOperationalCoverageActual;
+
+  /// No description provided for @monthlyOperationalCoveragePending.
+  ///
+  /// In es, this message translates to:
+  /// **'Pendiente'**
+  String get monthlyOperationalCoveragePending;
+
+  /// No description provided for @monthlyOperationalNoDueDays.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin dias de pago'**
+  String get monthlyOperationalNoDueDays;
+
+  /// No description provided for @monthlyOperationalDueDays.
+  ///
+  /// In es, this message translates to:
+  /// **'Dias {days}'**
+  String monthlyOperationalDueDays(String days);
+
+  /// No description provided for @monthlyOperationalNoCoverageType.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin tipo'**
+  String get monthlyOperationalNoCoverageType;
+
+  /// No description provided for @monthlyOperationalNoCoverageFrequency.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin frecuencia'**
+  String get monthlyOperationalNoCoverageFrequency;
 
   /// No description provided for @inventoryValueSearchLabel.
   ///

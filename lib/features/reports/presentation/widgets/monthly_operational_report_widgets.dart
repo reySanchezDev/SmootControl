@@ -3,7 +3,7 @@ import 'package:smoo_control/core/design_system/app_empty_state.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
 import 'package:smoo_control/core/formatters/money_formatter.dart';
 import 'package:smoo_control/features/reports/domain/entities/monthly_operational_report.dart';
-import 'package:smoo_control/features/reports/presentation/widgets/monthly_operational_report_detail_widgets.dart';
+import 'package:smoo_control/features/reports/presentation/widgets/monthly_operational_report_coverage_widgets.dart';
 import 'package:smoo_control/l10n/app_localizations.dart';
 
 /// Responsive body for the monthly operational report.
@@ -29,7 +29,6 @@ class MonthlyOperationalReportView extends StatelessWidget {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final compact = constraints.maxWidth < 720;
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -39,10 +38,7 @@ class MonthlyOperationalReportView extends StatelessWidget {
             const SizedBox(height: 12),
             _OperationalExpenseBreakdown(report: report),
             const SizedBox(height: 12),
-            if (compact)
-              OperationalMobileList(report: report)
-            else
-              OperationalDataTable(report: report),
+            MonthlyOperationalCoverageCard(report: report),
           ],
         );
       },
@@ -78,17 +74,17 @@ class _OperationalTotalsCard extends StatelessWidget {
               value: report.grossProfitInCents,
             ),
             _Metric(
-              label: l10n.monthlyOperationalConsideredExpenses,
-              value: report.consideredExpensesInCents,
+              label: l10n.monthlyOperationalProjectedCoverage,
+              value: report.projectedCoverageInCents,
             ),
             _Metric(
-              label: l10n.monthlyOperationalPayroll,
-              value: report.payrollNetInCents,
+              label: l10n.monthlyOperationalActualCoverage,
+              value: report.actualCoverageInCents,
             ),
             _Metric(
               emphasized: true,
-              label: l10n.monthlyOperationalResult,
-              value: report.operationalResultInCents,
+              label: l10n.monthlyOperationalAvailableCoverage,
+              value: report.coverageAvailableInCents,
             ),
           ],
         ),
@@ -142,10 +138,6 @@ class _OperationalDecisionCard extends StatelessWidget {
                 _InfoChip(
                   label: l10n.monthlyOperationalCoverage,
                   value: '${report.coveragePercent.toStringAsFixed(1)}%',
-                ),
-                _InfoChip(
-                  label: l10n.monthlyOperationalPayrollPending,
-                  value: MoneyFormatter.format(report.payrollBalanceInCents),
                 ),
                 _InfoChip(
                   label: l10n.monthlyOperationalAdvances,

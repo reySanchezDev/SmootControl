@@ -151,6 +151,12 @@ final class SupabaseMonthlyOperationalReportService {
     return MonthlyOperationalReport(
       advancesDeliveredInCents: advancesDeliveredInCents,
       consideredExpensesByCategory: _expenseRows(expensesByCategory),
+      coverageRows: _coverageRows(
+        actualByCategory: _actualByCategory(expenses, categories),
+        categories: categories,
+        from: from,
+        to: to,
+      ),
       dailyRows: _dailyRows(salesByDate),
       excludedExpensesInCents: excludedExpenses,
       from: from,
@@ -162,6 +168,86 @@ final class SupabaseMonthlyOperationalReportService {
       totalSalesInCents: sales.fold(0, (sum, sale) => sum + sale.totalInCents),
       to: to,
     );
+  }
+
+  Map<String, int> _actualByCategory(
+    List<_RemoteExpense> expenses,
+    Map<String, _ExpenseCategory> categories,
+  ) {
+    final values = <String, int>{};
+    for (final expense in expenses) {
+      final category = categories[expense.categoryId];
+      if (category == null ||
+          !category.includeInCoverage ||
+          !category.coverageIsActive) {
+        continue;
+      }
+      values.update(
+        category.id,
+        (current) => current + expense.amountInCents,
+        ifAbsent: () => expense.amountInCents,
+      );
+    }
+    return values;
+  }
+
+  List<MonthlyOperationalCoverageRow> _coverageRows({
+    required Map<String, int> actualByCategory,
+    required Map<String, _ExpenseCategory> categories,
+    required DateTime from,
+    required DateTime to,
+  }) {
+    final rows = <MonthlyOperationalCoverageRow>[];
+    for (final category in categories.values) {
+      if (!category.includeInCoverage || !category.coverageIsActive) continue;
+      final actual = actualByCategory[category.id] ?? 0;
+      final projected = _projectedAmount(category, from, to);
+      if (actual == 0 && projected == 0) continue;
+      rows.add(
+        MonthlyOperationalCoverageRow(
+          actualInCents: actual,
+          categoryName: _categoryPath(category, categories) ?? category.name,
+          dueDays: category.coverageDueDays,
+          frequencyLabel: _coverageFrequencyLabel(category.coverageFrequency),
+          projectedInCents: projected,
+          typeLabel: _coverageTypeLabel(category.coverageType),
+        ),
+      );
+    }
+    return rows
+      ..sort((a, b) => b.obligationInCents.compareTo(a.obligationInCents));
+  }
+
+  int _projectedAmount(_ExpenseCategory category, DateTime from, DateTime to) {
+    final amount = category.coverageEstimatedAmountInCents ?? 0;
+    if (amount <= 0) return 0;
+    final occurrences = _dueOccurrences(category.coverageDueDays, from, to);
+    return amount * occurrences;
+  }
+
+  int _dueOccurrences(List<int> dueDays, DateTime from, DateTime to) {
+    if (dueDays.isEmpty) return 1;
+    var cursor = DateTime(from.year, from.month);
+    final end = DateTime(to.year, to.month);
+    var total = 0;
+    while (!cursor.isAfter(end)) {
+      final lastDay = DateTime(cursor.year, cursor.month + 1, 0).day;
+      for (final day in dueDays) {
+        final cappedDay = day > lastDay ? lastDay : day;
+        final dueDate = DateTime(cursor.year, cursor.month, cappedDay);
+        if (!dueDate.isBefore(from) && !dueDate.isAfter(to)) total++;
+      }
+      cursor = DateTime(cursor.year, cursor.month + 1);
+    }
+    return total;
+  }
+
+  String _coverageFrequencyLabel(String? value) {
+    return value ?? 'none';
+  }
+
+  String _coverageTypeLabel(String? value) {
+    return value ?? 'none';
   }
 
   List<MonthlyOperationalDailyRow> _dailyRows(

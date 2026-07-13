@@ -248,11 +248,30 @@
   "monthlyOperationalHealthyTitle": "Healthy coverage",
   "monthlyOperationalHealthyMessage": "Gross profit covers operating expenses and payroll for the period.",
   "monthlyOperationalCoverage": "Coverage used",
+  "monthlyOperationalProjectedCoverage": "Coverage goal",
+  "monthlyOperationalActualCoverage": "Executed",
+  "monthlyOperationalAvailableCoverage": "Available",
   "monthlyOperationalPayrollPending": "Pending payroll",
   "monthlyOperationalAdvances": "Advances delivered",
   "monthlyOperationalPendingConsumption": "Pending consumptions",
   "monthlyOperationalExpensesTitle": "Considered expenses",
   "monthlyOperationalExcludedExpenses": "Excluded expenses",
+  "monthlyOperationalCoverageIndicators": "Coverage indicators",
+  "monthlyOperationalNoCoverageConfigured": "There are no configured obligations for this period.",
+  "monthlyOperationalCoverageGoal": "Period goal",
+  "monthlyOperationalCoverageActual": "Registered",
+  "monthlyOperationalCoveragePending": "Pending",
+  "monthlyOperationalNoDueDays": "No payment days",
+  "monthlyOperationalDueDays": "Days {days}",
+  "@monthlyOperationalDueDays": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "monthlyOperationalNoCoverageType": "No type",
+  "monthlyOperationalNoCoverageFrequency": "No frequency",
   "inventoryValueSearchLabel": "Search product or category",
   "inventoryOnlyWithStockFilter": "Only with stock",
   "inventoryValueLoadErrorTitle": "Could not load",

@@ -42,7 +42,10 @@ extension _MonthlyOperationalQueries
 
   Future<Map<String, _ExpenseCategory>> _loadExpenseCategories() async {
     final rows = await _getRows('expense_categories', {
-      'select': 'id,name,parent_id,include_in_gross_profit_coverage',
+      'select':
+          'id,name,parent_id,include_in_gross_profit_coverage,'
+          'coverage_expense_type,coverage_estimated_amount,'
+          'coverage_frequency,coverage_due_days,coverage_is_active',
       'or':
           '(restaurant_id.eq.${_restaurantService.restaurantId},'
           'restaurant_id.is.null)',
@@ -50,6 +53,13 @@ extension _MonthlyOperationalQueries
     return {
       for (final row in rows)
         _requiredText(row, 'id'): _ExpenseCategory(
+          coverageDueDays: _intList(row['coverage_due_days']),
+          coverageEstimatedAmountInCents: _nullableMoneyToCents(
+            row['coverage_estimated_amount'],
+          ),
+          coverageFrequency: _optionalText(row['coverage_frequency']),
+          coverageIsActive: row['coverage_is_active'] != false,
+          coverageType: _optionalText(row['coverage_expense_type']),
           id: _requiredText(row, 'id'),
           includeInCoverage: row['include_in_gross_profit_coverage'] == true,
           name: _requiredText(row, 'name'),
@@ -198,6 +208,19 @@ extension _MonthlyOperationalQueries
     if (value == null) return 0;
     if (value is num) return (value * 100).round();
     return ((num.tryParse(value.toString()) ?? 0) * 100).round();
+  }
+
+  int? _nullableMoneyToCents(Object? value) {
+    if (value == null) return null;
+    return _moneyToCents(value);
+  }
+
+  List<int> _intList(Object? value) {
+    if (value is List) {
+      return value.whereType<num>().map((day) => day.round()).toList()
+        ..sort();
+    }
+    return const [];
   }
 
   String? _optionalText(Object? value) {

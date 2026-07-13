@@ -248,11 +248,30 @@
   "monthlyOperationalHealthyTitle": "Cobertura saludable",
   "monthlyOperationalHealthyMessage": "La utilidad bruta cubre gastos operativos y planilla del periodo.",
   "monthlyOperationalCoverage": "Cobertura usada",
+  "monthlyOperationalProjectedCoverage": "Meta cobertura",
+  "monthlyOperationalActualCoverage": "Ejecutado",
+  "monthlyOperationalAvailableCoverage": "Disponible",
   "monthlyOperationalPayrollPending": "Planilla pendiente",
   "monthlyOperationalAdvances": "Adelantos entregados",
   "monthlyOperationalPendingConsumption": "Consumos pendientes",
   "monthlyOperationalExpensesTitle": "Gastos considerados",
   "monthlyOperationalExcludedExpenses": "Gastos excluidos",
+  "monthlyOperationalCoverageIndicators": "Indicadores de cobertura",
+  "monthlyOperationalNoCoverageConfigured": "No hay obligaciones configuradas para este periodo.",
+  "monthlyOperationalCoverageGoal": "Meta del periodo",
+  "monthlyOperationalCoverageActual": "Registrado",
+  "monthlyOperationalCoveragePending": "Pendiente",
+  "monthlyOperationalNoDueDays": "Sin dias de pago",
+  "monthlyOperationalDueDays": "Dias {days}",
+  "@monthlyOperationalDueDays": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "monthlyOperationalNoCoverageType": "Sin tipo",
+  "monthlyOperationalNoCoverageFrequency": "Sin frecuencia",
   "inventoryValueSearchLabel": "Buscar producto o categoría",
   "inventoryOnlyWithStockFilter": "Solo con stock",
   "inventoryValueLoadErrorTitle": "No se pudo cargar",

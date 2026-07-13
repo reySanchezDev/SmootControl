@@ -8,12 +8,22 @@ final class _DailyAccumulator {
 
 final class _ExpenseCategory {
   const _ExpenseCategory({
+    required this.coverageDueDays,
+    required this.coverageEstimatedAmountInCents,
+    required this.coverageFrequency,
+    required this.coverageIsActive,
+    required this.coverageType,
     required this.id,
     required this.includeInCoverage,
     required this.name,
     this.parentId,
   });
 
+  final List<int> coverageDueDays;
+  final int? coverageEstimatedAmountInCents;
+  final String? coverageFrequency;
+  final bool coverageIsActive;
+  final String? coverageType;
   final String id;
   final bool includeInCoverage;
   final String name;

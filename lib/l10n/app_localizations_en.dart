@@ -685,6 +685,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get monthlyOperationalCoverage => 'Coverage used';
 
   @override
+  String get monthlyOperationalProjectedCoverage => 'Coverage goal';
+
+  @override
+  String get monthlyOperationalActualCoverage => 'Executed';
+
+  @override
+  String get monthlyOperationalAvailableCoverage => 'Available';
+
+  @override
   String get monthlyOperationalPayrollPending => 'Pending payroll';
 
   @override
@@ -698,6 +707,36 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get monthlyOperationalExcludedExpenses => 'Excluded expenses';
+
+  @override
+  String get monthlyOperationalCoverageIndicators => 'Coverage indicators';
+
+  @override
+  String get monthlyOperationalNoCoverageConfigured =>
+      'There are no configured obligations for this period.';
+
+  @override
+  String get monthlyOperationalCoverageGoal => 'Period goal';
+
+  @override
+  String get monthlyOperationalCoverageActual => 'Registered';
+
+  @override
+  String get monthlyOperationalCoveragePending => 'Pending';
+
+  @override
+  String get monthlyOperationalNoDueDays => 'No payment days';
+
+  @override
+  String monthlyOperationalDueDays(String days) {
+    return 'Days $days';
+  }
+
+  @override
+  String get monthlyOperationalNoCoverageType => 'No type';
+
+  @override
+  String get monthlyOperationalNoCoverageFrequency => 'No frequency';
 
   @override
   String get inventoryValueSearchLabel => 'Search product or category';
