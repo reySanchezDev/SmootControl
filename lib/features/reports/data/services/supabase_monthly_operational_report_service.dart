@@ -10,6 +10,7 @@ import 'package:smoo_control/features/reports/domain/entities/monthly_operationa
 
 part 'supabase_monthly_operational_report_models_part.dart';
 part 'supabase_monthly_operational_report_build_part.dart';
+part 'supabase_monthly_operational_report_payroll_part.dart';
 part 'supabase_monthly_operational_report_queries_part.dart';
 
 /// Builds the monthly operational result report from Supabase.

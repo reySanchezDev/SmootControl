@@ -88,64 +88,6 @@ extension _MonthlyOperationalQueries
     }).toList();
   }
 
-  Future<_PayrollTotals> _loadPayroll({
-    required DateTime from,
-    required DateTime to,
-  }) async {
-    final runs = await _getRows('payroll_runs', {
-      'select': 'id,period_start,period_end',
-      'restaurant_id': 'eq.${_restaurantService.restaurantId}',
-      'status': 'neq.voided',
-      'period_start': 'lte.${_formatDate(to)}',
-      'period_end': 'gte.${_formatDate(from)}',
-    });
-    final runById = {
-      for (final row in runs)
-        _requiredText(row, 'id'): (
-          from: _dateOnly(_dateTime(row['period_start'])),
-          to: _dateOnly(_dateTime(row['period_end'])),
-        ),
-    };
-    final runIds = runById.keys.toSet();
-    if (runIds.isEmpty) return const _PayrollTotals();
-    final rows = await _getRows('payroll_run_lines', {
-      'select': 'payroll_run_id,net_pay,paid_amount,balance_amount',
-      'payroll_run_id': 'in.(${runIds.join(',')})',
-    });
-    final periodTotals = <String, _PayrollPeriodAccumulator>{};
-    var balance = 0;
-    var net = 0;
-    var paid = 0;
-    for (final row in rows) {
-      final runId = _requiredText(row, 'payroll_run_id');
-      final rowBalance = _moneyToCents(row['balance_amount']);
-      final rowNet = _moneyToCents(row['net_pay']);
-      final rowPaid = _moneyToCents(row['paid_amount']);
-      balance += rowBalance;
-      net += rowNet;
-      paid += rowPaid;
-      periodTotals
-          .putIfAbsent(runId, _PayrollPeriodAccumulator.new)
-          .add(net: rowNet, paid: rowPaid, balance: rowBalance);
-    }
-    final periods = periodTotals.entries.map((entry) {
-      final run = runById[entry.key]!;
-      return _PayrollPeriodTotal(
-        balance: entry.value.balance,
-        from: run.from,
-        net: entry.value.net,
-        paid: entry.value.paid,
-        to: run.to,
-      );
-    }).toList();
-    return _PayrollTotals(
-      balance: balance,
-      net: net,
-      paid: paid,
-      periods: periods,
-    );
-  }
-
   Future<int> _loadAdvances({
     required DateTime exclusiveTo,
     required DateTime from,

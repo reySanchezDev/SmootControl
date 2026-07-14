@@ -37,8 +37,8 @@ void main() {
       expect(report.consideredExpensesInCents, 2500);
       expect(report.excludedExpensesInCents, 4000);
       expect(report.payrollNetInCents, 6000);
-      expect(report.payrollPaidInCents, 3000);
-      expect(report.payrollBalanceInCents, 3000);
+      expect(report.payrollPaidInCents, 0);
+      expect(report.payrollBalanceInCents, 6000);
       expect(report.advancesDeliveredInCents, 1000);
       expect(report.pendingStaffConsumptionInCents, 1200);
       expect(report.operationalResultInCents, -8500);
@@ -77,22 +77,14 @@ Future<http.Response> _responseFor(http.BaseRequest request) async {
   if (path.endsWith('/expense_categories')) return _categoriesResponse();
   if (path.endsWith('/operating_expenses')) return _expensesResponse();
   if (path.endsWith('/payroll_runs')) {
-    return _json([
-      {
-        'id': 'payroll-1',
-        'period_start': '2026-07-01',
-        'period_end': '2026-07-15',
-      },
-    ]);
+    return _json([]);
   }
   if (path.endsWith('/payroll_run_lines')) {
+    return _json([]);
+  }
+  if (path.endsWith('/employees')) {
     return _json([
-      {
-        'payroll_run_id': 'payroll-1',
-        'net_pay': 60,
-        'paid_amount': 30,
-        'balance_amount': 30,
-      },
+      {'base_salary': 60},
     ]);
   }
   if (path.endsWith('/employee_salary_advances')) {
