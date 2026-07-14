@@ -606,5 +606,21 @@
   "accessDeniedTitle": "Restricted access",
   "accessDeniedMessage": "Your user does not have permission to open this screen.",
   "roleField": "Role",
-  "noRoleAvailableMessage": "Create an active role first."
+  "noRoleAvailableMessage": "Create an active role first.",
+  "savingAction": "Saving...",
+  "inventoryAdjustmentAction": "Adjust inventory",
+  "inventoryAdjustmentTitle": "Inventory count adjustment",
+  "inventoryAdjustmentFilter": "Filter by product, category, or subcategory",
+  "inventoryAdjustmentNoProducts": "There are no products tracking inventory.",
+  "inventoryAdjustmentEmptyTitle": "No results",
+  "inventoryAdjustmentEmptyMessage": "Adjust the filter to see products.",
+  "inventoryAdjustmentChanged": "Changes",
+  "inventoryAdjustmentPositive": "In",
+  "inventoryAdjustmentNegative": "Out",
+  "inventoryAdjustmentSystemStock": "System",
+  "inventoryAdjustmentCountedStock": "Counted",
+  "inventoryAdjustmentDifference": "Difference",
+  "inventoryAdjustmentInvalidCount": "Review invalid counts.",
+  "inventoryAdjustmentNoChanges": "Enter at least one count different from current stock.",
+  "inventoryAdjustmentSave": "Save adjustment"
 }

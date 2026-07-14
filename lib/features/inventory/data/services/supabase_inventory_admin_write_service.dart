@@ -46,6 +46,25 @@ final class AdminPackagingPurchaseItem {
   final int unitCostInCents;
 }
 
+/// Product count row submitted by the administrative adjustment screen.
+final class AdminInventoryAdjustmentItem {
+  /// Creates a product count row.
+  const AdminInventoryAdjustmentItem({
+    required this.productId,
+    required this.expectedQuantity,
+    required this.countedQuantity,
+  });
+
+  /// Remote product id.
+  final String productId;
+
+  /// Stock read from Supabase before the count started.
+  final int expectedQuantity;
+
+  /// Physical stock counted by the user.
+  final int countedQuantity;
+}
+
 /// Writes administrative inventory purchases directly to Supabase.
 final class SupabaseInventoryAdminWriteService {
   /// Creates the service.
@@ -107,11 +126,37 @@ final class SupabaseInventoryAdminWriteService {
     );
   }
 
+  /// Registers one remote inventory adjustment document.
+  Future<AppResult<void>> registerInventoryAdjustmentBatch(
+    List<AdminInventoryAdjustmentItem> items, {
+    String? note,
+  }) {
+    return _postBatch(
+      functionName: 'app_register_inventory_adjustment_batch',
+      emptyCode: 'inventory_adjustment_empty',
+      emptyMessage: 'Agrega al menos un producto con cambio de inventario.',
+      message: 'Supabase rechazo el ajuste de inventario.',
+      items: [
+        for (final item in items)
+          {
+            'movement_id': _uuid.v4(),
+            'product_id': item.productId,
+            'expected_quantity': item.expectedQuantity,
+            'counted_quantity': item.countedQuantity,
+          },
+      ],
+      extraBody: {'p_note': note},
+    );
+  }
+
   Future<AppResult<void>> _postBatch({
     required String functionName,
     required String emptyCode,
     required String emptyMessage,
     required List<Map<String, Object?>> items,
+    String message =
+        'Supabase rechazo la compra por lote. Verifica permisos y datos.',
+    Map<String, Object?> extraBody = const {},
   }) async {
     try {
       if (items.isEmpty) {
@@ -142,6 +187,7 @@ final class SupabaseInventoryAdminWriteService {
         body: jsonEncode({
           'p_restaurant_id': _restaurantService.restaurantId,
           'p_items': items,
+          ...extraBody,
         }),
       );
       if (response.statusCode >= 200 && response.statusCode < 300) {
@@ -153,8 +199,7 @@ final class SupabaseInventoryAdminWriteService {
       return AppFailureResult(
         AppFailure(
           code: 'remote_inventory_batch_failed',
-          message:
-              'Supabase rechazo la compra por lote. Verifica permisos y datos.',
+          message: message,
           cause: response.body,
         ),
       );

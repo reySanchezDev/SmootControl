@@ -606,5 +606,21 @@
   "accessDeniedTitle": "Acceso restringido",
   "accessDeniedMessage": "Tu usuario no tiene permisos para abrir esta pantalla.",
   "roleField": "Rol",
-  "noRoleAvailableMessage": "Primero crea un rol activo."
+  "noRoleAvailableMessage": "Primero crea un rol activo.",
+  "savingAction": "Guardando...",
+  "inventoryAdjustmentAction": "Ajustar inventario",
+  "inventoryAdjustmentTitle": "Ajuste de inventario por conteo",
+  "inventoryAdjustmentFilter": "Filtrar por producto, categoria o subcategoria",
+  "inventoryAdjustmentNoProducts": "No hay productos que controlen inventario.",
+  "inventoryAdjustmentEmptyTitle": "Sin resultados",
+  "inventoryAdjustmentEmptyMessage": "Ajusta el filtro para ver productos.",
+  "inventoryAdjustmentChanged": "Cambios",
+  "inventoryAdjustmentPositive": "Entradas",
+  "inventoryAdjustmentNegative": "Salidas",
+  "inventoryAdjustmentSystemStock": "Sistema",
+  "inventoryAdjustmentCountedStock": "Conteo",
+  "inventoryAdjustmentDifference": "Diferencia",
+  "inventoryAdjustmentInvalidCount": "Revisa los conteos invalidos.",
+  "inventoryAdjustmentNoChanges": "Digita al menos un conteo diferente al stock actual.",
+  "inventoryAdjustmentSave": "Guardar ajuste"
 }

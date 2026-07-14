@@ -1446,4 +1446,56 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noRoleAvailableMessage => 'Create an active role first.';
+
+  @override
+  String get savingAction => 'Saving...';
+
+  @override
+  String get inventoryAdjustmentAction => 'Adjust inventory';
+
+  @override
+  String get inventoryAdjustmentTitle => 'Inventory count adjustment';
+
+  @override
+  String get inventoryAdjustmentFilter =>
+      'Filter by product, category, or subcategory';
+
+  @override
+  String get inventoryAdjustmentNoProducts =>
+      'There are no products tracking inventory.';
+
+  @override
+  String get inventoryAdjustmentEmptyTitle => 'No results';
+
+  @override
+  String get inventoryAdjustmentEmptyMessage =>
+      'Adjust the filter to see products.';
+
+  @override
+  String get inventoryAdjustmentChanged => 'Changes';
+
+  @override
+  String get inventoryAdjustmentPositive => 'In';
+
+  @override
+  String get inventoryAdjustmentNegative => 'Out';
+
+  @override
+  String get inventoryAdjustmentSystemStock => 'System';
+
+  @override
+  String get inventoryAdjustmentCountedStock => 'Counted';
+
+  @override
+  String get inventoryAdjustmentDifference => 'Difference';
+
+  @override
+  String get inventoryAdjustmentInvalidCount => 'Review invalid counts.';
+
+  @override
+  String get inventoryAdjustmentNoChanges =>
+      'Enter at least one count different from current stock.';
+
+  @override
+  String get inventoryAdjustmentSave => 'Save adjustment';
 }

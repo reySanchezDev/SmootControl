@@ -87,6 +87,43 @@ void main() {
       expect(items.single, containsPair('unit_cost', 1.5));
     });
 
+    test('registers inventory adjustments through the batch RPC', () async {
+      final requests = <http.Request>[];
+      final service = _service(
+        client: MockClient((request) async {
+          requests.add(request);
+          return http.Response(jsonEncode({'item_count': 1}), 200);
+        }),
+      );
+
+      final result = await service.registerInventoryAdjustmentBatch(
+        const [
+          AdminInventoryAdjustmentItem(
+            productId: '44444444-4444-4444-4444-444444444444',
+            expectedQuantity: 5,
+            countedQuantity: 8,
+          ),
+        ],
+        note: 'Conteo inicial',
+      );
+
+      expect(result, isA<AppSuccess<void>>());
+      expect(
+        requests.single.url.path,
+        '/rest/v1/rpc/app_register_inventory_adjustment_batch',
+      );
+      final body = jsonDecode(requests.single.body) as Map<String, Object?>;
+      expect(body['p_note'], 'Conteo inicial');
+      final items = body['p_items']! as List<Object?>;
+      expect(items.single, contains('movement_id'));
+      expect(
+        items.single,
+        containsPair('product_id', '44444444-4444-4444-4444-444444444444'),
+      );
+      expect(items.single, containsPair('expected_quantity', 5));
+      expect(items.single, containsPair('counted_quantity', 8));
+    });
+
     test('fails before calling Supabase when the batch is empty', () async {
       var called = false;
       final service = _service(

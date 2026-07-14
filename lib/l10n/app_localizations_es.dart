@@ -1452,4 +1452,56 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get noRoleAvailableMessage => 'Primero crea un rol activo.';
+
+  @override
+  String get savingAction => 'Guardando...';
+
+  @override
+  String get inventoryAdjustmentAction => 'Ajustar inventario';
+
+  @override
+  String get inventoryAdjustmentTitle => 'Ajuste de inventario por conteo';
+
+  @override
+  String get inventoryAdjustmentFilter =>
+      'Filtrar por producto, categoria o subcategoria';
+
+  @override
+  String get inventoryAdjustmentNoProducts =>
+      'No hay productos que controlen inventario.';
+
+  @override
+  String get inventoryAdjustmentEmptyTitle => 'Sin resultados';
+
+  @override
+  String get inventoryAdjustmentEmptyMessage =>
+      'Ajusta el filtro para ver productos.';
+
+  @override
+  String get inventoryAdjustmentChanged => 'Cambios';
+
+  @override
+  String get inventoryAdjustmentPositive => 'Entradas';
+
+  @override
+  String get inventoryAdjustmentNegative => 'Salidas';
+
+  @override
+  String get inventoryAdjustmentSystemStock => 'Sistema';
+
+  @override
+  String get inventoryAdjustmentCountedStock => 'Conteo';
+
+  @override
+  String get inventoryAdjustmentDifference => 'Diferencia';
+
+  @override
+  String get inventoryAdjustmentInvalidCount => 'Revisa los conteos invalidos.';
+
+  @override
+  String get inventoryAdjustmentNoChanges =>
+      'Digita al menos un conteo diferente al stock actual.';
+
+  @override
+  String get inventoryAdjustmentSave => 'Guardar ajuste';
 }

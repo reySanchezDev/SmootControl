@@ -449,6 +449,16 @@
 - Related screens/flows: `Utilidades`, `Sincronizacion`, POS offline.
 - Data impact: `local_sync_queue`, tablas locales del modulo, `pilot_cleanup_markers`, `reset_pilot_operation_scope`.
 
+## Inventario
+
+### Regla: Ajuste de inventario por conteo
+- Description: Admin puede registrar un ajuste de inventario por lote digitando el conteo fisico de productos que controlan inventario. Supabase calcula la diferencia contra el stock remoto y crea un solo documento de ajuste.
+- Rationale: Un conteo operativo no debe capturarse producto por producto ni depender del POS local; debe quedar como una operacion remota, trazable y atomica.
+- Example(s): Si el sistema tiene 5 unidades y se cuentan 10, se registra un movimiento `adjustment` de +5. Si el sistema tiene 10 y se cuentan 5, se registra `adjustment` de -5.
+- Edge cases: La RPC valida permiso `inventario.gestionar`, producto activo, `tracks_inventory`, conteo no negativo y stock esperado. Si el stock remoto cambio desde que se abrio la pantalla, la operacion falla y se debe refrescar.
+- Related screens/flows: `Inventario`, accion `Ajustar inventario`.
+- Data impact: `inventory_adjustment_documents`, `inventory_adjustment_lines`, `inventory_adjustment_number_settings`, `inventory_movements.movement_type = adjustment`, `inventory_stock.quantity_on_hand`.
+
 ## Roles Y Permisos
 
 ### Regla: Permisos granulares

@@ -2803,6 +2803,102 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Primero crea un rol activo.'**
   String get noRoleAvailableMessage;
+
+  /// No description provided for @savingAction.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardando...'**
+  String get savingAction;
+
+  /// No description provided for @inventoryAdjustmentAction.
+  ///
+  /// In es, this message translates to:
+  /// **'Ajustar inventario'**
+  String get inventoryAdjustmentAction;
+
+  /// No description provided for @inventoryAdjustmentTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Ajuste de inventario por conteo'**
+  String get inventoryAdjustmentTitle;
+
+  /// No description provided for @inventoryAdjustmentFilter.
+  ///
+  /// In es, this message translates to:
+  /// **'Filtrar por producto, categoria o subcategoria'**
+  String get inventoryAdjustmentFilter;
+
+  /// No description provided for @inventoryAdjustmentNoProducts.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay productos que controlen inventario.'**
+  String get inventoryAdjustmentNoProducts;
+
+  /// No description provided for @inventoryAdjustmentEmptyTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin resultados'**
+  String get inventoryAdjustmentEmptyTitle;
+
+  /// No description provided for @inventoryAdjustmentEmptyMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Ajusta el filtro para ver productos.'**
+  String get inventoryAdjustmentEmptyMessage;
+
+  /// No description provided for @inventoryAdjustmentChanged.
+  ///
+  /// In es, this message translates to:
+  /// **'Cambios'**
+  String get inventoryAdjustmentChanged;
+
+  /// No description provided for @inventoryAdjustmentPositive.
+  ///
+  /// In es, this message translates to:
+  /// **'Entradas'**
+  String get inventoryAdjustmentPositive;
+
+  /// No description provided for @inventoryAdjustmentNegative.
+  ///
+  /// In es, this message translates to:
+  /// **'Salidas'**
+  String get inventoryAdjustmentNegative;
+
+  /// No description provided for @inventoryAdjustmentSystemStock.
+  ///
+  /// In es, this message translates to:
+  /// **'Sistema'**
+  String get inventoryAdjustmentSystemStock;
+
+  /// No description provided for @inventoryAdjustmentCountedStock.
+  ///
+  /// In es, this message translates to:
+  /// **'Conteo'**
+  String get inventoryAdjustmentCountedStock;
+
+  /// No description provided for @inventoryAdjustmentDifference.
+  ///
+  /// In es, this message translates to:
+  /// **'Diferencia'**
+  String get inventoryAdjustmentDifference;
+
+  /// No description provided for @inventoryAdjustmentInvalidCount.
+  ///
+  /// In es, this message translates to:
+  /// **'Revisa los conteos invalidos.'**
+  String get inventoryAdjustmentInvalidCount;
+
+  /// No description provided for @inventoryAdjustmentNoChanges.
+  ///
+  /// In es, this message translates to:
+  /// **'Digita al menos un conteo diferente al stock actual.'**
+  String get inventoryAdjustmentNoChanges;
+
+  /// No description provided for @inventoryAdjustmentSave.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardar ajuste'**
+  String get inventoryAdjustmentSave;
 }
 
 class _AppLocalizationsDelegate

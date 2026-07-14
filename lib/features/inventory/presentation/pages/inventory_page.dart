@@ -11,7 +11,10 @@ import 'package:smoo_control/features/inventory/data/services/supabase_inventory
 import 'package:smoo_control/features/inventory/data/services/supabase_inventory_admin_write_service.dart';
 import 'package:smoo_control/features/inventory/domain/entities/inventory_stock_item.dart';
 import 'package:smoo_control/features/packaging/domain/entities/packaging_stock_item.dart';
+import 'package:smoo_control/l10n/app_localizations.dart';
 
+part 'inventory_adjustment_dialog_part.dart';
+part 'inventory_adjustment_widgets_part.dart';
 part 'inventory_batch_packaging_dialog_part.dart';
 part 'inventory_batch_product_dialog_part.dart';
 part 'inventory_batch_rows_part.dart';
@@ -58,8 +61,14 @@ class _InventoryPageState extends State<InventoryPage>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return AppPageScaffold(
       actions: [
+        IconButton(
+          icon: const Icon(Icons.fact_check_outlined),
+          onPressed: _openAdjustmentDialog,
+          tooltip: l10n.inventoryAdjustmentAction,
+        ),
         IconButton(
           icon: const Icon(Icons.add_shopping_cart_outlined),
           onPressed: _openPurchaseDialog,
@@ -94,6 +103,32 @@ class _InventoryPageState extends State<InventoryPage>
         ],
       ),
     );
+  }
+
+  Future<void> _openAdjustmentDialog() async {
+    final l10n = AppLocalizations.of(context);
+    final result = await _remoteReadService.getTrackedProductStock();
+    if (!mounted) return;
+    final items = switch (result) {
+      AppSuccess(:final value) => value,
+      AppFailureResult() => <InventoryStockItem>[],
+    };
+    if (items.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.inventoryAdjustmentNoProducts)),
+      );
+      return;
+    }
+    final saved = await showDialog<bool>(
+      context: context,
+      builder: (_) => _InventoryAdjustmentDialog(
+        items: items,
+        writeService: _remoteWriteService,
+      ),
+    );
+    if ((saved ?? false) && mounted) {
+      setState(_reload);
+    }
   }
 
   Future<void> _openPurchaseDialog() async {
