@@ -11,6 +11,7 @@ class _ProductStockTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return FutureBuilder<AppResult<List<InventoryStockItem>>>(
       future: future,
       builder: (context, snapshot) {
@@ -28,38 +29,48 @@ class _ProductStockTab extends StatelessWidget {
                 'Activa "Controla inventario" en productos para gestionar '
                 'stock.',
           ),
-          AppSuccess(:final value) => _StockList(
-            itemCount: value.length,
-            itemBuilder: (context, index) {
-              final item = value[index];
-              return ListTile(
-                leading: const Icon(Icons.inventory_2_outlined),
-                title: AppText(
-                  item.productName,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                subtitle: AppText(
-                  [
-                    if ((item.categoryPath ?? '').isNotEmpty)
-                      item.categoryPath!,
-                    'Costo: ${_formatMoney(item.costInCents)}',
-                    'Actualizado: ${formatDate(item.updatedAt)}',
-                  ].join(' - '),
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                  variant: AppTextVariant.label,
-                ),
-                trailing: AppText(
-                  item.quantityOnHand.toString(),
-                  variant: AppTextVariant.titleMedium,
-                ),
-              );
-            },
+          AppSuccess(:final value) => AppSearchableListSection(
+            emptyMessage: l10n.emptySearchMessage,
+            emptyTitle: l10n.emptySearchTitle,
+            items: value,
+            searchLabel: l10n.searchField,
+            searchTextForItem: _productSearchText,
+            itemBuilder: (context, item) => ListTile(
+              leading: const Icon(Icons.inventory_2_outlined),
+              title: AppText(
+                item.productName,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              subtitle: AppText(
+                [
+                  if ((item.categoryPath ?? '').isNotEmpty) item.categoryPath!,
+                  'Costo: ${_formatMoney(item.costInCents)}',
+                  'Actualizado: ${formatDate(item.updatedAt)}',
+                ].join(' - '),
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+                variant: AppTextVariant.label,
+              ),
+              trailing: AppText(
+                item.quantityOnHand.toString(),
+                variant: AppTextVariant.titleMedium,
+              ),
+            ),
           ),
         };
       },
     );
+  }
+
+  String _productSearchText(InventoryStockItem item) {
+    return [
+      item.productName,
+      item.categoryName,
+      item.categoryPath,
+      item.quantityOnHand.toString(),
+      _formatMoney(item.costInCents),
+    ].whereType<String>().join(' ');
   }
 }
 
