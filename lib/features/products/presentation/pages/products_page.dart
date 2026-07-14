@@ -81,7 +81,11 @@ class ProductsPage extends StatelessWidget {
                           l10n.availableInPosStatus
                         else
                           l10n.unavailableInPosStatus,
-                        if (product.tracksInventory) 'Controla inventario',
+                        if (product.isRawMaterial)
+                          l10n.rawMaterialStatus
+                        else
+                          l10n.sellableProductStatus,
+                        if (product.tracksInventory) l10n.tracksInventoryField,
                       ].join(' '),
                       itemBuilder: (context, product) => _ProductTile(
                         categoryPath: _categoryPathFor(
@@ -169,6 +173,7 @@ class ProductsPage extends StatelessWidget {
           costInCents: product.costInCents,
           isActive: false,
           isAvailableInPos: false,
+          isRawMaterial: product.isRawMaterial,
           optionGroups: product.optionGroups,
           modifierGroupIds: product.modifierGroupIds,
           tracksInventory: product.tracksInventory,

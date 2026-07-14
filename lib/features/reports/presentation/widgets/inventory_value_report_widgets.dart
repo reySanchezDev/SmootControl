@@ -175,7 +175,13 @@ class InventoryDataTable extends StatelessWidget {
               DataRow(
                 cells: [
                   DataCell(AppText(row.productName)),
-                  DataCell(AppText(row.categoryName)),
+                  DataCell(
+                    AppText(
+                      row.isRawMaterial
+                          ? '${row.categoryName} - ${l10n.rawMaterialStatus}'
+                          : row.categoryName,
+                    ),
+                  ),
                   DataCell(AppText(row.quantityOnHand.toString())),
                   DataCell(AppText(MoneyFormatter.format(row.costInCents))),
                   DataCell(AppText(MoneyFormatter.format(row.priceInCents))),

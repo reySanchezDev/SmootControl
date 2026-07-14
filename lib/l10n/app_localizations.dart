@@ -626,6 +626,48 @@ abstract class AppLocalizations {
   /// **'No disponible en POS'**
   String get unavailableInPosStatus;
 
+  /// No description provided for @productRawMaterialField.
+  ///
+  /// In es, this message translates to:
+  /// **'Materia prima'**
+  String get productRawMaterialField;
+
+  /// No description provided for @productRawMaterialHelp.
+  ///
+  /// In es, this message translates to:
+  /// **'No se vende en POS; suma al valor del inventario.'**
+  String get productRawMaterialHelp;
+
+  /// No description provided for @productSellableHelp.
+  ///
+  /// In es, this message translates to:
+  /// **'Producto vendible en POS; requiere precio de venta.'**
+  String get productSellableHelp;
+
+  /// No description provided for @sellableProductStatus.
+  ///
+  /// In es, this message translates to:
+  /// **'Vendible'**
+  String get sellableProductStatus;
+
+  /// No description provided for @rawMaterialStatus.
+  ///
+  /// In es, this message translates to:
+  /// **'Materia prima'**
+  String get rawMaterialStatus;
+
+  /// No description provided for @tracksInventoryField.
+  ///
+  /// In es, this message translates to:
+  /// **'Controla inventario'**
+  String get tracksInventoryField;
+
+  /// No description provided for @sellableProductPriceRequiredError.
+  ///
+  /// In es, this message translates to:
+  /// **'Los productos vendibles requieren precio de venta mayor que cero.'**
+  String get sellableProductPriceRequiredError;
+
   /// No description provided for @productOptionGroupsField.
   ///
   /// In es, this message translates to:

@@ -78,7 +78,7 @@ mixin _SupabaseAdminCatalogMixin on _SupabaseAdminRepositoryBase
           'restaurant_id': 'eq.$_restaurantId',
           'select':
               'id,category_id,name,cost,price,is_active,is_available_in_pos,'
-              'tracks_inventory,option_groups',
+              'is_raw_material,tracks_inventory,option_groups',
           'order': 'name.asc',
         });
         final assignments = await _getRows('product_modifier_groups', {
@@ -105,6 +105,7 @@ mixin _SupabaseAdminCatalogMixin on _SupabaseAdminRepositoryBase
               row['is_available_in_pos'],
               fallback: true,
             ),
+            isRawMaterial: _bool(row['is_raw_material']),
             tracksInventory: _bool(row['tracks_inventory']),
             optionGroups: ProductOptionGroupCodec.decode(
               jsonEncode(row['option_groups'] ?? const []),
@@ -132,6 +133,7 @@ mixin _SupabaseAdminCatalogMixin on _SupabaseAdminRepositoryBase
           'price': _money(product.priceInCents),
           'is_active': product.isActive,
           'is_available_in_pos': product.isAvailableInPos,
+          'is_raw_material': product.isRawMaterial,
           'tracks_inventory': product.tracksInventory,
           'option_groups': product.optionGroups
               .map(

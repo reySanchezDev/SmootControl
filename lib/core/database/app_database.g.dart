@@ -838,6 +838,21 @@ class $LocalProductsTable extends LocalProducts
     ),
     defaultValue: const Constant(true),
   );
+  static const VerificationMeta _isRawMaterialMeta = const VerificationMeta(
+    'isRawMaterial',
+  );
+  @override
+  late final GeneratedColumn<bool> isRawMaterial = GeneratedColumn<bool>(
+    'is_raw_material',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_raw_material" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   static const VerificationMeta _tracksInventoryMeta = const VerificationMeta(
     'tracksInventory',
   );
@@ -892,6 +907,7 @@ class $LocalProductsTable extends LocalProducts
     costInCents,
     isActive,
     isAvailableInPos,
+    isRawMaterial,
     tracksInventory,
     optionGroupsJson,
     modifierGroupIdsJson,
@@ -1004,6 +1020,15 @@ class $LocalProductsTable extends LocalProducts
         ),
       );
     }
+    if (data.containsKey('is_raw_material')) {
+      context.handle(
+        _isRawMaterialMeta,
+        isRawMaterial.isAcceptableOrUnknown(
+          data['is_raw_material']!,
+          _isRawMaterialMeta,
+        ),
+      );
+    }
     if (data.containsKey('tracks_inventory')) {
       context.handle(
         _tracksInventoryMeta,
@@ -1092,6 +1117,10 @@ class $LocalProductsTable extends LocalProducts
         DriftSqlType.bool,
         data['${effectivePrefix}is_available_in_pos'],
       )!,
+      isRawMaterial: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_raw_material'],
+      )!,
       tracksInventory: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
         data['${effectivePrefix}tracks_inventory'],
@@ -1153,6 +1182,9 @@ class LocalProduct extends DataClass implements Insertable<LocalProduct> {
   /// Whether the product is visible in the POS today.
   final bool isAvailableInPos;
 
+  /// Whether this row is raw material and not directly sellable.
+  final bool isRawMaterial;
+
   /// Whether sales should consume inventory stock.
   final bool tracksInventory;
 
@@ -1175,6 +1207,7 @@ class LocalProduct extends DataClass implements Insertable<LocalProduct> {
     required this.costInCents,
     required this.isActive,
     required this.isAvailableInPos,
+    required this.isRawMaterial,
     required this.tracksInventory,
     required this.optionGroupsJson,
     required this.modifierGroupIdsJson,
@@ -1201,6 +1234,7 @@ class LocalProduct extends DataClass implements Insertable<LocalProduct> {
     map['cost_in_cents'] = Variable<int>(costInCents);
     map['is_active'] = Variable<bool>(isActive);
     map['is_available_in_pos'] = Variable<bool>(isAvailableInPos);
+    map['is_raw_material'] = Variable<bool>(isRawMaterial);
     map['tracks_inventory'] = Variable<bool>(tracksInventory);
     map['option_groups_json'] = Variable<String>(optionGroupsJson);
     map['modifier_group_ids_json'] = Variable<String>(modifierGroupIdsJson);
@@ -1228,6 +1262,7 @@ class LocalProduct extends DataClass implements Insertable<LocalProduct> {
       costInCents: Value(costInCents),
       isActive: Value(isActive),
       isAvailableInPos: Value(isAvailableInPos),
+      isRawMaterial: Value(isRawMaterial),
       tracksInventory: Value(tracksInventory),
       optionGroupsJson: Value(optionGroupsJson),
       modifierGroupIdsJson: Value(modifierGroupIdsJson),
@@ -1253,6 +1288,7 @@ class LocalProduct extends DataClass implements Insertable<LocalProduct> {
       costInCents: serializer.fromJson<int>(json['costInCents']),
       isActive: serializer.fromJson<bool>(json['isActive']),
       isAvailableInPos: serializer.fromJson<bool>(json['isAvailableInPos']),
+      isRawMaterial: serializer.fromJson<bool>(json['isRawMaterial']),
       tracksInventory: serializer.fromJson<bool>(json['tracksInventory']),
       optionGroupsJson: serializer.fromJson<String>(json['optionGroupsJson']),
       modifierGroupIdsJson: serializer.fromJson<String>(
@@ -1277,6 +1313,7 @@ class LocalProduct extends DataClass implements Insertable<LocalProduct> {
       'costInCents': serializer.toJson<int>(costInCents),
       'isActive': serializer.toJson<bool>(isActive),
       'isAvailableInPos': serializer.toJson<bool>(isAvailableInPos),
+      'isRawMaterial': serializer.toJson<bool>(isRawMaterial),
       'tracksInventory': serializer.toJson<bool>(tracksInventory),
       'optionGroupsJson': serializer.toJson<String>(optionGroupsJson),
       'modifierGroupIdsJson': serializer.toJson<String>(modifierGroupIdsJson),
@@ -1297,6 +1334,7 @@ class LocalProduct extends DataClass implements Insertable<LocalProduct> {
     int? costInCents,
     bool? isActive,
     bool? isAvailableInPos,
+    bool? isRawMaterial,
     bool? tracksInventory,
     String? optionGroupsJson,
     String? modifierGroupIdsJson,
@@ -1314,6 +1352,7 @@ class LocalProduct extends DataClass implements Insertable<LocalProduct> {
     costInCents: costInCents ?? this.costInCents,
     isActive: isActive ?? this.isActive,
     isAvailableInPos: isAvailableInPos ?? this.isAvailableInPos,
+    isRawMaterial: isRawMaterial ?? this.isRawMaterial,
     tracksInventory: tracksInventory ?? this.tracksInventory,
     optionGroupsJson: optionGroupsJson ?? this.optionGroupsJson,
     modifierGroupIdsJson: modifierGroupIdsJson ?? this.modifierGroupIdsJson,
@@ -1343,6 +1382,9 @@ class LocalProduct extends DataClass implements Insertable<LocalProduct> {
       isAvailableInPos: data.isAvailableInPos.present
           ? data.isAvailableInPos.value
           : this.isAvailableInPos,
+      isRawMaterial: data.isRawMaterial.present
+          ? data.isRawMaterial.value
+          : this.isRawMaterial,
       tracksInventory: data.tracksInventory.present
           ? data.tracksInventory.value
           : this.tracksInventory,
@@ -1371,6 +1413,7 @@ class LocalProduct extends DataClass implements Insertable<LocalProduct> {
           ..write('costInCents: $costInCents, ')
           ..write('isActive: $isActive, ')
           ..write('isAvailableInPos: $isAvailableInPos, ')
+          ..write('isRawMaterial: $isRawMaterial, ')
           ..write('tracksInventory: $tracksInventory, ')
           ..write('optionGroupsJson: $optionGroupsJson, ')
           ..write('modifierGroupIdsJson: $modifierGroupIdsJson')
@@ -1393,6 +1436,7 @@ class LocalProduct extends DataClass implements Insertable<LocalProduct> {
     costInCents,
     isActive,
     isAvailableInPos,
+    isRawMaterial,
     tracksInventory,
     optionGroupsJson,
     modifierGroupIdsJson,
@@ -1414,6 +1458,7 @@ class LocalProduct extends DataClass implements Insertable<LocalProduct> {
           other.costInCents == this.costInCents &&
           other.isActive == this.isActive &&
           other.isAvailableInPos == this.isAvailableInPos &&
+          other.isRawMaterial == this.isRawMaterial &&
           other.tracksInventory == this.tracksInventory &&
           other.optionGroupsJson == this.optionGroupsJson &&
           other.modifierGroupIdsJson == this.modifierGroupIdsJson);
@@ -1433,6 +1478,7 @@ class LocalProductsCompanion extends UpdateCompanion<LocalProduct> {
   final Value<int> costInCents;
   final Value<bool> isActive;
   final Value<bool> isAvailableInPos;
+  final Value<bool> isRawMaterial;
   final Value<bool> tracksInventory;
   final Value<String> optionGroupsJson;
   final Value<String> modifierGroupIdsJson;
@@ -1451,6 +1497,7 @@ class LocalProductsCompanion extends UpdateCompanion<LocalProduct> {
     this.costInCents = const Value.absent(),
     this.isActive = const Value.absent(),
     this.isAvailableInPos = const Value.absent(),
+    this.isRawMaterial = const Value.absent(),
     this.tracksInventory = const Value.absent(),
     this.optionGroupsJson = const Value.absent(),
     this.modifierGroupIdsJson = const Value.absent(),
@@ -1470,6 +1517,7 @@ class LocalProductsCompanion extends UpdateCompanion<LocalProduct> {
     this.costInCents = const Value.absent(),
     this.isActive = const Value.absent(),
     this.isAvailableInPos = const Value.absent(),
+    this.isRawMaterial = const Value.absent(),
     this.tracksInventory = const Value.absent(),
     this.optionGroupsJson = const Value.absent(),
     this.modifierGroupIdsJson = const Value.absent(),
@@ -1494,6 +1542,7 @@ class LocalProductsCompanion extends UpdateCompanion<LocalProduct> {
     Expression<int>? costInCents,
     Expression<bool>? isActive,
     Expression<bool>? isAvailableInPos,
+    Expression<bool>? isRawMaterial,
     Expression<bool>? tracksInventory,
     Expression<String>? optionGroupsJson,
     Expression<String>? modifierGroupIdsJson,
@@ -1513,6 +1562,7 @@ class LocalProductsCompanion extends UpdateCompanion<LocalProduct> {
       if (costInCents != null) 'cost_in_cents': costInCents,
       if (isActive != null) 'is_active': isActive,
       if (isAvailableInPos != null) 'is_available_in_pos': isAvailableInPos,
+      if (isRawMaterial != null) 'is_raw_material': isRawMaterial,
       if (tracksInventory != null) 'tracks_inventory': tracksInventory,
       if (optionGroupsJson != null) 'option_groups_json': optionGroupsJson,
       if (modifierGroupIdsJson != null)
@@ -1535,6 +1585,7 @@ class LocalProductsCompanion extends UpdateCompanion<LocalProduct> {
     Value<int>? costInCents,
     Value<bool>? isActive,
     Value<bool>? isAvailableInPos,
+    Value<bool>? isRawMaterial,
     Value<bool>? tracksInventory,
     Value<String>? optionGroupsJson,
     Value<String>? modifierGroupIdsJson,
@@ -1554,6 +1605,7 @@ class LocalProductsCompanion extends UpdateCompanion<LocalProduct> {
       costInCents: costInCents ?? this.costInCents,
       isActive: isActive ?? this.isActive,
       isAvailableInPos: isAvailableInPos ?? this.isAvailableInPos,
+      isRawMaterial: isRawMaterial ?? this.isRawMaterial,
       tracksInventory: tracksInventory ?? this.tracksInventory,
       optionGroupsJson: optionGroupsJson ?? this.optionGroupsJson,
       modifierGroupIdsJson: modifierGroupIdsJson ?? this.modifierGroupIdsJson,
@@ -1603,6 +1655,9 @@ class LocalProductsCompanion extends UpdateCompanion<LocalProduct> {
     if (isAvailableInPos.present) {
       map['is_available_in_pos'] = Variable<bool>(isAvailableInPos.value);
     }
+    if (isRawMaterial.present) {
+      map['is_raw_material'] = Variable<bool>(isRawMaterial.value);
+    }
     if (tracksInventory.present) {
       map['tracks_inventory'] = Variable<bool>(tracksInventory.value);
     }
@@ -1636,6 +1691,7 @@ class LocalProductsCompanion extends UpdateCompanion<LocalProduct> {
           ..write('costInCents: $costInCents, ')
           ..write('isActive: $isActive, ')
           ..write('isAvailableInPos: $isAvailableInPos, ')
+          ..write('isRawMaterial: $isRawMaterial, ')
           ..write('tracksInventory: $tracksInventory, ')
           ..write('optionGroupsJson: $optionGroupsJson, ')
           ..write('modifierGroupIdsJson: $modifierGroupIdsJson, ')
@@ -27276,6 +27332,7 @@ typedef $$LocalProductsTableCreateCompanionBuilder =
       Value<int> costInCents,
       Value<bool> isActive,
       Value<bool> isAvailableInPos,
+      Value<bool> isRawMaterial,
       Value<bool> tracksInventory,
       Value<String> optionGroupsJson,
       Value<String> modifierGroupIdsJson,
@@ -27296,6 +27353,7 @@ typedef $$LocalProductsTableUpdateCompanionBuilder =
       Value<int> costInCents,
       Value<bool> isActive,
       Value<bool> isAvailableInPos,
+      Value<bool> isRawMaterial,
       Value<bool> tracksInventory,
       Value<String> optionGroupsJson,
       Value<String> modifierGroupIdsJson,
@@ -27373,6 +27431,11 @@ class $$LocalProductsTableFilterComposer
 
   ColumnFilters<bool> get isAvailableInPos => $composableBuilder(
     column: $table.isAvailableInPos,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isRawMaterial => $composableBuilder(
+    column: $table.isRawMaterial,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -27466,6 +27529,11 @@ class $$LocalProductsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get isRawMaterial => $composableBuilder(
+    column: $table.isRawMaterial,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<bool> get tracksInventory => $composableBuilder(
     column: $table.tracksInventory,
     builder: (column) => ColumnOrderings(column),
@@ -27540,6 +27608,11 @@ class $$LocalProductsTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<bool> get isRawMaterial => $composableBuilder(
+    column: $table.isRawMaterial,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<bool> get tracksInventory => $composableBuilder(
     column: $table.tracksInventory,
     builder: (column) => column,
@@ -27600,6 +27673,7 @@ class $$LocalProductsTableTableManager
                 Value<int> costInCents = const Value.absent(),
                 Value<bool> isActive = const Value.absent(),
                 Value<bool> isAvailableInPos = const Value.absent(),
+                Value<bool> isRawMaterial = const Value.absent(),
                 Value<bool> tracksInventory = const Value.absent(),
                 Value<String> optionGroupsJson = const Value.absent(),
                 Value<String> modifierGroupIdsJson = const Value.absent(),
@@ -27618,6 +27692,7 @@ class $$LocalProductsTableTableManager
                 costInCents: costInCents,
                 isActive: isActive,
                 isAvailableInPos: isAvailableInPos,
+                isRawMaterial: isRawMaterial,
                 tracksInventory: tracksInventory,
                 optionGroupsJson: optionGroupsJson,
                 modifierGroupIdsJson: modifierGroupIdsJson,
@@ -27638,6 +27713,7 @@ class $$LocalProductsTableTableManager
                 Value<int> costInCents = const Value.absent(),
                 Value<bool> isActive = const Value.absent(),
                 Value<bool> isAvailableInPos = const Value.absent(),
+                Value<bool> isRawMaterial = const Value.absent(),
                 Value<bool> tracksInventory = const Value.absent(),
                 Value<String> optionGroupsJson = const Value.absent(),
                 Value<String> modifierGroupIdsJson = const Value.absent(),
@@ -27656,6 +27732,7 @@ class $$LocalProductsTableTableManager
                 costInCents: costInCents,
                 isActive: isActive,
                 isAvailableInPos: isAvailableInPos,
+                isRawMaterial: isRawMaterial,
                 tracksInventory: tracksInventory,
                 optionGroupsJson: optionGroupsJson,
                 modifierGroupIdsJson: modifierGroupIdsJson,

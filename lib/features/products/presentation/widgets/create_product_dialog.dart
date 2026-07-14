@@ -7,6 +7,7 @@ import 'package:smoo_control/features/catalog/domain/entities/product_category.d
 import 'package:smoo_control/features/modifiers/domain/entities/modifier_group.dart';
 import 'package:smoo_control/features/products/domain/entities/product.dart';
 import 'package:smoo_control/features/products/presentation/widgets/modifier_group_selector.dart';
+import 'package:smoo_control/features/products/presentation/widgets/product_flags_section.dart';
 import 'package:smoo_control/l10n/app_localizations.dart';
 import 'package:uuid/uuid.dart';
 
@@ -39,6 +40,7 @@ class _CreateProductDialogState extends State<CreateProductDialog> {
   final _costController = TextEditingController(text: '0');
   bool _isActive = true;
   bool _isAvailableInPos = true;
+  bool _isRawMaterial = false;
   bool _tracksInventory = false;
   String? _error;
   String? _selectedCategoryId;
@@ -58,6 +60,7 @@ class _CreateProductDialogState extends State<CreateProductDialog> {
     _selectedCategoryId = product.categoryId;
     _isActive = product.isActive;
     _isAvailableInPos = product.isAvailableInPos;
+    _isRawMaterial = product.isRawMaterial;
     _tracksInventory = product.tracksInventory;
     _selectedModifierGroupIds.addAll(product.modifierGroupIds);
   }
@@ -130,28 +133,25 @@ class _CreateProductDialogState extends State<CreateProductDialog> {
                 ),
               ),
               const SizedBox(height: 8),
-              CheckboxListTile(
-                contentPadding: EdgeInsets.zero,
-                title: AppText(l10n.activeField),
-                value: _isActive,
-                onChanged: (value) => setState(
-                  () => _isActive = value ?? true,
-                ),
-              ),
-              CheckboxListTile(
-                contentPadding: EdgeInsets.zero,
-                title: AppText(l10n.availableInPosField),
-                value: _isAvailableInPos,
-                onChanged: (value) {
-                  setState(() => _isAvailableInPos = value ?? true);
+              ProductFlagsSection(
+                isActive: _isActive,
+                isAvailableInPos: _isAvailableInPos,
+                isRawMaterial: _isRawMaterial,
+                tracksInventory: _tracksInventory,
+                onActiveChanged: (value) {
+                  setState(() => _isActive = value);
                 },
-              ),
-              CheckboxListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const AppText('Controla inventario'),
-                value: _tracksInventory,
-                onChanged: (value) {
-                  setState(() => _tracksInventory = value ?? false);
+                onAvailableInPosChanged: (value) {
+                  setState(() => _isAvailableInPos = value);
+                },
+                onRawMaterialChanged: (value) {
+                  setState(() {
+                    _isRawMaterial = value;
+                    if (value) _isAvailableInPos = false;
+                  });
+                },
+                onTracksInventoryChanged: (value) {
+                  setState(() => _tracksInventory = value);
                 },
               ),
               ModifierGroupSelector(
@@ -200,6 +200,11 @@ class _CreateProductDialogState extends State<CreateProductDialog> {
       return;
     }
 
+    if (!_isRawMaterial && price <= 0) {
+      setState(() => _error = l10n.sellableProductPriceRequiredError);
+      return;
+    }
+
     Navigator.of(context).pop(
       Product(
         id: widget.product?.id ?? const Uuid().v4(),
@@ -208,7 +213,8 @@ class _CreateProductDialogState extends State<CreateProductDialog> {
         priceInCents: price,
         costInCents: cost,
         isActive: _isActive,
-        isAvailableInPos: _isAvailableInPos,
+        isAvailableInPos: !_isRawMaterial && _isAvailableInPos,
+        isRawMaterial: _isRawMaterial,
         tracksInventory: _tracksInventory,
         optionGroups: widget.product?.optionGroups ?? const [],
         modifierGroupIds: _selectedModifierGroupIds.toList(),

@@ -46,6 +46,10 @@ class LocalProducts extends Table with SyncColumns {
   BoolColumn get isAvailableInPos =>
       boolean().withDefault(const Constant(true))();
 
+  /// Whether this row is raw material and not directly sellable.
+  BoolColumn get isRawMaterial =>
+      boolean().withDefault(const Constant(false))();
+
   /// Whether sales should consume inventory stock.
   BoolColumn get tracksInventory =>
       boolean().withDefault(const Constant(false))();

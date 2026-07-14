@@ -70,6 +70,7 @@ Future<void> _handlePosStarted(
       products = allActiveProducts
           .where(
             (product) =>
+                !product.isRawMaterial &&
                 product.isAvailableInPos &&
                 _canDisplayProductInPos(product, stockByProductId),
           )

@@ -139,6 +139,74 @@ void main() {
       'modifier-guarnicion',
     ]);
   });
+
+  testWidgets('allows raw material with zero sale price', (tester) async {
+    Product? savedProduct;
+    const category = ProductCategory(
+      id: 'category-1',
+      name: 'Materia prima',
+      sortOrder: 1,
+      isActive: true,
+    );
+
+    await _pumpDialog(
+      tester,
+      categories: const [category],
+      onSaved: (product) => savedProduct = product,
+    );
+
+    await tester.tap(find.text('Open dialog'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).at(0), 'Azucar');
+    await tester.tap(_dropdownFinder());
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Materia prima').last);
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).at(1), '0');
+    await tester.enterText(find.byType(TextField).at(2), '12');
+    await tester.tap(find.text('Raw material'));
+    await tester.tap(find.text('Save'));
+    await tester.pumpAndSettle();
+
+    expect(savedProduct?.name, 'Azucar');
+    expect(savedProduct?.priceInCents, 0);
+    expect(savedProduct?.isRawMaterial, isTrue);
+    expect(savedProduct?.isAvailableInPos, isFalse);
+  });
+
+  testWidgets('rejects sellable product with zero sale price', (tester) async {
+    Product? savedProduct;
+    const category = ProductCategory(
+      id: 'category-1',
+      name: 'Bebidas',
+      sortOrder: 1,
+      isActive: true,
+    );
+
+    await _pumpDialog(
+      tester,
+      categories: const [category],
+      onSaved: (product) => savedProduct = product,
+    );
+
+    await tester.tap(find.text('Open dialog'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).at(0), 'Pepsi');
+    await tester.tap(_dropdownFinder());
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Bebidas').last);
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).at(1), '0');
+    await tester.enterText(find.byType(TextField).at(2), '10');
+    await tester.tap(find.text('Save'));
+    await tester.pumpAndSettle();
+
+    expect(savedProduct, isNull);
+    expect(
+      find.text('Sellable products require a sale price greater than zero.'),
+      findsOneWidget,
+    );
+  });
 }
 
 Finder _dropdownFinder() {

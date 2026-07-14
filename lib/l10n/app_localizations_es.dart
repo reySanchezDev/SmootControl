@@ -285,6 +285,30 @@ class AppLocalizationsEs extends AppLocalizations {
   String get unavailableInPosStatus => 'No disponible en POS';
 
   @override
+  String get productRawMaterialField => 'Materia prima';
+
+  @override
+  String get productRawMaterialHelp =>
+      'No se vende en POS; suma al valor del inventario.';
+
+  @override
+  String get productSellableHelp =>
+      'Producto vendible en POS; requiere precio de venta.';
+
+  @override
+  String get sellableProductStatus => 'Vendible';
+
+  @override
+  String get rawMaterialStatus => 'Materia prima';
+
+  @override
+  String get tracksInventoryField => 'Controla inventario';
+
+  @override
+  String get sellableProductPriceRequiredError =>
+      'Los productos vendibles requieren precio de venta mayor que cero.';
+
+  @override
   String get productOptionGroupsField => 'Opciones para POS';
 
   @override

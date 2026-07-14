@@ -10,6 +10,7 @@ final class InventoryValueReportRow extends Equatable {
     required this.productId,
     required this.productName,
     required this.quantityOnHand,
+    this.isRawMaterial = false,
   });
 
   /// Product identifier.
@@ -30,15 +31,23 @@ final class InventoryValueReportRow extends Equatable {
   /// Current product sale price in minor currency units.
   final int priceInCents;
 
+  /// Whether this row is raw material and not sold directly.
+  final bool isRawMaterial;
+
   /// Capital invested in this product.
   int get inventoryCostInCents => quantityOnHand * costInCents;
 
   /// Potential revenue if current stock is sold at current price.
-  int get potentialSalesInCents => quantityOnHand * priceInCents;
+  int get potentialSalesInCents {
+    if (isRawMaterial) return 0;
+    return quantityOnHand * priceInCents;
+  }
 
   /// Potential gross profit before operating expenses.
-  int get potentialGrossProfitInCents =>
-      potentialSalesInCents - inventoryCostInCents;
+  int get potentialGrossProfitInCents {
+    if (isRawMaterial) return 0;
+    return potentialSalesInCents - inventoryCostInCents;
+  }
 
   /// Gross margin percentage over sale price.
   double get marginPercent {
@@ -50,7 +59,8 @@ final class InventoryValueReportRow extends Equatable {
   bool get missingCost => quantityOnHand > 0 && costInCents <= 0;
 
   /// Whether the row needs price review.
-  bool get missingPrice => quantityOnHand > 0 && priceInCents <= 0;
+  bool get missingPrice =>
+      !isRawMaterial && quantityOnHand > 0 && priceInCents <= 0;
 
   @override
   List<Object?> get props => [
@@ -60,6 +70,7 @@ final class InventoryValueReportRow extends Equatable {
     quantityOnHand,
     costInCents,
     priceInCents,
+    isRawMaterial,
   ];
 }
 
@@ -129,7 +140,7 @@ final class InventoryValueReport extends Equatable {
 
   /// Total potential gross profit.
   int get potentialGrossProfitInCents =>
-      potentialSalesInCents - inventoryCostInCents;
+      rows.fold(0, (total, row) => total + row.potentialGrossProfitInCents);
 
   /// Gross margin percentage.
   double get marginPercent {
@@ -151,6 +162,7 @@ final class InventoryValueReport extends Equatable {
   int get lowMarginCount {
     return rows.where((row) {
       return row.quantityOnHand > 0 &&
+          !row.isRawMaterial &&
           row.priceInCents > 0 &&
           row.marginPercent < 20;
     }).length;

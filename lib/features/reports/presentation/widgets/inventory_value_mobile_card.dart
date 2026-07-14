@@ -24,7 +24,9 @@ class InventoryValueMobileCard extends StatelessWidget {
             AppText(row.productName, variant: AppTextVariant.titleMedium),
             const SizedBox(height: 2),
             AppText(
-              row.categoryName,
+              row.isRawMaterial
+                  ? '${row.categoryName} - ${l10n.rawMaterialStatus}'
+                  : row.categoryName,
               maxLines: 2,
               variant: AppTextVariant.label,
             ),

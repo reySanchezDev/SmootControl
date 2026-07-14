@@ -65,7 +65,11 @@ class _ProductTile extends StatelessWidget {
       else
         l10n.unavailableInPosStatus,
       if (product.requiresOptionSelection) l10n.productHasOptionsStatus,
-      if (product.tracksInventory) 'Controla inventario',
+      if (product.isRawMaterial)
+        l10n.rawMaterialStatus
+      else
+        l10n.sellableProductStatus,
+      if (product.tracksInventory) l10n.tracksInventoryField,
     ].join(' - ');
     if (categoryPath.isEmpty) return status;
 

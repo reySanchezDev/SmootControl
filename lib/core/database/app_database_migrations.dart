@@ -28,6 +28,7 @@ extension _AppDatabaseMigrations on AppDatabase {
     await _upgradeSchemaFrom21To24(migrator, from);
     await _upgradeSchemaFrom25To28(migrator, from);
     await _upgradeSchemaFrom29(migrator, from);
+    await _upgradeSchemaFrom30(migrator, from);
   }
 
   Future<void> _upgradeSchemaFrom7To20(Migrator migrator, int from) async {
@@ -192,6 +193,18 @@ extension _AppDatabaseMigrations on AppDatabase {
     if (from < 29) {
       await _addExpenseCoverageProjectionColumns(migrator);
       await _moveExpenseCoverageToChildren();
+    }
+  }
+
+  Future<void> _upgradeSchemaFrom30(Migrator migrator, int from) async {
+    if (from < 30) {
+      if (await _tableExists(localProducts.actualTableName) &&
+          !await _columnExists(
+            localProducts.actualTableName,
+            localProducts.isRawMaterial.$name,
+          )) {
+        await migrator.addColumn(localProducts, localProducts.isRawMaterial);
+      }
     }
   }
 }

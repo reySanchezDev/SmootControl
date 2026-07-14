@@ -52,6 +52,7 @@ final class SupabaseInventoryValueReportService {
           InventoryValueReportRow(
             categoryName: categoryName.isEmpty ? 'Sin categoria' : categoryName,
             costInCents: product.costInCents,
+            isRawMaterial: product.isRawMaterial,
             priceInCents: product.priceInCents,
             productId: product.id,
             productName: product.name,
@@ -85,7 +86,7 @@ final class SupabaseInventoryValueReportService {
       'restaurant_id': 'eq.${_restaurantService.restaurantId}',
       'tracks_inventory': 'eq.true',
       'is_active': 'eq.true',
-      'select': 'id,name,category_id,cost,price',
+      'select': 'id,name,category_id,cost,price,is_raw_material',
       'order': 'name.asc',
     });
 
@@ -94,6 +95,7 @@ final class SupabaseInventoryValueReportService {
         categoryId: _optionalText(row['category_id']) ?? '',
         costInCents: _moneyToCents(row['cost']),
         id: _requiredText(row, 'id'),
+        isRawMaterial: _bool(row['is_raw_material']),
         name: _requiredText(row, 'name'),
         priceInCents: _moneyToCents(row['price']),
       );
@@ -190,6 +192,12 @@ final class SupabaseInventoryValueReportService {
     return ((num.tryParse(value.toString()) ?? 0) * 100).round();
   }
 
+  bool _bool(Object? value) {
+    if (value is bool) return value;
+    if (value is num) return value != 0;
+    return value?.toString().toLowerCase() == 'true';
+  }
+
   String? _optionalText(Object? value) {
     final text = value?.toString().trim();
     return text == null || text.isEmpty ? null : text;
@@ -219,6 +227,7 @@ final class _RemoteInventoryProduct {
     required this.categoryId,
     required this.costInCents,
     required this.id,
+    required this.isRawMaterial,
     required this.name,
     required this.priceInCents,
   });
@@ -226,6 +235,7 @@ final class _RemoteInventoryProduct {
   final String categoryId;
   final int costInCents;
   final String id;
+  final bool isRawMaterial;
   final String name;
   final int priceInCents;
 }

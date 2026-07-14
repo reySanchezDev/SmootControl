@@ -31,13 +31,15 @@ void main() {
                   'category_id': 'subcategory-1',
                   'cost': 10,
                   'price': 25,
+                  'is_raw_material': false,
                 },
                 {
                   'id': 'product-2',
-                  'name': 'Uva',
+                  'name': 'Azucar',
                   'category_id': 'subcategory-1',
                   'cost': 8,
-                  'price': 20,
+                  'price': 0,
+                  'is_raw_material': true,
                 },
               ]),
               200,
@@ -89,8 +91,9 @@ void main() {
       final report = (result as AppSuccess<InventoryValueReport>).value;
       expect(report.rows, hasLength(2));
       expect(report.inventoryCostInCents, 14000);
-      expect(report.potentialSalesInCents, 35000);
-      expect(report.potentialGrossProfitInCents, 21000);
+      expect(report.potentialSalesInCents, 25000);
+      expect(report.potentialGrossProfitInCents, 15000);
+      expect(report.missingPriceCount, 0);
       expect(report.byCategory.single.categoryName, 'Bebidas / Gaseosas');
       expect(report.byCategory.single.productCount, 2);
     });

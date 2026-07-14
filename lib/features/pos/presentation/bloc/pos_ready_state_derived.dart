@@ -83,7 +83,9 @@ extension PosReadyDerivedState on PosReady {
   /// Products visible at the current navigation level.
   List<Product> get visibleProducts {
     final activeProducts = products.where((product) {
-      return product.isActive && product.isAvailableInPos;
+      return product.isActive &&
+          product.isAvailableInPos &&
+          !product.isRawMaterial;
     });
     if (categories.isEmpty) {
       return activeProducts.toList();

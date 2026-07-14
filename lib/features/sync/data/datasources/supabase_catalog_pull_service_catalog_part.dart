@@ -117,8 +117,10 @@ extension on SupabaseCatalogPullService {
               costInCents: Value(_moneyCents(row['cost'])),
               isActive: Value(_bool(row['is_active'], defaultValue: true)),
               isAvailableInPos: Value(
-                _bool(row['is_available_in_pos'], defaultValue: true),
+                !_bool(row['is_raw_material']) &&
+                    _bool(row['is_available_in_pos'], defaultValue: true),
               ),
+              isRawMaterial: Value(_bool(row['is_raw_material'])),
               tracksInventory: Value(
                 _bool(row['tracks_inventory']),
               ),

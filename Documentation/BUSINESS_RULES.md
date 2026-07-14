@@ -459,6 +459,14 @@
 - Related screens/flows: `Inventario`, accion `Ajustar inventario`.
 - Data impact: `inventory_adjustment_documents`, `inventory_adjustment_lines`, `inventory_adjustment_number_settings`, `inventory_movements.movement_type = adjustment`, `inventory_stock.quantity_on_hand`.
 
+### Regla: Producto vendible vs materia prima
+- Description: Un producto puede ser vendible o materia prima. El producto vendible requiere precio de venta mayor que cero; la materia prima permite precio de venta en cero y no se muestra para vender en POS.
+- Rationale: El inventario debe valorar tanto productos de venta como insumos, pero la proyeccion de venta/utilidad solo debe considerar productos vendibles.
+- Example(s): `Pepsi` es vendible y requiere precio. `Azucar` es materia prima, controla inventario, tiene costo, precio C$ 0.00 y no aparece como boton de venta.
+- Edge cases: Los productos existentes quedan vendibles por defecto. Si una materia prima queda marcada como disponible en POS por datos viejos, el pull local y el POS la excluyen de la venta. En `Valor de inventario`, materia prima suma al costo del inventario, pero no suma venta potencial, utilidad ni margen.
+- Related screens/flows: `Productos`, `POS`, `Valor de inventario`, `Sincronizacion de catalogos`.
+- Data impact: `products.is_raw_material`, `local_products.is_raw_material`, `InventoryValueReportRow.isRawMaterial`.
+
 ## Roles Y Permisos
 
 ### Regla: Permisos granulares

@@ -80,6 +80,7 @@ extension on SupabaseSyncRemoteSender {
       'price': _money(_intValue(payload['priceInCents'])),
       'is_active': payload['isActive'],
       'is_available_in_pos': payload['isAvailableInPos'],
+      'is_raw_material': payload['isRawMaterial'] ?? false,
       'tracks_inventory': payload['tracksInventory'] ?? false,
       'option_groups': payload['optionGroups'] ?? const <Object?>[],
       'updated_at': DateTime.now().toIso8601String(),

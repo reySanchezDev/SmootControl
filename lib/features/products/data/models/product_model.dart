@@ -19,6 +19,7 @@ final class ProductModel extends Equatable {
     required this.tracksInventory,
     required this.optionGroups,
     required this.modifierGroupIds,
+    this.isRawMaterial = false,
   });
 
   /// Creates a model from a local Drift row.
@@ -31,6 +32,7 @@ final class ProductModel extends Equatable {
       costInCents: row.costInCents,
       isActive: row.isActive,
       isAvailableInPos: row.isAvailableInPos,
+      isRawMaterial: row.isRawMaterial,
       tracksInventory: row.tracksInventory,
       optionGroups: ProductOptionGroupCodec.decode(row.optionGroupsJson),
       modifierGroupIds: StringListCodec.decode(row.modifierGroupIdsJson),
@@ -47,6 +49,7 @@ final class ProductModel extends Equatable {
       costInCents: entity.costInCents,
       isActive: entity.isActive,
       isAvailableInPos: entity.isAvailableInPos,
+      isRawMaterial: entity.isRawMaterial,
       tracksInventory: entity.tracksInventory,
       optionGroups: entity.optionGroups,
       modifierGroupIds: entity.modifierGroupIds,
@@ -74,6 +77,9 @@ final class ProductModel extends Equatable {
   /// Whether the product is visible in the POS today.
   final bool isAvailableInPos;
 
+  /// Whether this item is raw material instead of sellable product.
+  final bool isRawMaterial;
+
   /// Whether sales should consume inventory stock.
   final bool tracksInventory;
 
@@ -99,6 +105,7 @@ final class ProductModel extends Equatable {
       costInCents: costInCents,
       isActive: isActive,
       isAvailableInPos: isAvailableInPos,
+      isRawMaterial: isRawMaterial,
       tracksInventory: tracksInventory,
       optionGroups: optionGroups,
       modifierGroupIds: modifierGroupIds,
@@ -114,6 +121,7 @@ final class ProductModel extends Equatable {
     costInCents,
     isActive,
     isAvailableInPos,
+    isRawMaterial,
     tracksInventory,
     optionGroups,
     modifierGroupIds,
