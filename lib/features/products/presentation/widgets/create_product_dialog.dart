@@ -187,8 +187,9 @@ class _CreateProductDialogState extends State<CreateProductDialog> {
   void _submit() {
     final l10n = AppLocalizations.of(context);
     final name = _nameController.text.trim();
-    final price = MoneyFormatter.parseToCents(_priceController.text);
+    final parsedPrice = MoneyFormatter.parseToCents(_priceController.text);
     final cost = MoneyFormatter.parseToCents(_costController.text);
+    final price = _isRawMaterial ? (parsedPrice ?? 0) : parsedPrice;
 
     if (name.isEmpty || _selectedCategoryId == null) {
       setState(() => _error = l10n.fieldRequiredError);
