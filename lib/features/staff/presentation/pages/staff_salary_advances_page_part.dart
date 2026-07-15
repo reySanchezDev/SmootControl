@@ -10,8 +10,10 @@ class SalaryAdvancesPage extends StatefulWidget {
 }
 
 class _SalaryAdvancesPageState extends State<SalaryAdvancesPage> {
+  final _searchController = TextEditingController();
   late Future<({List<Employee> employees, List<SalaryAdvance> advances})>
   _future;
+  String _query = '';
 
   SupabaseStaffAdminRepository get _repository =>
       serviceLocator<SupabaseStaffAdminRepository>();
@@ -24,6 +26,12 @@ class _SalaryAdvancesPageState extends State<SalaryAdvancesPage> {
 
   void _reload() {
     _future = _load();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   Future<({List<Employee> employees, List<SalaryAdvance> advances})>
@@ -67,10 +75,22 @@ class _SalaryAdvancesPageState extends State<SalaryAdvancesPage> {
               }
               if (!snapshot.hasData) return const AppLoadingPage();
               final data = snapshot.requireData;
-              return _SalaryAdvanceList(
-                advances: data.advances,
-                employees: data.employees,
-                onDelete: _deleteAdvance,
+              return Column(
+                children: [
+                  _StaffSearchField(
+                    controller: _searchController,
+                    hintText: 'Buscar por empleado, fecha, estado o monto',
+                    onChanged: (value) => setState(() => _query = value),
+                  ),
+                  Expanded(
+                    child: _SalaryAdvanceList(
+                      advances: _filterAdvances(data),
+                      employees: data.employees,
+                      hasFilter: _query.trim().isNotEmpty,
+                      onDelete: _deleteAdvance,
+                    ),
+                  ),
+                ],
               );
             },
           ),
@@ -114,26 +134,56 @@ class _SalaryAdvancesPageState extends State<SalaryAdvancesPage> {
         await showAppMessageDialog(context: context, message: error.message);
     }
   }
+
+  List<SalaryAdvance> _filterAdvances(
+    ({List<Employee> employees, List<SalaryAdvance> advances}) data,
+  ) {
+    final query = _query.trim().toLowerCase();
+    if (query.isEmpty) return data.advances;
+    final employeeById = {for (final item in data.employees) item.id: item};
+    return data.advances.where((advance) {
+      final employee = employeeById[advance.employeeId];
+      final balance = advance.balanceInCents ?? advance.amountInCents;
+      final paid = advance.amountInCents - balance;
+      final values = [
+        employee?.fullName ?? 'Empleado',
+        employee?.code ?? '',
+        _dateOnly(advance.deliveredAt),
+        if (advance.affectsCash) 'Afecta caja',
+        if (!advance.affectsCash) 'Cuenta externa',
+        _salaryAdvanceStatusLabel(advance.status),
+        _money(advance.amountInCents),
+        _money(paid),
+        _money(balance),
+        advance.note ?? '',
+      ].join(' ').toLowerCase();
+      return values.contains(query);
+    }).toList();
+  }
 }
 
 class _SalaryAdvanceList extends StatelessWidget {
   const _SalaryAdvanceList({
     required this.advances,
     required this.employees,
+    required this.hasFilter,
     required this.onDelete,
   });
 
   final List<SalaryAdvance> advances;
   final List<Employee> employees;
+  final bool hasFilter;
   final ValueChanged<SalaryAdvance> onDelete;
 
   @override
   Widget build(BuildContext context) {
     if (advances.isEmpty) {
-      return const AppEmptyState(
+      return AppEmptyState(
         icon: Icons.payments_outlined,
-        title: 'Sin adelantos',
-        message: 'Los adelantos registrados apareceran aqui.',
+        title: hasFilter ? 'Sin resultados' : 'Sin adelantos',
+        message: hasFilter
+            ? 'No hay adelantos que coincidan con la busqueda.'
+            : 'Los adelantos registrados apareceran aqui.',
       );
     }
     final employeeById = {
@@ -159,7 +209,7 @@ class _SalaryAdvanceList extends StatelessWidget {
               'Entrega: ${_dateOnly(advance.deliveredAt)}',
               if (advance.affectsCash) 'Afecta caja',
               if (!advance.affectsCash) 'Cuenta externa',
-              _advanceStatusLabel(advance.status),
+              _salaryAdvanceStatusLabel(advance.status),
               'Adelanto: ${_money(advance.amountInCents)}',
               'Abonado: ${_money(paid)}',
               'Saldo: ${_money(balance)}',
@@ -180,13 +230,13 @@ class _SalaryAdvanceList extends StatelessWidget {
       },
     );
   }
+}
 
-  String _advanceStatusLabel(String status) {
-    return switch (status) {
-      'pending' => 'Pendiente',
-      'partially_paid' => 'Parcial',
-      'paid' => 'Pagado',
-      _ => status,
-    };
-  }
+String _salaryAdvanceStatusLabel(String status) {
+  return switch (status) {
+    'pending' => 'Pendiente',
+    'partially_paid' => 'Parcial',
+    'paid' => 'Pagado',
+    _ => status,
+  };
 }

@@ -10,7 +10,9 @@ class StaffConsumptionsPage extends StatefulWidget {
 }
 
 class _StaffConsumptionsPageState extends State<StaffConsumptionsPage> {
+  final _searchController = TextEditingController();
   late Future<AppResult<List<StaffConsumption>>> _future;
+  String _query = '';
 
   SupabaseStaffAdminRepository get _repository =>
       serviceLocator<SupabaseStaffAdminRepository>();
@@ -22,28 +24,62 @@ class _StaffConsumptionsPageState extends State<StaffConsumptionsPage> {
   }
 
   @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return AppPageScaffold(
       title: 'Consumos de personal',
-      body: FutureBuilder<AppResult<List<StaffConsumption>>>(
-        future: _future,
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) return const AppLoadingPage();
-          return switch (snapshot.requireData) {
-            AppSuccess(:final value) => _StaffConsumptionList(
-              consumptions: value,
-              onDelete: _deleteConsumption,
-              onOpen: _openDetail,
+      body: Column(
+        children: [
+          _StaffSearchField(
+            controller: _searchController,
+            hintText: 'Buscar por empleado, recibo, fecha o monto',
+            onChanged: (value) => setState(() => _query = value),
+          ),
+          Expanded(
+            child: FutureBuilder<AppResult<List<StaffConsumption>>>(
+              future: _future,
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) return const AppLoadingPage();
+                return switch (snapshot.requireData) {
+                  AppSuccess(:final value) => _StaffConsumptionList(
+                    consumptions: _filterConsumptions(value),
+                    hasFilter: _query.trim().isNotEmpty,
+                    onDelete: _deleteConsumption,
+                    onOpen: _openDetail,
+                  ),
+                  AppFailureResult(:final error) => AppEmptyState(
+                    icon: Icons.receipt_long_outlined,
+                    title: 'Consumos de personal',
+                    message: error.message,
+                  ),
+                };
+              },
             ),
-            AppFailureResult(:final error) => AppEmptyState(
-              icon: Icons.receipt_long_outlined,
-              title: 'Consumos de personal',
-              message: error.message,
-            ),
-          };
-        },
+          ),
+        ],
       ),
     );
+  }
+
+  List<StaffConsumption> _filterConsumptions(
+    List<StaffConsumption> consumptions,
+  ) {
+    final query = _query.trim().toLowerCase();
+    if (query.isEmpty) return consumptions;
+    return consumptions.where((item) {
+      final values = [
+        item.employeeName,
+        item.receiptLabel,
+        _dateOnly(item.createdAt),
+        _money(item.totalInCents),
+      ].join(' ').toLowerCase();
+      return values.contains(query);
+    }).toList();
   }
 
   Future<void> _openDetail(StaffConsumption consumption) async {
@@ -84,21 +120,25 @@ class _StaffConsumptionsPageState extends State<StaffConsumptionsPage> {
 class _StaffConsumptionList extends StatelessWidget {
   const _StaffConsumptionList({
     required this.consumptions,
+    required this.hasFilter,
     required this.onDelete,
     required this.onOpen,
   });
 
   final List<StaffConsumption> consumptions;
+  final bool hasFilter;
   final ValueChanged<StaffConsumption> onDelete;
   final ValueChanged<StaffConsumption> onOpen;
 
   @override
   Widget build(BuildContext context) {
     if (consumptions.isEmpty) {
-      return const AppEmptyState(
+      return AppEmptyState(
         icon: Icons.receipt_long_outlined,
-        title: 'Sin consumos',
-        message: 'Los consumos registrados desde POS apareceran aqui.',
+        title: hasFilter ? 'Sin resultados' : 'Sin consumos',
+        message: hasFilter
+            ? 'No hay consumos que coincidan con la busqueda.'
+            : 'Los consumos registrados desde POS apareceran aqui.',
       );
     }
     return ListView.separated(
@@ -168,6 +208,43 @@ class _StaffConsumptionDetailDialog extends StatelessWidget {
           child: const Text('OK'),
         ),
       ],
+    );
+  }
+}
+
+class _StaffSearchField extends StatelessWidget {
+  const _StaffSearchField({
+    required this.controller,
+    required this.hintText,
+    required this.onChanged,
+  });
+
+  final TextEditingController controller;
+  final String hintText;
+  final ValueChanged<String> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+      child: TextField(
+        controller: controller,
+        decoration: InputDecoration(
+          border: const OutlineInputBorder(),
+          hintText: hintText,
+          prefixIcon: const Icon(Icons.search),
+          suffixIcon: controller.text.isEmpty
+              ? null
+              : IconButton(
+                  icon: const Icon(Icons.clear),
+                  onPressed: () {
+                    controller.clear();
+                    onChanged('');
+                  },
+                ),
+        ),
+        onChanged: onChanged,
+      ),
     );
   }
 }
