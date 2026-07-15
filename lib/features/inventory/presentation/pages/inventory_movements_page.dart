@@ -117,6 +117,9 @@ class _InventoryMovementsPageState extends State<InventoryMovementsPage> {
   Future<void> _openDetail(InventoryMovementDocument document) async {
     await showModalBottomSheet<void>(
       context: context,
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.sizeOf(context).height * 0.86,
+      ),
       isScrollControlled: true,
       showDragHandle: true,
       builder: (_) => _MovementDetailSheet(document: document),

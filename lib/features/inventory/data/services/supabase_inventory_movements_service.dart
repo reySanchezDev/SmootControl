@@ -8,6 +8,8 @@ import 'package:smoo_control/core/session/current_remote_session_service.dart';
 import 'package:smoo_control/core/session/current_restaurant_service.dart';
 import 'package:smoo_control/features/inventory/domain/entities/inventory_movement_document.dart';
 
+part 'supabase_inventory_movements_service_part.dart';
+
 /// Reads inventory movement documents directly from Supabase for admin views.
 final class SupabaseInventoryMovementsService {
   /// Creates the service.
@@ -42,7 +44,7 @@ final class SupabaseInventoryMovementsService {
       if (type != InventoryMovementDocumentType.adjustment) {
         documents.addAll(await _genericHeaders(type, from, to, products));
       }
-      documents.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      documents.sort(_compareNewestFirst);
       return AppSuccess(documents);
     } on Object catch (error) {
       return AppFailureResult(
@@ -266,35 +268,4 @@ final class SupabaseInventoryMovementsService {
       if (referenceId.isEmpty) _text(row['id']) else referenceId,
     ].join('|');
   }
-}
-
-InventoryMovementDocumentType _typeFromText(String value) => switch (value) {
-  'purchase' => InventoryMovementDocumentType.purchase,
-  'sale' => InventoryMovementDocumentType.sale,
-  'sale_void' => InventoryMovementDocumentType.saleVoid,
-  _ => InventoryMovementDocumentType.adjustment,
-};
-
-String _typeCode(InventoryMovementDocumentType type) => switch (type) {
-  InventoryMovementDocumentType.purchase => 'purchase',
-  InventoryMovementDocumentType.sale => 'sale',
-  InventoryMovementDocumentType.saleVoid => 'sale_void',
-  InventoryMovementDocumentType.adjustment => 'adjustment',
-  InventoryMovementDocumentType.all => '',
-};
-
-String _genericTitle(
-  InventoryMovementDocumentType type,
-  List<Map<String, Object?>> rows,
-  Map<String, String> products,
-) {
-  final firstProduct =
-      products[rows.first['product_id']?.toString()] ?? 'Producto';
-  return switch (type) {
-    InventoryMovementDocumentType.purchase => 'Compra - $firstProduct',
-    InventoryMovementDocumentType.sale => 'Venta',
-    InventoryMovementDocumentType.saleVoid => 'Anulacion venta',
-    InventoryMovementDocumentType.adjustment => 'Ajuste',
-    InventoryMovementDocumentType.all => 'Movimiento',
-  };
 }

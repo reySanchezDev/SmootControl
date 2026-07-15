@@ -100,7 +100,7 @@ class _MovementHeaderTile extends StatelessWidget {
         side: BorderSide(color: Theme.of(context).dividerColor),
       ),
       subtitle: AppText(
-        '${_dateText(document.createdAt)} - '
+        '${_dateTimeText(document.createdAt)} - '
         '${document.lineCount} lineas - Neto: ${delta > 0 ? '+' : ''}$delta',
         variant: AppTextVariant.label,
       ),
@@ -126,7 +126,7 @@ class _MovementDetailSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
         child: FutureBuilder<AppResult<List<InventoryMovementDocumentLine>>>(
           future: _service.loadLines(document),
           builder: (context, snapshot) {
@@ -156,14 +156,24 @@ class _MovementLines extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      shrinkWrap: true,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         AppText(document.title, variant: AppTextVariant.titleMedium),
         const SizedBox(height: 4),
-        AppText(_typeLabel(document.type), variant: AppTextVariant.label),
+        AppText(
+          '${_typeLabel(document.type)} - ${_dateTimeText(document.createdAt)}',
+          variant: AppTextVariant.label,
+        ),
         const Divider(height: 24),
-        for (final line in lines) _MovementLineTile(line: line),
+        Expanded(
+          child: ListView.separated(
+            itemBuilder: (context, index) =>
+                _MovementLineTile(line: lines[index]),
+            itemCount: lines.length,
+            separatorBuilder: (_, _) => const Divider(height: 1),
+          ),
+        ),
       ],
     );
   }
@@ -204,6 +214,12 @@ String _dateText(DateTime date) {
   final day = date.day.toString().padLeft(2, '0');
   final month = date.month.toString().padLeft(2, '0');
   return '$day/$month/${date.year}';
+}
+
+String _dateTimeText(DateTime date) {
+  final hour = date.hour.toString().padLeft(2, '0');
+  final minute = date.minute.toString().padLeft(2, '0');
+  return '${_dateText(date)} $hour:$minute';
 }
 
 IconData _typeIcon(InventoryMovementDocumentType type) => switch (type) {
