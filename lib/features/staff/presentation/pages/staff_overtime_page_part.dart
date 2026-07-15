@@ -11,7 +11,13 @@ class StaffOvertimePage extends StatefulWidget {
 
 class _StaffOvertimePageState extends State<StaffOvertimePage> {
   final _search = TextEditingController();
-  late Future<({List<Employee> employees, List<EmployeeOvertimeEntry> entries})>
+  late Future<
+    ({
+      List<Employee> employees,
+      List<EmployeeOvertimeEntry> entries,
+      int hourRateInCents,
+    })
+  >
   _future;
   String _query = '';
 
@@ -32,10 +38,17 @@ class _StaffOvertimePageState extends State<StaffOvertimePage> {
 
   void _reload() => _future = _load();
 
-  Future<({List<Employee> employees, List<EmployeeOvertimeEntry> entries})>
+  Future<
+    ({
+      List<Employee> employees,
+      List<EmployeeOvertimeEntry> entries,
+      int hourRateInCents,
+    })
+  >
   _load() async {
     final employees = await _repository.getEmployees();
     final entries = await _repository.getOvertimeEntries();
+    final rules = await _repository.getBusinessRules();
     return (
       employees: switch (employees) {
         AppSuccess(:final value) => value,
@@ -43,6 +56,10 @@ class _StaffOvertimePageState extends State<StaffOvertimePage> {
       },
       entries: switch (entries) {
         AppSuccess(:final value) => value,
+        AppFailureResult(:final error) => throw StateError(error.message),
+      },
+      hourRateInCents: switch (rules) {
+        AppSuccess(:final value) => _overtimeRateInCents(value),
         AppFailureResult(:final error) => throw StateError(error.message),
       },
     );
@@ -60,7 +77,11 @@ class _StaffOvertimePageState extends State<StaffOvertimePage> {
       ],
       body:
           FutureBuilder<
-            ({List<Employee> employees, List<EmployeeOvertimeEntry> entries})
+            ({
+              List<Employee> employees,
+              List<EmployeeOvertimeEntry> entries,
+              int hourRateInCents,
+            })
           >(
             future: _future,
             builder: (context, snapshot) {
@@ -115,6 +136,18 @@ class _StaffOvertimePageState extends State<StaffOvertimePage> {
   Future<void> _openForm({EmployeeOvertimeEntry? entry}) async {
     final data = await _future;
     if (!mounted) return;
+    if (data.hourRateInCents <= 0) {
+      await showAppMessageDialog(
+        context: context,
+        message:
+            'Primero configura el valor de la hora extra en '
+            'Reglas del negocio.',
+      );
+      if (!mounted) return;
+      await Navigator.of(context).pushNamed(AppRoutes.businessRules);
+      if (mounted) setState(_reload);
+      return;
+    }
     final saved = await showDialog<EmployeeOvertimeEntry>(
       context: context,
       builder: (_) => _OvertimeDialog(employees: data.employees, entry: entry),
@@ -215,4 +248,12 @@ String _overtimeStatusLabel(String status) {
     'paid' => 'Pagada',
     _ => status,
   };
+}
+
+int _overtimeRateInCents(List<BusinessRule> rules) {
+  final rule = rules.where((item) {
+    return item.key == BusinessRule.overtimeHourRate;
+  }).firstOrNull;
+  final value = rule?.textValue?.replaceAll(',', '.') ?? '0';
+  return ((double.tryParse(value) ?? 0) * 100).round();
 }

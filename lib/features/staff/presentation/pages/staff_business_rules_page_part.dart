@@ -114,6 +114,7 @@ class _OvertimeRateTileState extends State<_OvertimeRateTile> {
   late final _controller = TextEditingController(
     text: widget.rule.textValue ?? '0',
   );
+  String? _error;
 
   @override
   void dispose() {
@@ -132,10 +133,18 @@ class _OvertimeRateTileState extends State<_OvertimeRateTile> {
             const Text('Valor hora extra'),
             TextField(
               controller: _controller,
-              decoration: const InputDecoration(prefixText: r'C$ '),
+              decoration: InputDecoration(
+                prefixText: r'C$ ',
+                errorText: _error,
+              ),
               keyboardType: const TextInputType.numberWithOptions(
                 decimal: true,
               ),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(
+                  RegExp(r'^\d*[\.,]?\d{0,2}'),
+                ),
+              ],
             ),
             const SizedBox(height: 8),
             Align(
@@ -155,7 +164,13 @@ class _OvertimeRateTileState extends State<_OvertimeRateTile> {
   void _save() {
     final value = _controller.text.trim().replaceAll(',', '.');
     final amount = double.tryParse(value);
-    if (amount == null || amount < 0) return;
+    if (amount == null || amount <= 0) {
+      setState(() {
+        _error = 'Ingresa un valor mayor que cero.';
+      });
+      return;
+    }
+    setState(() => _error = null);
     widget.onChanged(
       BusinessRule(key: BusinessRule.overtimeHourRate, textValue: value),
     );

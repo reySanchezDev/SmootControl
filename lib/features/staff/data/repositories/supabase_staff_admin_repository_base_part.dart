@@ -28,9 +28,35 @@ abstract class _SupabaseStaffAdminRepositoryBase {
       return AppSuccess(await run());
     } on Object catch (error) {
       return AppFailureResult(
-        AppFailure(code: code, message: message, cause: error),
+        AppFailure(
+          code: code,
+          message: _withCause(message, error),
+          cause: error,
+        ),
       );
     }
+  }
+
+  String _withCause(String message, Object error) {
+    final detail = _remoteErrorMessage(error);
+    if (detail == null || detail.isEmpty) return message;
+    return '$message\n\nDetalle: $detail';
+  }
+
+  String? _remoteErrorMessage(Object error) {
+    final text = error.toString();
+    final jsonStart = text.indexOf('{');
+    if (jsonStart < 0) return text.replaceFirst('Bad state: ', '');
+    try {
+      final decoded = jsonDecode(text.substring(jsonStart));
+      if (decoded is Map<String, Object?>) {
+        final message = decoded['message']?.toString();
+        if (message != null && message.isNotEmpty) return message;
+      }
+    } on Object {
+      return text.replaceFirst('Bad state: ', '');
+    }
+    return text.replaceFirst('Bad state: ', '');
   }
 
   Future<List<Map<String, Object?>>> _getRows(
