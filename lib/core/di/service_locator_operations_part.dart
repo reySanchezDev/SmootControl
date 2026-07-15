@@ -92,6 +92,14 @@ void _registerOperationsDependencies() {
         client: serviceLocator<http.Client>(),
       ),
     )
+    ..registerLazySingleton<SupabasePayrollReportService>(
+      () => SupabasePayrollReportService(
+        config: serviceLocator<SupabaseAppConfig>(),
+        restaurantService: serviceLocator<CurrentRestaurantService>(),
+        remoteSessionService: serviceLocator<CurrentRemoteSessionService>(),
+        client: serviceLocator<http.Client>(),
+      ),
+    )
     ..registerLazySingleton<SupabaseCashRegisterAdminService>(
       () => SupabaseCashRegisterAdminService(
         client: serviceLocator<http.Client>(),

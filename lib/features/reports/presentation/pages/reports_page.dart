@@ -97,6 +97,20 @@ class ReportsPage extends StatelessWidget {
               ),
             ],
           ),
+          const SizedBox(height: 16),
+          const _ReportsSection(
+            title: 'Planilla',
+            children: [
+              _ReportOptionCard(
+                icon: Icons.payments_outlined,
+                routeName: AppRoutes.payrollPaymentsReport,
+                subtitle:
+                    'Historial de pagos, esquelas y reporte formal '
+                    'de planilla.',
+                title: 'Planillas pagadas',
+              ),
+            ],
+          ),
         ],
       ),
     );

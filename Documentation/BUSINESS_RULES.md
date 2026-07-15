@@ -433,6 +433,14 @@
 - Related screens/flows: `Adelantos`, `Planilla`.
 - Data impact: `employee_salary_advances.amount`, `employee_salary_advances.balance_amount`.
 
+### Regla: Recibos historicos de planilla pagada
+- Description: Cada pago de planilla crea un recibo historico con la foto del salario, consumo, adelanto aplicado, monto pagado y saldos posteriores.
+- Rationale: Las esquelas y reportes formales no deben recalcularse con datos vivos porque los adelantos, consumos o saldos pueden cambiar despues del pago.
+- Example(s): Si Ana recibe C$ 3,875.00 y se le descuentan C$ 150.00 de consumo y C$ 25.00 de adelanto, la esquela conserva esos valores aunque despues registre otro consumo o abone mas adelanto.
+- Edge cases: Los pagos anteriores a esta regla se respaldan con un recibo historico resumido; si no existia detalle de consumo o adelanto, el PDF muestra el total aplicado.
+- Related screens/flows: `Planilla`, `Reportes > Planilla > Planillas pagadas`, PDF esquela, PDF formal de planilla.
+- Data impact: `payroll_payment_receipts`, `app_post_payroll_employee`, `app_get_paid_payroll_receipts`.
+
 ### Regla: Reinicio de produccion limpia operacion de personal
 - Description: `REINICIAR PRODUCCION` elimina movimientos de personal generados en preproduccion: adelantos, planilla y consumos ligados a ventas internas, conservando empleados y puestos.
 - Rationale: La salida a vivo debe iniciar sin deudas ni nominas de prueba, pero sin perder catalogos administrativos.

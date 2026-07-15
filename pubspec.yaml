@@ -1,7 +1,7 @@
 name: smoo_control
 description: "Offline-first restaurant sales control app."
 publish_to: 'none'
-version: 0.1.55+60
+version: 0.1.56+61
 
 environment:
   sdk: ^3.11.5

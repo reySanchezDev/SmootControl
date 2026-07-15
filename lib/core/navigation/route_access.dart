@@ -21,7 +21,8 @@ abstract final class RouteAccess {
       AppRoutes.dailySalesReport ||
       AppRoutes.expensesReport ||
       AppRoutes.monthlyOperationalReport ||
-      AppRoutes.inventoryValueReport => const ['reportes.ver'],
+      AppRoutes.inventoryValueReport ||
+      AppRoutes.payrollPaymentsReport => const ['reportes.ver'],
       AppRoutes.catalog || AppRoutes.products => const ['productos.gestionar'],
       AppRoutes.inventory ||
       AppRoutes.inventoryMovements => const ['inventario.gestionar'],
