@@ -212,6 +212,11 @@ class _DashboardContent extends StatelessWidget {
             label: 'Planilla',
             route: AppRoutes.payroll,
           ),
+          _ModuleDefinition(
+            icon: Icons.history_outlined,
+            label: 'Pagos planilla',
+            route: AppRoutes.staffPayrollPayments,
+          ),
         ],
       ),
       _DashboardSection(

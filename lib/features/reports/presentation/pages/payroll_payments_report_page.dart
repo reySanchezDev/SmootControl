@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:printing/printing.dart';
 import 'package:smoo_control/core/design_system/app_empty_state.dart';
 import 'package:smoo_control/core/design_system/app_loading_page.dart';
+import 'package:smoo_control/core/design_system/app_message_dialog.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
@@ -16,10 +17,25 @@ import 'package:smoo_control/features/reports/domain/services/payroll_payment_pd
 part 'payroll_payments_report_widgets_part.dart';
 part 'payroll_payments_report_detail_part.dart';
 
+/// Operating mode for the paid payroll page.
+enum PayrollPaymentsPageMode {
+  /// Reporting mode: read-only with PDF actions.
+  report,
+
+  /// Staff admin mode: allows reversing payroll payments.
+  staffAdmin,
+}
+
 /// Historical paid payroll report with PDF actions.
 class PayrollPaymentsReportPage extends StatefulWidget {
   /// Creates the page.
-  const PayrollPaymentsReportPage({super.key});
+  const PayrollPaymentsReportPage({
+    this.mode = PayrollPaymentsPageMode.report,
+    super.key,
+  });
+
+  /// Controls whether destructive payroll actions are available.
+  final PayrollPaymentsPageMode mode;
 
   @override
   State<PayrollPaymentsReportPage> createState() =>
@@ -35,6 +51,8 @@ class _PayrollPaymentsReportPageState extends State<PayrollPaymentsReportPage> {
 
   SupabasePayrollReportService get _service =>
       serviceLocator<SupabasePayrollReportService>();
+
+  bool get _canDelete => widget.mode == PayrollPaymentsPageMode.staffAdmin;
 
   @override
   void initState() {
@@ -59,7 +77,7 @@ class _PayrollPaymentsReportPageState extends State<PayrollPaymentsReportPage> {
           tooltip: 'PDF planilla completa',
         ),
       ],
-      title: 'Planillas pagadas',
+      title: _canDelete ? 'Pagos de planilla' : 'Planillas pagadas',
       body: Column(
         children: [
           _PayrollReceiptFilters(
@@ -106,6 +124,9 @@ class _PayrollPaymentsReportPageState extends State<PayrollPaymentsReportPage> {
         final receipt = filtered[index - 1];
         return _PayrollReceiptCard(
           receipt: receipt,
+          onDelete: _canDelete
+              ? () => unawaited(_confirmDelete(receipt))
+              : null,
           onPdf: () => unawaited(_shareEmployeeReceipt(receipt)),
           onTap: () => _openDetail(receipt),
         );
@@ -161,6 +182,50 @@ class _PayrollPaymentsReportPageState extends State<PayrollPaymentsReportPage> {
     await Printing.sharePdf(
       bytes: bytes,
       filename: 'esquela-${_safeName(receipt.employeeName)}.pdf',
+    );
+  }
+
+  Future<void> _confirmDelete(PayrollPaymentReceipt receipt) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Eliminar pago de planilla'),
+        content: Text(
+          'Se eliminara el pago de ${receipt.employeeName} y se reactivaran '
+          'los consumos, adelantos y saldo de planilla relacionados.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Eliminar'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed ?? false) await _deleteReceipt(receipt);
+  }
+
+  Future<void> _deleteReceipt(PayrollPaymentReceipt receipt) async {
+    final result = await _service.reverseReceipt(receipt.id);
+    if (!mounted) return;
+    await result.when(
+      success: (_) async {
+        setState(_reload);
+        await showAppMessageDialog(
+          context: context,
+          title: 'Pago eliminado',
+          message: 'La planilla quedo disponible nuevamente para pago.',
+        );
+      },
+      failure: (error) => showAppMessageDialog(
+        context: context,
+        title: 'No se pudo eliminar',
+        message: error.message,
+      ),
     );
   }
 

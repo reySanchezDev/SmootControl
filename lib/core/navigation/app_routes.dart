@@ -90,6 +90,9 @@ abstract final class AppRoutes {
   /// Payroll route.
   static const payroll = '/payroll';
 
+  /// Staff payroll payment administration route.
+  static const staffPayrollPayments = '/staff/payroll-payments';
+
   /// Business rules route.
   static const businessRules = '/business-rules';
 

@@ -63,6 +63,30 @@ final class SupabasePayrollReportService {
     }
   }
 
+  /// Reverses a paid payroll receipt and revives linked pending balances.
+  Future<AppResult<void>> reverseReceipt(String receiptId) async {
+    try {
+      final response = await _client.post(
+        _config.rpcUri('app_reverse_payroll_payment_receipt'),
+        headers: await _headers(),
+        body: jsonEncode({
+          'p_restaurant_id': _restaurantService.restaurantId,
+          'p_receipt_id': receiptId,
+        }),
+      );
+      _ensureSuccess(response);
+      return const AppSuccess(null);
+    } on Object catch (error) {
+      return AppFailureResult(
+        AppFailure(
+          code: 'paid_payroll_delete_failed',
+          message: 'No se pudo eliminar el pago de planilla.',
+          cause: error,
+        ),
+      );
+    }
+  }
+
   Future<Map<String, String>> _headers() async {
     final token = _remoteSessionService.accessToken;
     if (!_config.isConfigured ||

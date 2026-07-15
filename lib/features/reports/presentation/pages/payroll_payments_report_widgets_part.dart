@@ -188,11 +188,13 @@ class _SummaryChip extends StatelessWidget {
 
 class _PayrollReceiptCard extends StatelessWidget {
   const _PayrollReceiptCard({
+    required this.onDelete,
     required this.onPdf,
     required this.onTap,
     required this.receipt,
   });
 
+  final VoidCallback? onDelete;
   final VoidCallback onPdf;
   final VoidCallback onTap;
   final PayrollPaymentReceipt receipt;
@@ -232,6 +234,12 @@ class _PayrollReceiptCard extends StatelessWidget {
                 onPressed: onPdf,
                 tooltip: 'PDF esquela',
               ),
+              if (onDelete != null)
+                IconButton(
+                  icon: const Icon(Icons.delete_outline),
+                  onPressed: onDelete,
+                  tooltip: 'Eliminar pago',
+                ),
             ],
           ),
         ),
