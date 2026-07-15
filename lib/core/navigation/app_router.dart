@@ -8,6 +8,7 @@ import 'package:smoo_control/features/catalog/presentation/pages/catalog_page.da
 import 'package:smoo_control/features/dashboard/presentation/pages/dashboard_page.dart';
 import 'package:smoo_control/features/exchange_rates/presentation/pages/exchange_rates_page.dart';
 import 'package:smoo_control/features/expenses/presentation/pages/expenses_page.dart';
+import 'package:smoo_control/features/inventory/presentation/pages/inventory_movements_page.dart';
 import 'package:smoo_control/features/inventory/presentation/pages/inventory_page.dart';
 import 'package:smoo_control/features/modifiers/presentation/pages/modifiers_page.dart';
 import 'package:smoo_control/features/packaging/presentation/pages/packaging_page.dart';
@@ -47,6 +48,7 @@ Widget _guardedPage(String? routeName) {
     AppRoutes.catalog => const CatalogPage(),
     AppRoutes.products => const ProductsPage(),
     AppRoutes.inventory => const InventoryPage(),
+    AppRoutes.inventoryMovements => const InventoryMovementsPage(),
     AppRoutes.packaging => const PackagingPage(),
     AppRoutes.modifiers => const ModifiersPage(),
     AppRoutes.paymentMethods => const PaymentMethodsPage(),
@@ -83,6 +85,7 @@ bool _requiresOnlineAdmin(String? routeName) {
     AppRoutes.catalog ||
     AppRoutes.products ||
     AppRoutes.inventory ||
+    AppRoutes.inventoryMovements ||
     AppRoutes.packaging ||
     AppRoutes.modifiers ||
     AppRoutes.paymentMethods ||

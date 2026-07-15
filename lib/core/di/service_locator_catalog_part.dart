@@ -60,6 +60,14 @@ void _registerCatalogDependencies() {
         client: serviceLocator<http.Client>(),
       ),
     )
+    ..registerLazySingleton<SupabaseInventoryMovementsService>(
+      () => SupabaseInventoryMovementsService(
+        config: serviceLocator<SupabaseAppConfig>(),
+        restaurantService: serviceLocator<CurrentRestaurantService>(),
+        remoteSessionService: serviceLocator<CurrentRemoteSessionService>(),
+        client: serviceLocator<http.Client>(),
+      ),
+    )
     ..registerLazySingleton<LocalPackagingDataSource>(
       () => LocalPackagingDataSource(serviceLocator<AppDatabase>()),
     )

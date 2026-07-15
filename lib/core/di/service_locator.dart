@@ -36,6 +36,7 @@ import 'package:smoo_control/features/inventory/data/datasources/local_inventory
 import 'package:smoo_control/features/inventory/data/repositories/inventory_repository.dart';
 import 'package:smoo_control/features/inventory/data/services/supabase_inventory_admin_read_service.dart';
 import 'package:smoo_control/features/inventory/data/services/supabase_inventory_admin_write_service.dart';
+import 'package:smoo_control/features/inventory/data/services/supabase_inventory_movements_service.dart';
 import 'package:smoo_control/features/inventory/domain/repositories/i_inventory_repository.dart';
 import 'package:smoo_control/features/modifiers/data/datasources/local_modifiers_datasource.dart';
 import 'package:smoo_control/features/modifiers/data/repositories/modifiers_repository.dart';

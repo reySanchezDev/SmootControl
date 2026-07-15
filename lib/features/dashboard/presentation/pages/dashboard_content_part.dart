@@ -143,6 +143,11 @@ class _DashboardContent extends StatelessWidget {
             route: AppRoutes.inventory,
           ),
           const _ModuleDefinition(
+            icon: Icons.manage_history_outlined,
+            label: 'Movimientos inventario',
+            route: AppRoutes.inventoryMovements,
+          ),
+          const _ModuleDefinition(
             icon: Icons.takeout_dining_outlined,
             label: 'Empaques',
             route: AppRoutes.packaging,

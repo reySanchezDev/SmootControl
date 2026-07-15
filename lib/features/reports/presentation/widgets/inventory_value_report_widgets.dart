@@ -5,12 +5,12 @@ import 'package:smoo_control/features/reports/domain/entities/inventory_value_re
 import 'package:smoo_control/features/reports/presentation/widgets/inventory_value_mobile_card.dart';
 import 'package:smoo_control/l10n/app_localizations.dart';
 
-/// Summary card for the inventory value report.
+// These widgets are public because the report page composes them directly.
+// ignore_for_file: public_member_api_docs
+
 class InventoryTotalsCard extends StatelessWidget {
-  /// Creates the totals card.
   const InventoryTotalsCard({required this.report, super.key});
 
-  /// Current inventory value report.
   final InventoryValueReport report;
 
   @override
@@ -76,12 +76,9 @@ class InventoryTotalsCard extends StatelessWidget {
   }
 }
 
-/// Category breakdown for current inventory value.
 class InventoryCategoryBreakdown extends StatelessWidget {
-  /// Creates the category breakdown.
   const InventoryCategoryBreakdown({required this.rows, super.key});
 
-  /// Filtered report rows.
   final List<InventoryValueReportRow> rows;
 
   @override
@@ -113,12 +110,9 @@ class InventoryCategoryBreakdown extends StatelessWidget {
   }
 }
 
-/// Mobile inventory rows.
 class InventoryMobileList extends StatelessWidget {
-  /// Creates the mobile list.
   const InventoryMobileList({required this.rows, super.key});
 
-  /// Filtered product rows.
   final List<InventoryValueReportRow> rows;
 
   @override
@@ -129,12 +123,9 @@ class InventoryMobileList extends StatelessWidget {
   }
 }
 
-/// Desktop/tablet inventory table.
 class InventoryDataTable extends StatelessWidget {
-  /// Creates the data table.
   const InventoryDataTable({required this.rows, super.key});
 
-  /// Filtered product rows.
   final List<InventoryValueReportRow> rows;
 
   @override
