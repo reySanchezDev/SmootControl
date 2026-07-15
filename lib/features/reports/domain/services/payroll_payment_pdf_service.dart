@@ -1,7 +1,10 @@
 import 'package:flutter/services.dart';
+import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:smoo_control/core/formatters/money_formatter.dart';
 import 'package:smoo_control/features/reports/domain/entities/payroll_payment_receipt.dart';
+
+part 'payroll_payment_pdf_owner_part.dart';
 
 const _showEmployeePositionOnReceipt = false;
 
@@ -83,7 +86,7 @@ final class PayrollPaymentPdfService {
             ('Saldo adelantos', totals.advanceBalance),
           ]),
           pw.SizedBox(height: 14),
-          _receiptsTable(receipts),
+          ..._receiptCards(receipts),
         ],
       ),
     );
@@ -132,38 +135,6 @@ final class PayrollPaymentPdfService {
           headers: const ['Fecha', 'Detalle', 'Monto', 'Saldo'],
           data: rows,
         ),
-      ],
-    );
-  }
-
-  pw.Widget _receiptsTable(List<PayrollPaymentReceipt> receipts) {
-    return pw.TableHelper.fromTextArray(
-      cellAlignment: pw.Alignment.centerLeft,
-      headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-      headers: const [
-        'Fecha',
-        'Empleado',
-        'Periodo',
-        'Salario',
-        'Extras',
-        'Consumo',
-        'Adelanto',
-        'Pagado',
-        'Pendiente',
-      ],
-      data: [
-        for (final receipt in receipts)
-          [
-            _date(receipt.paidAt),
-            receipt.employeeName,
-            receipt.periodLabel,
-            MoneyFormatter.format(receipt.baseSalaryInCents),
-            MoneyFormatter.format(receipt.overtimeInCents),
-            MoneyFormatter.format(receipt.consumptionInCents),
-            MoneyFormatter.format(receipt.advanceDeductionInCents),
-            MoneyFormatter.format(receipt.paymentAmountInCents),
-            MoneyFormatter.format(receipt.balanceAfterInCents),
-          ],
       ],
     );
   }
