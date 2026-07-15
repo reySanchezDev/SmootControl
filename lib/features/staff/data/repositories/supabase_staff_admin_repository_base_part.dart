@@ -184,12 +184,31 @@ abstract class _SupabaseStaffAdminRepositoryBase {
       periodLabel: _text(row['period_label'], defaultValue: 'Planilla'),
       baseSalaryInCents: _moneyToCents(row['base_salary']),
       consumptionInCents: _moneyToCents(row['staff_consumption_amount']),
+      overtimeInCents: _moneyToCents(row['overtime_amount']),
       salaryAdvanceDeductionInCents: _moneyToCents(
         row['salary_advance_deduction'],
       ),
       netPayInCents: _moneyToCents(row['net_pay']),
       paidInCents: _moneyToCents(row['paid_amount']),
       balanceInCents: _moneyToCents(row['balance_amount']),
+    );
+  }
+
+  EmployeeOvertimeEntry _overtimeFromRow(Map<String, Object?> row) {
+    return EmployeeOvertimeEntry(
+      id: _text(row['id']),
+      employeeId: _text(row['employee_id']),
+      employeeName: _text(row['employee_name'], defaultValue: 'Empleado'),
+      workedDate:
+          DateTime.tryParse(_text(row['worked_date'])) ?? DateTime.now(),
+      hours: double.tryParse(_text(row['hours'])) ?? 0,
+      hourRateInCents: _moneyToCents(row['hour_rate']),
+      totalInCents: _moneyToCents(row['total_amount']),
+      note: _optionalText(row['note']),
+      status: _text(row['status'], defaultValue: 'pending'),
+      payrollRunId: _optionalText(row['payroll_run_id']),
+      payrollRunLineId: _optionalText(row['payroll_run_line_id']),
+      createdAt: DateTime.tryParse(_text(row['created_at'])) ?? DateTime.now(),
     );
   }
 

@@ -16,6 +16,7 @@ class _PayrollReceiptDetail extends StatelessWidget {
             AppText(receipt.periodLabel, variant: AppTextVariant.label),
             const Divider(height: 24),
             _DetailRow('Salario', receipt.baseSalaryInCents),
+            _DetailRow('Horas extras', receipt.overtimeInCents),
             _DetailRow('Consumo', receipt.consumptionInCents),
             _DetailRow('Abono adelanto', receipt.advanceDeductionInCents),
             _DetailRow('Neto planilla', receipt.netPayInCents),
@@ -25,6 +26,8 @@ class _PayrollReceiptDetail extends StatelessWidget {
             _DetailRow('Saldo adelantos', receipt.advanceBalanceAfterInCents),
             const SizedBox(height: 12),
             _ReceiptDetailList(title: 'Consumos', rows: _consumptionRows()),
+            const SizedBox(height: 12),
+            _ReceiptDetailList(title: 'Horas extras', rows: _overtimeRows()),
             const SizedBox(height: 12),
             _ReceiptDetailList(title: 'Adelantos', rows: _advanceRows()),
           ],
@@ -57,6 +60,16 @@ class _PayrollReceiptDetail extends StatelessWidget {
     ];
   }
 
+  List<String> _overtimeRows() {
+    if (receipt.overtimeEntries.isEmpty && receipt.overtimeInCents > 0) {
+      final amount = MoneyFormatter.format(receipt.overtimeInCents);
+      return ['Horas extras pagadas - $amount'];
+    }
+    return [
+      for (final item in receipt.overtimeEntries) _overtimeLabel(item),
+    ];
+  }
+
   String _consumptionLabel(PayrollReceiptConsumption item) {
     final amount = MoneyFormatter.format(item.amountInCents);
     return '${_date(item.date)} ${item.receipt} - $amount';
@@ -66,6 +79,12 @@ class _PayrollReceiptDetail extends StatelessWidget {
     final applied = MoneyFormatter.format(item.appliedAmountInCents);
     final balance = MoneyFormatter.format(item.balanceAfterInCents);
     return '${_date(item.deliveredAt)} abono $applied saldo $balance';
+  }
+
+  String _overtimeLabel(PayrollReceiptOvertime item) {
+    final rate = MoneyFormatter.format(item.hourRateInCents);
+    final amount = MoneyFormatter.format(item.amountInCents);
+    return '${_date(item.date)} ${item.hours} h x $rate - $amount';
   }
 }
 

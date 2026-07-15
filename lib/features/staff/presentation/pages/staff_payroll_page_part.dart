@@ -15,6 +15,7 @@ class _PayrollPageState extends State<PayrollPage> {
       List<Employee> employees,
       List<StaffConsumption> consumptions,
       List<SalaryAdvance> advances,
+      List<EmployeeOvertimeEntry> overtimeEntries,
       List<PayrollPendingLine> pendingLines,
     })
   >
@@ -36,6 +37,7 @@ class _PayrollPageState extends State<PayrollPage> {
       List<Employee> employees,
       List<StaffConsumption> consumptions,
       List<SalaryAdvance> advances,
+      List<EmployeeOvertimeEntry> overtimeEntries,
       List<PayrollPendingLine> pendingLines,
     })
   >
@@ -43,6 +45,7 @@ class _PayrollPageState extends State<PayrollPage> {
     final employees = await _repository.getEmployees();
     final consumptions = await _repository.getStaffConsumptions();
     final advances = await _repository.getSalaryAdvances();
+    final overtimeEntries = await _repository.getOvertimeEntries();
     final pendingLines = await _repository.getPendingPayrollLines();
     return (
       employees: switch (employees) {
@@ -54,6 +57,10 @@ class _PayrollPageState extends State<PayrollPage> {
         AppFailureResult(:final error) => throw StateError(error.message),
       },
       advances: switch (advances) {
+        AppSuccess(:final value) => value,
+        AppFailureResult(:final error) => throw StateError(error.message),
+      },
+      overtimeEntries: switch (overtimeEntries) {
         AppSuccess(:final value) => value,
         AppFailureResult(:final error) => throw StateError(error.message),
       },
@@ -74,6 +81,7 @@ class _PayrollPageState extends State<PayrollPage> {
               List<Employee> employees,
               List<StaffConsumption> consumptions,
               List<SalaryAdvance> advances,
+              List<EmployeeOvertimeEntry> overtimeEntries,
               List<PayrollPendingLine> pendingLines,
             })
           >(
@@ -92,6 +100,7 @@ class _PayrollPageState extends State<PayrollPage> {
                 advances: data.advances,
                 consumptions: data.consumptions,
                 employees: data.employees,
+                overtimeEntries: data.overtimeEntries,
                 pendingLines: data.pendingLines,
                 period: _period,
                 onPay: _payEmployee,
@@ -114,6 +123,7 @@ class _PayrollPageState extends State<PayrollPage> {
       periodEnd: entry.periodEnd,
       baseSalaryInCents: entry.baseSalaryInCents,
       consumptionInCents: entry.consumptionInCents,
+      overtimeInCents: entry.overtimeInCents,
       salaryAdvanceDeductionInCents: deduction,
       paymentAmountInCents: request.paymentAmountInCents,
     );

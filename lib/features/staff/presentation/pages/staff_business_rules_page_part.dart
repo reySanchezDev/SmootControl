@@ -72,6 +72,13 @@ class _BusinessRulesList extends StatelessWidget {
         boolValue: false,
       ),
     );
+    final overtimeRule = rules.firstWhere(
+      (item) => item.key == BusinessRule.overtimeHourRate,
+      orElse: () => const BusinessRule(
+        key: BusinessRule.overtimeHourRate,
+        textValue: '0',
+      ),
+    );
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -86,7 +93,71 @@ class _BusinessRulesList extends StatelessWidget {
             BusinessRule(key: rule.key, boolValue: value),
           ),
         ),
+        const SizedBox(height: 12),
+        _OvertimeRateTile(rule: overtimeRule, onChanged: onChanged),
       ],
+    );
+  }
+}
+
+class _OvertimeRateTile extends StatefulWidget {
+  const _OvertimeRateTile({required this.rule, required this.onChanged});
+
+  final BusinessRule rule;
+  final ValueChanged<BusinessRule> onChanged;
+
+  @override
+  State<_OvertimeRateTile> createState() => _OvertimeRateTileState();
+}
+
+class _OvertimeRateTileState extends State<_OvertimeRateTile> {
+  late final _controller = TextEditingController(
+    text: widget.rule.textValue ?? '0',
+  );
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Valor hora extra'),
+            TextField(
+              controller: _controller,
+              decoration: const InputDecoration(prefixText: r'C$ '),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerRight,
+              child: FilledButton.icon(
+                icon: const Icon(Icons.save_outlined),
+                label: const Text('Guardar'),
+                onPressed: _save,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _save() {
+    final value = _controller.text.trim().replaceAll(',', '.');
+    final amount = double.tryParse(value);
+    if (amount == null || amount < 0) return;
+    widget.onChanged(
+      BusinessRule(key: BusinessRule.overtimeHourRate, textValue: value),
     );
   }
 }

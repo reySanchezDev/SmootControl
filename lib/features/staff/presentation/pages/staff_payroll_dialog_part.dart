@@ -49,6 +49,10 @@ class _PayrollPaymentDialogState extends State<_PayrollPaymentDialog> {
             value: request.entry.baseSalaryInCents,
           ),
           _PayrollRow(
+            label: 'Horas extras',
+            value: request.entry.overtimeInCents,
+          ),
+          _PayrollRow(
             label: 'Consumo',
             value: request.entry.consumptionInCents,
           ),

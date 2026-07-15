@@ -20,6 +20,7 @@ mixin _SupabaseStaffPayrollMixin on _SupabaseStaffAdminRepositoryBase {
     required DateTime periodEnd,
     required int baseSalaryInCents,
     required int consumptionInCents,
+    required int overtimeInCents,
     required int salaryAdvanceDeductionInCents,
     required int paymentAmountInCents,
   }) {
@@ -34,6 +35,7 @@ mixin _SupabaseStaffPayrollMixin on _SupabaseStaffAdminRepositoryBase {
             'period_start': _dateOnly(periodStart),
             'period_end': _dateOnly(periodEnd),
             'base_salary': _money(baseSalaryInCents),
+            'overtime_amount': _money(overtimeInCents),
             'staff_consumption_amount': _money(consumptionInCents),
             'salary_advance_deduction': _money(
               salaryAdvanceDeductionInCents,

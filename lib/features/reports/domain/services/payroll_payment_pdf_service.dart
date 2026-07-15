@@ -28,6 +28,7 @@ final class PayrollPaymentPdfService {
           pw.SizedBox(height: 14),
           _amountsTable([
             ('Salario quincenal', receipt.baseSalaryInCents),
+            ('Horas extras', receipt.overtimeInCents),
             ('Consumo descontado', receipt.consumptionInCents),
             ('Abono a adelanto', receipt.advanceDeductionInCents),
             ('Neto planilla', receipt.netPayInCents),
@@ -35,6 +36,8 @@ final class PayrollPaymentPdfService {
           ]),
           pw.SizedBox(height: 14),
           _detailsSection('Consumos aplicados', _consumptionRows(receipt)),
+          pw.SizedBox(height: 10),
+          _detailsSection('Horas extras pagadas', _overtimeRows(receipt)),
           pw.SizedBox(height: 10),
           _detailsSection('Adelantos aplicados', _advanceRows(receipt)),
           pw.SizedBox(height: 14),
@@ -71,6 +74,7 @@ final class PayrollPaymentPdfService {
           pw.SizedBox(height: 14),
           _amountsTable([
             ('Total salarios', totals.salary),
+            ('Horas extras', totals.overtime),
             ('Consumos descontados', totals.consumption),
             ('Adelantos abonados', totals.advance),
             ('Neto planilla', totals.netPay),
@@ -141,6 +145,7 @@ final class PayrollPaymentPdfService {
         'Empleado',
         'Periodo',
         'Salario',
+        'Extras',
         'Consumo',
         'Adelanto',
         'Pagado',
@@ -153,6 +158,7 @@ final class PayrollPaymentPdfService {
             receipt.employeeName,
             receipt.periodLabel,
             MoneyFormatter.format(receipt.baseSalaryInCents),
+            MoneyFormatter.format(receipt.overtimeInCents),
             MoneyFormatter.format(receipt.consumptionInCents),
             MoneyFormatter.format(receipt.advanceDeductionInCents),
             MoneyFormatter.format(receipt.paymentAmountInCents),
@@ -199,6 +205,28 @@ final class PayrollPaymentPdfService {
     ];
   }
 
+  List<List<String>> _overtimeRows(PayrollPaymentReceipt receipt) {
+    if (receipt.overtimeEntries.isEmpty && receipt.overtimeInCents > 0) {
+      return [
+        [
+          _date(receipt.paidAt),
+          'Horas extras',
+          MoneyFormatter.format(receipt.overtimeInCents),
+          '-',
+        ],
+      ];
+    }
+    return [
+      for (final item in receipt.overtimeEntries)
+        [
+          _date(item.date),
+          '${item.hours} h x ${MoneyFormatter.format(item.hourRateInCents)}',
+          MoneyFormatter.format(item.amountInCents),
+          item.note ?? '-',
+        ],
+    ];
+  }
+
   List<List<String>> _advanceRows(PayrollPaymentReceipt receipt) {
     if (receipt.advances.isEmpty && receipt.advanceDeductionInCents > 0) {
       return [
@@ -240,6 +268,7 @@ final class PayrollPaymentPdfService {
 final class _PayrollTotals {
   const _PayrollTotals({
     required this.salary,
+    required this.overtime,
     required this.consumption,
     required this.advance,
     required this.netPay,
@@ -253,6 +282,7 @@ final class _PayrollTotals {
         receipts.fold(0, (total, receipt) => total + value(receipt));
     return _PayrollTotals(
       salary: sum((receipt) => receipt.baseSalaryInCents),
+      overtime: sum((receipt) => receipt.overtimeInCents),
       consumption: sum((receipt) => receipt.consumptionInCents),
       advance: sum((receipt) => receipt.advanceDeductionInCents),
       netPay: sum((receipt) => receipt.netPayInCents),
@@ -270,6 +300,7 @@ final class _PayrollTotals {
   }
 
   final int salary;
+  final int overtime;
   final int consumption;
   final int advance;
   final int netPay;

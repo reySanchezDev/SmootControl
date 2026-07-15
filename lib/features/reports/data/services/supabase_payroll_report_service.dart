@@ -121,6 +121,7 @@ final class SupabasePayrollReportService {
       periodEnd: _date(row['period_end']),
       periodLabel: _text(row['period_label'], fallback: 'Planilla'),
       baseSalaryInCents: _moneyToCents(row['base_salary']),
+      overtimeInCents: _moneyToCents(row['overtime_amount']),
       consumptionInCents: _moneyToCents(row['staff_consumption_amount']),
       advanceDeductionInCents: _moneyToCents(
         row['salary_advance_deduction'],
@@ -133,9 +134,24 @@ final class SupabasePayrollReportService {
         row['advance_balance_after'],
       ),
       consumptions: _consumptions(details['consumptions']),
+      overtimeEntries: _overtime(details['overtime_entries']),
       advances: _advances(details['salary_advances']),
       paidAt: _date(row['paid_at']),
     );
+  }
+
+  List<PayrollReceiptOvertime> _overtime(Object? value) {
+    if (value is! List) return const [];
+    return value.whereType<Map<Object?, Object?>>().map((row) {
+      final map = row.cast<String, Object?>();
+      return PayrollReceiptOvertime(
+        date: _date(map['date']),
+        hours: double.tryParse(_text(map['hours'])) ?? 0,
+        hourRateInCents: _moneyToCents(map['hour_rate']),
+        amountInCents: _moneyToCents(map['amount']),
+        note: _text(map['note']),
+      );
+    }).toList();
   }
 
   List<PayrollReceiptConsumption> _consumptions(Object? value) {

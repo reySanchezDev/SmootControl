@@ -3,6 +3,7 @@ import 'package:smoo_control/core/result/app_result.dart';
 import 'package:smoo_control/features/staff/data/datasources/local_staff_datasource.dart';
 import 'package:smoo_control/features/staff/domain/entities/business_rule.dart';
 import 'package:smoo_control/features/staff/domain/entities/employee.dart';
+import 'package:smoo_control/features/staff/domain/entities/employee_overtime_entry.dart';
 import 'package:smoo_control/features/staff/domain/entities/employee_position.dart';
 import 'package:smoo_control/features/staff/domain/entities/payroll_pending_line.dart';
 import 'package:smoo_control/features/staff/domain/entities/salary_advance.dart';
@@ -87,6 +88,11 @@ final class StaffPosRepository implements IStaffRepository {
   }
 
   @override
+  Future<AppResult<List<EmployeeOvertimeEntry>>> getOvertimeEntries() async {
+    return const AppSuccess(<EmployeeOvertimeEntry>[]);
+  }
+
+  @override
   Future<AppResult<List<EmployeePosition>>> getPositions() async {
     return const AppSuccess(<EmployeePosition>[]);
   }
@@ -103,6 +109,7 @@ final class StaffPosRepository implements IStaffRepository {
     required DateTime periodEnd,
     required int baseSalaryInCents,
     required int consumptionInCents,
+    required int overtimeInCents,
     required int salaryAdvanceDeductionInCents,
     required int paymentAmountInCents,
   }) async {
@@ -110,6 +117,28 @@ final class StaffPosRepository implements IStaffRepository {
       AppFailure(
         code: 'payroll_local_write_blocked',
         message: 'La planilla se administra desde el modo administrador.',
+      ),
+    );
+  }
+
+  @override
+  Future<AppResult<void>> deleteOvertimeEntry(String overtimeId) async {
+    return const AppFailureResult(
+      AppFailure(
+        code: 'overtime_local_write_blocked',
+        message: 'Las horas extras se administran desde el modo administrador.',
+      ),
+    );
+  }
+
+  @override
+  Future<AppResult<EmployeeOvertimeEntry>> saveOvertimeEntry(
+    EmployeeOvertimeEntry entry,
+  ) async {
+    return const AppFailureResult(
+      AppFailure(
+        code: 'overtime_local_write_blocked',
+        message: 'Las horas extras se administran desde el modo administrador.',
       ),
     );
   }

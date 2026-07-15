@@ -5,6 +5,7 @@ class _PayrollDraftList extends StatelessWidget {
     required this.advances,
     required this.consumptions,
     required this.employees,
+    required this.overtimeEntries,
     required this.pendingLines,
     required this.period,
     required this.onPay,
@@ -13,6 +14,7 @@ class _PayrollDraftList extends StatelessWidget {
   final List<SalaryAdvance> advances;
   final List<StaffConsumption> consumptions;
   final List<Employee> employees;
+  final List<EmployeeOvertimeEntry> overtimeEntries;
   final List<PayrollPendingLine> pendingLines;
   final _PayrollPeriod period;
   final ValueChanged<_PayrollPayRequest> onPay;
@@ -58,6 +60,10 @@ class _PayrollDraftList extends StatelessWidget {
                 _PayrollRow(
                   label: 'Salario',
                   value: entry.baseSalaryInCents,
+                ),
+                _PayrollRow(
+                  label: 'Horas extras',
+                  value: entry.overtimeInCents,
                 ),
                 _PayrollRow(label: 'Consumo', value: entry.consumptionInCents),
                 _PayrollRow(
@@ -139,6 +145,18 @@ class _PayrollDraftList extends StatelessWidget {
         ifAbsent: () => balance,
       );
     }
+    final overtimeByEmployee = <String, int>{};
+    for (final entry in overtimeEntries.where((item) {
+      return item.status == 'pending' &&
+          !_isBeforeDate(item.workedDate, period.start) &&
+          !_isAfterDate(item.workedDate, period.end);
+    })) {
+      overtimeByEmployee.update(
+        entry.employeeId,
+        (current) => current + entry.totalInCents,
+        ifAbsent: () => entry.totalInCents,
+      );
+    }
 
     final entries = <_PayrollEntry>[
       for (final line in pendingLines.where(_hasPayrollBalance))
@@ -160,8 +178,9 @@ class _PayrollDraftList extends StatelessWidget {
         continue;
       }
       final consumption = consumptionByEmployee[employee.id] ?? 0;
+      final overtime = overtimeByEmployee[employee.id] ?? 0;
       final advance = advancesByEmployee[employee.id] ?? 0;
-      final balance = employee.baseSalaryInCents - consumption;
+      final balance = employee.baseSalaryInCents + overtime - consumption;
       if (balance <= 0) continue;
       entries.add(
         _PayrollEntry(
@@ -172,6 +191,7 @@ class _PayrollDraftList extends StatelessWidget {
           periodLabel: period.label,
           baseSalaryInCents: employee.baseSalaryInCents,
           consumptionInCents: consumption,
+          overtimeInCents: overtime,
           advanceBalanceInCents: advance,
           advanceDeductionInCents: 0,
           advanceRemainingInCents: advance,

@@ -17,6 +17,7 @@ mixin _SupabaseStaffBusinessMixin on _SupabaseStaffAdminRepositoryBase {
               key: BusinessRule.salaryAdvancePosAffectsCash,
               boolValue: false,
             ),
+            BusinessRule(key: BusinessRule.overtimeHourRate, textValue: '0'),
           ];
         }
         return rows.map(_ruleFromRow).toList();

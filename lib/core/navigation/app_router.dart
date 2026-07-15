@@ -68,6 +68,7 @@ Widget _guardedPage(String? routeName) {
     AppRoutes.staffConsumptions => const StaffConsumptionsPage(),
     AppRoutes.salaryAdvances => const SalaryAdvancesPage(),
     AppRoutes.payroll => const PayrollPage(),
+    AppRoutes.staffOvertime => const StaffOvertimePage(),
     AppRoutes.staffPayrollPayments => const PayrollPaymentsReportPage(
       mode: PayrollPaymentsPageMode.staffAdmin,
     ),
@@ -108,6 +109,7 @@ bool _requiresOnlineAdmin(String? routeName) {
     AppRoutes.staffConsumptions ||
     AppRoutes.salaryAdvances ||
     AppRoutes.payroll ||
+    AppRoutes.staffOvertime ||
     AppRoutes.staffPayrollPayments ||
     AppRoutes.businessRules ||
     AppRoutes.systemMaintenance ||

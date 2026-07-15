@@ -129,6 +129,7 @@ class _PayrollReceiptSummary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final paid = _sum((receipt) => receipt.paymentAmountInCents);
+    final overtime = _sum((receipt) => receipt.overtimeInCents);
     final consumption = _sum((receipt) => receipt.consumptionInCents);
     final advance = _sum((receipt) => receipt.advanceDeductionInCents);
     return Card(
@@ -140,6 +141,10 @@ class _PayrollReceiptSummary extends StatelessWidget {
           children: [
             _SummaryChip(label: 'Pagos', value: receipts.length.toString()),
             _SummaryChip(label: 'Pagado', value: MoneyFormatter.format(paid)),
+            _SummaryChip(
+              label: 'Horas extras',
+              value: MoneyFormatter.format(overtime),
+            ),
             _SummaryChip(
               label: 'Consumo',
               value: MoneyFormatter.format(consumption),

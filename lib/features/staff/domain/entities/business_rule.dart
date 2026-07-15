@@ -12,6 +12,9 @@ final class BusinessRule extends Equatable {
   /// Salary advance POS cash rule.
   static const salaryAdvancePosAffectsCash = 'salary_advance_pos_affects_cash';
 
+  /// Overtime hour rate used for manual overtime entries.
+  static const overtimeHourRate = 'overtime_hour_rate';
+
   /// Stable rule key.
   final String key;
 

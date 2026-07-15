@@ -13,6 +13,7 @@ final class PayrollPaymentReceipt extends Equatable {
     required this.periodEnd,
     required this.periodLabel,
     required this.baseSalaryInCents,
+    required this.overtimeInCents,
     required this.consumptionInCents,
     required this.advanceDeductionInCents,
     required this.netPayInCents,
@@ -21,6 +22,7 @@ final class PayrollPaymentReceipt extends Equatable {
     required this.balanceAfterInCents,
     required this.advanceBalanceAfterInCents,
     required this.consumptions,
+    required this.overtimeEntries,
     required this.advances,
     required this.paidAt,
   });
@@ -52,6 +54,9 @@ final class PayrollPaymentReceipt extends Equatable {
   /// Salary used for this payment.
   final int baseSalaryInCents;
 
+  /// Overtime paid in this receipt.
+  final int overtimeInCents;
+
   /// Staff consumption deducted in this receipt.
   final int consumptionInCents;
 
@@ -76,6 +81,9 @@ final class PayrollPaymentReceipt extends Equatable {
   /// Consumption details captured at payment time.
   final List<PayrollReceiptConsumption> consumptions;
 
+  /// Overtime details captured at payment time.
+  final List<PayrollReceiptOvertime> overtimeEntries;
+
   /// Salary advance details captured at payment time.
   final List<PayrollReceiptAdvance> advances;
 
@@ -93,6 +101,7 @@ final class PayrollPaymentReceipt extends Equatable {
     periodEnd,
     periodLabel,
     baseSalaryInCents,
+    overtimeInCents,
     consumptionInCents,
     advanceDeductionInCents,
     netPayInCents,
@@ -101,8 +110,45 @@ final class PayrollPaymentReceipt extends Equatable {
     balanceAfterInCents,
     advanceBalanceAfterInCents,
     consumptions,
+    overtimeEntries,
     advances,
     paidAt,
+  ];
+}
+
+/// Overtime entry paid through one payroll receipt.
+final class PayrollReceiptOvertime extends Equatable {
+  /// Creates an overtime receipt detail.
+  const PayrollReceiptOvertime({
+    required this.date,
+    required this.hours,
+    required this.hourRateInCents,
+    required this.amountInCents,
+    this.note,
+  });
+
+  /// Overtime work date.
+  final DateTime date;
+
+  /// Number of paid overtime hours.
+  final double hours;
+
+  /// Hour rate used for this entry.
+  final int hourRateInCents;
+
+  /// Paid amount for this entry.
+  final int amountInCents;
+
+  /// Optional note.
+  final String? note;
+
+  @override
+  List<Object?> get props => [
+    date,
+    hours,
+    hourRateInCents,
+    amountInCents,
+    note,
   ];
 }
 

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:smoo_control/core/design_system/app_empty_state.dart';
 import 'package:smoo_control/core/design_system/app_loading_page.dart';
 import 'package:smoo_control/core/design_system/app_message_dialog.dart';
@@ -11,6 +12,7 @@ import 'package:smoo_control/core/session/current_remote_session_service.dart';
 import 'package:smoo_control/features/staff/data/repositories/supabase_staff_admin_repository.dart';
 import 'package:smoo_control/features/staff/domain/entities/business_rule.dart';
 import 'package:smoo_control/features/staff/domain/entities/employee.dart';
+import 'package:smoo_control/features/staff/domain/entities/employee_overtime_entry.dart';
 import 'package:smoo_control/features/staff/domain/entities/employee_position.dart';
 import 'package:smoo_control/features/staff/domain/entities/payroll_pending_line.dart';
 import 'package:smoo_control/features/staff/domain/entities/salary_advance.dart';
@@ -27,3 +29,5 @@ part 'staff_payroll_widgets_part.dart';
 part 'staff_positions_page_part.dart';
 part 'staff_salary_advance_dialog_part.dart';
 part 'staff_salary_advances_page_part.dart';
+part 'staff_overtime_page_part.dart';
+part 'staff_overtime_dialog_part.dart';
