@@ -3,6 +3,8 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:smoo_control/core/formatters/money_formatter.dart';
 import 'package:smoo_control/features/reports/domain/entities/payroll_payment_receipt.dart';
 
+const _showEmployeePositionOnReceipt = false;
+
 /// Builds payroll payment PDFs for employees and owners.
 final class PayrollPaymentPdfService {
   /// Creates the service.
@@ -19,7 +21,7 @@ final class PayrollPaymentPdfService {
           pw.Text('Empleado: ${receipt.employeeName}'),
           if (receipt.employeeCode.isNotEmpty)
             pw.Text('Codigo: ${receipt.employeeCode}'),
-          if (receipt.positionName.isNotEmpty)
+          if (_showEmployeePositionOnReceipt && receipt.positionName.isNotEmpty)
             pw.Text('Puesto: ${receipt.positionName}'),
           pw.Text('Periodo: ${receipt.periodLabel}'),
           pw.Text('Fecha de pago: ${_dateTime(receipt.paidAt)}'),
@@ -43,6 +45,8 @@ final class PayrollPaymentPdfService {
               receipt.advanceBalanceAfterInCents,
             ),
           ]),
+          pw.SizedBox(height: 18),
+          _receiptFooter(),
         ],
       ),
     );
@@ -155,6 +159,21 @@ final class PayrollPaymentPdfService {
             MoneyFormatter.format(receipt.balanceAfterInCents),
           ],
       ],
+    );
+  }
+
+  pw.Widget _receiptFooter() {
+    return pw.Container(
+      padding: const pw.EdgeInsets.only(top: 10),
+      decoration: const pw.BoxDecoration(
+        border: pw.Border(top: pw.BorderSide(width: 0.5)),
+      ),
+      child: pw.Text(
+        'Este documento no requiere firma del supervisor ni del empleado. '
+        'Su emision confirma que el pago fue procesado y se entrega '
+        'unicamente como comprobante de control interno.',
+        style: const pw.TextStyle(fontSize: 9),
+      ),
     );
   }
 
