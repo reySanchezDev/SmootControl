@@ -39,6 +39,9 @@ abstract final class AppRoutes {
   /// Products route.
   static const products = '/products';
 
+  /// Product recipes route.
+  static const recipes = '/recipes';
+
   /// Inventory route.
   static const inventory = '/inventory';
 

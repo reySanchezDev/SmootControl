@@ -19,11 +19,8 @@ import 'package:smoo_control/features/products/presentation/bloc/products_bloc.d
 import 'package:smoo_control/features/products/presentation/bloc/products_event.dart';
 import 'package:smoo_control/features/products/presentation/bloc/products_state.dart';
 import 'package:smoo_control/features/products/presentation/widgets/create_product_dialog.dart';
-import 'package:smoo_control/features/recipes/data/services/supabase_product_recipes_service.dart';
-import 'package:smoo_control/features/recipes/presentation/widgets/product_recipe_dialog.dart';
 import 'package:smoo_control/l10n/app_localizations.dart';
 
-part 'product_recipe_action_part.dart';
 part 'product_tile.dart';
 
 /// Product management page.
@@ -102,11 +99,6 @@ class ProductsPage extends StatelessWidget {
                           product,
                         ),
                         onEdit: () => _openEditDialog(context, product),
-                        onRecipe: () => _openRecipeDialog(
-                          context,
-                          product,
-                          products,
-                        ),
                       ),
                     );
                   },

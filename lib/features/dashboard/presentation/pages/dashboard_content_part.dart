@@ -167,6 +167,11 @@ class _DashboardContent extends StatelessWidget {
             label: l10n.moduleProducts,
             route: AppRoutes.products,
           ),
+          const _ModuleDefinition(
+            icon: Icons.restaurant_menu_outlined,
+            label: 'Recetas',
+            route: AppRoutes.recipes,
+          ),
           _ModuleDefinition(
             icon: Icons.tune_outlined,
             label: l10n.moduleModifiers,
