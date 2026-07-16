@@ -16,6 +16,8 @@ class _ProductPerformanceReportPageState
   late DateTime _from;
   late DateTime _to;
   late Future<AppResult<ProductPerformanceReport>> _future;
+  _ProductSegmentFilter _segment = _ProductSegmentFilter.all;
+  _ProductPerformanceSort _sort = _ProductPerformanceSort.profit;
 
   SupabaseProductPerformanceReportService get _service {
     return serviceLocator<SupabaseProductPerformanceReportService>();
@@ -56,7 +58,13 @@ class _ProductPerformanceReportPageState
             builder: (context, snapshot) {
               if (!snapshot.hasData) return const AppLoadingPage();
               return snapshot.requireData.when(
-                success: (report) => _ProductPerformanceView(report: report),
+                success: (report) => _ProductPerformanceView(
+                  onSegmentChanged: _setSegment,
+                  onSortChanged: _setSort,
+                  report: report,
+                  segment: _segment,
+                  sort: _sort,
+                ),
                 failure: (error) => AppEmptyState(
                   icon: Icons.restaurant_menu_outlined,
                   title: 'Desempeno de productos',
@@ -94,5 +102,13 @@ class _ProductPerformanceReportPageState
       _from = _to.subtract(const Duration(days: 90));
       _reload();
     });
+  }
+
+  void _setSegment(_ProductSegmentFilter value) {
+    setState(() => _segment = value);
+  }
+
+  void _setSort(_ProductPerformanceSort value) {
+    setState(() => _sort = value);
   }
 }

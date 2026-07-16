@@ -33,6 +33,7 @@ part 'reports_daily_view_part.dart';
 part 'reports_expenses_page_part.dart';
 part 'reports_expenses_view_part.dart';
 part 'reports_menu_widgets_part.dart';
+part 'reports_product_performance_filters_part.dart';
 part 'reports_product_performance_page_part.dart';
 part 'reports_product_performance_view_part.dart';
 part 'reports_shared_part.dart';

@@ -1,9 +1,19 @@
 part of 'reports_page.dart';
 
 class _ProductPerformanceView extends StatelessWidget {
-  const _ProductPerformanceView({required this.report});
+  const _ProductPerformanceView({
+    required this.onSegmentChanged,
+    required this.onSortChanged,
+    required this.report,
+    required this.segment,
+    required this.sort,
+  });
 
+  final ValueChanged<_ProductSegmentFilter> onSegmentChanged;
+  final ValueChanged<_ProductPerformanceSort> onSortChanged;
   final ProductPerformanceReport report;
+  final _ProductSegmentFilter segment;
+  final _ProductPerformanceSort sort;
 
   @override
   Widget build(BuildContext context) {
@@ -20,9 +30,28 @@ class _ProductPerformanceView extends StatelessWidget {
         const SizedBox(height: 12),
         _ProductPerformanceAdvice(report: report),
         const SizedBox(height: 12),
-        for (final row in report.rows) _ProductPerformanceCard(row: row),
+        _ProductPerformanceFilters(
+          onSegmentChanged: onSegmentChanged,
+          onSortChanged: onSortChanged,
+          segment: segment,
+          sort: sort,
+        ),
+        const SizedBox(height: 12),
+        _ProductPerformanceList(
+          rows: _visibleRows,
+          segment: segment,
+          sort: sort,
+        ),
       ],
     );
+  }
+
+  List<ProductPerformanceRow> get _visibleRows {
+    return report.rows.where(segment.accepts).toList()..sort((a, b) {
+      final primary = sort.compare(a, b);
+      if (primary != 0) return primary;
+      return b.grossProfitInCents.compareTo(a.grossProfitInCents);
+    });
   }
 }
 
@@ -169,6 +198,43 @@ class _ProductPerformanceCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _ProductPerformanceList extends StatelessWidget {
+  const _ProductPerformanceList({
+    required this.rows,
+    required this.segment,
+    required this.sort,
+  });
+
+  final List<ProductPerformanceRow> rows;
+  final _ProductSegmentFilter segment;
+  final _ProductPerformanceSort sort;
+
+  @override
+  Widget build(BuildContext context) {
+    if (rows.isEmpty) {
+      return AppEmptyState(
+        icon: Icons.filter_alt_off_outlined,
+        title: 'Sin productos',
+        message: 'No hay productos en ${segment.label} para este rango.',
+      );
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          child: Text(
+            '${rows.length} productos - ${segment.label} - ${sort.label}',
+            style: Theme.of(context).textTheme.labelLarge,
+          ),
+        ),
+        const SizedBox(height: 8),
+        for (final row in rows) _ProductPerformanceCard(row: row),
+      ],
     );
   }
 }
