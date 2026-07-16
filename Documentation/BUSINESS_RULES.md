@@ -491,6 +491,14 @@
 - Related screens/flows: `Reglas del negocio`, futuro `Recetas`, futuro reporte `Inventario negativo`.
 - Data impact: `business_rules.key = allow_raw_material_negative_stock_from_recipes`, `inventory_stock`, `inventory_movements`.
 
+### Regla: Costo historico de venta por receta
+- Description: Cuando una venta sincronizada contiene productos con `uses_recipe = true`, Supabase recalcula el costo unitario historico de esa linea desde la receta activa y los costos actuales de materias primas.
+- Rationale: Los reportes de utilidad, productos rentables y cobertura deben usar el costo real estimado por receta, no un costo manual viejo del producto final.
+- Example(s): Si una hamburguesa usa pan, carne y salsa, `sale_items.unit_cost` queda como la suma convertida de esos componentes; `sales.total_cost` y `sales.gross_profit` se actualizan en la misma sincronizacion.
+- Edge cases: Ventas antiguas no se recalculan automaticamente. Si un producto usa receta pero no tiene receta activa o la receta calcula costo cero, se conserva el costo recibido en el payload POS.
+- Related screens/flows: `POS`, `Consumo de personal`, `Reportes`, `Desempeno de productos`, `Ventas al dia`, `Resultado operativo`.
+- Data impact: `product_recipes`, `product_recipe_lines`, `sale_items.unit_cost`, `sale_items.gross_profit`, `sales.total_cost`, `sales.gross_profit`.
+
 ## Roles Y Permisos
 
 ### Regla: Permisos granulares

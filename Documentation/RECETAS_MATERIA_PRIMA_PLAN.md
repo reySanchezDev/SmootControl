@@ -621,6 +621,10 @@ Cambios:
     ultimo consumo de receta cuando existe.
   - pantalla `Movimientos de inventario` reconoce y filtra movimientos
     `recipe_consumption` como `Consumo por receta`.
+  - migracion `053_recipe_historical_cost_rollup.sql` calcula costo unitario de
+    recetas desde materias primas, actualiza `sale_items.unit_cost`,
+    `sale_items.gross_profit`, `sales.total_cost` y `sales.gross_profit` al
+    sincronizar ventas o consumos de personal.
 
 Pruebas:
 
@@ -754,3 +758,4 @@ Mitigacion:
 | 2026-07-16 | Etapa 5 anulaciones | Completado inicial | Migracion `052_recipe_inventory_void_reversal.sql` aplicada; anulaciones reintegran materias primas con movimientos idempotentes `sale_void`. |
 | 2026-07-16 | Etapa 7 inventario negativo | Completado inicial | Reporte `Inventario negativo` agregado en Reportes > Inventario para detectar materias primas bajo cero y costo estimado de regularizacion. |
 | 2026-07-16 | Etapa 7 trazabilidad | Completado inicial | Movimientos de inventario clasifica `recipe_consumption` como consumo por receta para auditoria administrativa. |
+| 2026-07-16 | Etapa 7 costeo por receta | Completado inicial | Migracion `053_recipe_historical_cost_rollup.sql` aplicada; reportes basados en `sale_items.unit_cost` ya reciben costo historico de receta para nuevas sincronizaciones. |

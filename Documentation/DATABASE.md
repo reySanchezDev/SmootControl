@@ -36,7 +36,7 @@
 | `invoice_number_settings` | Numeracion de comprobantes. |
 | `cash_register_sessions` | Caja diaria por cajero. |
 | `sales` | Ventas y estado. |
-| `sale_items` | Detalle historico de ventas, incluyendo opciones seleccionadas. |
+| `sale_items` | Detalle historico de ventas, incluyendo opciones seleccionadas y costo historico; si el producto usa receta, Supabase recalcula `unit_cost` desde la receta activa al sincronizar. |
 | `sale_voids` | Anulaciones auditables. |
 | `expense_categories` | Categorias de gastos agrupables por `parent_id`. |
 | `operating_expenses` | Gastos operativos. |

@@ -40,6 +40,14 @@ final class NegativeInventoryRow extends Equatable {
   /// Estimated cost to regularize this negative stock.
   int get regularizationCostInCents => quantityToRegularize * costInCents;
 
+  /// Short reference for the last sale or staff consumption movement.
+  String? get shortReferenceId {
+    final reference = lastReferenceId;
+    if (reference == null || reference.isEmpty) return null;
+    if (reference.length <= 8) return reference;
+    return reference.substring(0, 8);
+  }
+
   @override
   List<Object?> get props => [
     productId,

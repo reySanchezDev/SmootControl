@@ -234,6 +234,11 @@ class _NegativeInventoryCard extends StatelessWidget {
                 variant: AppTextVariant.label,
               ),
             ],
+            if (row.shortReferenceId != null)
+              AppText(
+                'Referencia: ${row.shortReferenceId}',
+                variant: AppTextVariant.label,
+              ),
           ],
         ),
       ),
