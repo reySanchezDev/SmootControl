@@ -296,6 +296,58 @@ class AppLocalizationsEs extends AppLocalizations {
       'Producto vendible en POS; requiere precio de venta.';
 
   @override
+  String get productUsesRecipeField => 'Usa receta';
+
+  @override
+  String get productUsesRecipeHelp =>
+      'Explota materias primas al sincronizar ventas.';
+
+  @override
+  String get productRecipeAction => 'Receta';
+
+  @override
+  String get productRecipeTitle => 'Receta';
+
+  @override
+  String get productRecipeUnavailableTitle => 'Sin componentes';
+
+  @override
+  String get productRecipeUnavailableMessage =>
+      'Configura materias primas o preparaciones con unidad base antes de crear recetas.';
+
+  @override
+  String get productRecipeComponentField => 'Componente';
+
+  @override
+  String get productRecipeQuantityField => 'Cantidad';
+
+  @override
+  String get productRecipeUnitField => 'Unidad';
+
+  @override
+  String get productRecipeWasteField => 'Merma %';
+
+  @override
+  String get productUnitsTitle => 'Unidades de inventario';
+
+  @override
+  String get productPurchaseUnitField => 'Unidad de compra';
+
+  @override
+  String get productInventoryUnitField => 'Unidad base de inventario';
+
+  @override
+  String get productPurchaseFactorField => 'Factor compra a base';
+
+  @override
+  String get productPurchaseFactorHelp =>
+      'Ejemplo: 1 bolsa con 12 panes usa factor 12.';
+
+  @override
+  String get productUnitsRequiredError =>
+      'Indica unidad de compra, unidad base y factor mayor que cero.';
+
+  @override
   String get sellableProductStatus => 'Vendible';
 
   @override

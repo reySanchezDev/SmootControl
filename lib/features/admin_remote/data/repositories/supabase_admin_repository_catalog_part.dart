@@ -78,7 +78,8 @@ mixin _SupabaseAdminCatalogMixin on _SupabaseAdminRepositoryBase
           'restaurant_id': 'eq.$_restaurantId',
           'select':
               'id,category_id,name,cost,price,is_active,is_available_in_pos,'
-              'is_raw_material,tracks_inventory,option_groups',
+              'is_raw_material,uses_recipe,tracks_inventory,option_groups,'
+              'purchase_unit_id,inventory_unit_id,purchase_to_inventory_factor',
           'order': 'name.asc',
         });
         final assignments = await _getRows('product_modifier_groups', {
@@ -106,7 +107,14 @@ mixin _SupabaseAdminCatalogMixin on _SupabaseAdminRepositoryBase
               fallback: true,
             ),
             isRawMaterial: _bool(row['is_raw_material']),
+            usesRecipe: _bool(row['uses_recipe']),
             tracksInventory: _bool(row['tracks_inventory']),
+            purchaseUnitId: _nullableText(row['purchase_unit_id']),
+            inventoryUnitId: _nullableText(row['inventory_unit_id']),
+            purchaseToInventoryFactor:
+                row['purchase_to_inventory_factor'] == null
+                ? null
+                : _double(row['purchase_to_inventory_factor']),
             optionGroups: ProductOptionGroupCodec.decode(
               jsonEncode(row['option_groups'] ?? const []),
             ),
@@ -134,7 +142,11 @@ mixin _SupabaseAdminCatalogMixin on _SupabaseAdminRepositoryBase
           'is_active': product.isActive,
           'is_available_in_pos': product.isAvailableInPos,
           'is_raw_material': product.isRawMaterial,
+          'uses_recipe': product.usesRecipe,
           'tracks_inventory': product.tracksInventory,
+          'purchase_unit_id': product.purchaseUnitId,
+          'inventory_unit_id': product.inventoryUnitId,
+          'purchase_to_inventory_factor': product.purchaseToInventoryFactor,
           'option_groups': product.optionGroups
               .map(
                 (group) => {

@@ -15,6 +15,10 @@ final class BusinessRule extends Equatable {
   /// Overtime hour rate used for manual overtime entries.
   static const overtimeHourRate = 'overtime_hour_rate';
 
+  /// Allows recipe explosion to leave raw material stock negative.
+  static const allowRawMaterialNegativeStockFromRecipes =
+      'allow_raw_material_negative_stock_from_recipes';
+
   /// Stable rule key.
   final String key;
 

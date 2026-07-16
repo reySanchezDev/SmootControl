@@ -20,6 +20,10 @@ final class ProductModel extends Equatable {
     required this.optionGroups,
     required this.modifierGroupIds,
     this.isRawMaterial = false,
+    this.usesRecipe = false,
+    this.purchaseUnitId,
+    this.inventoryUnitId,
+    this.purchaseToInventoryFactor,
   });
 
   /// Creates a model from a local Drift row.
@@ -50,7 +54,11 @@ final class ProductModel extends Equatable {
       isActive: entity.isActive,
       isAvailableInPos: entity.isAvailableInPos,
       isRawMaterial: entity.isRawMaterial,
+      usesRecipe: entity.usesRecipe,
       tracksInventory: entity.tracksInventory,
+      purchaseUnitId: entity.purchaseUnitId,
+      inventoryUnitId: entity.inventoryUnitId,
+      purchaseToInventoryFactor: entity.purchaseToInventoryFactor,
       optionGroups: entity.optionGroups,
       modifierGroupIds: entity.modifierGroupIds,
     );
@@ -80,8 +88,20 @@ final class ProductModel extends Equatable {
   /// Whether this item is raw material instead of sellable product.
   final bool isRawMaterial;
 
+  /// Whether this product explodes recipe components remotely.
+  final bool usesRecipe;
+
   /// Whether sales should consume inventory stock.
   final bool tracksInventory;
+
+  /// Unit used when buying this product or raw material.
+  final String? purchaseUnitId;
+
+  /// Base unit used to store inventory stock.
+  final String? inventoryUnitId;
+
+  /// Quantity of base units produced by one purchase unit.
+  final double? purchaseToInventoryFactor;
 
   /// POS option groups configured for this product.
   final List<ProductOptionGroup> optionGroups;
@@ -106,7 +126,11 @@ final class ProductModel extends Equatable {
       isActive: isActive,
       isAvailableInPos: isAvailableInPos,
       isRawMaterial: isRawMaterial,
+      usesRecipe: usesRecipe,
       tracksInventory: tracksInventory,
+      purchaseUnitId: purchaseUnitId,
+      inventoryUnitId: inventoryUnitId,
+      purchaseToInventoryFactor: purchaseToInventoryFactor,
       optionGroups: optionGroups,
       modifierGroupIds: modifierGroupIds,
     );
@@ -122,7 +146,11 @@ final class ProductModel extends Equatable {
     isActive,
     isAvailableInPos,
     isRawMaterial,
+    usesRecipe,
     tracksInventory,
+    purchaseUnitId,
+    inventoryUnitId,
+    purchaseToInventoryFactor,
     optionGroups,
     modifierGroupIds,
   ];

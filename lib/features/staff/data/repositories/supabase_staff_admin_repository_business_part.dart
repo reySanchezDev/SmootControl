@@ -18,6 +18,10 @@ mixin _SupabaseStaffBusinessMixin on _SupabaseStaffAdminRepositoryBase {
               boolValue: false,
             ),
             BusinessRule(key: BusinessRule.overtimeHourRate, textValue: '0'),
+            BusinessRule(
+              key: BusinessRule.allowRawMaterialNegativeStockFromRecipes,
+              boolValue: true,
+            ),
           ];
         }
         return rows.map(_ruleFromRow).toList();

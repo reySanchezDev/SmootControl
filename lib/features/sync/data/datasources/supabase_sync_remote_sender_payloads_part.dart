@@ -70,6 +70,7 @@ extension on SupabaseSyncRemoteSender {
 
   Map<String, Object?> _productPayload(SyncQueueItem item) {
     final payload = item.payload;
+    final isRawMaterial = payload['isRawMaterial'] == true;
     return {
       'id': payload['id'],
       'restaurant_id': _restaurantId,
@@ -80,8 +81,13 @@ extension on SupabaseSyncRemoteSender {
       'price': _money(_intValue(payload['priceInCents'])),
       'is_active': payload['isActive'],
       'is_available_in_pos': payload['isAvailableInPos'],
-      'is_raw_material': payload['isRawMaterial'] ?? false,
+      'is_raw_material': isRawMaterial,
+      'product_kind': isRawMaterial ? 'raw_material' : 'finished',
+      'uses_recipe': !isRawMaterial && payload['usesRecipe'] == true,
       'tracks_inventory': payload['tracksInventory'] ?? false,
+      'purchase_unit_id': payload['purchaseUnitId'],
+      'inventory_unit_id': payload['inventoryUnitId'],
+      'purchase_to_inventory_factor': payload['purchaseToInventoryFactor'],
       'option_groups': payload['optionGroups'] ?? const <Object?>[],
       'updated_at': DateTime.now().toIso8601String(),
     };

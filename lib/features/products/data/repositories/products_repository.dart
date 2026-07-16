@@ -94,7 +94,11 @@ final class ProductsRepository implements IProductsRepository {
       'isActive': product.isActive,
       'isAvailableInPos': product.isAvailableInPos,
       'isRawMaterial': product.isRawMaterial,
+      'usesRecipe': product.usesRecipe,
       'tracksInventory': product.tracksInventory,
+      'purchaseUnitId': product.purchaseUnitId,
+      'inventoryUnitId': product.inventoryUnitId,
+      'purchaseToInventoryFactor': product.purchaseToInventoryFactor,
       'optionGroups': product.optionGroups
           .map(
             (group) => {

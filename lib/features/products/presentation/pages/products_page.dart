@@ -13,13 +13,17 @@ import 'package:smoo_control/core/result/app_result.dart';
 import 'package:smoo_control/features/admin_remote/data/repositories/supabase_admin_repository.dart';
 import 'package:smoo_control/features/catalog/domain/entities/product_category.dart';
 import 'package:smoo_control/features/modifiers/domain/entities/modifier_group.dart';
+import 'package:smoo_control/features/products/domain/entities/measurement_unit.dart';
 import 'package:smoo_control/features/products/domain/entities/product.dart';
 import 'package:smoo_control/features/products/presentation/bloc/products_bloc.dart';
 import 'package:smoo_control/features/products/presentation/bloc/products_event.dart';
 import 'package:smoo_control/features/products/presentation/bloc/products_state.dart';
 import 'package:smoo_control/features/products/presentation/widgets/create_product_dialog.dart';
+import 'package:smoo_control/features/recipes/data/services/supabase_product_recipes_service.dart';
+import 'package:smoo_control/features/recipes/presentation/widgets/product_recipe_dialog.dart';
 import 'package:smoo_control/l10n/app_localizations.dart';
 
+part 'product_recipe_action_part.dart';
 part 'product_tile.dart';
 
 /// Product management page.
@@ -98,6 +102,11 @@ class ProductsPage extends StatelessWidget {
                           product,
                         ),
                         onEdit: () => _openEditDialog(context, product),
+                        onRecipe: () => _openRecipeDialog(
+                          context,
+                          product,
+                          products,
+                        ),
                       ),
                     );
                   },
@@ -113,6 +122,7 @@ class ProductsPage extends StatelessWidget {
   Future<void> _openCreateDialog(BuildContext context) async {
     final categories = await _loadCategories();
     final modifierGroups = await _loadModifierGroups();
+    final units = await _loadUnits();
     if (!context.mounted) {
       return;
     }
@@ -122,6 +132,7 @@ class ProductsPage extends StatelessWidget {
       builder: (_) => CreateProductDialog(
         categories: categories,
         modifierGroups: modifierGroups,
+        units: units,
       ),
     );
 
@@ -133,6 +144,7 @@ class ProductsPage extends StatelessWidget {
   Future<void> _openEditDialog(BuildContext context, Product product) async {
     final categories = await _loadCategories();
     final modifierGroups = await _loadModifierGroups();
+    final units = await _loadUnits();
     if (!context.mounted) {
       return;
     }
@@ -142,6 +154,7 @@ class ProductsPage extends StatelessWidget {
       builder: (_) => CreateProductDialog(
         categories: categories,
         modifierGroups: modifierGroups,
+        units: units,
         product: product,
       ),
     );
@@ -174,6 +187,10 @@ class ProductsPage extends StatelessWidget {
           isActive: false,
           isAvailableInPos: false,
           isRawMaterial: product.isRawMaterial,
+          usesRecipe: product.usesRecipe,
+          purchaseUnitId: product.purchaseUnitId,
+          inventoryUnitId: product.inventoryUnitId,
+          purchaseToInventoryFactor: product.purchaseToInventoryFactor,
           optionGroups: product.optionGroups,
           modifierGroupIds: product.modifierGroupIds,
           tracksInventory: product.tracksInventory,
@@ -188,6 +205,16 @@ class ProductsPage extends StatelessWidget {
     return switch (result) {
       AppSuccess(:final value) => value.groups,
       AppFailureResult() => <ModifierGroup>[],
+    };
+  }
+
+  Future<List<MeasurementUnit>> _loadUnits() async {
+    final result = await serviceLocator<SupabaseAdminRepository>()
+        .getMeasurementUnits();
+
+    return switch (result) {
+      AppSuccess(:final value) => value,
+      AppFailureResult() => <MeasurementUnit>[],
     };
   }
 

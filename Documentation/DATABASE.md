@@ -22,7 +22,10 @@
 | `restaurant_tables` | Mesas del restaurante, con nombre interno y nombre operativo temporal para POS. |
 | `table_accounts` | Cuentas separadas por mesa, usadas para cobrar divisiones una por una. |
 | `product_categories` | Categorias y subcategorias. |
-| `products` | Productos vendibles con disponibilidad diaria, bandera `tracks_inventory` y compatibilidad legacy de opciones embebidas. |
+| `products` | Productos vendibles, materias primas o preparaciones, con disponibilidad diaria, `tracks_inventory`, `uses_recipe` y compatibilidad legacy de opciones embebidas. |
+| `measurement_units` | Unidades globales o por restaurante para compras, inventario base y conversiones de receta. Productos pueden guardar unidad de compra, unidad base y factor de conversion. |
+| `product_recipes` | Cabecera versionada de receta activa/inactiva por producto. |
+| `product_recipe_lines` | Componentes de receta con producto, cantidad, unidad, merma y orden. |
 | `inventory_stock` | Stock actual por producto que controla inventario. |
 | `inventory_movements` | Movimientos auditables de inventario: compras, ventas y anulaciones. |
 | `modifier_groups` | Grupos reutilizables para POS como `Bastimento`, `Guarnicion` o `Salsa`. |
@@ -37,6 +40,7 @@
 | `sale_voids` | Anulaciones auditables. |
 | `expense_categories` | Categorias de gastos agrupables por `parent_id`. |
 | `operating_expenses` | Gastos operativos. |
+| `business_rules` | Reglas operativas configurables por restaurante, como adelantos POS y stock negativo por receta. |
 | `sync_logs` | Bitacora de sincronizacion. |
 | `audit_logs` | Auditoria funcional. |
 
@@ -52,7 +56,7 @@
 Tablas locales creadas:
 
 - `local_product_categories`
-- `local_products` (`is_available_in_pos` permite ocultar productos del POS sin inactivarlos; `tracks_inventory` indica si valida y descuenta inventario; `modifier_group_ids_json` asigna grupos reutilizables; `option_groups_json` queda como compatibilidad legacy)
+- `local_products` (`is_available_in_pos` permite ocultar productos del POS sin inactivarlos; `tracks_inventory` indica si valida y descuenta inventario; `modifier_group_ids_json` asigna grupos reutilizables; `option_groups_json` queda como compatibilidad legacy; el pull operativo excluye materias primas)
 - `local_inventory_stock` (stock local actual por producto; se descarga desde Supabase y se actualiza por movimientos locales)
 - `local_inventory_movements` (bitacora idempotente de movimientos `purchase`, `sale` y `sale_void`)
 - `local_modifier_groups`

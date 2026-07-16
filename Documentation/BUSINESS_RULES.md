@@ -475,6 +475,22 @@
 - Related screens/flows: `Productos`, `POS`, `Valor de inventario`, `Sincronizacion de catalogos`.
 - Data impact: `products.is_raw_material`, `local_products.is_raw_material`, `InventoryValueReportRow.isRawMaterial`.
 
+### Regla: Producto vendible con receta
+- Description: Un producto vendible puede marcarse con `uses_recipe = true` para indicar que, al sincronizar ventas, Supabase debe explotar su receta y descontar materias primas.
+- Rationale: Una hamburguesa, taco o smoothie sigue siendo vendible, pero su inventario real vive en los componentes de receta.
+- Example(s): `Hamburguesa` es `product_kind = finished` y `uses_recipe = true`; al venderse descuenta pan, carne y salsa configurados en la receta.
+- Edge cases: Una materia prima no puede tener receta. El POS V1 no explota recetas localmente ni descarga materias primas como botones operativos de venta.
+- Related screens/flows: `Productos`, `Sincronizacion de catalogos`, futuro `Recetas`.
+- Data impact: `products.product_kind`, `products.uses_recipe`, futuras `product_recipes` y `product_recipe_lines`.
+
+### Regla: Inventario negativo de materia prima por receta
+- Description: La regla `allow_raw_material_negative_stock_from_recipes` controla si Supabase permite que la explosion de recetas deje materias primas en negativo.
+- Rationale: En V1 las compras pueden registrarse tarde; permitir negativo conserva la venta y deja evidencia para que supervision ingrese compras o ajustes pendientes.
+- Example(s): Si se vende una hamburguesa y no hay pan registrado, con la regla activa la venta sincroniza y el stock de pan puede quedar en `-1`. Con la regla apagada, Supabase rechaza la sincronizacion con un error reintentable.
+- Edge cases: Esta facilidad aplica solo a componentes `raw_material` consumidos por receta. No aplica al stock propio del producto vendido, empaques ni otros inventarios operativos.
+- Related screens/flows: `Reglas del negocio`, futuro `Recetas`, futuro reporte `Inventario negativo`.
+- Data impact: `business_rules.key = allow_raw_material_negative_stock_from_recipes`, `inventory_stock`, `inventory_movements`.
+
 ## Roles Y Permisos
 
 ### Regla: Permisos granulares

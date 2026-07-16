@@ -37,7 +37,15 @@ final class SupabaseInventoryAdminReadService {
         'restaurant_id': 'eq.${_restaurantService.restaurantId}',
         'tracks_inventory': 'eq.true',
         'is_active': 'eq.true',
-        'select': 'id,name,cost,category_id',
+        'select':
+            'id,name,cost,category_id,purchase_unit_id,inventory_unit_id,'
+            'purchase_to_inventory_factor',
+      });
+      final units = await _getRows('measurement_units', {
+        'or':
+            '(restaurant_id.is.null,restaurant_id.eq.'
+            '${_restaurantService.restaurantId})',
+        'select': 'id,name,code',
       });
       final categories = await _getRows('product_categories', {
         'restaurant_id': 'eq.${_restaurantService.restaurantId}',
@@ -53,6 +61,7 @@ final class SupabaseInventoryAdminReadService {
       final categoriesById = {
         for (final row in categories) _text(row['id']): row,
       };
+      final unitsById = {for (final row in units) _text(row['id']): row};
 
       final items = <InventoryStockItem>[];
       for (final product in products) {
@@ -67,6 +76,19 @@ final class SupabaseInventoryAdminReadService {
             categoryName: categoryPath.isEmpty ? null : categoryPath.last,
             categoryPath: categoryPath.join(' / '),
             costInCents: _moneyToCents(product['cost']),
+            purchaseUnitId: _nullableText(product['purchase_unit_id']),
+            purchaseUnitName: _unitName(
+              product['purchase_unit_id'],
+              unitsById,
+            ),
+            inventoryUnitId: _nullableText(product['inventory_unit_id']),
+            inventoryUnitName: _unitName(
+              product['inventory_unit_id'],
+              unitsById,
+            ),
+            purchaseToInventoryFactor: _double(
+              product['purchase_to_inventory_factor'],
+            ),
             quantityOnHand: _int(stock?['quantity_on_hand']),
             updatedAt: _date(stock?['updated_at']),
           ),
@@ -172,6 +194,28 @@ final class SupabaseInventoryAdminReadService {
   String _text(Object? value, {String fallback = ''}) {
     final text = value?.toString().trim();
     return text == null || text.isEmpty ? fallback : text;
+  }
+
+  String? _nullableText(Object? value) {
+    final text = value?.toString().trim();
+    return text == null || text.isEmpty ? null : text;
+  }
+
+  double? _double(Object? value) {
+    if (value is num) return value.toDouble();
+    return double.tryParse(value?.toString() ?? '');
+  }
+
+  String? _unitName(
+    Object? unitId,
+    Map<String, Map<String, Object?>> unitsById,
+  ) {
+    final row = unitsById[_text(unitId)];
+    if (row == null) return null;
+    final code = _text(row['code']);
+    final name = _text(row['name']);
+    if (code.isEmpty) return name;
+    return '$name ($code)';
   }
 
   int _int(Object? value) {

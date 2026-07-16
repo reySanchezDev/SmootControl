@@ -234,6 +234,11 @@ abstract class _SupabaseAdminRepositoryBase {
     return int.tryParse(value?.toString() ?? '') ?? fallback;
   }
 
+  double _double(Object? value, {double fallback = 0}) {
+    if (value is num) return value.toDouble();
+    return double.tryParse(value?.toString() ?? '') ?? fallback;
+  }
+
   bool _bool(Object? value, {bool fallback = false}) {
     if (value is bool) return value;
     if (value == null) return fallback;

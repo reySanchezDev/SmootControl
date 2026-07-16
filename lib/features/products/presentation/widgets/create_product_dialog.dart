@@ -5,9 +5,12 @@ import 'package:smoo_control/core/design_system/app_text.dart';
 import 'package:smoo_control/core/formatters/money_formatter.dart';
 import 'package:smoo_control/features/catalog/domain/entities/product_category.dart';
 import 'package:smoo_control/features/modifiers/domain/entities/modifier_group.dart';
+import 'package:smoo_control/features/products/domain/entities/measurement_unit.dart';
 import 'package:smoo_control/features/products/domain/entities/product.dart';
 import 'package:smoo_control/features/products/presentation/widgets/modifier_group_selector.dart';
+import 'package:smoo_control/features/products/presentation/widgets/product_category_dropdown.dart';
 import 'package:smoo_control/features/products/presentation/widgets/product_flags_section.dart';
+import 'package:smoo_control/features/products/presentation/widgets/product_units_section.dart';
 import 'package:smoo_control/l10n/app_localizations.dart';
 import 'package:uuid/uuid.dart';
 
@@ -17,6 +20,7 @@ class CreateProductDialog extends StatefulWidget {
   const CreateProductDialog({
     required this.categories,
     required this.modifierGroups,
+    this.units = const [],
     this.product,
     super.key,
   });
@@ -26,6 +30,9 @@ class CreateProductDialog extends StatefulWidget {
 
   /// Reusable modifier groups available for assignment.
   final List<ModifierGroup> modifierGroups;
+
+  /// Units available for inventory and purchases.
+  final List<MeasurementUnit> units;
 
   /// Product being edited.
   final Product? product;
@@ -38,12 +45,16 @@ class _CreateProductDialogState extends State<CreateProductDialog> {
   final _nameController = TextEditingController();
   final _priceController = TextEditingController();
   final _costController = TextEditingController(text: '0');
+  final _purchaseFactorController = TextEditingController(text: '1');
   bool _isActive = true;
   bool _isAvailableInPos = true;
   bool _isRawMaterial = false;
+  bool _usesRecipe = false;
   bool _tracksInventory = false;
   String? _error;
   String? _selectedCategoryId;
+  String? _purchaseUnitId;
+  String? _inventoryUnitId;
   final _selectedModifierGroupIds = <String>{};
 
   @override
@@ -61,7 +72,12 @@ class _CreateProductDialogState extends State<CreateProductDialog> {
     _isActive = product.isActive;
     _isAvailableInPos = product.isAvailableInPos;
     _isRawMaterial = product.isRawMaterial;
+    _usesRecipe = product.usesRecipe;
     _tracksInventory = product.tracksInventory;
+    _purchaseUnitId = product.purchaseUnitId;
+    _inventoryUnitId = product.inventoryUnitId;
+    final factor = product.purchaseToInventoryFactor;
+    if (factor != null) _purchaseFactorController.text = factor.toString();
     _selectedModifierGroupIds.addAll(product.modifierGroupIds);
   }
 
@@ -70,6 +86,7 @@ class _CreateProductDialogState extends State<CreateProductDialog> {
     _nameController.dispose();
     _priceController.dispose();
     _costController.dispose();
+    _purchaseFactorController.dispose();
     super.dispose();
   }
 
@@ -92,23 +109,9 @@ class _CreateProductDialogState extends State<CreateProductDialog> {
             children: [
               AppInput(label: l10n.nameField, controller: _nameController),
               const SizedBox(height: 12),
-              DropdownButtonFormField<String>(
-                decoration: InputDecoration(
-                  labelText: l10n.parentCategoryField,
-                ),
-                initialValue: _selectedCategoryId,
-                isExpanded: true,
-                items: [
-                  for (final category in _activeCategories)
-                    DropdownMenuItem(
-                      value: category.id,
-                      child: AppText(
-                        _categoryLabel(category),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                ],
+              ProductCategoryDropdown(
+                categories: widget.categories,
+                selectedCategoryId: _selectedCategoryId,
                 onChanged: (value) {
                   setState(() {
                     _selectedCategoryId = value;
@@ -137,6 +140,7 @@ class _CreateProductDialogState extends State<CreateProductDialog> {
                 isActive: _isActive,
                 isAvailableInPos: _isAvailableInPos,
                 isRawMaterial: _isRawMaterial,
+                usesRecipe: _usesRecipe,
                 tracksInventory: _tracksInventory,
                 onActiveChanged: (value) {
                   setState(() => _isActive = value);
@@ -147,13 +151,32 @@ class _CreateProductDialogState extends State<CreateProductDialog> {
                 onRawMaterialChanged: (value) {
                   setState(() {
                     _isRawMaterial = value;
-                    if (value) _isAvailableInPos = false;
+                    if (value) {
+                      _isAvailableInPos = false;
+                      _usesRecipe = false;
+                    }
                   });
+                },
+                onUsesRecipeChanged: (value) {
+                  setState(() => _usesRecipe = value);
                 },
                 onTracksInventoryChanged: (value) {
                   setState(() => _tracksInventory = value);
                 },
               ),
+              if (_isRawMaterial)
+                ProductUnitsSection(
+                  units: widget.units,
+                  purchaseUnitId: _purchaseUnitId,
+                  inventoryUnitId: _inventoryUnitId,
+                  purchaseFactorController: _purchaseFactorController,
+                  onPurchaseUnitChanged: (value) {
+                    setState(() => _purchaseUnitId = value);
+                  },
+                  onInventoryUnitChanged: (value) {
+                    setState(() => _inventoryUnitId = value);
+                  },
+                ),
               ModifierGroupSelector(
                 groups: _activeModifierGroups,
                 selectedIds: _selectedModifierGroupIds,
@@ -190,6 +213,9 @@ class _CreateProductDialogState extends State<CreateProductDialog> {
     final parsedPrice = MoneyFormatter.parseToCents(_priceController.text);
     final cost = MoneyFormatter.parseToCents(_costController.text);
     final price = _isRawMaterial ? (parsedPrice ?? 0) : parsedPrice;
+    final purchaseFactor = double.tryParse(
+      _purchaseFactorController.text.trim(),
+    );
 
     if (name.isEmpty || _selectedCategoryId == null) {
       setState(() => _error = l10n.fieldRequiredError);
@@ -206,6 +232,16 @@ class _CreateProductDialogState extends State<CreateProductDialog> {
       return;
     }
 
+    if (_isRawMaterial &&
+        widget.units.isNotEmpty &&
+        (_purchaseUnitId == null ||
+            _inventoryUnitId == null ||
+            purchaseFactor == null ||
+            purchaseFactor <= 0)) {
+      setState(() => _error = l10n.productUnitsRequiredError);
+      return;
+    }
+
     Navigator.of(context).pop(
       Product(
         id: widget.product?.id ?? const Uuid().v4(),
@@ -216,7 +252,11 @@ class _CreateProductDialogState extends State<CreateProductDialog> {
         isActive: _isActive,
         isAvailableInPos: !_isRawMaterial && _isAvailableInPos,
         isRawMaterial: _isRawMaterial,
+        usesRecipe: !_isRawMaterial && _usesRecipe,
         tracksInventory: _tracksInventory,
+        purchaseUnitId: _isRawMaterial ? _purchaseUnitId : null,
+        inventoryUnitId: _isRawMaterial ? _inventoryUnitId : null,
+        purchaseToInventoryFactor: _isRawMaterial ? purchaseFactor : null,
         optionGroups: widget.product?.optionGroups ?? const [],
         modifierGroupIds: _selectedModifierGroupIds.toList(),
       ),
@@ -234,62 +274,5 @@ class _CreateProductDialogState extends State<CreateProductDialog> {
         });
 
     return groups;
-  }
-
-  List<ProductCategory> get _activeCategories {
-    final categories = widget.categories.where((category) {
-      return category.isActive || category.id == _selectedCategoryId;
-    }).toList();
-
-    return _orderedCategories(categories);
-  }
-
-  String _categoryLabel(ProductCategory category) {
-    final names = <String>[category.name];
-    var parentId = category.parentId;
-    final visited = <String>{category.id};
-
-    while (parentId != null && visited.add(parentId)) {
-      final parent = _categoryById(parentId);
-      if (parent == null) break;
-      names.insert(0, parent.name);
-      parentId = parent.parentId;
-    }
-
-    return names.join(' / ');
-  }
-
-  List<ProductCategory> _orderedCategories(List<ProductCategory> categories) {
-    final ordered = <ProductCategory>[];
-
-    void addChildren(String? parentId) {
-      final children =
-          categories.where((category) => category.parentId == parentId).toList()
-            ..sort(
-              (first, second) => first.sortOrder.compareTo(second.sortOrder),
-            );
-
-      for (final child in children) {
-        ordered.add(child);
-        addChildren(child.id);
-      }
-    }
-
-    addChildren(null);
-    for (final category in categories) {
-      if (!ordered.any((item) => item.id == category.id)) {
-        ordered.add(category);
-      }
-    }
-
-    return ordered;
-  }
-
-  ProductCategory? _categoryById(String id) {
-    for (final category in widget.categories) {
-      if (category.id == id) return category;
-    }
-
-    return null;
   }
 }

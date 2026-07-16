@@ -644,6 +644,102 @@ abstract class AppLocalizations {
   /// **'Producto vendible en POS; requiere precio de venta.'**
   String get productSellableHelp;
 
+  /// No description provided for @productUsesRecipeField.
+  ///
+  /// In es, this message translates to:
+  /// **'Usa receta'**
+  String get productUsesRecipeField;
+
+  /// No description provided for @productUsesRecipeHelp.
+  ///
+  /// In es, this message translates to:
+  /// **'Explota materias primas al sincronizar ventas.'**
+  String get productUsesRecipeHelp;
+
+  /// No description provided for @productRecipeAction.
+  ///
+  /// In es, this message translates to:
+  /// **'Receta'**
+  String get productRecipeAction;
+
+  /// No description provided for @productRecipeTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Receta'**
+  String get productRecipeTitle;
+
+  /// No description provided for @productRecipeUnavailableTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin componentes'**
+  String get productRecipeUnavailableTitle;
+
+  /// No description provided for @productRecipeUnavailableMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Configura materias primas o preparaciones con unidad base antes de crear recetas.'**
+  String get productRecipeUnavailableMessage;
+
+  /// No description provided for @productRecipeComponentField.
+  ///
+  /// In es, this message translates to:
+  /// **'Componente'**
+  String get productRecipeComponentField;
+
+  /// No description provided for @productRecipeQuantityField.
+  ///
+  /// In es, this message translates to:
+  /// **'Cantidad'**
+  String get productRecipeQuantityField;
+
+  /// No description provided for @productRecipeUnitField.
+  ///
+  /// In es, this message translates to:
+  /// **'Unidad'**
+  String get productRecipeUnitField;
+
+  /// No description provided for @productRecipeWasteField.
+  ///
+  /// In es, this message translates to:
+  /// **'Merma %'**
+  String get productRecipeWasteField;
+
+  /// No description provided for @productUnitsTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Unidades de inventario'**
+  String get productUnitsTitle;
+
+  /// No description provided for @productPurchaseUnitField.
+  ///
+  /// In es, this message translates to:
+  /// **'Unidad de compra'**
+  String get productPurchaseUnitField;
+
+  /// No description provided for @productInventoryUnitField.
+  ///
+  /// In es, this message translates to:
+  /// **'Unidad base de inventario'**
+  String get productInventoryUnitField;
+
+  /// No description provided for @productPurchaseFactorField.
+  ///
+  /// In es, this message translates to:
+  /// **'Factor compra a base'**
+  String get productPurchaseFactorField;
+
+  /// No description provided for @productPurchaseFactorHelp.
+  ///
+  /// In es, this message translates to:
+  /// **'Ejemplo: 1 bolsa con 12 panes usa factor 12.'**
+  String get productPurchaseFactorHelp;
+
+  /// No description provided for @productUnitsRequiredError.
+  ///
+  /// In es, this message translates to:
+  /// **'Indica unidad de compra, unidad base y factor mayor que cero.'**
+  String get productUnitsRequiredError;
+
   /// No description provided for @sellableProductStatus.
   ///
   /// In es, this message translates to:

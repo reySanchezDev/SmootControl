@@ -229,6 +229,76 @@ void main() {
       },
     );
 
+    test('does not store raw materials from device catalog pull', () async {
+      final now = DateTime(2026, 7);
+      await database
+          .into(database.localDeviceState)
+          .insert(
+            LocalDeviceStateCompanion.insert(
+              deviceId: 'device-1',
+              restaurantId: 'restaurant-1',
+              initializedByUserId: 'user-pos-1',
+              initializedAt: now,
+              lastFullRestoreAt: now,
+              lastRestoreStatus: 'completed',
+              syncDeviceId: const Value('device-1'),
+              syncDeviceSecret: const Value('device-secret'),
+            ),
+          );
+      final rows = Map<String, List<Map<String, Object?>>>.from(_rowsByTable);
+      rows['products'] = [
+        ..._rowsByTable['products']!,
+        {
+          'id': 'product-flour',
+          'restaurant_id': 'restaurant-1',
+          'category_id': 'category-food',
+          'name': 'Harina',
+          'price': 0,
+          'cost': 20,
+          'is_active': true,
+          'is_available_in_pos': false,
+          'is_raw_material': true,
+          'tracks_inventory': true,
+          'option_groups': const [],
+        },
+      ];
+      rows['inventory_stock'] = [
+        ..._rowsByTable['inventory_stock']!,
+        {
+          'restaurant_id': 'restaurant-1',
+          'product_id': 'product-flour',
+          'quantity_on_hand': 25,
+        },
+      ];
+
+      final service = SupabaseCatalogPullService(
+        database: database,
+        config: const SupabaseAppConfig(
+          supabaseUrl: 'https://smoo.test',
+          publishableKey: 'publishable-key',
+        ),
+        restaurantService: const CurrentRestaurantService(
+          restaurantId: 'restaurant-1',
+        ),
+        remoteSessionService: CurrentRemoteSessionService(),
+        client: MockClient((request) async {
+          if (request.url.path ==
+              '/rest/v1/rpc/pos_pull_operational_catalog') {
+            return _jsonResponse(rows);
+          }
+          return http.Response('unexpected REST request', 500);
+        }),
+      );
+
+      final summary = await service.pullScopes({CatalogPullScope.products});
+
+      expect(summary.products, 1);
+      final products = await database.select(database.localProducts).get();
+      expect(products.map((product) => product.id), ['product-chicken']);
+      final stock = await database.select(database.localInventoryStock).get();
+      expect(stock.map((item) => item.productId), ['product-chicken']);
+    });
+
     test(
       'preserves local modifier POS availability when catalog refreshes',
       () async {

@@ -5,12 +5,14 @@ class _ProductTile extends StatelessWidget {
     required this.categoryPath,
     required this.onDeactivate,
     required this.onEdit,
+    required this.onRecipe,
     required this.product,
   });
 
   final String categoryPath;
   final VoidCallback onDeactivate;
   final VoidCallback onEdit;
+  final VoidCallback onRecipe;
   final Product product;
 
   @override
@@ -38,6 +40,12 @@ class _ProductTile extends StatelessWidget {
             compact: compact,
             inlineLeading: AppText(price, variant: AppTextVariant.label),
             actions: [
+              if (!product.isRawMaterial)
+                AppTileAction(
+                  icon: Icons.restaurant_menu_outlined,
+                  label: l10n.productRecipeAction,
+                  onPressed: onRecipe,
+                ),
               if (product.isActive)
                 AppTileAction(
                   color: Theme.of(context).colorScheme.error,
@@ -69,6 +77,7 @@ class _ProductTile extends StatelessWidget {
         l10n.rawMaterialStatus
       else
         l10n.sellableProductStatus,
+      if (product.usesRecipe) l10n.productUsesRecipeField,
       if (product.tracksInventory) l10n.tracksInventoryField,
     ].join(' - ');
     if (categoryPath.isEmpty) return status;

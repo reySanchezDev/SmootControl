@@ -193,15 +193,21 @@ extension on SupabaseCatalogPullService {
 
   Future<void> _applyBusinessRules(List<Map<String, Object?>> rows) async {
     final now = DateTime.now();
-    final effectiveRows = rows.isEmpty
-        ? const [
-            {
-              'key': 'salary_advance_pos_affects_cash',
-              'bool_value': false,
-              'text_value': null,
-            },
-          ]
-        : rows;
+    final effectiveRows = [
+      ...rows,
+      if (!_hasRule(rows, 'salary_advance_pos_affects_cash'))
+        {
+          'key': 'salary_advance_pos_affects_cash',
+          'bool_value': false,
+          'text_value': null,
+        },
+      if (!_hasRule(rows, 'allow_raw_material_negative_stock_from_recipes'))
+        {
+          'key': 'allow_raw_material_negative_stock_from_recipes',
+          'bool_value': true,
+          'text_value': null,
+        },
+    ];
     for (final row in effectiveRows) {
       final key = _optionalText(row['key']);
       if (key == null) continue;
@@ -222,5 +228,9 @@ extension on SupabaseCatalogPullService {
             mode: InsertMode.insertOrReplace,
           );
     }
+  }
+
+  bool _hasRule(List<Map<String, Object?>> rows, String key) {
+    return rows.any((row) => _optionalText(row['key']) == key);
   }
 }

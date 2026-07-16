@@ -15,6 +15,7 @@ final class AdminInventoryPurchaseItem {
     required this.productId,
     required this.quantity,
     required this.unitCostInCents,
+    this.purchaseUnitId,
   });
 
   /// Remote product id.
@@ -25,6 +26,9 @@ final class AdminInventoryPurchaseItem {
 
   /// Unit cost in minor currency units.
   final int unitCostInCents;
+
+  /// Unit used by the entered quantity, if configured.
+  final String? purchaseUnitId;
 }
 
 /// Packaging purchase row submitted by the administrative inventory screen.
@@ -101,6 +105,7 @@ final class SupabaseInventoryAdminWriteService {
             'product_id': item.productId,
             'quantity': item.quantity,
             'unit_cost': _money(item.unitCostInCents),
+            'purchase_unit_id': item.purchaseUnitId,
           },
       ],
     );

@@ -13,7 +13,9 @@ class ProductFlagsSection extends StatelessWidget {
     required this.onAvailableInPosChanged,
     required this.onRawMaterialChanged,
     required this.onTracksInventoryChanged,
+    required this.onUsesRecipeChanged,
     required this.tracksInventory,
+    required this.usesRecipe,
     super.key,
   });
 
@@ -26,6 +28,9 @@ class ProductFlagsSection extends StatelessWidget {
   /// Whether the product is raw material instead of sellable.
   final bool isRawMaterial;
 
+  /// Whether this product explodes recipe components remotely.
+  final bool usesRecipe;
+
   /// Whether inventory is consumed/controlled for this product.
   final bool tracksInventory;
 
@@ -37,6 +42,9 @@ class ProductFlagsSection extends StatelessWidget {
 
   /// Raw material flag callback.
   final ValueChanged<bool> onRawMaterialChanged;
+
+  /// Recipe flag callback.
+  final ValueChanged<bool> onUsesRecipeChanged;
 
   /// Inventory-control callback.
   final ValueChanged<bool> onTracksInventoryChanged;
@@ -71,6 +79,18 @@ class ProductFlagsSection extends StatelessWidget {
           title: AppText(l10n.availableInPosField),
           value: !isRawMaterial && isAvailableInPos,
           onChanged: (value) => onAvailableInPosChanged(value ?? true),
+        ),
+        CheckboxListTile(
+          contentPadding: EdgeInsets.zero,
+          enabled: !isRawMaterial,
+          title: AppText(l10n.productUsesRecipeField),
+          subtitle: AppText(
+            l10n.productUsesRecipeHelp,
+            variant: AppTextVariant.label,
+            maxLines: 2,
+          ),
+          value: !isRawMaterial && usesRecipe,
+          onChanged: (value) => onUsesRecipeChanged(value ?? false),
         ),
         CheckboxListTile(
           contentPadding: EdgeInsets.zero,

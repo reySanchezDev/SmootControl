@@ -130,6 +130,7 @@ class _BatchProductPurchaseDialogState
           productId: row.item.productId,
           quantity: quantity,
           unitCostInCents: cost,
+          purchaseUnitId: row.item.purchaseUnitId,
         ),
       );
     }

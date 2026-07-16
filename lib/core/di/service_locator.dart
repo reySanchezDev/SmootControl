@@ -53,6 +53,7 @@ import 'package:smoo_control/features/products/data/datasources/local_products_d
 import 'package:smoo_control/features/products/data/repositories/products_repository.dart';
 import 'package:smoo_control/features/products/domain/repositories/i_products_repository.dart';
 import 'package:smoo_control/features/products/presentation/bloc/products_bloc.dart';
+import 'package:smoo_control/features/recipes/data/services/supabase_product_recipes_service.dart';
 import 'package:smoo_control/features/reports/data/services/supabase_daily_sales_report_service.dart';
 import 'package:smoo_control/features/reports/data/services/supabase_expenses_report_service.dart';
 import 'package:smoo_control/features/reports/data/services/supabase_inventory_value_report_service.dart';

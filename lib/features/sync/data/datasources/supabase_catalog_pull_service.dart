@@ -166,10 +166,14 @@ final class SupabaseCatalogPullService implements ICatalogPullService {
           )
         : const <Map<String, Object?>>[];
     final products = shouldRefreshProducts
-        ? await _getRows('products')
+        ? await _getRowsByQuery('products', {
+            'restaurant_id': 'eq.${_restaurantService.restaurantId}',
+            'or': '(is_raw_material.eq.false,is_raw_material.is.null)',
+            'select': '*',
+          })
         : const <Map<String, Object?>>[];
     final inventoryStock = shouldRefreshProducts
-        ? await _getRows('inventory_stock')
+        ? _stockForProducts(await _getRows('inventory_stock'), products)
         : const <Map<String, Object?>>[];
     if (shouldRefreshPackaging && _deviceCatalogRows == null) {
       await _ensureDefaultSalesTypes();
@@ -285,4 +289,5 @@ final class SupabaseCatalogPullService implements ICatalogPullService {
       users: profiles.length,
     );
   }
+
 }

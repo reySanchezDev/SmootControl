@@ -25,6 +25,7 @@ import 'package:smoo_control/features/packaging/domain/repositories/i_packaging_
 import 'package:smoo_control/features/payment_methods/domain/entities/payment_method.dart';
 import 'package:smoo_control/features/payment_methods/domain/repositories/i_payment_methods_repository.dart';
 import 'package:smoo_control/features/products/data/models/product_option_group_codec.dart';
+import 'package:smoo_control/features/products/domain/entities/measurement_unit.dart';
 import 'package:smoo_control/features/products/domain/entities/product.dart';
 import 'package:smoo_control/features/products/domain/repositories/i_products_repository.dart';
 import 'package:smoo_control/features/roles/domain/entities/access_permission.dart';
@@ -43,6 +44,7 @@ part 'supabase_admin_repository_catalog_part.dart';
 part 'supabase_admin_repository_operations_part.dart';
 part 'supabase_admin_repository_packaging_part.dart';
 part 'supabase_admin_repository_settings_part.dart';
+part 'supabase_admin_repository_units_part.dart';
 
 /// Remote-only repository used by administrative screens.
 ///
@@ -55,7 +57,8 @@ final class SupabaseAdminRepository extends _SupabaseAdminRepositoryBase
         _SupabaseAdminOperationsMixin,
         _SupabaseAdminSettingsMixin,
         _SupabaseAdminPackagingMixin,
-        _SupabaseAdminAccessMixin
+        _SupabaseAdminAccessMixin,
+        _SupabaseAdminUnitsMixin
     implements
         IAuditLogRepository,
         IBusinessSettingsRepository,

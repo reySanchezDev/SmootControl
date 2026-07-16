@@ -79,6 +79,14 @@ class _BusinessRulesList extends StatelessWidget {
         textValue: '0',
       ),
     );
+    final recipeNegativeRule = rules.firstWhere(
+      (item) =>
+          item.key == BusinessRule.allowRawMaterialNegativeStockFromRecipes,
+      orElse: () => const BusinessRule(
+        key: BusinessRule.allowRawMaterialNegativeStockFromRecipes,
+        boolValue: true,
+      ),
+    );
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -91,6 +99,18 @@ class _BusinessRulesList extends StatelessWidget {
           ),
           onChanged: (value) => onChanged(
             BusinessRule(key: rule.key, boolValue: value),
+          ),
+        ),
+        const SizedBox(height: 12),
+        SwitchListTile(
+          value: recipeNegativeRule.boolValue ?? true,
+          title: const Text('Permitir materia prima negativa por recetas'),
+          subtitle: const Text(
+            'Si esta apagado, Supabase rechazara ventas cuya receta deje '
+            'materia prima en negativo.',
+          ),
+          onChanged: (value) => onChanged(
+            BusinessRule(key: recipeNegativeRule.key, boolValue: value),
           ),
         ),
         const SizedBox(height: 12),

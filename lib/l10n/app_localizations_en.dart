@@ -296,6 +296,58 @@ class AppLocalizationsEn extends AppLocalizations {
       'Sellable POS product; requires a sale price.';
 
   @override
+  String get productUsesRecipeField => 'Uses recipe';
+
+  @override
+  String get productUsesRecipeHelp =>
+      'Explodes raw materials when sales synchronize.';
+
+  @override
+  String get productRecipeAction => 'Recipe';
+
+  @override
+  String get productRecipeTitle => 'Recipe';
+
+  @override
+  String get productRecipeUnavailableTitle => 'No components';
+
+  @override
+  String get productRecipeUnavailableMessage =>
+      'Configure raw materials or preparations with a base unit before creating recipes.';
+
+  @override
+  String get productRecipeComponentField => 'Component';
+
+  @override
+  String get productRecipeQuantityField => 'Quantity';
+
+  @override
+  String get productRecipeUnitField => 'Unit';
+
+  @override
+  String get productRecipeWasteField => 'Waste %';
+
+  @override
+  String get productUnitsTitle => 'Inventory units';
+
+  @override
+  String get productPurchaseUnitField => 'Purchase unit';
+
+  @override
+  String get productInventoryUnitField => 'Inventory base unit';
+
+  @override
+  String get productPurchaseFactorField => 'Purchase to base factor';
+
+  @override
+  String get productPurchaseFactorHelp =>
+      'Example: 1 bag with 12 buns uses factor 12.';
+
+  @override
+  String get productUnitsRequiredError =>
+      'Select purchase unit, base unit and a factor greater than zero.';
+
+  @override
   String get sellableProductStatus => 'Sellable';
 
   @override

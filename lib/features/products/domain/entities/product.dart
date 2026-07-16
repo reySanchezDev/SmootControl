@@ -13,7 +13,11 @@ final class Product extends Equatable {
     required this.isActive,
     this.isAvailableInPos = true,
     this.isRawMaterial = false,
+    this.usesRecipe = false,
     this.tracksInventory = false,
+    this.purchaseUnitId,
+    this.inventoryUnitId,
+    this.purchaseToInventoryFactor,
     this.optionGroups = const [],
     this.modifierGroupIds = const [],
   });
@@ -42,8 +46,20 @@ final class Product extends Equatable {
   /// Whether this item is inventory raw material, not sold directly.
   final bool isRawMaterial;
 
+  /// Whether the product should explode recipe components remotely.
+  final bool usesRecipe;
+
   /// Whether completed sales should consume inventory stock.
   final bool tracksInventory;
+
+  /// Unit used when buying this product or raw material.
+  final String? purchaseUnitId;
+
+  /// Base unit used to store inventory stock.
+  final String? inventoryUnitId;
+
+  /// Quantity of base units produced by one purchase unit.
+  final double? purchaseToInventoryFactor;
 
   /// Selection groups requested by the POS before adding this product.
   final List<ProductOptionGroup> optionGroups;
@@ -68,7 +84,11 @@ final class Product extends Equatable {
     isActive,
     isAvailableInPos,
     isRawMaterial,
+    usesRecipe,
     tracksInventory,
+    purchaseUnitId,
+    inventoryUnitId,
+    purchaseToInventoryFactor,
     optionGroups,
     modifierGroupIds,
   ];

@@ -48,7 +48,8 @@ class _ProductBatchPurchaseTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return _BatchPurchaseTile(
       title: row.item.productName,
-      subtitle: row.item.categoryPath,
+      subtitle: _productPurchaseSubtitle(row.item),
+      quantityLabel: _quantityLabel(row.item.purchaseUnitName),
       quantityController: row.quantityController,
       costController: row.costController,
       compact: compact,
@@ -69,6 +70,7 @@ class _PackagingBatchPurchaseTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return _BatchPurchaseTile(
       title: row.item.packagingName,
+      quantityLabel: 'Cantidad',
       quantityController: row.quantityController,
       costController: row.costController,
       compact: compact,
@@ -82,6 +84,7 @@ class _BatchPurchaseTile extends StatelessWidget {
     required this.quantityController,
     required this.costController,
     required this.compact,
+    required this.quantityLabel,
     this.subtitle,
   });
 
@@ -90,6 +93,7 @@ class _BatchPurchaseTile extends StatelessWidget {
   final TextEditingController quantityController;
   final TextEditingController costController;
   final bool compact;
+  final String quantityLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -132,8 +136,7 @@ class _BatchPurchaseTile extends StatelessWidget {
                         controller: quantityController,
                         decoration: const InputDecoration(
                           isDense: true,
-                          labelText: 'Cantidad',
-                        ),
+                        ).copyWith(labelText: quantityLabel),
                         keyboardType: const TextInputType.numberWithOptions(
                           decimal: true,
                         ),
@@ -189,8 +192,7 @@ class _BatchPurchaseTile extends StatelessWidget {
               controller: quantityController,
               decoration: const InputDecoration(
                 isDense: true,
-                labelText: 'Cant.',
-              ),
+              ).copyWith(labelText: quantityLabel),
               keyboardType: TextInputType.number,
             ),
           ),
@@ -212,4 +214,29 @@ class _BatchPurchaseTile extends StatelessWidget {
       ),
     );
   }
+}
+
+String _quantityLabel(String? unitName) {
+  if (unitName == null || unitName.isEmpty) return 'Cantidad';
+  return 'Cantidad ($unitName)';
+}
+
+String? _productPurchaseSubtitle(InventoryStockItem item) {
+  final factor = item.purchaseToInventoryFactor;
+  final inventoryUnitName = item.inventoryUnitName;
+  final parts = <String>[
+    if ((item.categoryPath ?? '').isNotEmpty) item.categoryPath!,
+    if (factor != null && (inventoryUnitName ?? '').isNotEmpty)
+      _conversionLabel(item, factor, inventoryUnitName!),
+  ];
+  return parts.isEmpty ? null : parts.join(' - ');
+}
+
+String _conversionLabel(
+  InventoryStockItem item,
+  double factor,
+  String inventoryUnitName,
+) {
+  final purchaseUnit = item.purchaseUnitName ?? 'compra';
+  return '1 $purchaseUnit = ${factor.toStringAsFixed(2)} $inventoryUnitName';
 }
