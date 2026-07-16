@@ -2,18 +2,18 @@ part of 'reports_page.dart';
 
 class _ProductPerformanceView extends StatelessWidget {
   const _ProductPerformanceView({
-    required this.onSegmentChanged,
-    required this.onSortChanged,
+    required this.onSegmentToggled,
+    required this.onSortToggled,
     required this.report,
-    required this.segment,
-    required this.sort,
+    required this.segments,
+    required this.sorts,
   });
 
-  final ValueChanged<_ProductSegmentFilter> onSegmentChanged;
-  final ValueChanged<_ProductPerformanceSort> onSortChanged;
+  final ValueChanged<_ProductSegmentFilter> onSegmentToggled;
+  final ValueChanged<_ProductPerformanceSort> onSortToggled;
   final ProductPerformanceReport report;
-  final _ProductSegmentFilter segment;
-  final _ProductPerformanceSort sort;
+  final Set<_ProductSegmentFilter> segments;
+  final List<_ProductPerformanceSort> sorts;
 
   @override
   Widget build(BuildContext context) {
@@ -24,129 +24,83 @@ class _ProductPerformanceView extends StatelessWidget {
         message: 'No hay productos vendidos en el rango seleccionado.',
       );
     }
+    final rows = _visibleRows;
     return Column(
       children: [
-        _ProductPerformanceSummary(report: report),
-        const SizedBox(height: 12),
-        _ProductPerformanceAdvice(report: report),
-        const SizedBox(height: 12),
         _ProductPerformanceFilters(
-          onSegmentChanged: onSegmentChanged,
-          onSortChanged: onSortChanged,
-          segment: segment,
-          sort: sort,
+          onSegmentToggled: onSegmentToggled,
+          onSortToggled: onSortToggled,
+          segments: segments,
+          sorts: sorts,
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 10),
         _ProductPerformanceList(
-          rows: _visibleRows,
-          segment: segment,
-          sort: sort,
+          rows: rows,
+          segmentLabel: _segmentLabel,
+          sortLabel: _sortLabel,
         ),
       ],
     );
   }
 
   List<ProductPerformanceRow> get _visibleRows {
-    return report.rows.where(segment.accepts).toList()..sort((a, b) {
-      final primary = sort.compare(a, b);
-      if (primary != 0) return primary;
-      return b.grossProfitInCents.compareTo(a.grossProfitInCents);
-    });
+    final rows = report.rows.where(_acceptsSegment).toList()
+      ..sort((a, b) {
+        for (final sort in sorts) {
+          final result = sort.compare(a, b);
+          if (result != 0) return result;
+        }
+        return b.grossProfitInCents.compareTo(a.grossProfitInCents);
+      });
+    return rows;
+  }
+
+  bool _acceptsSegment(ProductPerformanceRow row) {
+    return segments.any((segment) => segment.accepts(row));
+  }
+
+  String get _segmentLabel {
+    if (segments.contains(_ProductSegmentFilter.all)) return 'Todos';
+    return segments.map((segment) => segment.label).join(', ');
+  }
+
+  String get _sortLabel {
+    return sorts.map((sort) => sort.label).join(' + ');
   }
 }
 
-class _ProductPerformanceSummary extends StatelessWidget {
-  const _ProductPerformanceSummary({required this.report});
-
-  final ProductPerformanceReport report;
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          children: [
-            _ProductHighlight(
-              label: 'Mas vendido',
-              row: report.bestSeller,
-              value: _quantityLabel(report.bestSeller?.quantitySold ?? 0),
-            ),
-            const Divider(),
-            _ProductHighlight(
-              label: 'Mas rentable',
-              row: report.mostProfitable,
-              value: MoneyFormatter.format(
-                report.mostProfitable?.grossProfitInCents ?? 0,
-              ),
-            ),
-            const Divider(),
-            _ProductHighlight(
-              label: 'Mejor margen',
-              row: report.bestMargin,
-              value: _percent(report.bestMargin?.margin ?? 0),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ProductPerformanceAdvice extends StatelessWidget {
-  const _ProductPerformanceAdvice({required this.report});
-
-  final ProductPerformanceReport report;
-
-  @override
-  Widget build(BuildContext context) {
-    final opportunities = report.rows
-        .where((row) => row.segment == 'Oportunidad')
-        .take(3)
-        .map((row) => row.productName)
-        .join(', ');
-    final text = opportunities.isEmpty
-        ? 'Revisa productos con margen bajo para ajustar costo, precio '
-              'o receta.'
-        : 'Potencia productos de alto margen: $opportunities.';
-    return Card(
-      child: ListTile(
-        leading: const Icon(Icons.lightbulb_outline),
-        title: const Text('Lectura rapida'),
-        subtitle: Text(text),
-      ),
-    );
-  }
-}
-
-class _ProductHighlight extends StatelessWidget {
-  const _ProductHighlight({
-    required this.label,
-    required this.row,
-    required this.value,
+class _ProductPerformanceList extends StatelessWidget {
+  const _ProductPerformanceList({
+    required this.rows,
+    required this.segmentLabel,
+    required this.sortLabel,
   });
 
-  final String label;
-  final ProductPerformanceRow? row;
-  final String value;
+  final List<ProductPerformanceRow> rows;
+  final String segmentLabel;
+  final String sortLabel;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    if (rows.isEmpty) {
+      return const AppEmptyState(
+        icon: Icons.filter_alt_off_outlined,
+        title: 'Sin productos',
+        message: 'No hay productos con esos filtros para este rango.',
+      );
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(label, style: Theme.of(context).textTheme.labelMedium),
-              Text(
-                row?.productName ?? 'Sin datos',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-            ],
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          child: Text(
+            '${rows.length} productos - $segmentLabel - $sortLabel',
+            style: Theme.of(context).textTheme.labelLarge,
           ),
         ),
-        Text(value, style: Theme.of(context).textTheme.titleMedium),
+        const SizedBox(height: 8),
+        for (final row in rows) _ProductPerformanceCard(row: row),
       ],
     );
   }
@@ -161,11 +115,12 @@ class _ProductPerformanceCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
                   child: Text(
@@ -173,28 +128,44 @@ class _ProductPerformanceCard extends StatelessWidget {
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                 ),
-                Chip(label: Text(row.segment)),
+                const SizedBox(width: 8),
+                _ProductSegmentLabel(segment: row.segment),
               ],
             ),
-            Text(row.categoryName),
-            const SizedBox(height: 8),
-            _ReportAmountRow(
-              label: 'Unidades',
-              value: _quantityLabel(row.quantitySold),
+            const SizedBox(height: 6),
+            Row(
+              children: [
+                Expanded(
+                  child: _CompactProductMetric(
+                    label: 'Unid.',
+                    value: _quantityLabel(row.quantitySold),
+                  ),
+                ),
+                Expanded(
+                  child: _CompactProductMetric(
+                    label: 'Venta',
+                    value: MoneyFormatter.format(row.salesInCents),
+                  ),
+                ),
+              ],
             ),
-            _ReportAmountRow(
-              label: 'Total vendido',
-              value: MoneyFormatter.format(row.salesInCents),
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                Expanded(
+                  child: _CompactProductMetric(
+                    label: 'Utilidad',
+                    value: MoneyFormatter.format(row.grossProfitInCents),
+                  ),
+                ),
+                Expanded(
+                  child: _CompactProductMetric(
+                    label: 'Margen',
+                    value: _percent(row.margin),
+                  ),
+                ),
+              ],
             ),
-            _ReportAmountRow(
-              label: 'Costo historico',
-              value: MoneyFormatter.format(row.costInCents),
-            ),
-            _ReportAmountRow(
-              label: 'Utilidad bruta',
-              value: MoneyFormatter.format(row.grossProfitInCents),
-            ),
-            _ReportAmountRow(label: 'Margen', value: _percent(row.margin)),
           ],
         ),
       ),
@@ -202,40 +173,59 @@ class _ProductPerformanceCard extends StatelessWidget {
   }
 }
 
-class _ProductPerformanceList extends StatelessWidget {
-  const _ProductPerformanceList({
-    required this.rows,
-    required this.segment,
-    required this.sort,
-  });
+class _CompactProductMetric extends StatelessWidget {
+  const _CompactProductMetric({required this.label, required this.value});
 
-  final List<ProductPerformanceRow> rows;
-  final _ProductSegmentFilter segment;
-  final _ProductPerformanceSort sort;
+  final String label;
+  final String value;
 
   @override
   Widget build(BuildContext context) {
-    if (rows.isEmpty) {
-      return AppEmptyState(
-        icon: Icons.filter_alt_off_outlined,
-        title: 'Sin productos',
-        message: 'No hay productos en ${segment.label} para este rango.',
-      );
-    }
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4),
-          child: Text(
-            '${rows.length} productos - ${segment.label} - ${sort.label}',
-            style: Theme.of(context).textTheme.labelLarge,
+    return Text.rich(
+      TextSpan(
+        text: '$label ',
+        style: Theme.of(context).textTheme.labelMedium,
+        children: [
+          TextSpan(
+            text: value,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
           ),
-        ),
-        const SizedBox(height: 8),
-        for (final row in rows) _ProductPerformanceCard(row: row),
-      ],
+        ],
+      ),
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
     );
+  }
+}
+
+class _ProductSegmentLabel extends StatelessWidget {
+  const _ProductSegmentLabel({required this.segment});
+
+  final String segment;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = _segmentColor(context);
+    return Text(
+      segment == 'Oportunidad' ? 'Potenciar' : segment,
+      style: Theme.of(context).textTheme.labelMedium?.copyWith(
+        color: color,
+        fontWeight: FontWeight.w800,
+      ),
+    );
+  }
+
+  Color _segmentColor(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return switch (segment) {
+      'Estrella' => scheme.primary,
+      'Oportunidad' => scheme.tertiary,
+      'Volumen' => scheme.secondary,
+      'Revisar' => scheme.error,
+      _ => scheme.onSurfaceVariant,
+    };
   }
 }
 

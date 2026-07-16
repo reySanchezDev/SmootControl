@@ -8,9 +8,11 @@ class _DailySalesFilterCard extends StatelessWidget {
     required this.onReload,
     required this.onTodaySelected,
     required this.to,
+    this.compactActions = false,
     this.monthLabel = 'Mes',
   });
 
+  final bool compactActions;
   final DateTime from;
   final VoidCallback onMonthSelected;
   final ValueChanged<DateTimeRange> onRangeChanged;
@@ -60,13 +62,21 @@ class _DailySalesFilterCard extends StatelessWidget {
                 children: [
                   rangeButton,
                   const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      Expanded(child: quickActions),
-                      const SizedBox(width: 10),
-                      reloadButton,
-                    ],
-                  ),
+                  if (compactActions)
+                    _CompactDateActions(
+                      monthLabel: monthLabel,
+                      onMonthSelected: onMonthSelected,
+                      onReload: onReload,
+                      onTodaySelected: onTodaySelected,
+                    )
+                  else
+                    Row(
+                      children: [
+                        Expanded(child: quickActions),
+                        const SizedBox(width: 10),
+                        reloadButton,
+                      ],
+                    ),
                 ],
               );
             }
@@ -83,6 +93,49 @@ class _DailySalesFilterCard extends StatelessWidget {
           },
         ),
       ),
+    );
+  }
+}
+
+class _CompactDateActions extends StatelessWidget {
+  const _CompactDateActions({
+    required this.monthLabel,
+    required this.onMonthSelected,
+    required this.onReload,
+    required this.onTodaySelected,
+  });
+
+  final String monthLabel;
+  final VoidCallback onMonthSelected;
+  final VoidCallback onReload;
+  final VoidCallback onTodaySelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: OutlinedButton.icon(
+            onPressed: onTodaySelected,
+            icon: const Icon(Icons.today_outlined, size: 18),
+            label: const Text('Hoy'),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: OutlinedButton.icon(
+            onPressed: onMonthSelected,
+            icon: const Icon(Icons.calendar_view_month, size: 18),
+            label: Text(monthLabel),
+          ),
+        ),
+        const SizedBox(width: 8),
+        IconButton.filled(
+          onPressed: onReload,
+          icon: const Icon(Icons.refresh),
+          tooltip: 'Recargar',
+        ),
+      ],
     );
   }
 }

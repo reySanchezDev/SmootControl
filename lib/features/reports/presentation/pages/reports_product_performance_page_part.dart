@@ -16,8 +16,8 @@ class _ProductPerformanceReportPageState
   late DateTime _from;
   late DateTime _to;
   late Future<AppResult<ProductPerformanceReport>> _future;
-  _ProductSegmentFilter _segment = _ProductSegmentFilter.all;
-  _ProductPerformanceSort _sort = _ProductPerformanceSort.profit;
+  Set<_ProductSegmentFilter> _segments = {_ProductSegmentFilter.all};
+  List<_ProductPerformanceSort> _sorts = [_ProductPerformanceSort.profit];
 
   SupabaseProductPerformanceReportService get _service {
     return serviceLocator<SupabaseProductPerformanceReportService>();
@@ -50,6 +50,7 @@ class _ProductPerformanceReportPageState
             onReload: () => setState(_reload),
             onTodaySelected: _setToday,
             onMonthSelected: _setLastThreeMonths,
+            compactActions: true,
             monthLabel: '3 meses',
           ),
           const SizedBox(height: 12),
@@ -59,11 +60,11 @@ class _ProductPerformanceReportPageState
               if (!snapshot.hasData) return const AppLoadingPage();
               return snapshot.requireData.when(
                 success: (report) => _ProductPerformanceView(
-                  onSegmentChanged: _setSegment,
-                  onSortChanged: _setSort,
+                  onSegmentToggled: _toggleSegment,
+                  onSortToggled: _toggleSort,
                   report: report,
-                  segment: _segment,
-                  sort: _sort,
+                  segments: _segments,
+                  sorts: _sorts,
                 ),
                 failure: (error) => AppEmptyState(
                   icon: Icons.restaurant_menu_outlined,
@@ -104,11 +105,23 @@ class _ProductPerformanceReportPageState
     });
   }
 
-  void _setSegment(_ProductSegmentFilter value) {
-    setState(() => _segment = value);
+  void _toggleSegment(_ProductSegmentFilter value) {
+    setState(() {
+      if (value == _ProductSegmentFilter.all) {
+        _segments = {_ProductSegmentFilter.all};
+        return;
+      }
+      final next = {..._segments}..remove(_ProductSegmentFilter.all);
+      next.contains(value) ? next.remove(value) : next.add(value);
+      _segments = next.isEmpty ? {_ProductSegmentFilter.all} : next;
+    });
   }
 
-  void _setSort(_ProductPerformanceSort value) {
-    setState(() => _sort = value);
+  void _toggleSort(_ProductPerformanceSort value) {
+    setState(() {
+      final next = [..._sorts];
+      next.contains(value) ? next.remove(value) : next.add(value);
+      _sorts = next.isEmpty ? [_ProductPerformanceSort.profit] : next;
+    });
   }
 }
