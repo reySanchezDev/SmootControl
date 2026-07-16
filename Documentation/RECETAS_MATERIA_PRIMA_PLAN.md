@@ -469,7 +469,7 @@ Pruebas:
 
 ### Etapa 4 - Explosion Remota De Receta En Ventas
 
-Estado: pendiente.
+Estado: completado inicial.
 
 Objetivo:
 
@@ -478,19 +478,17 @@ Objetivo:
 Cambios:
 
 - Nueva funcion:
-  - `app_explode_sale_recipe_movements(p_restaurant_id, p_sale_id)`
+  - `pos_apply_recipe_inventory_movements(p_restaurant_id, p_sale_id, p_reference_type)`
 - Integrar en:
   - `pos_sync_sale`
   - `pos_sync_staff_consumption`
 - Movimientos generados:
-  - `movement_type = 'sale'`
-  - `reference_type = 'sale_recipe'`
+  - `movement_type = 'recipe_consumption'`
+  - `reference_type = sale` o `staff_consumption`
   - `reference_id = sale_id`
-  - `source_sale_item_id`
-  - `recipe_id`
-  - `recipe_line_id`
 - Idempotencia:
-  - movement id deterministico por `sale_id`, `sale_item_id`, `component_product_id`, `recipe_line_id`.
+  - movement id deterministico por `sale_id`, `sale_item_id` y
+    `component_product_id`.
 - Modo V1:
   - no bloquear sincronizacion por falta de materia prima;
   - consultar regla `allow_raw_material_negative_stock_from_recipes`;
@@ -508,6 +506,18 @@ Cambios:
     error de sincronizacion;
   - registrar alerta/auditoria cuando el stock base no cubra la receta;
   - permitir que la venta quede sincronizada para no frenar caja ni facturacion.
+- Implementado en `051_recipe_inventory_explosion.sql`:
+  - se elimina del payload remoto el movimiento de inventario del producto
+    final cuando `uses_recipe = true`, evitando doble descuento;
+  - despues de sincronizar venta o consumo de personal, Supabase explota la
+    receta activa;
+  - las recetas anidadas se recorren hasta 20 niveles y se agregan las materias
+    primas finales;
+  - las unidades de receta se convierten contra la unidad base de inventario;
+  - las cantidades se redondean hacia arriba porque el stock actual sigue en
+    enteros;
+  - la regla `allow_raw_material_negative_stock_from_recipes` decide si una
+    explosion puede dejar materia prima negativa.
 
 Pruebas:
 
@@ -725,3 +735,4 @@ Mitigacion:
 | 2026-07-16 | Etapa 2 compras | Base completada | Migracion `049_inventory_purchase_unit_conversion.sql` aplicada; compras por lote convierten unidad de compra a unidad base sin romper payload viejo. |
 | 2026-07-16 | Etapa 3 recetas | Base remota completada | Migracion `050_product_recipes_foundation.sql` aplicada; tablas/RPC transaccional y servicio remoto Dart listos para UI. |
 | 2026-07-16 | Etapa 3 recetas UI | Completado inicial | Pantalla Productos incluye accion Receta; dialogo permite cargar receta activa y guardar nueva version remota. |
+| 2026-07-16 | Etapa 4 explosion remota | Completado inicial | Migracion `051_recipe_inventory_explosion.sql` aplicada; ventas y consumos explotan recetas en Supabase con movimientos idempotentes `recipe_consumption`. |

@@ -26,8 +26,8 @@
 | `measurement_units` | Unidades globales o por restaurante para compras, inventario base y conversiones de receta. Productos pueden guardar unidad de compra, unidad base y factor de conversion. |
 | `product_recipes` | Cabecera versionada de receta activa/inactiva por producto. |
 | `product_recipe_lines` | Componentes de receta con producto, cantidad, unidad, merma y orden. |
-| `inventory_stock` | Stock actual por producto que controla inventario. |
-| `inventory_movements` | Movimientos auditables de inventario: compras, ventas y anulaciones. |
+| `inventory_stock` | Stock actual por producto que controla inventario; puede quedar negativo solo para materias primas consumidas por receta cuando la regla operativa lo permite. |
+| `inventory_movements` | Movimientos auditables de inventario: compras, ventas, anulaciones, ajustes y consumo automatico por receta. |
 | `modifier_groups` | Grupos reutilizables para POS como `Bastimento`, `Guarnicion` o `Salsa`. |
 | `modifier_options` | Opciones administrables por grupo, con disponibilidad diaria en POS. |
 | `product_modifier_groups` | Relacion entre productos vendibles y grupos modificadores reutilizables. |
