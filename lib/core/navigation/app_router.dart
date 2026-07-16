@@ -43,6 +43,7 @@ Widget _guardedPage(String? routeName) {
     AppRoutes.reports => const ReportsPage(),
     AppRoutes.reportSummary => const ReportSummaryPage(),
     AppRoutes.dailySalesReport => const DailySalesReportPage(),
+    AppRoutes.productPerformanceReport => const ProductPerformanceReportPage(),
     AppRoutes.expensesReport => const ExpensesReportPage(),
     AppRoutes.monthlyOperationalReport => const MonthlyOperationalReportPage(),
     AppRoutes.inventoryValueReport => const InventoryValueReportPage(),
@@ -116,6 +117,7 @@ bool _requiresOnlineAdmin(String? routeName) {
     AppRoutes.reports ||
     AppRoutes.reportSummary ||
     AppRoutes.dailySalesReport ||
+    AppRoutes.productPerformanceReport ||
     AppRoutes.expensesReport ||
     AppRoutes.monthlyOperationalReport ||
     AppRoutes.inventoryValueReport ||

@@ -19,6 +19,7 @@ abstract final class RouteAccess {
       AppRoutes.reports ||
       AppRoutes.reportSummary ||
       AppRoutes.dailySalesReport ||
+      AppRoutes.productPerformanceReport ||
       AppRoutes.expensesReport ||
       AppRoutes.monthlyOperationalReport ||
       AppRoutes.inventoryValueReport ||

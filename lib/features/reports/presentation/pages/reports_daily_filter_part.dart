@@ -8,6 +8,7 @@ class _DailySalesFilterCard extends StatelessWidget {
     required this.onReload,
     required this.onTodaySelected,
     required this.to,
+    this.monthLabel = 'Mes',
   });
 
   final DateTime from;
@@ -16,6 +17,7 @@ class _DailySalesFilterCard extends StatelessWidget {
   final VoidCallback onReload;
   final VoidCallback onTodaySelected;
   final DateTime to;
+  final String monthLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +48,7 @@ class _DailySalesFilterCard extends StatelessWidget {
                 ),
                 ActionChip(
                   avatar: const Icon(Icons.calendar_view_month, size: 18),
-                  label: const Text('Mes'),
+                  label: Text(monthLabel),
                   onPressed: onMonthSelected,
                 ),
               ],

@@ -13,8 +13,10 @@ import 'package:smoo_control/core/navigation/app_routes.dart';
 import 'package:smoo_control/core/result/app_result.dart';
 import 'package:smoo_control/features/reports/data/services/supabase_daily_sales_report_service.dart';
 import 'package:smoo_control/features/reports/data/services/supabase_expenses_report_service.dart';
+import 'package:smoo_control/features/reports/data/services/supabase_product_performance_report_service.dart';
 import 'package:smoo_control/features/reports/domain/entities/daily_sales_report.dart';
 import 'package:smoo_control/features/reports/domain/entities/expenses_report.dart';
+import 'package:smoo_control/features/reports/domain/entities/product_performance_report.dart';
 import 'package:smoo_control/features/reports/domain/entities/report_period.dart';
 import 'package:smoo_control/features/reports/domain/entities/report_summary.dart';
 import 'package:smoo_control/features/reports/domain/services/report_summary_pdf_service.dart';
@@ -31,6 +33,8 @@ part 'reports_daily_view_part.dart';
 part 'reports_expenses_page_part.dart';
 part 'reports_expenses_view_part.dart';
 part 'reports_menu_widgets_part.dart';
+part 'reports_product_performance_page_part.dart';
+part 'reports_product_performance_view_part.dart';
 part 'reports_shared_part.dart';
 
 /// Business reports page.
@@ -55,6 +59,13 @@ class ReportsPage extends StatelessWidget {
                 subtitle:
                     'Ventas, costos y utilidad bruta agrupados por fecha.',
                 title: 'Ventas al dia',
+              ),
+              _ReportOptionCard(
+                icon: Icons.restaurant_menu_outlined,
+                routeName: AppRoutes.productPerformanceReport,
+                subtitle:
+                    'Productos mas vendidos, mas rentables y oportunidades.',
+                title: 'Desempeno de productos',
               ),
               _ReportOptionCard(
                 icon: Icons.analytics_outlined,

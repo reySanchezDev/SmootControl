@@ -15,6 +15,9 @@ abstract final class AppRoutes {
   /// Daily sales report route.
   static const dailySalesReport = '/reports/daily-sales';
 
+  /// Product performance report route.
+  static const productPerformanceReport = '/reports/product-performance';
+
   /// Expenses report route.
   static const expensesReport = '/reports/expenses';
 
