@@ -95,6 +95,8 @@ final class LocalSalesDataSource {
               salesTypeId: Value(sale.salesTypeId),
               salesTypeName: Value(sale.salesTypeName),
               paymentReference: Value(sale.paymentReference),
+              paymentCurrencyCode: Value(sale.paymentCurrencyCode),
+              exchangeRateInCents: Value(sale.exchangeRateInCents),
               status: Value(sale.statusValue),
               subtotalInCents: Value(sale.subtotalInCents),
               totalInCents: Value(sale.totalInCents),

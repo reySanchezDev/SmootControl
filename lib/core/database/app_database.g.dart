@@ -12254,6 +12254,27 @@ class $LocalSalesTable extends LocalSales
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _paymentCurrencyCodeMeta =
+      const VerificationMeta('paymentCurrencyCode');
+  @override
+  late final GeneratedColumn<String> paymentCurrencyCode =
+      GeneratedColumn<String>(
+        'payment_currency_code',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _exchangeRateInCentsMeta =
+      const VerificationMeta('exchangeRateInCents');
+  @override
+  late final GeneratedColumn<int> exchangeRateInCents = GeneratedColumn<int>(
+    'exchange_rate_in_cents',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _statusMeta = const VerificationMeta('status');
   @override
   late final GeneratedColumn<String> status = GeneratedColumn<String>(
@@ -12307,6 +12328,8 @@ class $LocalSalesTable extends LocalSales
     salesTypeId,
     salesTypeName,
     paymentReference,
+    paymentCurrencyCode,
+    exchangeRateInCents,
     status,
     subtotalInCents,
     totalInCents,
@@ -12471,6 +12494,24 @@ class $LocalSalesTable extends LocalSales
         ),
       );
     }
+    if (data.containsKey('payment_currency_code')) {
+      context.handle(
+        _paymentCurrencyCodeMeta,
+        paymentCurrencyCode.isAcceptableOrUnknown(
+          data['payment_currency_code']!,
+          _paymentCurrencyCodeMeta,
+        ),
+      );
+    }
+    if (data.containsKey('exchange_rate_in_cents')) {
+      context.handle(
+        _exchangeRateInCentsMeta,
+        exchangeRateInCents.isAcceptableOrUnknown(
+          data['exchange_rate_in_cents']!,
+          _exchangeRateInCentsMeta,
+        ),
+      );
+    }
     if (data.containsKey('status')) {
       context.handle(
         _statusMeta,
@@ -12584,6 +12625,14 @@ class $LocalSalesTable extends LocalSales
         DriftSqlType.string,
         data['${effectivePrefix}payment_reference'],
       ),
+      paymentCurrencyCode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}payment_currency_code'],
+      ),
+      exchangeRateInCents: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}exchange_rate_in_cents'],
+      ),
       status: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}status'],
@@ -12663,6 +12712,12 @@ class LocalSale extends DataClass implements Insertable<LocalSale> {
   /// Captured payment reference.
   final String? paymentReference;
 
+  /// Historical payment currency, when a foreign currency was used.
+  final String? paymentCurrencyCode;
+
+  /// Historical exchange rate in minor currency units.
+  final int? exchangeRateInCents;
+
   /// completed or voided.
   final String status;
 
@@ -12691,6 +12746,8 @@ class LocalSale extends DataClass implements Insertable<LocalSale> {
     this.salesTypeId,
     this.salesTypeName,
     this.paymentReference,
+    this.paymentCurrencyCode,
+    this.exchangeRateInCents,
     required this.status,
     required this.subtotalInCents,
     required this.totalInCents,
@@ -12740,6 +12797,12 @@ class LocalSale extends DataClass implements Insertable<LocalSale> {
     }
     if (!nullToAbsent || paymentReference != null) {
       map['payment_reference'] = Variable<String>(paymentReference);
+    }
+    if (!nullToAbsent || paymentCurrencyCode != null) {
+      map['payment_currency_code'] = Variable<String>(paymentCurrencyCode);
+    }
+    if (!nullToAbsent || exchangeRateInCents != null) {
+      map['exchange_rate_in_cents'] = Variable<int>(exchangeRateInCents);
     }
     map['status'] = Variable<String>(status);
     map['subtotal_in_cents'] = Variable<int>(subtotalInCents);
@@ -12792,6 +12855,12 @@ class LocalSale extends DataClass implements Insertable<LocalSale> {
       paymentReference: paymentReference == null && nullToAbsent
           ? const Value.absent()
           : Value(paymentReference),
+      paymentCurrencyCode: paymentCurrencyCode == null && nullToAbsent
+          ? const Value.absent()
+          : Value(paymentCurrencyCode),
+      exchangeRateInCents: exchangeRateInCents == null && nullToAbsent
+          ? const Value.absent()
+          : Value(exchangeRateInCents),
       status: Value(status),
       subtotalInCents: Value(subtotalInCents),
       totalInCents: Value(totalInCents),
@@ -12827,6 +12896,12 @@ class LocalSale extends DataClass implements Insertable<LocalSale> {
       salesTypeId: serializer.fromJson<String?>(json['salesTypeId']),
       salesTypeName: serializer.fromJson<String?>(json['salesTypeName']),
       paymentReference: serializer.fromJson<String?>(json['paymentReference']),
+      paymentCurrencyCode: serializer.fromJson<String?>(
+        json['paymentCurrencyCode'],
+      ),
+      exchangeRateInCents: serializer.fromJson<int?>(
+        json['exchangeRateInCents'],
+      ),
       status: serializer.fromJson<String>(json['status']),
       subtotalInCents: serializer.fromJson<int>(json['subtotalInCents']),
       totalInCents: serializer.fromJson<int>(json['totalInCents']),
@@ -12857,6 +12932,8 @@ class LocalSale extends DataClass implements Insertable<LocalSale> {
       'salesTypeId': serializer.toJson<String?>(salesTypeId),
       'salesTypeName': serializer.toJson<String?>(salesTypeName),
       'paymentReference': serializer.toJson<String?>(paymentReference),
+      'paymentCurrencyCode': serializer.toJson<String?>(paymentCurrencyCode),
+      'exchangeRateInCents': serializer.toJson<int?>(exchangeRateInCents),
       'status': serializer.toJson<String>(status),
       'subtotalInCents': serializer.toJson<int>(subtotalInCents),
       'totalInCents': serializer.toJson<int>(totalInCents),
@@ -12883,6 +12960,8 @@ class LocalSale extends DataClass implements Insertable<LocalSale> {
     Value<String?> salesTypeId = const Value.absent(),
     Value<String?> salesTypeName = const Value.absent(),
     Value<String?> paymentReference = const Value.absent(),
+    Value<String?> paymentCurrencyCode = const Value.absent(),
+    Value<int?> exchangeRateInCents = const Value.absent(),
     String? status,
     int? subtotalInCents,
     int? totalInCents,
@@ -12916,6 +12995,12 @@ class LocalSale extends DataClass implements Insertable<LocalSale> {
     paymentReference: paymentReference.present
         ? paymentReference.value
         : this.paymentReference,
+    paymentCurrencyCode: paymentCurrencyCode.present
+        ? paymentCurrencyCode.value
+        : this.paymentCurrencyCode,
+    exchangeRateInCents: exchangeRateInCents.present
+        ? exchangeRateInCents.value
+        : this.exchangeRateInCents,
     status: status ?? this.status,
     subtotalInCents: subtotalInCents ?? this.subtotalInCents,
     totalInCents: totalInCents ?? this.totalInCents,
@@ -12963,6 +13048,12 @@ class LocalSale extends DataClass implements Insertable<LocalSale> {
       paymentReference: data.paymentReference.present
           ? data.paymentReference.value
           : this.paymentReference,
+      paymentCurrencyCode: data.paymentCurrencyCode.present
+          ? data.paymentCurrencyCode.value
+          : this.paymentCurrencyCode,
+      exchangeRateInCents: data.exchangeRateInCents.present
+          ? data.exchangeRateInCents.value
+          : this.exchangeRateInCents,
       status: data.status.present ? data.status.value : this.status,
       subtotalInCents: data.subtotalInCents.present
           ? data.subtotalInCents.value
@@ -12995,6 +13086,8 @@ class LocalSale extends DataClass implements Insertable<LocalSale> {
           ..write('salesTypeId: $salesTypeId, ')
           ..write('salesTypeName: $salesTypeName, ')
           ..write('paymentReference: $paymentReference, ')
+          ..write('paymentCurrencyCode: $paymentCurrencyCode, ')
+          ..write('exchangeRateInCents: $exchangeRateInCents, ')
           ..write('status: $status, ')
           ..write('subtotalInCents: $subtotalInCents, ')
           ..write('totalInCents: $totalInCents')
@@ -13023,6 +13116,8 @@ class LocalSale extends DataClass implements Insertable<LocalSale> {
     salesTypeId,
     salesTypeName,
     paymentReference,
+    paymentCurrencyCode,
+    exchangeRateInCents,
     status,
     subtotalInCents,
     totalInCents,
@@ -13050,6 +13145,8 @@ class LocalSale extends DataClass implements Insertable<LocalSale> {
           other.salesTypeId == this.salesTypeId &&
           other.salesTypeName == this.salesTypeName &&
           other.paymentReference == this.paymentReference &&
+          other.paymentCurrencyCode == this.paymentCurrencyCode &&
+          other.exchangeRateInCents == this.exchangeRateInCents &&
           other.status == this.status &&
           other.subtotalInCents == this.subtotalInCents &&
           other.totalInCents == this.totalInCents);
@@ -13075,6 +13172,8 @@ class LocalSalesCompanion extends UpdateCompanion<LocalSale> {
   final Value<String?> salesTypeId;
   final Value<String?> salesTypeName;
   final Value<String?> paymentReference;
+  final Value<String?> paymentCurrencyCode;
+  final Value<int?> exchangeRateInCents;
   final Value<String> status;
   final Value<int> subtotalInCents;
   final Value<int> totalInCents;
@@ -13099,6 +13198,8 @@ class LocalSalesCompanion extends UpdateCompanion<LocalSale> {
     this.salesTypeId = const Value.absent(),
     this.salesTypeName = const Value.absent(),
     this.paymentReference = const Value.absent(),
+    this.paymentCurrencyCode = const Value.absent(),
+    this.exchangeRateInCents = const Value.absent(),
     this.status = const Value.absent(),
     this.subtotalInCents = const Value.absent(),
     this.totalInCents = const Value.absent(),
@@ -13124,6 +13225,8 @@ class LocalSalesCompanion extends UpdateCompanion<LocalSale> {
     this.salesTypeId = const Value.absent(),
     this.salesTypeName = const Value.absent(),
     this.paymentReference = const Value.absent(),
+    this.paymentCurrencyCode = const Value.absent(),
+    this.exchangeRateInCents = const Value.absent(),
     this.status = const Value.absent(),
     required int subtotalInCents,
     required int totalInCents,
@@ -13155,6 +13258,8 @@ class LocalSalesCompanion extends UpdateCompanion<LocalSale> {
     Expression<String>? salesTypeId,
     Expression<String>? salesTypeName,
     Expression<String>? paymentReference,
+    Expression<String>? paymentCurrencyCode,
+    Expression<int>? exchangeRateInCents,
     Expression<String>? status,
     Expression<int>? subtotalInCents,
     Expression<int>? totalInCents,
@@ -13182,6 +13287,10 @@ class LocalSalesCompanion extends UpdateCompanion<LocalSale> {
       if (salesTypeId != null) 'sales_type_id': salesTypeId,
       if (salesTypeName != null) 'sales_type_name': salesTypeName,
       if (paymentReference != null) 'payment_reference': paymentReference,
+      if (paymentCurrencyCode != null)
+        'payment_currency_code': paymentCurrencyCode,
+      if (exchangeRateInCents != null)
+        'exchange_rate_in_cents': exchangeRateInCents,
       if (status != null) 'status': status,
       if (subtotalInCents != null) 'subtotal_in_cents': subtotalInCents,
       if (totalInCents != null) 'total_in_cents': totalInCents,
@@ -13209,6 +13318,8 @@ class LocalSalesCompanion extends UpdateCompanion<LocalSale> {
     Value<String?>? salesTypeId,
     Value<String?>? salesTypeName,
     Value<String?>? paymentReference,
+    Value<String?>? paymentCurrencyCode,
+    Value<int?>? exchangeRateInCents,
     Value<String>? status,
     Value<int>? subtotalInCents,
     Value<int>? totalInCents,
@@ -13236,6 +13347,8 @@ class LocalSalesCompanion extends UpdateCompanion<LocalSale> {
       salesTypeId: salesTypeId ?? this.salesTypeId,
       salesTypeName: salesTypeName ?? this.salesTypeName,
       paymentReference: paymentReference ?? this.paymentReference,
+      paymentCurrencyCode: paymentCurrencyCode ?? this.paymentCurrencyCode,
+      exchangeRateInCents: exchangeRateInCents ?? this.exchangeRateInCents,
       status: status ?? this.status,
       subtotalInCents: subtotalInCents ?? this.subtotalInCents,
       totalInCents: totalInCents ?? this.totalInCents,
@@ -13307,6 +13420,14 @@ class LocalSalesCompanion extends UpdateCompanion<LocalSale> {
     if (paymentReference.present) {
       map['payment_reference'] = Variable<String>(paymentReference.value);
     }
+    if (paymentCurrencyCode.present) {
+      map['payment_currency_code'] = Variable<String>(
+        paymentCurrencyCode.value,
+      );
+    }
+    if (exchangeRateInCents.present) {
+      map['exchange_rate_in_cents'] = Variable<int>(exchangeRateInCents.value);
+    }
     if (status.present) {
       map['status'] = Variable<String>(status.value);
     }
@@ -13344,6 +13465,8 @@ class LocalSalesCompanion extends UpdateCompanion<LocalSale> {
           ..write('salesTypeId: $salesTypeId, ')
           ..write('salesTypeName: $salesTypeName, ')
           ..write('paymentReference: $paymentReference, ')
+          ..write('paymentCurrencyCode: $paymentCurrencyCode, ')
+          ..write('exchangeRateInCents: $exchangeRateInCents, ')
           ..write('status: $status, ')
           ..write('subtotalInCents: $subtotalInCents, ')
           ..write('totalInCents: $totalInCents, ')
@@ -32884,6 +33007,8 @@ typedef $$LocalSalesTableCreateCompanionBuilder =
       Value<String?> salesTypeId,
       Value<String?> salesTypeName,
       Value<String?> paymentReference,
+      Value<String?> paymentCurrencyCode,
+      Value<int?> exchangeRateInCents,
       Value<String> status,
       required int subtotalInCents,
       required int totalInCents,
@@ -32910,6 +33035,8 @@ typedef $$LocalSalesTableUpdateCompanionBuilder =
       Value<String?> salesTypeId,
       Value<String?> salesTypeName,
       Value<String?> paymentReference,
+      Value<String?> paymentCurrencyCode,
+      Value<int?> exchangeRateInCents,
       Value<String> status,
       Value<int> subtotalInCents,
       Value<int> totalInCents,
@@ -33017,6 +33144,16 @@ class $$LocalSalesTableFilterComposer
 
   ColumnFilters<String> get paymentReference => $composableBuilder(
     column: $table.paymentReference,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get paymentCurrencyCode => $composableBuilder(
+    column: $table.paymentCurrencyCode,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get exchangeRateInCents => $composableBuilder(
+    column: $table.exchangeRateInCents,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -33140,6 +33277,16 @@ class $$LocalSalesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get paymentCurrencyCode => $composableBuilder(
+    column: $table.paymentCurrencyCode,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get exchangeRateInCents => $composableBuilder(
+    column: $table.exchangeRateInCents,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get status => $composableBuilder(
     column: $table.status,
     builder: (column) => ColumnOrderings(column),
@@ -33244,6 +33391,16 @@ class $$LocalSalesTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get paymentCurrencyCode => $composableBuilder(
+    column: $table.paymentCurrencyCode,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get exchangeRateInCents => $composableBuilder(
+    column: $table.exchangeRateInCents,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<String> get status =>
       $composableBuilder(column: $table.status, builder: (column) => column);
 
@@ -33308,6 +33465,8 @@ class $$LocalSalesTableTableManager
                 Value<String?> salesTypeId = const Value.absent(),
                 Value<String?> salesTypeName = const Value.absent(),
                 Value<String?> paymentReference = const Value.absent(),
+                Value<String?> paymentCurrencyCode = const Value.absent(),
+                Value<int?> exchangeRateInCents = const Value.absent(),
                 Value<String> status = const Value.absent(),
                 Value<int> subtotalInCents = const Value.absent(),
                 Value<int> totalInCents = const Value.absent(),
@@ -33332,6 +33491,8 @@ class $$LocalSalesTableTableManager
                 salesTypeId: salesTypeId,
                 salesTypeName: salesTypeName,
                 paymentReference: paymentReference,
+                paymentCurrencyCode: paymentCurrencyCode,
+                exchangeRateInCents: exchangeRateInCents,
                 status: status,
                 subtotalInCents: subtotalInCents,
                 totalInCents: totalInCents,
@@ -33358,6 +33519,8 @@ class $$LocalSalesTableTableManager
                 Value<String?> salesTypeId = const Value.absent(),
                 Value<String?> salesTypeName = const Value.absent(),
                 Value<String?> paymentReference = const Value.absent(),
+                Value<String?> paymentCurrencyCode = const Value.absent(),
+                Value<int?> exchangeRateInCents = const Value.absent(),
                 Value<String> status = const Value.absent(),
                 required int subtotalInCents,
                 required int totalInCents,
@@ -33382,6 +33545,8 @@ class $$LocalSalesTableTableManager
                 salesTypeId: salesTypeId,
                 salesTypeName: salesTypeName,
                 paymentReference: paymentReference,
+                paymentCurrencyCode: paymentCurrencyCode,
+                exchangeRateInCents: exchangeRateInCents,
                 status: status,
                 subtotalInCents: subtotalInCents,
                 totalInCents: totalInCents,

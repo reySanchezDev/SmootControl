@@ -39,7 +39,12 @@ Future<void> startPosPaymentFlow({
     if (!context.mounted) return;
     bloc
       ..add(PosPaymentMethodSelected(method.id))
-      ..add(const PosCheckoutRequested());
+      ..add(
+        PosCheckoutRequested(
+          exchangeRateInCents: exchangeRate,
+          paymentCurrencyCode: _foreignCurrencyCode(method),
+        ),
+      );
     onPaymentCompleted?.call();
     return;
   }
@@ -109,11 +114,17 @@ Future<int> _showExchangeRateError(
 }
 
 String? _paymentPrefix(PaymentMethod method) {
+  final currency = _foreignCurrencyCode(method);
+  if (currency == null) return null;
+  return '$currency ';
+}
+
+String? _foreignCurrencyCode(PaymentMethod method) {
   final currency = method.currencyCode?.trim().toUpperCase();
   if (currency == null || currency.isEmpty || currency == 'NIO') {
     return null;
   }
-  return '$currency ';
+  return currency;
 }
 
 Future<void> _showChangeIfNeeded(

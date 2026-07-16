@@ -22,6 +22,8 @@ final class SaleModel extends Equatable {
     this.salesTypeId,
     this.salesTypeName,
     this.paymentReference,
+    this.paymentCurrencyCode,
+    this.exchangeRateInCents,
     this.employeeId,
     this.internalReceiptNumber,
     this.payrollRunId,
@@ -43,6 +45,8 @@ final class SaleModel extends Equatable {
       internalReceiptNumber: row.internalReceiptNumber,
       payrollRunId: row.payrollRunId,
       paymentReference: row.paymentReference,
+      paymentCurrencyCode: row.paymentCurrencyCode,
+      exchangeRateInCents: row.exchangeRateInCents,
       status: _statusFromText(row.status),
       subtotalInCents: row.subtotalInCents,
       totalInCents: row.totalInCents,
@@ -68,6 +72,8 @@ final class SaleModel extends Equatable {
       internalReceiptNumber: entity.internalReceiptNumber,
       payrollRunId: entity.payrollRunId,
       paymentReference: entity.paymentReference,
+      paymentCurrencyCode: entity.paymentCurrencyCode,
+      exchangeRateInCents: entity.exchangeRateInCents,
       status: entity.status,
       subtotalInCents: entity.subtotalInCents,
       totalInCents: entity.totalInCents,
@@ -115,6 +121,12 @@ final class SaleModel extends Equatable {
 
   /// Captured payment reference.
   final String? paymentReference;
+
+  /// Historical payment currency.
+  final String? paymentCurrencyCode;
+
+  /// Historical exchange rate in minor currency units.
+  final int? exchangeRateInCents;
 
   /// Current sale status.
   final SaleStatus status;
@@ -168,6 +180,8 @@ final class SaleModel extends Equatable {
           internalReceiptNumber ?? this.internalReceiptNumber,
       payrollRunId: payrollRunId,
       paymentReference: paymentReference,
+      paymentCurrencyCode: paymentCurrencyCode,
+      exchangeRateInCents: exchangeRateInCents,
       status: status,
       subtotalInCents: subtotalInCents,
       totalInCents: totalInCents,
@@ -193,6 +207,8 @@ final class SaleModel extends Equatable {
       internalReceiptNumber: internalReceiptNumber,
       payrollRunId: payrollRunId,
       paymentReference: paymentReference,
+      paymentCurrencyCode: paymentCurrencyCode,
+      exchangeRateInCents: exchangeRateInCents,
       status: status,
       subtotalInCents: subtotalInCents,
       totalInCents: totalInCents,
@@ -238,6 +254,8 @@ final class SaleModel extends Equatable {
     internalReceiptNumber,
     payrollRunId,
     paymentReference,
+    paymentCurrencyCode,
+    exchangeRateInCents,
     status,
     subtotalInCents,
     totalInCents,

@@ -74,6 +74,8 @@ Future<void> _saveSelectedSplitAccountSale(
     paymentReference: event.paymentReference?.trim().isEmpty ?? true
         ? null
         : event.paymentReference!.trim(),
+    paymentCurrencyCode: event.paymentCurrencyCode,
+    exchangeRateInCents: event.exchangeRateInCents,
     status: SaleStatus.completed,
     subtotalInCents: total,
     totalInCents: total,

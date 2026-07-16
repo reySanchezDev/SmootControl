@@ -48,6 +48,8 @@ final class Sale extends Equatable {
     this.syncStatus = SaleSyncStatus.pending,
     this.syncError,
     this.paymentReference,
+    this.paymentCurrencyCode,
+    this.exchangeRateInCents,
     this.tableId,
     this.tableAccountId,
     this.cashRegisterSessionId,
@@ -97,6 +99,12 @@ final class Sale extends Equatable {
   /// Optional payment reference.
   final String? paymentReference;
 
+  /// Historical payment currency used for the sale.
+  final String? paymentCurrencyCode;
+
+  /// Historical exchange rate used for the sale.
+  final int? exchangeRateInCents;
+
   /// Sale state.
   final SaleStatus status;
 
@@ -130,6 +138,8 @@ final class Sale extends Equatable {
     internalReceiptNumber,
     payrollRunId,
     paymentReference,
+    paymentCurrencyCode,
+    exchangeRateInCents,
     status,
     subtotalInCents,
     totalInCents,

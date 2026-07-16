@@ -64,8 +64,8 @@
 - Description: Si el metodo de pago cobrable usa una moneda diferente a `NIO` y afecta caja, el POS debe buscar la tasa de cambio del dia, pedir el monto recibido en esa moneda, convertirlo a moneda local y calcular el vuelto en moneda local.
 - Rationale: La venta y el cierre de caja siguen expresados en moneda local, pero el cajero puede recibir efectivo extranjero sin hacer conversiones manuales.
 - Example(s): Total C$ 500.00, cliente entrega USD 20.00 y la tasa del dia es 36.60; el POS calcula C$ 732.00 recibido equivalente y muestra C$ 232.00 de vuelto.
-- Edge cases: Si no existe tasa para la moneda y fecha actual, el POS bloquea el cobro y muestra un modal informativo. La tasa se usa solo para convertir el recibido y el vuelto; el comprobante y la venta historica permanecen en moneda local.
-- Data impact: `payment_methods.currency_code`, `local_exchange_rates`, calculo UI de POS.
+- Edge cases: Si no existe tasa para la moneda y fecha actual, el POS bloquea el cobro y muestra un modal informativo. La venta permanece en moneda local, pero se congela la moneda/tasa usada cuando hubo cobro extranjero.
+- Data impact: `payment_methods.currency_code`, `local_exchange_rates`, `local_sales.payment_currency_code`, `local_sales.exchange_rate_in_cents`, `sales.payment_currency_code`, `sales.exchange_rate`.
 
 ### Regla: Tasa de cambio visible en POS
 - Description: La franja del total del POS debe mostrar siempre la tasa de cambio del dia para moneda extranjera operativa, ubicada cerca del total de `Monto`.
@@ -495,9 +495,17 @@
 - Description: Cuando una venta sincronizada contiene productos con `uses_recipe = true`, Supabase recalcula el costo unitario historico de esa linea desde la receta activa y los costos actuales de materias primas.
 - Rationale: Los reportes de utilidad, productos rentables y cobertura deben usar el costo real estimado por receta, no un costo manual viejo del producto final.
 - Example(s): Si una hamburguesa usa pan, carne y salsa, `sale_items.unit_cost` queda como la suma convertida de esos componentes; `sales.total_cost` y `sales.gross_profit` se actualizan en la misma sincronizacion.
-- Edge cases: Ventas antiguas no se recalculan automaticamente. Si un producto usa receta pero no tiene receta activa o la receta calcula costo cero, se conserva el costo recibido en el payload POS.
+- Edge cases: Ventas antiguas no se recalculan automaticamente de forma recurrente. La migracion inicial rellena solo lineas con `unit_cost = 0` usando el costo actual como normalizacion de arranque. Despues de eso, cada venta nueva conserva el costo calculado al sincronizarse.
 - Related screens/flows: `POS`, `Consumo de personal`, `Reportes`, `Desempeno de productos`, `Ventas al dia`, `Resultado operativo`.
 - Data impact: `product_recipes`, `product_recipe_lines`, `sale_items.unit_cost`, `sale_items.gross_profit`, `sales.total_cost`, `sales.gross_profit`.
+
+### Regla: Tasa Historica De Venta
+- Description: Si el POS cobra con una moneda extranjera, debe guardar la moneda y tasa usadas en la venta local y enviarlas a Supabase durante la sincronizacion.
+- Rationale: Los reportes historicos no deben cambiar si la tasa de cambio se edita dias o meses despues.
+- Example(s): Si una venta se cobro en USD con tasa 36.60, la venta mantiene `exchange_rate = 36.60` aunque manana la tasa sea 37.20.
+- Edge cases: Ventas en `NIO` o flujos que no capturan moneda extranjera dejan la tasa en `null`; eso evita guardar valores inventados.
+- Related screens/flows: `POS`, `Tasa de cambio`, `Sincronizacion`, reportes futuros de moneda.
+- Data impact: `local_sales.payment_currency_code`, `local_sales.exchange_rate_in_cents`, `sales.payment_currency_code`, `sales.exchange_rate`.
 
 ## Roles Y Permisos
 

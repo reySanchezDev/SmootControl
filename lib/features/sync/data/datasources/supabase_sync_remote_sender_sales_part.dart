@@ -51,6 +51,8 @@ extension on SupabaseSyncRemoteSender {
       'sales_type_id': salePayload['salesTypeId'],
       'sales_type_name': salePayload['salesTypeName'],
       'payment_reference': salePayload['paymentReference'],
+      'payment_currency_code': salePayload['paymentCurrencyCode'],
+      'exchange_rate': _optionalMoney(salePayload['exchangeRateInCents']),
       'invoice_number': salePayload['invoiceNumber'],
       'sale_kind': salePayload['saleKind'] ?? 'sale',
       'employee_id': salePayload['employeeId'],

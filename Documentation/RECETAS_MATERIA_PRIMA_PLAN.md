@@ -625,6 +625,9 @@ Cambios:
     recetas desde materias primas, actualiza `sale_items.unit_cost`,
     `sale_items.gross_profit`, `sales.total_cost` y `sales.gross_profit` al
     sincronizar ventas o consumos de personal.
+  - migracion `054_historical_sale_cost_and_exchange_rate.sql` congela
+    moneda/tasa usada por ventas POS y ejecuta normalizacion inicial de ventas
+    antiguas solo cuando `sale_items.unit_cost = 0`.
 
 Pruebas:
 
@@ -759,3 +762,4 @@ Mitigacion:
 | 2026-07-16 | Etapa 7 inventario negativo | Completado inicial | Reporte `Inventario negativo` agregado en Reportes > Inventario para detectar materias primas bajo cero y costo estimado de regularizacion. |
 | 2026-07-16 | Etapa 7 trazabilidad | Completado inicial | Movimientos de inventario clasifica `recipe_consumption` como consumo por receta para auditoria administrativa. |
 | 2026-07-16 | Etapa 7 costeo por receta | Completado inicial | Migracion `053_recipe_historical_cost_rollup.sql` aplicada; reportes basados en `sale_items.unit_cost` ya reciben costo historico de receta para nuevas sincronizaciones. |
+| 2026-07-16 | Etapa 7 historicos | Completado inicial | Migracion `054_historical_sale_cost_and_exchange_rate.sql` aplicada; ventas nuevas congelan costo/tasa y ventas antiguas sin costo se normalizan una sola vez. |

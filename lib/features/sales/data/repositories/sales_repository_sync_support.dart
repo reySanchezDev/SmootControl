@@ -97,6 +97,8 @@ extension _SalesRepositorySyncSupport on SalesRepository {
       'internalReceiptNumber': sale.internalReceiptNumber,
       'payrollRunId': sale.payrollRunId,
       'paymentReference': sale.paymentReference,
+      'paymentCurrencyCode': sale.paymentCurrencyCode,
+      'exchangeRateInCents': sale.exchangeRateInCents,
       'cashRegisterSessionId': sale.cashRegisterSessionId,
       'cashierId': _currentOperatorService?.userId,
       'businessDate': sale.createdAt.toIso8601String().substring(0, 10),

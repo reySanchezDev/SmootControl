@@ -35,7 +35,7 @@
 | `exchange_rates` | Tasas de cambio diarias por moneda para convertir cobros extranjeros a moneda local. |
 | `invoice_number_settings` | Numeracion de comprobantes. |
 | `cash_register_sessions` | Caja diaria por cajero. |
-| `sales` | Ventas y estado. |
+| `sales` | Ventas y estado. Congela moneda/tasa usada cuando el POS cobra en moneda extranjera. |
 | `sale_items` | Detalle historico de ventas, incluyendo opciones seleccionadas y costo historico; si el producto usa receta, Supabase recalcula `unit_cost` desde la receta activa al sincronizar. |
 | `sale_voids` | Anulaciones auditables. |
 | `expense_categories` | Categorias de gastos agrupables por `parent_id`. |
@@ -63,6 +63,7 @@ Tablas locales creadas:
 - `local_modifier_options`
 - `local_payment_methods` (`parent_id` permite jerarquia tipo `Transferencias > BANPRO > Cuenta`; `is_payment_target` distingue grupos de navegacion de opciones cobrables)
 - `local_exchange_rates` (tasas por moneda y fecha de negocio; `rate_in_cents` guarda la tasa con dos decimales, por ejemplo 36.60 como 3660)
+- `local_sales.payment_currency_code` y `local_sales.exchange_rate_in_cents` congelan la moneda/tasa usada en ventas POS antes de sincronizar.
 - `local_pos_open_ticket_lines` (borradores locales de pedidos abiertos por mesa para recuperar el POS despues de salir y volver a ingresar)
 - `local_restaurant_tables` (`display_name` permite mostrar una referencia operativa temporal sin cambiar el nombre interno usado en reportes)
 - `local_table_accounts`

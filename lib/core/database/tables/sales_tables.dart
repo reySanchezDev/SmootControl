@@ -42,6 +42,12 @@ class LocalSales extends Table with SyncColumns {
   /// Captured payment reference.
   TextColumn get paymentReference => text().nullable()();
 
+  /// Historical payment currency, when a foreign currency was used.
+  TextColumn get paymentCurrencyCode => text().nullable()();
+
+  /// Historical exchange rate in minor currency units.
+  IntColumn get exchangeRateInCents => integer().nullable()();
+
   /// completed or voided.
   TextColumn get status => text().withDefault(const Constant('completed'))();
 

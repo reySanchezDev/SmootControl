@@ -123,13 +123,27 @@ final class PosSplitAccountReferenceChanged extends PosEvent {
 /// Completes the current sale.
 final class PosCheckoutRequested extends PosEvent {
   /// Creates a checkout event.
-  const PosCheckoutRequested({this.paymentReference});
+  const PosCheckoutRequested({
+    this.paymentReference,
+    this.paymentCurrencyCode,
+    this.exchangeRateInCents,
+  });
 
   /// Optional payment reference.
   final String? paymentReference;
 
+  /// Historical payment currency used at checkout.
+  final String? paymentCurrencyCode;
+
+  /// Historical exchange rate used at checkout.
+  final int? exchangeRateInCents;
+
   @override
-  List<Object?> get props => [paymentReference];
+  List<Object?> get props => [
+    paymentReference,
+    paymentCurrencyCode,
+    exchangeRateInCents,
+  ];
 }
 
 /// Saves the current cart as staff consumption.

@@ -191,6 +191,8 @@ Future<void> _saveSingleSale(
     paymentReference: event.paymentReference?.trim().isEmpty ?? true
         ? null
         : event.paymentReference!.trim(),
+    paymentCurrencyCode: event.paymentCurrencyCode,
+    exchangeRateInCents: event.exchangeRateInCents,
     status: SaleStatus.completed,
     subtotalInCents: current.totalInCents,
     totalInCents: current.totalInCents,
