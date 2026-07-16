@@ -16,6 +16,9 @@ enum InventoryMovementDocumentType {
 
   /// Stock returned by sale voids.
   saleVoid,
+
+  /// Raw material consumed by recipe explosion.
+  recipeConsumption,
 }
 
 /// Header for one inventory movement document or movement group.

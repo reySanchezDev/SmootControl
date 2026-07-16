@@ -17,6 +17,7 @@ import 'package:smoo_control/features/pos/presentation/pages/pos_page.dart';
 import 'package:smoo_control/features/products/presentation/pages/products_page.dart';
 import 'package:smoo_control/features/reports/presentation/pages/inventory_value_report_page.dart';
 import 'package:smoo_control/features/reports/presentation/pages/monthly_operational_report_page.dart';
+import 'package:smoo_control/features/reports/presentation/pages/negative_inventory_report_page.dart';
 import 'package:smoo_control/features/reports/presentation/pages/payroll_payments_report_page.dart';
 import 'package:smoo_control/features/reports/presentation/pages/reports_page.dart';
 import 'package:smoo_control/features/roles/presentation/pages/roles_page.dart';
@@ -47,6 +48,7 @@ Widget _guardedPage(String? routeName) {
     AppRoutes.expensesReport => const ExpensesReportPage(),
     AppRoutes.monthlyOperationalReport => const MonthlyOperationalReportPage(),
     AppRoutes.inventoryValueReport => const InventoryValueReportPage(),
+    AppRoutes.negativeInventoryReport => const NegativeInventoryReportPage(),
     AppRoutes.payrollPaymentsReport => const PayrollPaymentsReportPage(),
     AppRoutes.catalog => const CatalogPage(),
     AppRoutes.products => const ProductsPage(),
@@ -121,6 +123,7 @@ bool _requiresOnlineAdmin(String? routeName) {
     AppRoutes.expensesReport ||
     AppRoutes.monthlyOperationalReport ||
     AppRoutes.inventoryValueReport ||
+    AppRoutes.negativeInventoryReport ||
     AppRoutes.payrollPaymentsReport => true,
     _ => false,
   };

@@ -107,6 +107,14 @@ class ReportsPage extends StatelessWidget {
                 subtitle: l10n.inventoryValueReportSubtitle,
                 title: l10n.inventoryValueReportTitle,
               ),
+              const _ReportOptionCard(
+                icon: Icons.warning_amber_outlined,
+                routeName: AppRoutes.negativeInventoryReport,
+                subtitle:
+                    'Materias primas bajo cero por recetas y compras '
+                    'pendientes de registrar.',
+                title: 'Inventario negativo',
+              ),
             ],
           ),
           const SizedBox(height: 16),

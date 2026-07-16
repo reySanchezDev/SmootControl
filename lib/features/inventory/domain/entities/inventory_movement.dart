@@ -10,6 +10,9 @@ enum InventoryMovementType {
 
   /// Sale void restores stock.
   saleVoid,
+
+  /// Recipe explosion consumes raw material stock.
+  recipeConsumption,
 }
 
 /// Auditable inventory movement.
@@ -59,6 +62,7 @@ final class InventoryMovement extends Equatable {
     InventoryMovementType.purchase => 'purchase',
     InventoryMovementType.sale => 'sale',
     InventoryMovementType.saleVoid => 'sale_void',
+    InventoryMovementType.recipeConsumption => 'recipe_consumption',
   };
 
   @override

@@ -23,6 +23,7 @@ abstract final class RouteAccess {
       AppRoutes.expensesReport ||
       AppRoutes.monthlyOperationalReport ||
       AppRoutes.inventoryValueReport ||
+      AppRoutes.negativeInventoryReport ||
       AppRoutes.payrollPaymentsReport => const ['reportes.ver'],
       AppRoutes.catalog || AppRoutes.products => const ['productos.gestionar'],
       AppRoutes.inventory ||

@@ -27,6 +27,9 @@ abstract final class AppRoutes {
   /// Inventory value report route.
   static const inventoryValueReport = '/reports/inventory-value';
 
+  /// Negative inventory report route.
+  static const negativeInventoryReport = '/reports/negative-inventory';
+
   /// Paid payroll report route.
   static const payrollPaymentsReport = '/reports/payroll-payments';
 

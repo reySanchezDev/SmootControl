@@ -227,6 +227,8 @@ IconData _typeIcon(InventoryMovementDocumentType type) => switch (type) {
   InventoryMovementDocumentType.adjustment => Icons.fact_check_outlined,
   InventoryMovementDocumentType.sale => Icons.point_of_sale_outlined,
   InventoryMovementDocumentType.saleVoid => Icons.undo_outlined,
+  InventoryMovementDocumentType.recipeConsumption =>
+    Icons.restaurant_menu_outlined,
   InventoryMovementDocumentType.all => Icons.inventory_2_outlined,
 };
 
@@ -236,4 +238,5 @@ String _typeLabel(InventoryMovementDocumentType type) => switch (type) {
   InventoryMovementDocumentType.adjustment => 'Ajustes',
   InventoryMovementDocumentType.sale => 'Ventas',
   InventoryMovementDocumentType.saleVoid => 'Anulaciones',
+  InventoryMovementDocumentType.recipeConsumption => 'Consumo por receta',
 };

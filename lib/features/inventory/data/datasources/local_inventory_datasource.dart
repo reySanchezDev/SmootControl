@@ -242,6 +242,7 @@ final class LocalInventoryDataSource {
       movementType: switch (row.movementType) {
         'sale' => InventoryMovementType.sale,
         'sale_void' => InventoryMovementType.saleVoid,
+        'recipe_consumption' => InventoryMovementType.recipeConsumption,
         _ => InventoryMovementType.purchase,
       },
       quantityDelta: row.quantityDelta,

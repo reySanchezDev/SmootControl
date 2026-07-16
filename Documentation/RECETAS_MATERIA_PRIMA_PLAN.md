@@ -405,7 +405,7 @@ Pruebas:
 
 ### Etapa 2 - Compras Con Conversion De Unidad
 
-Estado: pendiente.
+Estado: en progreso.
 
 Objetivo:
 
@@ -611,6 +611,16 @@ Cambios:
   - mostrar ultima fecha de movimiento que genero o aumento el negativo;
   - mostrar productos/ventas relacionadas cuando venga de explosion de receta;
   - servir como alerta para que supervisores ingresen compras pendientes.
+- Implementado inicial:
+  - pantalla `Inventario negativo` dentro de Reportes > Inventario;
+  - consulta directa a Supabase de materias primas con `quantity_on_hand < 0`;
+  - buscador por materia prima o categoria;
+  - resumen de cantidad de materias primas afectadas y costo estimado para
+    regularizar;
+  - tarjetas moviles con stock actual, cantidad a regularizar, costo estimado y
+    ultimo consumo de receta cuando existe.
+  - pantalla `Movimientos de inventario` reconoce y filtra movimientos
+    `recipe_consumption` como `Consumo por receta`.
 
 Pruebas:
 
@@ -742,3 +752,5 @@ Mitigacion:
 | 2026-07-16 | Etapa 3 recetas UI | Completado inicial | Pantalla Productos incluye accion Receta; dialogo permite cargar receta activa y guardar nueva version remota. |
 | 2026-07-16 | Etapa 4 explosion remota | Completado inicial | Migracion `051_recipe_inventory_explosion.sql` aplicada; ventas y consumos explotan recetas en Supabase con movimientos idempotentes `recipe_consumption`. |
 | 2026-07-16 | Etapa 5 anulaciones | Completado inicial | Migracion `052_recipe_inventory_void_reversal.sql` aplicada; anulaciones reintegran materias primas con movimientos idempotentes `sale_void`. |
+| 2026-07-16 | Etapa 7 inventario negativo | Completado inicial | Reporte `Inventario negativo` agregado en Reportes > Inventario para detectar materias primas bajo cero y costo estimado de regularizacion. |
+| 2026-07-16 | Etapa 7 trazabilidad | Completado inicial | Movimientos de inventario clasifica `recipe_consumption` como consumo por receta para auditoria administrativa. |

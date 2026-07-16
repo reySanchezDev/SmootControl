@@ -58,6 +58,7 @@ import 'package:smoo_control/features/reports/data/services/supabase_daily_sales
 import 'package:smoo_control/features/reports/data/services/supabase_expenses_report_service.dart';
 import 'package:smoo_control/features/reports/data/services/supabase_inventory_value_report_service.dart';
 import 'package:smoo_control/features/reports/data/services/supabase_monthly_operational_report_service.dart';
+import 'package:smoo_control/features/reports/data/services/supabase_negative_inventory_report_service.dart';
 import 'package:smoo_control/features/reports/data/services/supabase_payroll_report_service.dart';
 import 'package:smoo_control/features/reports/data/services/supabase_product_performance_report_service.dart';
 import 'package:smoo_control/features/reports/data/services/supabase_report_summary_service.dart';

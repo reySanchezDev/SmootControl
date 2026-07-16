@@ -4,6 +4,7 @@ InventoryMovementDocumentType _typeFromText(String value) => switch (value) {
   'purchase' => InventoryMovementDocumentType.purchase,
   'sale' => InventoryMovementDocumentType.sale,
   'sale_void' => InventoryMovementDocumentType.saleVoid,
+  'recipe_consumption' => InventoryMovementDocumentType.recipeConsumption,
   _ => InventoryMovementDocumentType.adjustment,
 };
 
@@ -11,6 +12,7 @@ String _typeCode(InventoryMovementDocumentType type) => switch (type) {
   InventoryMovementDocumentType.purchase => 'purchase',
   InventoryMovementDocumentType.sale => 'sale',
   InventoryMovementDocumentType.saleVoid => 'sale_void',
+  InventoryMovementDocumentType.recipeConsumption => 'recipe_consumption',
   InventoryMovementDocumentType.adjustment => 'adjustment',
   InventoryMovementDocumentType.all => '',
 };
@@ -26,6 +28,7 @@ String _genericTitle(
     InventoryMovementDocumentType.purchase => 'Compra - $firstProduct',
     InventoryMovementDocumentType.sale => 'Venta',
     InventoryMovementDocumentType.saleVoid => 'Anulacion venta',
+    InventoryMovementDocumentType.recipeConsumption => 'Consumo por receta',
     InventoryMovementDocumentType.adjustment => 'Ajuste',
     InventoryMovementDocumentType.all => 'Movimiento',
   };
