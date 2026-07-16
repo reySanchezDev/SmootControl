@@ -538,7 +538,7 @@ Pruebas:
 
 ### Etapa 5 - Anulaciones Y Reintegracion
 
-Estado: pendiente.
+Estado: completado inicial.
 
 Objetivo:
 
@@ -547,9 +547,14 @@ Objetivo:
 Cambios:
 
 - Funcion remota inversa:
-  - `app_reverse_sale_recipe_movements`
+  - `pos_reverse_recipe_inventory_movements`
 - Integrar con anulacion remota.
 - No reintegrar dos veces.
+- Implementado en `052_recipe_inventory_void_reversal.sql`:
+  - busca movimientos `recipe_consumption` de la venta;
+  - crea movimientos positivos `sale_void` con id `recipe_void:<movimiento_original>`;
+  - actualiza el stock de materias primas;
+  - si la anulacion se reintenta, no duplica reintegros.
 
 Pruebas:
 
@@ -736,3 +741,4 @@ Mitigacion:
 | 2026-07-16 | Etapa 3 recetas | Base remota completada | Migracion `050_product_recipes_foundation.sql` aplicada; tablas/RPC transaccional y servicio remoto Dart listos para UI. |
 | 2026-07-16 | Etapa 3 recetas UI | Completado inicial | Pantalla Productos incluye accion Receta; dialogo permite cargar receta activa y guardar nueva version remota. |
 | 2026-07-16 | Etapa 4 explosion remota | Completado inicial | Migracion `051_recipe_inventory_explosion.sql` aplicada; ventas y consumos explotan recetas en Supabase con movimientos idempotentes `recipe_consumption`. |
+| 2026-07-16 | Etapa 5 anulaciones | Completado inicial | Migracion `052_recipe_inventory_void_reversal.sql` aplicada; anulaciones reintegran materias primas con movimientos idempotentes `sale_void`. |
