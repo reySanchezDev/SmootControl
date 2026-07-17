@@ -14,6 +14,7 @@ import 'package:smoo_control/features/modifiers/presentation/pages/modifiers_pag
 import 'package:smoo_control/features/packaging/presentation/pages/packaging_page.dart';
 import 'package:smoo_control/features/payment_methods/presentation/pages/payment_methods_page.dart';
 import 'package:smoo_control/features/pos/presentation/pages/pos_page.dart';
+import 'package:smoo_control/features/products/presentation/pages/measurement_units_page.dart';
 import 'package:smoo_control/features/products/presentation/pages/products_page.dart';
 import 'package:smoo_control/features/recipes/presentation/pages/recipes_page.dart';
 import 'package:smoo_control/features/reports/presentation/pages/inventory_value_report_page.dart';
@@ -54,6 +55,7 @@ Widget _guardedPage(String? routeName) {
     AppRoutes.catalog => const CatalogPage(),
     AppRoutes.products => const ProductsPage(),
     AppRoutes.recipes => const RecipesPage(),
+    AppRoutes.measurementUnits => const MeasurementUnitsPage(),
     AppRoutes.inventory => const InventoryPage(),
     AppRoutes.inventoryMovements => const InventoryMovementsPage(),
     AppRoutes.packaging => const PackagingPage(),
@@ -96,6 +98,7 @@ bool _requiresOnlineAdmin(String? routeName) {
     AppRoutes.catalog ||
     AppRoutes.products ||
     AppRoutes.recipes ||
+    AppRoutes.measurementUnits ||
     AppRoutes.inventory ||
     AppRoutes.inventoryMovements ||
     AppRoutes.packaging ||

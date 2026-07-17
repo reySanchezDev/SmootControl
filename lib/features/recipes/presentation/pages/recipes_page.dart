@@ -125,8 +125,8 @@ final class _RecipesData {
   List<Product> componentsFor(Product target) {
     return products.where((candidate) {
       if (!candidate.isActive || candidate.id == target.id) return false;
-      if (candidate.isRawMaterial) return true;
-      return candidate.usesRecipe;
+      if (candidate.inventoryUnitId == null) return false;
+      return candidate.isRawMaterial || candidate.usesRecipe;
     }).toList()..sort((a, b) => a.name.compareTo(b.name));
   }
 }

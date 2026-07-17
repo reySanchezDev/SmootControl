@@ -83,8 +83,31 @@ final class SupabaseProductRecipesService {
       return AppSuccess(await action());
     } on Object catch (error) {
       return AppFailureResult(
-        AppFailure(code: code, message: message, cause: error),
+        AppFailure(
+          code: code,
+          message: _friendlyMessage(message, error),
+          cause: error,
+        ),
       );
     }
+  }
+
+  String _friendlyMessage(String fallback, Object error) {
+    final text = error.toString();
+    final jsonStart = text.indexOf('{');
+    if (jsonStart >= 0) {
+      try {
+        final decoded = jsonDecode(text.substring(jsonStart));
+        if (decoded is Map && decoded['message'] != null) {
+          return decoded['message'].toString();
+        }
+      } on Object {
+        // Keep the generic message when the remote body is not JSON.
+      }
+    }
+    if (text.contains('Sesion remota expirada')) {
+      return 'La sesion remota expiro. Vuelve a iniciar sesion.';
+    }
+    return fallback;
   }
 }

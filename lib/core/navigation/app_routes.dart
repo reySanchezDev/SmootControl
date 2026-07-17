@@ -42,6 +42,9 @@ abstract final class AppRoutes {
   /// Product recipes route.
   static const recipes = '/recipes';
 
+  /// Measurement units route.
+  static const measurementUnits = '/measurement-units';
+
   /// Inventory route.
   static const inventory = '/inventory';
 

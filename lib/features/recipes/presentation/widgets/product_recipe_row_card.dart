@@ -98,6 +98,7 @@ class _ProductRecipeRowCardState extends State<ProductRecipeRowCard> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final units = _compatibleUnits;
     return DecoratedBox(
       decoration: BoxDecoration(
         border: Border.all(color: Theme.of(context).dividerColor),
@@ -134,7 +135,10 @@ class _ProductRecipeRowCardState extends State<ProductRecipeRowCard> {
                   ),
               ],
               onChanged: (value) {
-                setState(() => widget.row.componentProductId = value);
+                setState(() {
+                  widget.row.componentProductId = value;
+                  widget.row.unitId = null;
+                });
               },
             ),
             const SizedBox(height: 12),
@@ -159,7 +163,7 @@ class _ProductRecipeRowCardState extends State<ProductRecipeRowCard> {
                       labelText: l10n.productRecipeUnitField,
                     ),
                     items: [
-                      for (final unit in widget.units)
+                      for (final unit in units)
                         DropdownMenuItem(
                           value: unit.id,
                           child: Text('${unit.name} (${unit.code})'),
@@ -197,7 +201,24 @@ class _ProductRecipeRowCardState extends State<ProductRecipeRowCard> {
 
   String? get _validUnitId {
     final value = widget.row.unitId;
-    return widget.units.any((unit) => unit.id == value) ? value : null;
+    return _compatibleUnits.any((unit) => unit.id == value) ? value : null;
+  }
+
+  List<MeasurementUnit> get _compatibleUnits {
+    final componentId = widget.row.componentProductId;
+    final component = widget.components
+        .where((product) => product.id == componentId)
+        .cast<Product?>()
+        .firstOrNull;
+    final inventoryUnitId = component?.inventoryUnitId;
+    if (inventoryUnitId == null) return widget.units;
+    final inventoryUnit = widget.units
+        .where((unit) => unit.id == inventoryUnitId)
+        .cast<MeasurementUnit?>()
+        .firstOrNull;
+    final group = inventoryUnit?.unitGroup;
+    if (group == null || group.isEmpty) return widget.units;
+    return widget.units.where((unit) => unit.unitGroup == group).toList();
   }
 }
 
