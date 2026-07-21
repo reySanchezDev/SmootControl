@@ -120,12 +120,15 @@ class _InventoryAdjustmentDialogState
         setState(() => _error = l10n.inventoryAdjustmentInvalidCount);
         return;
       }
-      if (counted == row.item.quantityOnHand) continue;
+      final countedBase = row.countedBaseQuantity(counted);
+      if (countedBase == row.item.quantityOnHand) continue;
       adjustmentItems.add(
         AdminInventoryAdjustmentItem(
           productId: row.item.productId,
           expectedQuantity: row.item.quantityOnHand,
-          countedQuantity: counted,
+          countedQuantity: countedBase,
+          enteredCountQuantity: counted,
+          enteredCountUnitId: row.item.inventoryDisplayUnitId,
         ),
       );
     }
@@ -162,17 +165,19 @@ class _InventoryAdjustmentRow {
   final InventoryStockItem item;
   final TextEditingController countController;
 
-  int? get countedQuantity {
+  double? get countedQuantity {
     final text = countController.text.trim();
     if (text.isEmpty) return null;
-    return int.tryParse(text);
+    return double.tryParse(text.replaceAll(',', '.'));
   }
 
-  int? get delta {
+  double? get delta {
     final counted = countedQuantity;
     if (counted == null) return null;
-    return counted - item.quantityOnHand;
+    return countedBaseQuantity(counted) - item.quantityOnHand;
   }
+
+  double countedBaseQuantity(double counted) => item.displayToBase(counted);
 
   bool matches(String filter) {
     return _normalize(

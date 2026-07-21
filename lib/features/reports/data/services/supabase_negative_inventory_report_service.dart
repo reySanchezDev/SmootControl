@@ -59,7 +59,7 @@ final class SupabaseNegativeInventoryReportService {
         rows.add(
           NegativeInventoryRow(
             categoryName: _categoryPath(product.categoryId, categories),
-            costInCents: product.costInCents,
+            costInCents: product.baseUnitCostInCents,
             lastMovementAt: movement?.createdAt,
             lastReferenceId: movement?.referenceId,
             productId: id,
@@ -84,7 +84,7 @@ final class SupabaseNegativeInventoryReportService {
     }
   }
 
-  Future<Map<String, int>> _loadNegativeStock() async {
+  Future<Map<String, double>> _loadNegativeStock() async {
     final rows = await _getRows('inventory_stock', {
       'restaurant_id': 'eq.${_restaurantService.restaurantId}',
       'quantity_on_hand': 'lt.0',
@@ -92,7 +92,7 @@ final class SupabaseNegativeInventoryReportService {
     });
     return {
       for (final row in rows)
-        _requiredText(row, 'product_id'): _int(row['quantity_on_hand']),
+        _requiredText(row, 'product_id'): _decimal(row['quantity_on_hand']),
     };
   }
 
@@ -102,7 +102,7 @@ final class SupabaseNegativeInventoryReportService {
       'id': _inFilter(ids),
       'product_kind': 'eq.raw_material',
       'tracks_inventory': 'eq.true',
-      'select': 'id,name,category_id,cost',
+      'select': 'id,name,category_id,cost,purchase_to_inventory_factor',
     });
     return {
       for (final row in rows)
@@ -110,6 +110,9 @@ final class SupabaseNegativeInventoryReportService {
           categoryId: _optionalText(row['category_id']) ?? '',
           costInCents: _moneyToCents(row['cost']),
           name: _requiredText(row, 'name'),
+          purchaseToInventoryFactor: _decimal(
+            row['purchase_to_inventory_factor'],
+          ),
         ),
     };
   }
@@ -205,10 +208,9 @@ final class SupabaseNegativeInventoryReportService {
 
   String _inFilter(List<String> ids) => 'in.(${ids.join(',')})';
 
-  int _int(Object? value) {
-    if (value is int) return value;
-    if (value is num) return value.round();
-    return int.tryParse(value?.toString() ?? '') ?? 0;
+  double _decimal(Object? value) {
+    if (value is num) return value.toDouble();
+    return double.tryParse(value?.toString() ?? '') ?? 0;
   }
 
   int _moneyToCents(Object? value) {
@@ -248,9 +250,16 @@ final class _ProductRow {
     required this.categoryId,
     required this.costInCents,
     required this.name,
+    required this.purchaseToInventoryFactor,
   });
 
   final String categoryId;
   final int costInCents;
   final String name;
+  final double purchaseToInventoryFactor;
+
+  int get baseUnitCostInCents {
+    if (purchaseToInventoryFactor <= 0) return costInCents;
+    return (costInCents / purchaseToInventoryFactor).round();
+  }
 }

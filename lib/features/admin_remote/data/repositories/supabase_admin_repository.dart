@@ -41,6 +41,7 @@ import 'package:smoo_control/features/users/domain/repositories/i_users_reposito
 part 'supabase_admin_repository_access_part.dart';
 part 'supabase_admin_repository_base_part.dart';
 part 'supabase_admin_repository_catalog_part.dart';
+part 'supabase_admin_repository_error_part.dart';
 part 'supabase_admin_repository_operations_part.dart';
 part 'supabase_admin_repository_packaging_part.dart';
 part 'supabase_admin_repository_settings_part.dart';

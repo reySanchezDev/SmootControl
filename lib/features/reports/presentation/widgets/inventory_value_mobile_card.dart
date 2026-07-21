@@ -33,7 +33,7 @@ class InventoryValueMobileCard extends StatelessWidget {
             const SizedBox(height: 8),
             _AmountRow(
               label: l10n.inventoryStockColumn,
-              value: row.quantityOnHand.toString(),
+              value: _quantityText(row.quantityOnHand),
             ),
             _AmountRow(
               label: l10n.inventoryCostValueColumn,
@@ -52,6 +52,11 @@ class InventoryValueMobileCard extends StatelessWidget {
       ),
     );
   }
+}
+
+String _quantityText(double value) {
+  if (value == value.roundToDouble()) return value.round().toString();
+  return value.toStringAsFixed(2);
 }
 
 class _AmountRow extends StatelessWidget {

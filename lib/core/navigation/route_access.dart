@@ -18,6 +18,7 @@ abstract final class RouteAccess {
       AppRoutes.pos => const ['ventas.registrar'],
       AppRoutes.reports ||
       AppRoutes.reportSummary ||
+      AppRoutes.cashClosingReport ||
       AppRoutes.dailySalesReport ||
       AppRoutes.productPerformanceReport ||
       AppRoutes.expensesReport ||

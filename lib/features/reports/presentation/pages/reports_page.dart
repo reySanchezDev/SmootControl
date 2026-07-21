@@ -11,14 +11,17 @@ import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/core/formatters/money_formatter.dart';
 import 'package:smoo_control/core/navigation/app_routes.dart';
 import 'package:smoo_control/core/result/app_result.dart';
+import 'package:smoo_control/features/reports/data/services/supabase_cash_closing_report_service.dart';
 import 'package:smoo_control/features/reports/data/services/supabase_daily_sales_report_service.dart';
 import 'package:smoo_control/features/reports/data/services/supabase_expenses_report_service.dart';
 import 'package:smoo_control/features/reports/data/services/supabase_product_performance_report_service.dart';
+import 'package:smoo_control/features/reports/domain/entities/cash_closing_report.dart';
 import 'package:smoo_control/features/reports/domain/entities/daily_sales_report.dart';
 import 'package:smoo_control/features/reports/domain/entities/expenses_report.dart';
 import 'package:smoo_control/features/reports/domain/entities/product_performance_report.dart';
 import 'package:smoo_control/features/reports/domain/entities/report_period.dart';
 import 'package:smoo_control/features/reports/domain/entities/report_summary.dart';
+import 'package:smoo_control/features/reports/domain/services/cash_closing_pdf_service.dart';
 import 'package:smoo_control/features/reports/domain/services/report_summary_pdf_service.dart';
 import 'package:smoo_control/features/reports/presentation/bloc/reports_bloc.dart';
 import 'package:smoo_control/features/reports/presentation/bloc/reports_event.dart';
@@ -27,6 +30,8 @@ import 'package:smoo_control/features/reports/presentation/widgets/report_period
 import 'package:smoo_control/features/reports/presentation/widgets/report_summary_view.dart';
 import 'package:smoo_control/l10n/app_localizations.dart';
 
+part 'reports_cash_closing_page_part.dart';
+part 'reports_cash_closing_view_part.dart';
 part 'reports_daily_filter_part.dart';
 part 'reports_daily_page_part.dart';
 part 'reports_daily_view_part.dart';
@@ -51,6 +56,20 @@ class ReportsPage extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          const _ReportsSection(
+            title: 'Operaciones',
+            children: [
+              _ReportOptionCard(
+                icon: Icons.point_of_sale_outlined,
+                routeName: AppRoutes.cashClosingReport,
+                subtitle:
+                    'Arqueo: efectivo inicial, ventas, gastos de caja, '
+                    'conteo fisico y diferencia.',
+                title: 'Arqueo de caja',
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
           const _ReportsSection(
             title: 'Ventas',
             children: [

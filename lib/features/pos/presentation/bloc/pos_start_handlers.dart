@@ -58,7 +58,8 @@ Future<void> _handlePosStarted(
   switch (inventoryStockResult) {
     case AppSuccess(:final value):
       stockByProductId = {
-        for (final stock in value) stock.productId: stock.quantityOnHand,
+        for (final stock in value)
+          stock.productId: stock.quantityOnHand.round(),
       };
     case AppFailureResult(:final error):
       emit(PosFailure(error));

@@ -75,7 +75,10 @@ final class ProductsBloc extends Bloc<ProductsEvent, ProductsState> {
     final loadResult = await _repository.getProducts();
     emit(
       loadResult.when(
-        success: ProductsLoaded.new,
+        success: (products) => ProductsLoaded(
+          products,
+          successMessage: 'product_saved',
+        ),
         failure: ProductsFailure.new,
       ),
     );

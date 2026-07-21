@@ -645,5 +645,7 @@
   "inventoryAdjustmentDifference": "Diferencia",
   "inventoryAdjustmentInvalidCount": "Revisa los conteos invalidos.",
   "inventoryAdjustmentNoChanges": "Digita al menos un conteo diferente al stock actual.",
-  "inventoryAdjustmentSave": "Guardar ajuste"
+  "inventoryAdjustmentSave": "Guardar ajuste",
+  "productSavedMessage": "Producto guardado correctamente.",
+  "recipeSavedMessage": "Receta guardada correctamente."
 }

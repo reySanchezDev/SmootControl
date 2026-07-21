@@ -11,6 +11,7 @@ import 'package:smoo_control/features/products/domain/entities/measurement_unit.
 import 'package:smoo_control/features/products/domain/entities/product.dart';
 import 'package:smoo_control/features/recipes/data/services/supabase_product_recipes_service.dart';
 import 'package:smoo_control/features/recipes/presentation/widgets/product_recipe_dialog.dart';
+import 'package:smoo_control/l10n/app_localizations.dart';
 
 /// Dedicated administrative page for product recipe configuration.
 class RecipesPage extends StatefulWidget {
@@ -103,6 +104,11 @@ class _RecipesPageState extends State<RecipesPage> {
       ),
     );
     if ((saved ?? false) && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context).recipeSavedMessage),
+        ),
+      );
       setState(() => _future = _loadData());
     }
   }

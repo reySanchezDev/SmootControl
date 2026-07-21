@@ -137,7 +137,8 @@ class _ProductRecipeRowCardState extends State<ProductRecipeRowCard> {
               onChanged: (value) {
                 setState(() {
                   widget.row.componentProductId = value;
-                  widget.row.unitId = null;
+                  widget.row.unitId =
+                      _componentById(value)?.recipeDefaultUnitId;
                 });
               },
             ),
@@ -206,10 +207,7 @@ class _ProductRecipeRowCardState extends State<ProductRecipeRowCard> {
 
   List<MeasurementUnit> get _compatibleUnits {
     final componentId = widget.row.componentProductId;
-    final component = widget.components
-        .where((product) => product.id == componentId)
-        .cast<Product?>()
-        .firstOrNull;
+    final component = _componentById(componentId);
     final inventoryUnitId = component?.inventoryUnitId;
     if (inventoryUnitId == null) return widget.units;
     final inventoryUnit = widget.units
@@ -219,6 +217,14 @@ class _ProductRecipeRowCardState extends State<ProductRecipeRowCard> {
     final group = inventoryUnit?.unitGroup;
     if (group == null || group.isEmpty) return widget.units;
     return widget.units.where((unit) => unit.unitGroup == group).toList();
+  }
+
+  Product? _componentById(String? componentId) {
+    if (componentId == null) return null;
+    return widget.components
+        .where((product) => product.id == componentId)
+        .cast<Product?>()
+        .firstOrNull;
   }
 }
 

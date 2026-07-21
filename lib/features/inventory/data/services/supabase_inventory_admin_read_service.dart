@@ -39,7 +39,7 @@ final class SupabaseInventoryAdminReadService {
         'is_active': 'eq.true',
         'select':
             'id,name,cost,category_id,purchase_unit_id,inventory_unit_id,'
-            'purchase_to_inventory_factor',
+            'inventory_display_unit_id,purchase_to_inventory_factor',
       });
       final units = await _getRows('measurement_units', {
         'or':
@@ -86,10 +86,17 @@ final class SupabaseInventoryAdminReadService {
               product['inventory_unit_id'],
               unitsById,
             ),
+            inventoryDisplayUnitId: _nullableText(
+              product['inventory_display_unit_id'],
+            ),
+            inventoryDisplayUnitName: _unitName(
+              product['inventory_display_unit_id'],
+              unitsById,
+            ),
             purchaseToInventoryFactor: _double(
               product['purchase_to_inventory_factor'],
             ),
-            quantityOnHand: _int(stock?['quantity_on_hand']),
+            quantityOnHand: _decimal(stock?['quantity_on_hand']),
             updatedAt: _date(stock?['updated_at']),
           ),
         );
@@ -216,6 +223,11 @@ final class SupabaseInventoryAdminReadService {
     final name = _text(row['name']);
     if (code.isEmpty) return name;
     return '$name ($code)';
+  }
+
+  double _decimal(Object? value) {
+    if (value is num) return value.toDouble();
+    return double.tryParse(value?.toString() ?? '') ?? 0;
   }
 
   int _int(Object? value) {

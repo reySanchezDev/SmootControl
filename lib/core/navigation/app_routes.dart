@@ -12,6 +12,9 @@ abstract final class AppRoutes {
   /// General report summary route.
   static const reportSummary = '/reports/summary';
 
+  /// Cash closing report route.
+  static const cashClosingReport = '/reports/cash-closing';
+
   /// Daily sales report route.
   static const dailySalesReport = '/reports/daily-sales';
 

@@ -46,6 +46,11 @@ class _ProductStockTab extends StatelessWidget {
                 [
                   if ((item.categoryPath ?? '').isNotEmpty) item.categoryPath!,
                   'Costo: ${_formatMoney(item.costInCents)}',
+                  if (_hasAlternateDisplay(item))
+                    'Detalle: ${_formatStockQuantity(
+                      item.quantityOnHand,
+                      item.inventoryUnitName,
+                    )}',
                   'Actualizado: ${formatDate(item.updatedAt)}',
                 ].join(' - '),
                 maxLines: 3,
@@ -53,7 +58,10 @@ class _ProductStockTab extends StatelessWidget {
                 variant: AppTextVariant.label,
               ),
               trailing: AppText(
-                item.quantityOnHand.toString(),
+                _formatStockQuantity(
+                  item.displayQuantity,
+                  item.displayUnitName,
+                ),
                 variant: AppTextVariant.titleMedium,
               ),
             ),
@@ -68,7 +76,7 @@ class _ProductStockTab extends StatelessWidget {
       item.productName,
       item.categoryName,
       item.categoryPath,
-      item.quantityOnHand.toString(),
+      _formatStockQuantity(item.displayQuantity, item.displayUnitName),
       _formatMoney(item.costInCents),
     ].whereType<String>().join(' ');
   }
@@ -151,4 +159,17 @@ class _StockList extends StatelessWidget {
       itemBuilder: itemBuilder,
     );
   }
+}
+
+String _formatStockQuantity(double value, String? unitName) {
+  final text = value == value.roundToDouble()
+      ? value.round().toString()
+      : value.toStringAsFixed(2);
+  final unit = unitName == null || unitName.isEmpty ? '' : ' $unitName';
+  return '$text$unit';
+}
+
+bool _hasAlternateDisplay(InventoryStockItem item) {
+  return item.inventoryDisplayUnitId != null &&
+      item.inventoryDisplayUnitId != item.inventoryUnitId;
 }

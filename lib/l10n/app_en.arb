@@ -645,5 +645,7 @@
   "inventoryAdjustmentDifference": "Difference",
   "inventoryAdjustmentInvalidCount": "Review invalid counts.",
   "inventoryAdjustmentNoChanges": "Enter at least one count different from current stock.",
-  "inventoryAdjustmentSave": "Save adjustment"
+  "inventoryAdjustmentSave": "Save adjustment",
+  "productSavedMessage": "Product saved successfully.",
+  "recipeSavedMessage": "Recipe saved successfully."
 }

@@ -18,6 +18,7 @@ import 'package:smoo_control/features/sales/domain/entities/sale.dart';
 import 'package:smoo_control/features/sales/domain/entities/sale_item.dart';
 import 'package:smoo_control/features/sales/domain/repositories/i_sales_repository.dart';
 import 'package:smoo_control/features/sync/domain/repositories/i_sync_queue_repository.dart';
+import 'package:smoo_control/features/sync/domain/services/sync_error_message.dart';
 import 'package:smoo_control/features/sync/domain/services/sync_scheduler_service.dart';
 import 'package:smoo_control/l10n/app_localizations.dart';
 
@@ -208,7 +209,7 @@ class _PosCashTransactionsPageState extends State<PosCashTransactionsPage> {
         for (final item in items) {
           final error = item.lastError;
           if (error != null && error.isNotEmpty) {
-            return '${item.entityType}: $error';
+            return '${item.entityType}: ${syncErrorText(error)}';
           }
         }
         return null;

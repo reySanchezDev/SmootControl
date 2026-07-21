@@ -64,11 +64,13 @@ void _registerSalesAndSyncDependencies() {
     ..registerLazySingleton<ICatalogPullService>(
       serviceLocator.get<SupabaseCatalogPullService>,
     )
+    ..registerLazySingleton<PosDeviceNameService>(PosDeviceNameService.new)
     ..registerLazySingleton<RemoteBootstrapAuthService>(
       () => RemoteBootstrapAuthService(
         config: serviceLocator<SupabaseAppConfig>(),
         restaurantService: serviceLocator<CurrentRestaurantService>(),
         remoteSessionService: serviceLocator<CurrentRemoteSessionService>(),
+        deviceNameService: serviceLocator<PosDeviceNameService>(),
         client: serviceLocator<http.Client>(),
       ),
     )

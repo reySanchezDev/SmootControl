@@ -26,13 +26,16 @@ final class ProductsLoading extends ProductsState {
 /// Products loaded state.
 final class ProductsLoaded extends ProductsState {
   /// Creates a loaded state.
-  const ProductsLoaded(this.products);
+  const ProductsLoaded(this.products, {this.successMessage});
 
   /// Available products.
   final List<Product> products;
 
+  /// Optional message shown once by the presentation layer.
+  final String? successMessage;
+
   @override
-  List<Object?> get props => [products];
+  List<Object?> get props => [products, successMessage];
 }
 
 /// Products failure state.

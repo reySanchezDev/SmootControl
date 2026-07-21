@@ -8,6 +8,7 @@ import 'package:smoo_control/features/sync/domain/entities/sync_queue_item.dart'
 import 'package:smoo_control/features/sync/domain/repositories/i_sync_queue_repository.dart';
 import 'package:smoo_control/features/sync/domain/repositories/i_sync_settings_repository.dart';
 import 'package:smoo_control/features/sync/domain/services/i_sync_remote_sender.dart';
+import 'package:smoo_control/features/sync/domain/services/sync_error_message.dart';
 import 'package:uuid/uuid.dart';
 
 /// Sync queue repository backed by the local offline database.
@@ -140,7 +141,7 @@ final class SyncQueueRepository implements ISyncQueueRepository {
       try {
         await _localDataSource.markError(
           itemId: item.id,
-          error: error.toString(),
+          error: syncErrorMessage(error),
         );
       } on Object {
         // The local queue must never block the original business operation.

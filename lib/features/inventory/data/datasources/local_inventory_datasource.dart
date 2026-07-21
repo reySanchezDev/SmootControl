@@ -29,7 +29,7 @@ final class LocalInventoryDataSource {
         InventoryStockItem(
           productId: product.id,
           productName: product.name,
-          quantityOnHand: stock?.quantityOnHand ?? 0,
+          quantityOnHand: (stock?.quantityOnHand ?? 0).toDouble(),
           updatedAt: stock?.updatedAt ?? product.updatedAt,
         ),
       );

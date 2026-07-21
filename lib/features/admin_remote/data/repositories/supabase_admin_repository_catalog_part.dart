@@ -79,7 +79,8 @@ mixin _SupabaseAdminCatalogMixin on _SupabaseAdminRepositoryBase
           'select':
               'id,category_id,name,cost,price,is_active,is_available_in_pos,'
               'is_raw_material,uses_recipe,tracks_inventory,option_groups,'
-              'purchase_unit_id,inventory_unit_id,purchase_to_inventory_factor',
+              'purchase_unit_id,inventory_unit_id,recipe_default_unit_id,'
+              'inventory_display_unit_id,purchase_to_inventory_factor',
           'order': 'name.asc',
         });
         final assignments = await _getRows('product_modifier_groups', {
@@ -111,6 +112,12 @@ mixin _SupabaseAdminCatalogMixin on _SupabaseAdminRepositoryBase
             tracksInventory: _bool(row['tracks_inventory']),
             purchaseUnitId: _nullableText(row['purchase_unit_id']),
             inventoryUnitId: _nullableText(row['inventory_unit_id']),
+            recipeDefaultUnitId: _nullableText(
+              row['recipe_default_unit_id'],
+            ),
+            inventoryDisplayUnitId: _nullableText(
+              row['inventory_display_unit_id'],
+            ),
             purchaseToInventoryFactor:
                 row['purchase_to_inventory_factor'] == null
                 ? null
@@ -142,10 +149,13 @@ mixin _SupabaseAdminCatalogMixin on _SupabaseAdminRepositoryBase
           'is_active': product.isActive,
           'is_available_in_pos': product.isAvailableInPos,
           'is_raw_material': product.isRawMaterial,
+          'product_kind': product.isRawMaterial ? 'raw_material' : 'finished',
           'uses_recipe': product.usesRecipe,
           'tracks_inventory': product.tracksInventory,
           'purchase_unit_id': product.purchaseUnitId,
           'inventory_unit_id': product.inventoryUnitId,
+          'recipe_default_unit_id': product.recipeDefaultUnitId,
+          'inventory_display_unit_id': product.inventoryDisplayUnitId,
           'purchase_to_inventory_factor': product.purchaseToInventoryFactor,
           'option_groups': product.optionGroups
               .map(

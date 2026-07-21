@@ -1580,4 +1580,10 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get inventoryAdjustmentSave => 'Guardar ajuste';
+
+  @override
+  String get productSavedMessage => 'Producto guardado correctamente.';
+
+  @override
+  String get recipeSavedMessage => 'Receta guardada correctamente.';
 }

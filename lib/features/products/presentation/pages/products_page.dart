@@ -45,7 +45,14 @@ class ProductsPage extends StatelessWidget {
             ),
           ],
           title: l10n.moduleProducts,
-          body: BlocBuilder<ProductsBloc, ProductsState>(
+          body: BlocConsumer<ProductsBloc, ProductsState>(
+            listener: (context, state) {
+              if (state case ProductsLoaded(successMessage: final message?)) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(_successText(context, message))),
+                );
+              }
+            },
             builder: (context, state) {
               return switch (state) {
                 ProductsInitial() ||
@@ -182,6 +189,8 @@ class ProductsPage extends StatelessWidget {
           usesRecipe: product.usesRecipe,
           purchaseUnitId: product.purchaseUnitId,
           inventoryUnitId: product.inventoryUnitId,
+          recipeDefaultUnitId: product.recipeDefaultUnitId,
+          inventoryDisplayUnitId: product.inventoryDisplayUnitId,
           purchaseToInventoryFactor: product.purchaseToInventoryFactor,
           optionGroups: product.optionGroups,
           modifierGroupIds: product.modifierGroupIds,
@@ -250,5 +259,13 @@ class ProductsPage extends StatelessWidget {
     }
 
     return null;
+  }
+
+  String _successText(BuildContext context, String message) {
+    final l10n = AppLocalizations.of(context);
+    return switch (message) {
+      'product_saved' => l10n.productSavedMessage,
+      _ => message,
+    };
   }
 }

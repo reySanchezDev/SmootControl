@@ -101,9 +101,9 @@ final class SupabaseInventoryMovementsService {
         title: 'Ajuste #${_text(row['document_number'])}',
         createdAt: _date(row['created_at']),
         lineCount: docLines.length,
-        quantityDelta: docLines.fold<int>(
+        quantityDelta: docLines.fold<double>(
           0,
-          (sum, line) => sum + _int(line['quantity_delta']),
+          (sum, line) => sum + _decimal(line['quantity_delta']),
         ),
         note: _nullableText(row['note']),
       );
@@ -132,9 +132,9 @@ final class SupabaseInventoryMovementsService {
         title: _genericTitle(docType, rows, products),
         createdAt: _date(first['created_at']),
         lineCount: rows.length,
-        quantityDelta: rows.fold<int>(
+        quantityDelta: rows.fold<double>(
           0,
-          (sum, row) => sum + _int(row['quantity_delta']),
+          (sum, row) => sum + _decimal(row['quantity_delta']),
         ),
         note: _nullableText(first['notes']),
       );
@@ -154,9 +154,9 @@ final class SupabaseInventoryMovementsService {
         .map(
           (row) => InventoryMovementDocumentLine(
             productName: products[_text(row['product_id'])] ?? 'Producto',
-            quantityDelta: _int(row['quantity_delta']),
-            stockBefore: _int(row['stock_before']),
-            countedQuantity: _int(row['counted_quantity']),
+            quantityDelta: _decimal(row['quantity_delta']),
+            stockBefore: _decimal(row['stock_before']),
+            countedQuantity: _decimal(row['counted_quantity']),
           ),
         )
         .toList();
@@ -176,7 +176,7 @@ final class SupabaseInventoryMovementsService {
     ) {
       return InventoryMovementDocumentLine(
         productName: products[_text(row['product_id'])] ?? 'Producto',
-        quantityDelta: _int(row['quantity_delta']),
+        quantityDelta: _decimal(row['quantity_delta']),
         unitCostInCents: _moneyToCents(row['unit_cost']),
       );
     }).toList();
@@ -254,8 +254,8 @@ final class SupabaseInventoryMovementsService {
   String _text(Object? value) => value?.toString().trim() ?? '';
   String? _nullableText(Object? value) =>
       _text(value).isEmpty ? null : _text(value);
-  int _int(Object? value) =>
-      value is num ? value.round() : int.tryParse(_text(value)) ?? 0;
+  double _decimal(Object? value) =>
+      value is num ? value.toDouble() : double.tryParse(_text(value)) ?? 0;
   int _moneyToCents(Object? value) =>
       ((num.tryParse(_text(value)) ?? 0) * 100).round();
   DateTime _date(Object? value) =>

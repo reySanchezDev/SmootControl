@@ -11,6 +11,8 @@ import 'package:smoo_control/core/utils/search_text.dart';
 import 'package:smoo_control/features/reports/data/services/supabase_negative_inventory_report_service.dart';
 import 'package:smoo_control/features/reports/domain/entities/negative_inventory_report.dart';
 
+part 'negative_inventory_filter_part.dart';
+
 /// Report for raw materials below zero after recipe consumption.
 class NegativeInventoryReportPage extends StatefulWidget {
   /// Creates the negative inventory report page.
@@ -83,47 +85,6 @@ class _NegativeInventoryReportPageState
   }
 
   void _reload() => setState(() => _future = _service.load());
-}
-
-class _FilterCard extends StatelessWidget {
-  const _FilterCard({
-    required this.controller,
-    required this.onChanged,
-    required this.onClear,
-    required this.onReload,
-  });
-
-  final TextEditingController controller;
-  final ValueChanged<String> onChanged;
-  final VoidCallback onClear;
-  final VoidCallback onReload;
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Row(
-          children: [
-            Expanded(
-              child: AppSearchField(
-                controller: controller,
-                label: 'Buscar materia prima o categoria',
-                onChanged: onChanged,
-                onClear: onClear,
-              ),
-            ),
-            const SizedBox(width: 10),
-            IconButton.filled(
-              onPressed: onReload,
-              icon: const Icon(Icons.refresh),
-              tooltip: 'Recargar',
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
 class _ReportView extends StatelessWidget {
@@ -245,24 +206,28 @@ class _NegativeInventoryCard extends StatelessWidget {
     );
   }
 
-  String _formatDateTime(DateTime date) {
-    String two(int value) => value.toString().padLeft(2, '0');
-    return '${two(date.day)}/${two(date.month)}/${date.year} '
-        '${two(date.hour)}:${two(date.minute)}';
-  }
+  String _formatDateTime(DateTime date) =>
+      '${_two(date.day)}/${_two(date.month)}/${date.year} '
+      '${_two(date.hour)}:${_two(date.minute)}';
 }
+
+String _two(int value) => value.toString().padLeft(2, '0');
 
 class _AmountRow extends StatelessWidget {
   const _AmountRow({required this.label, required this.value});
 
   final String label;
-  final int value;
+  final double value;
 
   @override
   Widget build(BuildContext context) {
-    return _TextRow(label: label, value: value.toString());
+    return _TextRow(label: label, value: _quantityText(value));
   }
 }
+
+String _quantityText(double value) => value == value.roundToDouble()
+    ? value.round().toString()
+    : value.toStringAsFixed(2);
 
 class _MoneyRow extends StatelessWidget {
   const _MoneyRow({required this.label, required this.value});
@@ -271,9 +236,8 @@ class _MoneyRow extends StatelessWidget {
   final int value;
 
   @override
-  Widget build(BuildContext context) {
-    return _TextRow(label: label, value: MoneyFormatter.format(value));
-  }
+  Widget build(BuildContext context) =>
+      _TextRow(label: label, value: MoneyFormatter.format(value));
 }
 
 class _TextRow extends StatelessWidget {

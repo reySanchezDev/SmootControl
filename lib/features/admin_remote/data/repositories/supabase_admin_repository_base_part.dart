@@ -29,7 +29,11 @@ abstract class _SupabaseAdminRepositoryBase {
       return AppSuccess(await action());
     } on Object catch (error) {
       return AppFailureResult(
-        AppFailure(code: code, message: message, cause: error),
+        AppFailure(
+          code: code,
+          message: _adminFriendlyMessage(message, error),
+          cause: error,
+        ),
       );
     }
   }

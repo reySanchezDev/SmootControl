@@ -173,7 +173,7 @@ class InventoryDataTable extends StatelessWidget {
                           : row.categoryName,
                     ),
                   ),
-                  DataCell(AppText(row.quantityOnHand.toString())),
+                  DataCell(AppText(_quantityText(row.quantityOnHand))),
                   DataCell(AppText(MoneyFormatter.format(row.costInCents))),
                   DataCell(AppText(MoneyFormatter.format(row.priceInCents))),
                   DataCell(
@@ -195,6 +195,10 @@ class InventoryDataTable extends StatelessWidget {
     );
   }
 }
+
+String _quantityText(double value) => value == value.roundToDouble()
+    ? value.round().toString()
+    : value.toStringAsFixed(2);
 
 class _InventoryMetric extends StatelessWidget {
   const _InventoryMetric({required this.label, required this.value});

@@ -14,6 +14,7 @@ import 'package:smoo_control/features/audit/data/datasources/local_audit_log_dat
 import 'package:smoo_control/features/audit/data/repositories/audit_log_repository.dart';
 import 'package:smoo_control/features/audit/domain/repositories/i_audit_log_repository.dart';
 import 'package:smoo_control/features/audit/presentation/bloc/audit_log_bloc.dart';
+import 'package:smoo_control/features/auth/data/services/pos_device_name_service.dart';
 import 'package:smoo_control/features/auth/data/services/remote_bootstrap_auth_service.dart';
 import 'package:smoo_control/features/auth/domain/services/device_initialization_service.dart';
 import 'package:smoo_control/features/cash_register/data/datasources/local_cash_register_datasource.dart';
@@ -54,6 +55,7 @@ import 'package:smoo_control/features/products/data/repositories/products_reposi
 import 'package:smoo_control/features/products/domain/repositories/i_products_repository.dart';
 import 'package:smoo_control/features/products/presentation/bloc/products_bloc.dart';
 import 'package:smoo_control/features/recipes/data/services/supabase_product_recipes_service.dart';
+import 'package:smoo_control/features/reports/data/services/supabase_cash_closing_report_service.dart';
 import 'package:smoo_control/features/reports/data/services/supabase_daily_sales_report_service.dart';
 import 'package:smoo_control/features/reports/data/services/supabase_expenses_report_service.dart';
 import 'package:smoo_control/features/reports/data/services/supabase_inventory_value_report_service.dart';

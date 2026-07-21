@@ -10,9 +10,12 @@ import 'package:smoo_control/features/products/domain/entities/product.dart';
 import 'package:smoo_control/features/products/presentation/widgets/modifier_group_selector.dart';
 import 'package:smoo_control/features/products/presentation/widgets/product_category_dropdown.dart';
 import 'package:smoo_control/features/products/presentation/widgets/product_flags_section.dart';
-import 'package:smoo_control/features/products/presentation/widgets/product_units_section.dart';
+import 'package:smoo_control/features/products/presentation/widgets/product_units_config_dialog.dart';
+import 'package:smoo_control/features/products/presentation/widgets/product_units_summary.dart';
 import 'package:smoo_control/l10n/app_localizations.dart';
 import 'package:uuid/uuid.dart';
+
+part 'create_product_dialog_units_part.dart';
 
 /// Dialog used to create a product.
 class CreateProductDialog extends StatefulWidget {
@@ -55,6 +58,8 @@ class _CreateProductDialogState extends State<CreateProductDialog> {
   String? _selectedCategoryId;
   String? _purchaseUnitId;
   String? _inventoryUnitId;
+  String? _recipeDefaultUnitId;
+  String? _inventoryDisplayUnitId;
   final _selectedModifierGroupIds = <String>{};
 
   @override
@@ -76,6 +81,8 @@ class _CreateProductDialogState extends State<CreateProductDialog> {
     _tracksInventory = product.tracksInventory;
     _purchaseUnitId = product.purchaseUnitId;
     _inventoryUnitId = product.inventoryUnitId;
+    _recipeDefaultUnitId = product.recipeDefaultUnitId;
+    _inventoryDisplayUnitId = product.inventoryDisplayUnitId;
     final factor = product.purchaseToInventoryFactor;
     if (factor != null) _purchaseFactorController.text = factor.toString();
     _selectedModifierGroupIds.addAll(product.modifierGroupIds);
@@ -129,7 +136,7 @@ class _CreateProductDialogState extends State<CreateProductDialog> {
               ),
               const SizedBox(height: 12),
               AppInput(
-                label: l10n.costInCentsField,
+                label: costFieldLabel(l10n),
                 controller: _costController,
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
@@ -164,19 +171,17 @@ class _CreateProductDialogState extends State<CreateProductDialog> {
                   setState(() => _tracksInventory = value);
                 },
               ),
-              if (_isRawMaterial)
-                ProductUnitsSection(
-                  units: widget.units,
-                  purchaseUnitId: _purchaseUnitId,
-                  inventoryUnitId: _inventoryUnitId,
-                  purchaseFactorController: _purchaseFactorController,
-                  onPurchaseUnitChanged: (value) {
-                    setState(() => _purchaseUnitId = value);
-                  },
-                  onInventoryUnitChanged: (value) {
-                    setState(() => _inventoryUnitId = value);
-                  },
+              if (_tracksInventory) ...[
+                const SizedBox(height: 8),
+                ProductUnitsSummary(
+                  factor: _purchaseFactorController.text.trim(),
+                  inventoryUnitName: unitName(_inventoryUnitId),
+                  onConfigure: openUnitsDialog,
+                  purchaseUnitName: unitName(_purchaseUnitId),
+                  recipeUnitName: unitName(_recipeDefaultUnitId),
+                  displayUnitName: unitName(_inventoryDisplayUnitId),
                 ),
+              ],
               ModifierGroupSelector(
                 groups: _activeModifierGroups,
                 selectedIds: _selectedModifierGroupIds,
@@ -214,7 +219,7 @@ class _CreateProductDialogState extends State<CreateProductDialog> {
     final cost = MoneyFormatter.parseToCents(_costController.text);
     final price = _isRawMaterial ? (parsedPrice ?? 0) : parsedPrice;
     final purchaseFactor = double.tryParse(
-      _purchaseFactorController.text.trim(),
+      _purchaseFactorController.text.trim().replaceAll(',', '.'),
     );
 
     if (name.isEmpty || _selectedCategoryId == null) {
@@ -232,13 +237,16 @@ class _CreateProductDialogState extends State<CreateProductDialog> {
       return;
     }
 
-    if (_isRawMaterial &&
+    if (_tracksInventory &&
         widget.units.isNotEmpty &&
         (_purchaseUnitId == null ||
             _inventoryUnitId == null ||
             purchaseFactor == null ||
             purchaseFactor <= 0)) {
-      setState(() => _error = l10n.productUnitsRequiredError);
+      setState(
+        () => _error =
+            'Indica unidad de compra, unidad base y factor mayor que cero.',
+      );
       return;
     }
 
@@ -254,14 +262,27 @@ class _CreateProductDialogState extends State<CreateProductDialog> {
         isRawMaterial: _isRawMaterial,
         usesRecipe: !_isRawMaterial && _usesRecipe,
         tracksInventory: _tracksInventory,
-        purchaseUnitId: _isRawMaterial ? _purchaseUnitId : null,
-        inventoryUnitId: _isRawMaterial ? _inventoryUnitId : null,
-        purchaseToInventoryFactor: _isRawMaterial ? purchaseFactor : null,
+        purchaseUnitId: _tracksInventory ? _purchaseUnitId : null,
+        inventoryUnitId: _tracksInventory ? _inventoryUnitId : null,
+        recipeDefaultUnitId: _tracksInventory ? _recipeDefaultUnitId : null,
+        inventoryDisplayUnitId: _tracksInventory
+            ? _inventoryDisplayUnitId
+            : null,
+        purchaseToInventoryFactor: _tracksInventory ? purchaseFactor : null,
         optionGroups: widget.product?.optionGroups ?? const [],
         modifierGroupIds: _selectedModifierGroupIds.toList(),
       ),
     );
   }
+
+  void applyUnitsConfig(ProductUnitsConfig result) => setState(() {
+    _purchaseUnitId = result.purchaseUnitId;
+    _inventoryUnitId = result.inventoryUnitId;
+    _recipeDefaultUnitId = result.recipeDefaultUnitId;
+    _inventoryDisplayUnitId = result.inventoryDisplayUnitId;
+    _purchaseFactorController.text = result.purchaseFactor.toString();
+    _error = null;
+  });
 
   List<ModifierGroup> get _activeModifierGroups {
     final groups =

@@ -3,6 +3,7 @@ import 'package:smoo_control/features/sync/domain/entities/sync_process_summary.
 import 'package:smoo_control/features/sync/domain/entities/sync_queue_item.dart';
 import 'package:smoo_control/features/sync/domain/repositories/i_sync_queue_repository.dart';
 import 'package:smoo_control/features/sync/domain/services/i_sync_remote_sender.dart';
+import 'package:smoo_control/features/sync/domain/services/sync_error_message.dart';
 
 /// Processes pending sync queue items in FIFO order.
 final class SyncQueueProcessor {
@@ -84,7 +85,7 @@ final class SyncQueueProcessor {
         failed++;
         await _repository.markError(
           itemId: item.id,
-          error: error.toString(),
+          error: syncErrorMessage(error),
         );
       }
     }

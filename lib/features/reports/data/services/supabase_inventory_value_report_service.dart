@@ -51,7 +51,7 @@ final class SupabaseInventoryValueReportService {
         rows.add(
           InventoryValueReportRow(
             categoryName: categoryName.isEmpty ? 'Sin categoria' : categoryName,
-            costInCents: product.costInCents,
+            costInCents: product.baseUnitCostInCents,
             isRawMaterial: product.isRawMaterial,
             priceInCents: product.priceInCents,
             productId: product.id,
@@ -86,7 +86,9 @@ final class SupabaseInventoryValueReportService {
       'restaurant_id': 'eq.${_restaurantService.restaurantId}',
       'tracks_inventory': 'eq.true',
       'is_active': 'eq.true',
-      'select': 'id,name,category_id,cost,price,is_raw_material',
+      'select':
+          'id,name,category_id,cost,price,is_raw_material,'
+          'purchase_to_inventory_factor',
       'order': 'name.asc',
     });
 
@@ -98,6 +100,9 @@ final class SupabaseInventoryValueReportService {
         isRawMaterial: _bool(row['is_raw_material']),
         name: _requiredText(row, 'name'),
         priceInCents: _moneyToCents(row['price']),
+        purchaseToInventoryFactor: _decimal(
+          row['purchase_to_inventory_factor'],
+        ),
       );
     }).toList();
   }
@@ -118,7 +123,7 @@ final class SupabaseInventoryValueReportService {
     };
   }
 
-  Future<Map<String, int>> _loadStockByProductId() async {
+  Future<Map<String, double>> _loadStockByProductId() async {
     final rows = await _getRows('inventory_stock', {
       'restaurant_id': 'eq.${_restaurantService.restaurantId}',
       'select': 'product_id,quantity_on_hand',
@@ -126,7 +131,7 @@ final class SupabaseInventoryValueReportService {
 
     return {
       for (final row in rows)
-        _requiredText(row, 'product_id'): _int(row['quantity_on_hand']),
+        _requiredText(row, 'product_id'): _decimal(row['quantity_on_hand']),
     };
   }
 
@@ -180,10 +185,9 @@ final class SupabaseInventoryValueReportService {
     return names.join(' / ');
   }
 
-  int _int(Object? value) {
-    if (value is int) return value;
-    if (value is num) return value.round();
-    return int.tryParse(value?.toString() ?? '') ?? 0;
+  double _decimal(Object? value) {
+    if (value is num) return value.toDouble();
+    return double.tryParse(value?.toString() ?? '') ?? 0;
   }
 
   int _moneyToCents(Object? value) {
@@ -230,6 +234,7 @@ final class _RemoteInventoryProduct {
     required this.isRawMaterial,
     required this.name,
     required this.priceInCents,
+    required this.purchaseToInventoryFactor,
   });
 
   final String categoryId;
@@ -238,4 +243,10 @@ final class _RemoteInventoryProduct {
   final bool isRawMaterial;
   final String name;
   final int priceInCents;
+  final double purchaseToInventoryFactor;
+
+  int get baseUnitCostInCents {
+    if (!isRawMaterial || purchaseToInventoryFactor <= 0) return costInCents;
+    return (costInCents / purchaseToInventoryFactor).round();
+  }
 }

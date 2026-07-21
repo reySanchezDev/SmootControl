@@ -44,7 +44,7 @@ class _LocalSaleDetailDialog extends StatelessWidget {
                 const SizedBox(height: 10),
                 const AppText('Error de sincronizacion'),
                 const SizedBox(height: 4),
-                SelectableText(sale.syncError!),
+                SelectableText(syncErrorText(sale.syncError!)),
               ],
               const SizedBox(height: 14),
               const AppText('Productos', variant: AppTextVariant.titleMedium),

@@ -8,14 +8,14 @@ class _InventoryAdjustmentSummary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final deltas = rows.map((row) => row.delta).whereType<int>();
+    final deltas = rows.map((row) => row.delta).whereType<double>();
     final changed = deltas.where((delta) => delta != 0).length;
     final positive = deltas
         .where((delta) => delta > 0)
-        .fold<int>(0, (sum, delta) => sum + delta);
+        .fold<double>(0, (sum, delta) => sum + delta);
     final negative = deltas
         .where((delta) => delta < 0)
-        .fold<int>(0, (sum, delta) => sum + delta.abs());
+        .fold<double>(0, (sum, delta) => sum + delta.abs());
     return DecoratedBox(
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
@@ -34,13 +34,13 @@ class _InventoryAdjustmentSummary extends StatelessWidget {
             Expanded(
               child: _AdjustmentSummaryMetric(
                 label: l10n.inventoryAdjustmentPositive,
-                value: positive.toString(),
+                value: _adjustmentQuantityText(positive),
               ),
             ),
             Expanded(
               child: _AdjustmentSummaryMetric(
                 label: l10n.inventoryAdjustmentNegative,
-                value: negative.toString(),
+                value: _adjustmentQuantityText(negative),
               ),
             ),
           ],
@@ -86,7 +86,13 @@ class _InventoryAdjustmentTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final delta = row.delta;
-    final deltaText = delta == null ? '-' : delta.toString();
+    final counted = row.countedQuantity;
+    final displayStock = row.item.displayQuantity;
+    final displayUnit = row.item.displayUnitName;
+    final baseUnit = row.item.inventoryUnitName;
+    final countedBase = counted == null
+        ? null
+        : row.countedBaseQuantity(counted);
     return DecoratedBox(
       decoration: BoxDecoration(
         border: Border.all(color: Theme.of(context).dividerColor),
@@ -118,7 +124,8 @@ class _InventoryAdjustmentTile extends StatelessWidget {
                 Expanded(
                   child: _AdjustmentReadOnlyValue(
                     label: l10n.inventoryAdjustmentSystemStock,
-                    value: row.item.quantityOnHand.toString(),
+                    value: _quantityWithUnit(displayStock, displayUnit),
+                    helper: _baseDetail(row.item.quantityOnHand, baseUnit),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -127,9 +134,18 @@ class _InventoryAdjustmentTile extends StatelessWidget {
                     controller: row.countController,
                     decoration: InputDecoration(
                       isDense: true,
-                      labelText: l10n.inventoryAdjustmentCountedStock,
+                      labelText:
+                          '${l10n.inventoryAdjustmentCountedStock}'
+                          '${displayUnit == null ? '' : ' ($displayUnit)'}',
+                      helperText: _countBaseDetail(
+                        countedBase,
+                        baseUnit,
+                        displayUnit,
+                      ),
                     ),
-                    keyboardType: TextInputType.number,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
                     onChanged: (_) => onChanged(),
                   ),
                 ),
@@ -137,7 +153,7 @@ class _InventoryAdjustmentTile extends StatelessWidget {
                 Expanded(
                   child: _AdjustmentReadOnlyValue(
                     label: l10n.inventoryAdjustmentDifference,
-                    value: deltaText,
+                    value: _quantityWithUnit(delta, baseUnit),
                   ),
                 ),
               ],
@@ -149,17 +165,56 @@ class _InventoryAdjustmentTile extends StatelessWidget {
   }
 }
 
+String? _baseDetail(double value, String? unitName) {
+  if (unitName == null || unitName.isEmpty) return null;
+  return 'Base: ${_quantityWithUnit(value, unitName)}';
+}
+
+String? _countBaseDetail(
+  double? value,
+  String? baseUnit,
+  String? displayUnit,
+) {
+  if (value == null || baseUnit == null || baseUnit.isEmpty) return null;
+  if (displayUnit == baseUnit) return null;
+  return 'Conteo base: ${_quantityWithUnit(value, baseUnit)}';
+}
+
+String _adjustmentQuantityText(double value) {
+  if (value == value.roundToDouble()) return value.round().toString();
+  if (value.abs() > 0 && value.abs() < 1) return value.toStringAsFixed(4);
+  return value.toStringAsFixed(2);
+}
+
+String _quantityWithUnit(double? value, String? unitName) {
+  if (value == null) return '-';
+  final unit = unitName == null || unitName.isEmpty ? '' : ' $unitName';
+  return '${_adjustmentQuantityText(value)}$unit';
+}
+
 class _AdjustmentReadOnlyValue extends StatelessWidget {
-  const _AdjustmentReadOnlyValue({required this.label, required this.value});
+  const _AdjustmentReadOnlyValue({
+    required this.label,
+    required this.value,
+    this.helper,
+  });
 
   final String label;
   final String value;
+  final String? helper;
 
   @override
   Widget build(BuildContext context) {
     return InputDecorator(
       decoration: InputDecoration(isDense: true, labelText: label),
-      child: AppText(value, maxLines: 1),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          AppText(value, maxLines: 1),
+          if (helper != null)
+            AppText(helper!, maxLines: 1, variant: AppTextVariant.label),
+        ],
+      ),
     );
   }
 }

@@ -6,6 +6,7 @@ import 'package:smoo_control/core/result/app_failure.dart';
 import 'package:smoo_control/core/result/app_result.dart';
 import 'package:smoo_control/core/session/current_remote_session_service.dart';
 import 'package:smoo_control/core/session/current_restaurant_service.dart';
+import 'package:smoo_control/features/auth/data/services/pos_device_name_service.dart';
 import 'package:smoo_control/features/auth/domain/services/remote_bootstrap_session.dart';
 
 part 'remote_bootstrap_auth_http_part.dart';
@@ -19,10 +20,12 @@ final class RemoteBootstrapAuthService {
     required SupabaseAppConfig config,
     required CurrentRestaurantService restaurantService,
     required CurrentRemoteSessionService remoteSessionService,
+    required PosDeviceNameService deviceNameService,
     required http.Client client,
   }) : _config = config,
        _restaurantService = restaurantService,
        _remoteSessionService = remoteSessionService,
+       _deviceNameService = deviceNameService,
        _client = client;
 
   /// Permission required to initialize or restore a clean device.
@@ -31,6 +34,7 @@ final class RemoteBootstrapAuthService {
   final SupabaseAppConfig _config;
   final CurrentRestaurantService _restaurantService;
   final CurrentRemoteSessionService _remoteSessionService;
+  final PosDeviceNameService _deviceNameService;
   final http.Client _client;
 
   /// Checks whether the remote tenant already has users/profiles.
@@ -246,6 +250,7 @@ final class RemoteBootstrapAuthService {
     required String deviceSecret,
   }) async {
     try {
+      final deviceName = await _deviceNameService.resolveName();
       final response = await _client.post(
         _config.rpcUri('register_pos_device'),
         headers: _jsonHeaders(session.accessToken),
@@ -253,7 +258,7 @@ final class RemoteBootstrapAuthService {
           'p_restaurant_id': _restaurantService.restaurantId,
           'p_device_id': deviceId,
           'p_device_secret': deviceSecret,
-          'p_name': 'POS ${DateTime.now().toIso8601String()}',
+          'p_name': deviceName,
         }),
       );
       _ensureSuccess(response, 'register_pos_device');

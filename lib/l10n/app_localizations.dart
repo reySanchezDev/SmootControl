@@ -3037,6 +3037,18 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Guardar ajuste'**
   String get inventoryAdjustmentSave;
+
+  /// No description provided for @productSavedMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Producto guardado correctamente.'**
+  String get productSavedMessage;
+
+  /// No description provided for @recipeSavedMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Receta guardada correctamente.'**
+  String get recipeSavedMessage;
 }
 
 class _AppLocalizationsDelegate

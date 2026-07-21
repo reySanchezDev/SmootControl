@@ -23,7 +23,7 @@ final class InventoryValueReportRow extends Equatable {
   final String categoryName;
 
   /// Current stock.
-  final int quantityOnHand;
+  final double quantityOnHand;
 
   /// Current product unit cost in minor currency units.
   final int costInCents;
@@ -35,12 +35,12 @@ final class InventoryValueReportRow extends Equatable {
   final bool isRawMaterial;
 
   /// Capital invested in this product.
-  int get inventoryCostInCents => quantityOnHand * costInCents;
+  int get inventoryCostInCents => (quantityOnHand * costInCents).round();
 
   /// Potential revenue if current stock is sold at current price.
   int get potentialSalesInCents {
     if (isRawMaterial) return 0;
-    return quantityOnHand * priceInCents;
+    return (quantityOnHand * priceInCents).round();
   }
 
   /// Potential gross profit before operating expenses.

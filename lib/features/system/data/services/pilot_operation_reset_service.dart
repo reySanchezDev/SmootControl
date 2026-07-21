@@ -10,6 +10,7 @@ import 'package:smoo_control/core/session/current_remote_session_service.dart';
 import 'package:smoo_control/core/session/current_restaurant_service.dart';
 
 part 'pilot_operation_reset_local_part.dart';
+part 'pilot_operation_reset_device_part.dart';
 part 'pilot_operation_reset_sql_part.dart';
 
 /// Controlled cleanup scope available from the administrative utilities page.
@@ -70,6 +71,7 @@ final class PilotOperationResetSummary {
   /// Remote operational rows removed or reset.
   final int remoteRows;
 }
+
 
 /// Clears pilot operational data while keeping catalogs and configuration.
 final class PilotOperationResetService {

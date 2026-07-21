@@ -13,6 +13,8 @@ final class InventoryStockItem extends Equatable {
     this.costInCents = 0,
     this.inventoryUnitId,
     this.inventoryUnitName,
+    this.inventoryDisplayUnitId,
+    this.inventoryDisplayUnitName,
     this.purchaseToInventoryFactor,
     this.purchaseUnitId,
     this.purchaseUnitName,
@@ -24,8 +26,8 @@ final class InventoryStockItem extends Equatable {
   /// Product name.
   final String productName;
 
-  /// Current stock.
-  final int quantityOnHand;
+  /// Current stock in the inventory base unit.
+  final double quantityOnHand;
 
   /// Current unit cost in minor currency units.
   final int costInCents;
@@ -48,8 +50,46 @@ final class InventoryStockItem extends Equatable {
   /// Inventory unit display name.
   final String? inventoryUnitName;
 
+  /// Preferred inventory display/count unit id.
+  final String? inventoryDisplayUnitId;
+
+  /// Preferred inventory display/count unit display name.
+  final String? inventoryDisplayUnitName;
+
   /// Conversion from one purchase unit to inventory units.
   final double? purchaseToInventoryFactor;
+
+  /// Quantity converted to the preferred display/count unit.
+  double get displayQuantity {
+    if (inventoryDisplayUnitId == null ||
+        inventoryDisplayUnitId == inventoryUnitId) {
+      return quantityOnHand;
+    }
+    if (inventoryDisplayUnitId == purchaseUnitId &&
+        purchaseToInventoryFactor != null &&
+        purchaseToInventoryFactor! > 0) {
+      return quantityOnHand / purchaseToInventoryFactor!;
+    }
+    return quantityOnHand;
+  }
+
+  /// Preferred display/count unit name.
+  String? get displayUnitName {
+    if (inventoryDisplayUnitName != null) return inventoryDisplayUnitName;
+    if (inventoryDisplayUnitId == purchaseUnitId) return purchaseUnitName;
+    if (inventoryDisplayUnitId == inventoryUnitId) return inventoryUnitName;
+    return inventoryUnitName;
+  }
+
+  /// Converts user-entered display/count units to inventory base units.
+  double displayToBase(double value) {
+    if (inventoryDisplayUnitId == purchaseUnitId &&
+        purchaseToInventoryFactor != null &&
+        purchaseToInventoryFactor! > 0) {
+      return value * purchaseToInventoryFactor!;
+    }
+    return value;
+  }
 
   /// Last stock update.
   final DateTime updatedAt;
@@ -66,6 +106,8 @@ final class InventoryStockItem extends Equatable {
     purchaseUnitName,
     inventoryUnitId,
     inventoryUnitName,
+    inventoryDisplayUnitId,
+    inventoryDisplayUnitName,
     purchaseToInventoryFactor,
     updatedAt,
   ];

@@ -17,6 +17,8 @@ final class Product extends Equatable {
     this.tracksInventory = false,
     this.purchaseUnitId,
     this.inventoryUnitId,
+    this.recipeDefaultUnitId,
+    this.inventoryDisplayUnitId,
     this.purchaseToInventoryFactor,
     this.optionGroups = const [],
     this.modifierGroupIds = const [],
@@ -58,6 +60,12 @@ final class Product extends Equatable {
   /// Base unit used to store inventory stock.
   final String? inventoryUnitId;
 
+  /// Suggested unit when this product is used as a recipe component.
+  final String? recipeDefaultUnitId;
+
+  /// Preferred unit for displaying and counting inventory.
+  final String? inventoryDisplayUnitId;
+
   /// Quantity of base units produced by one purchase unit.
   final double? purchaseToInventoryFactor;
 
@@ -88,6 +96,8 @@ final class Product extends Equatable {
     tracksInventory,
     purchaseUnitId,
     inventoryUnitId,
+    recipeDefaultUnitId,
+    inventoryDisplayUnitId,
     purchaseToInventoryFactor,
     optionGroups,
     modifierGroupIds,

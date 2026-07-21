@@ -9,6 +9,7 @@ import 'package:smoo_control/core/config/supabase_app_config.dart';
 import 'package:smoo_control/core/database/app_database.dart';
 import 'package:smoo_control/core/session/current_remote_session_service.dart';
 import 'package:smoo_control/core/session/current_restaurant_service.dart';
+import 'package:smoo_control/features/auth/data/services/pos_device_name_service.dart';
 import 'package:smoo_control/features/auth/data/services/remote_bootstrap_auth_service.dart';
 import 'package:smoo_control/features/auth/domain/services/device_initialization_service.dart';
 import 'package:smoo_control/features/auth/domain/services/remote_bootstrap_session.dart';
@@ -201,6 +202,7 @@ DeviceInitializationService _service({
       config: config,
       restaurantService: restaurantService,
       remoteSessionService: CurrentRemoteSessionService(),
+      deviceNameService: const PosDeviceNameService(),
       client: effectiveClient,
     ),
     catalogPullService: SupabaseCatalogPullService(

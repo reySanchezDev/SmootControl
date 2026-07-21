@@ -57,16 +57,24 @@ final class AdminInventoryAdjustmentItem {
     required this.productId,
     required this.expectedQuantity,
     required this.countedQuantity,
+    this.enteredCountQuantity,
+    this.enteredCountUnitId,
   });
 
   /// Remote product id.
   final String productId;
 
   /// Stock read from Supabase before the count started.
-  final int expectedQuantity;
+  final double expectedQuantity;
 
-  /// Physical stock counted by the user.
-  final int countedQuantity;
+  /// Physical stock counted by the user, converted to inventory base units.
+  final double countedQuantity;
+
+  /// Original quantity entered by the user.
+  final double? enteredCountQuantity;
+
+  /// Unit used for the original count.
+  final String? enteredCountUnitId;
 }
 
 /// Writes administrative inventory purchases directly to Supabase.
@@ -148,6 +156,8 @@ final class SupabaseInventoryAdminWriteService {
             'product_id': item.productId,
             'expected_quantity': item.expectedQuantity,
             'counted_quantity': item.countedQuantity,
+            'entered_count_quantity': item.enteredCountQuantity,
+            'entered_count_unit_id': item.enteredCountUnitId,
           },
       ],
       extraBody: {'p_note': note},

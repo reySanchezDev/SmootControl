@@ -101,7 +101,8 @@ class _MovementHeaderTile extends StatelessWidget {
       ),
       subtitle: AppText(
         '${_dateTimeText(document.createdAt)} - '
-        '${document.lineCount} lineas - Neto: ${delta > 0 ? '+' : ''}$delta',
+        '${document.lineCount} lineas - Neto: '
+        '${delta > 0 ? '+' : ''}${_quantityText(delta)}',
         variant: AppTextVariant.label,
       ),
       title: AppText(
@@ -196,18 +197,26 @@ class _MovementLineTile extends StatelessWidget {
       ),
       subtitle: AppText(
         [
-          if (line.stockBefore != null) 'Sistema: ${line.stockBefore}',
-          if (line.countedQuantity != null) 'Conteo: ${line.countedQuantity}',
+          if (line.stockBefore != null)
+            'Sistema: ${_quantityText(line.stockBefore!)}',
+          if (line.countedQuantity != null)
+            'Conteo: ${_quantityText(line.countedQuantity!)}',
           if (cost != null) 'Costo: ${MoneyFormatter.format(cost)}',
         ].join(' - '),
         variant: AppTextVariant.label,
       ),
       trailing: AppText(
-        '${line.quantityDelta > 0 ? '+' : ''}${line.quantityDelta}',
+        '${line.quantityDelta > 0 ? '+' : ''}'
+        '${_quantityText(line.quantityDelta)}',
         variant: AppTextVariant.titleMedium,
       ),
     );
   }
+}
+
+String _quantityText(double value) {
+  if (value == value.roundToDouble()) return value.round().toString();
+  return value.toStringAsFixed(2);
 }
 
 String _dateText(DateTime date) {

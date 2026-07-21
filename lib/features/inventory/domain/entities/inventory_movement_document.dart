@@ -49,8 +49,8 @@ final class InventoryMovementDocument extends Equatable {
   /// Number of detail rows.
   final int lineCount;
 
-  /// Net quantity delta.
-  final int quantityDelta;
+  /// Net quantity delta in the inventory base unit.
+  final double quantityDelta;
 
   /// Optional note.
   final String? note;
@@ -81,14 +81,14 @@ final class InventoryMovementDocumentLine extends Equatable {
   /// Product affected by the movement.
   final String productName;
 
-  /// Positive or negative stock variation.
-  final int quantityDelta;
+  /// Positive or negative stock variation in the inventory base unit.
+  final double quantityDelta;
 
   /// Stock before the adjustment, when available.
-  final int? stockBefore;
+  final double? stockBefore;
 
   /// Counted stock for adjustments, when available.
-  final int? countedQuantity;
+  final double? countedQuantity;
 
   /// Unit cost in minor currency units, when available.
   final int? unitCostInCents;

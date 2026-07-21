@@ -23,7 +23,7 @@ final class NegativeInventoryRow extends Equatable {
   final String categoryName;
 
   /// Current negative stock.
-  final int quantityOnHand;
+  final double quantityOnHand;
 
   /// Unit cost in minor currency units.
   final int costInCents;
@@ -35,10 +35,11 @@ final class NegativeInventoryRow extends Equatable {
   final String? lastReferenceId;
 
   /// Quantity required to bring the item back to zero.
-  int get quantityToRegularize => quantityOnHand.abs();
+  double get quantityToRegularize => quantityOnHand.abs();
 
   /// Estimated cost to regularize this negative stock.
-  int get regularizationCostInCents => quantityToRegularize * costInCents;
+  int get regularizationCostInCents =>
+      (quantityToRegularize * costInCents).round();
 
   /// Short reference for the last sale or staff consumption movement.
   String? get shortReferenceId {

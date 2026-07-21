@@ -118,6 +118,9 @@ const EdgeInsets.all(16)
 - **Required vs optional**: Required fields must be visually clear (label, hint, and validation message).
 - **Validation placement**: Show validation close to the field, with a specific message and a corrective hint.
 - **Focus flow**: Keyboard/tab order must match the visual order; avoid jumps that confuse the user.
+- **Save feedback**: Every successful create, edit, delete, sync or reset action
+  must show a visible confirmation message, preferably a `SnackBar`, using
+  localized text. Never leave the user guessing whether a save worked.
 
 ### Text Overflow & Visual Harmony (MANDATORY)
 
@@ -703,6 +706,28 @@ comandos.md
 - If the migration fails, stop and fix the SQL/RPC/policy issue before
   rebuilding or delivering an APK that depends on it.
 - Never print or hardcode Supabase secrets while running migrations.
+
+### 14.13.2 Supabase Remote Queries
+
+- For ad-hoc remote data checks, use the linked Supabase CLI first:
+
+```powershell
+supabase db query "select now() as checked_at;" --linked
+```
+
+- Do not start with raw `psql` or custom Node/Postgres clients unless
+  `supabase db query --linked` is unavailable.
+- The direct host `db.<project-ref>.supabase.co` can resolve only IPv6 in this
+  environment and may fail from Node/Windows. Treat that as an environment/DNS
+  issue, not as proof that Supabase is down.
+- Use `Documentation/SUPABASE_REMOTE_ACCESS.md` for the canonical commands to
+  inspect sales, sale detail, recipe inventory movements, stock and POS
+  devices.
+- Never print database passwords, access tokens or secret keys in user-facing
+  responses.
+- Manual production `update`/`delete` statements must be preceded by a
+  `select` preview and constrained by `restaurant_id` plus the smallest
+  reliable business key, such as `id`, `pos_device_id`, date range or invoice.
 
 ### 14.14 Required Validation Before Delivery
 

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:smoo_control/core/design_system/app_input.dart';
 import 'package:smoo_control/core/design_system/app_message_dialog.dart';
@@ -7,6 +9,8 @@ import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/core/result/app_result.dart';
 import 'package:smoo_control/features/system/data/services/pilot_operation_reset_service.dart';
 
+part 'pilot_operation_reset_actions_part.dart';
+part 'pilot_operation_reset_device_widgets_part.dart';
 part 'pilot_operation_reset_widgets_part.dart';
 
 /// Administrative utilities for controlled operational cleanup.
@@ -21,6 +25,16 @@ class PilotOperationResetPage extends StatefulWidget {
 
 class _PilotOperationResetPageState extends State<PilotOperationResetPage> {
   String? _busyAction;
+  List<PosDeviceCleanupCandidate> _devices = const [];
+  String? _selectedDeviceId;
+
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_loadDevices());
+  }
+
+  void _updateState(VoidCallback callback) => setState(callback);
 
   @override
   Widget build(BuildContext context) {
@@ -45,6 +59,23 @@ class _PilotOperationResetPageState extends State<PilotOperationResetPage> {
                 icon: Icons.point_of_sale_outlined,
                 onRun: () => _runScope(PilotCleanupScope.sales),
                 title: 'Limpiar ventas POS',
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          _Section(
+            title: 'Pruebas por dispositivo',
+            children: [
+              _DeviceCleanupCard(
+                busy: _busyAction == 'pos_device',
+                devices: _devices,
+                onRefresh: _loadDevices,
+                onRename: _renameSelectedDevice,
+                onRun: _runDeviceCleanup,
+                onSelected: (value) => setState(() {
+                  _selectedDeviceId = value;
+                }),
+                selectedDeviceId: _selectedDeviceId,
               ),
             ],
           ),
@@ -143,141 +174,5 @@ class _PilotOperationResetPageState extends State<PilotOperationResetPage> {
         ],
       ),
     );
-  }
-
-  Future<void> _runScope(PilotCleanupScope scope) async {
-    final confirmation = await _askConfirmation(
-      confirmationText: scope.confirmationText,
-      title: _scopeTitle(scope),
-    );
-    if (confirmation == null || !mounted) return;
-
-    setState(() => _busyAction = scope.remoteValue);
-    final result = await serviceLocator<PilotOperationResetService>()
-        .resetScope(scope: scope, confirmation: confirmation);
-    if (!mounted) return;
-    setState(() => _busyAction = null);
-
-    await _showResult(
-      successTitle: 'Limpieza completada',
-      result: result,
-    );
-  }
-
-  Future<void> _runFullReset() async {
-    final confirmation = await _askConfirmation(
-      confirmationText: PilotOperationResetService.confirmationText,
-      title: 'Reiniciar produccion',
-    );
-    if (confirmation == null || !mounted) return;
-
-    setState(() => _busyAction = 'full_reset');
-    final result = await serviceLocator<PilotOperationResetService>()
-        .resetPilotOperation(confirmation: confirmation);
-    if (!mounted) return;
-    setState(() => _busyAction = null);
-
-    await _showResult(
-      successTitle: 'Reinicio completado',
-      result: result,
-    );
-  }
-
-  Future<String?> _askConfirmation({
-    required String confirmationText,
-    required String title,
-  }) async {
-    final controller = TextEditingController();
-    try {
-      return showDialog<String>(
-        context: context,
-        builder: (dialogContext) {
-          return StatefulBuilder(
-            builder: (context, setDialogState) {
-              final canSubmit = controller.text.trim() == confirmationText;
-              return AlertDialog(
-                title: Text(title),
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const AppText(
-                      'Esta accion limpia primero este movil y su cola local; '
-                      'despues limpia Supabase. Para continuar escribe:',
-                    ),
-                    const SizedBox(height: 8),
-                    SelectableText(
-                      confirmationText,
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    AppInput(
-                      controller: controller,
-                      label: 'Confirmacion',
-                      onChanged: (_) => setDialogState(() {}),
-                    ),
-                  ],
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.of(dialogContext).pop(),
-                    child: const Text('Cancelar'),
-                  ),
-                  FilledButton(
-                    onPressed: canSubmit
-                        ? () => Navigator.of(
-                            dialogContext,
-                          ).pop(controller.text.trim())
-                        : null,
-                    child: const Text('Ejecutar'),
-                  ),
-                ],
-              );
-            },
-          );
-        },
-      );
-    } finally {
-      controller.dispose();
-    }
-  }
-
-  Future<void> _showResult({
-    required AppResult<PilotOperationResetSummary> result,
-    required String successTitle,
-  }) {
-    return result.when(
-      success: (summary) {
-        return showAppMessageDialog(
-          context: context,
-          title: successTitle,
-          message:
-              'Local: ${summary.localRows} registros procesados.\n'
-              'Remoto: ${summary.remoteRows} registros procesados.',
-        );
-      },
-      failure: (failure) {
-        return showAppMessageDialog(
-          context: context,
-          title: 'No se pudo completar',
-          message: failure.cause == null
-              ? failure.message
-              : '${failure.message}\n\nDetalle: ${failure.cause}',
-        );
-      },
-    );
-  }
-
-  String _scopeTitle(PilotCleanupScope scope) {
-    return switch (scope) {
-      PilotCleanupScope.sales => 'Limpiar ventas POS',
-      PilotCleanupScope.expenses => 'Limpiar gastos',
-      PilotCleanupScope.salaryAdvances => 'Limpiar adelantos',
-      PilotCleanupScope.payroll => 'Limpiar planilla',
-      PilotCleanupScope.staffConsumptions => 'Limpiar consumos de personal',
-      PilotCleanupScope.staffOperations => 'Limpiar personal operativo',
-    };
   }
 }
