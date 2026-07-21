@@ -175,15 +175,27 @@ class _CashRegisterAdminPageState extends State<CashRegisterAdminPage> {
     AppResult<T> result,
     String successMessage,
   ) async {
+    final textColor = Theme.of(context).colorScheme.onInverseSurface;
     switch (result) {
       case AppSuccess():
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: AppText(successMessage)),
+          SnackBar(
+            behavior: SnackBarBehavior.floating,
+            content: Text(successMessage, style: TextStyle(color: textColor)),
+          ),
         );
         await _load();
       case AppFailureResult(:final error):
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: AppText(error.message, maxLines: 3)),
+          SnackBar(
+            behavior: SnackBarBehavior.floating,
+            content: Text(
+              error.message,
+              maxLines: 4,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(color: textColor),
+            ),
+          ),
         );
     }
   }

@@ -133,8 +133,17 @@ extension on SupabaseSyncRemoteSender {
     final alias = _cashRegisterSessionAliases[localId];
     if (alias != null) return alias;
 
+    if (await _hasDeviceCredentials()) {
+      final syncedId = await _syncLocalCashRegisterSessionById(
+        localId,
+        allowAuthFallback: false,
+      );
+      if (syncedId != null) return syncedId;
+    }
+
     if (cashierId != null &&
         businessDate != null &&
+        allowAuthFallback &&
         _remoteSessionService.hasUsableToken) {
       final remoteSessionId = await _findOpenCashRegisterSessionId(
         cashierId: cashierId,

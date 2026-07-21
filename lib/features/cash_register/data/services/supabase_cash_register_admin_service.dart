@@ -37,7 +37,8 @@ final class SupabaseCashRegisterAdminService {
       final rows = await _getRows('cash_register_sessions', {
         'select':
             'id,cashier_user_id,business_date,opening_cash_amount,'
-            'counted_cash_amount,status,opened_at,closed_at,updated_at',
+            'counted_cash_amount,status,opened_at,closed_at,updated_at,'
+            'profiles(display_name,email),pos_devices(name)',
         'restaurant_id': 'eq.${_restaurantService.restaurantId}',
         'business_date': 'gte.${BusinessDateFormatter.format(from)}',
         'and': '(business_date.lte.${BusinessDateFormatter.format(to)})',
@@ -102,6 +103,19 @@ final class SupabaseCashRegisterAdminService {
   Future<AppResult<void>> delete(String id) async {
     if (!_isConfigured) return const AppFailureResult(_notConfigured);
     try {
+      final usage = await _loadUsage(id);
+      if (usage.salesCount > 0 || usage.expensesCount > 0) {
+        return AppFailureResult(
+          AppFailure(
+            code: 'cash_register_admin_delete_blocked',
+            message:
+                'No se puede eliminar esta caja porque tiene '
+                '${usage.salesCount} ventas y ${usage.expensesCount} gastos '
+                'vinculados. Si es una caja de prueba, usa Utilidades para '
+                'limpiar primero los movimientos del dispositivo de prueba.',
+          ),
+        );
+      }
       final response = await _client.delete(
         _config.restUri('cash_register_sessions', {'id': 'eq.$id'}),
         headers: _headers(),
@@ -117,6 +131,23 @@ final class SupabaseCashRegisterAdminService {
         ),
       );
     }
+  }
+
+  Future<_CashRegisterUsage> _loadUsage(String sessionId) async {
+    final sales = await _getRows('sales', {
+      'select': 'id',
+      'restaurant_id': 'eq.${_restaurantService.restaurantId}',
+      'cash_register_session_id': 'eq.$sessionId',
+    });
+    final expenses = await _getRows('operating_expenses', {
+      'select': 'id',
+      'restaurant_id': 'eq.${_restaurantService.restaurantId}',
+      'cash_register_session_id': 'eq.$sessionId',
+    });
+    return _CashRegisterUsage(
+      expensesCount: expenses.length,
+      salesCount: sales.length,
+    );
   }
 
   bool get _isConfigured {
@@ -172,6 +203,10 @@ final class SupabaseCashRegisterAdminService {
           ? null
           : DateTime.parse(row['closed_at'].toString()),
       updatedAt: DateTime.parse(row['updated_at'].toString()),
+      cashierName:
+          _relatedText(row['profiles'], 'display_name') ??
+          _relatedText(row['profiles'], 'email'),
+      deviceName: _relatedText(row['pos_devices'], 'name'),
     );
   }
 
@@ -192,4 +227,20 @@ final class SupabaseCashRegisterAdminService {
   int _moneyToCents(Object? value) {
     return ((double.tryParse(value?.toString() ?? '') ?? 0) * 100).round();
   }
+
+  String? _relatedText(Object? value, String key) {
+    if (value is! Map) return null;
+    final text = value[key]?.toString().trim();
+    return text == null || text.isEmpty ? null : text;
+  }
+}
+
+final class _CashRegisterUsage {
+  const _CashRegisterUsage({
+    required this.expensesCount,
+    required this.salesCount,
+  });
+
+  final int expensesCount;
+  final int salesCount;
 }

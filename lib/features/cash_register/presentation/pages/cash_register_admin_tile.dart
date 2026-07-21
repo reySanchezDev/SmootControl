@@ -53,7 +53,18 @@ class _CashRegisterAdminTile extends StatelessWidget {
             ),
             _AmountRow(
               label: l10n.localUserLabel,
-              value: record.cashierId,
+              value: record.cashierName ?? record.cashierId,
+            ),
+            _AmountRow(
+              label: 'Dispositivo',
+              value: record.deviceName ?? 'Sin dispositivo',
+            ),
+            _AmountRow(
+              label: 'Apertura',
+              value:
+                  '${dateFormat.format(record.openedAt)} '
+                  '${record.openedAt.hour.toString().padLeft(2, '0')}:'
+                  '${record.openedAt.minute.toString().padLeft(2, '0')}',
             ),
             const SizedBox(height: 12),
             Wrap(

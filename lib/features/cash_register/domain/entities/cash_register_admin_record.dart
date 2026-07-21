@@ -11,6 +11,8 @@ final class CashRegisterAdminRecord {
     required this.updatedAt,
     this.physicalClosingCashInCents,
     this.closedAt,
+    this.cashierName,
+    this.deviceName,
   });
 
   /// Remote cash register id.
@@ -18,6 +20,12 @@ final class CashRegisterAdminRecord {
 
   /// Remote cashier id.
   final String cashierId;
+
+  /// Cashier display name.
+  final String? cashierName;
+
+  /// POS device display name.
+  final String? deviceName;
 
   /// Business date controlled by this cash register.
   final DateTime businessDate;
@@ -57,6 +65,8 @@ final class CashRegisterAdminRecord {
       openedAt: openedAt,
       closedAt: closedAt,
       updatedAt: updatedAt,
+      cashierName: cashierName,
+      deviceName: deviceName,
     );
   }
 }
