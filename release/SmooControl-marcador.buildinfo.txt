@@ -1,0 +1,11 @@
+﻿SmooControl Time Clock Android Release Build
+GeneratedAt=2026-07-22T14:34:18.2036872-06:00
+Output=release\SmooControl-marcador.apk
+PubspecVersion=0.1.82+87
+CredentialSource=Requerimiento/CredencialesSupabase.md
+InjectedDartDefines=SMOO_APP_MODE,SMOO_SUPABASE_URL,SMOO_SUPABASE_PUBLISHABLE_KEY,SMOO_RESTAURANT_ID
+CorrectCommand=powershell -ExecutionPolicy Bypass -File .\tool\build_time_clock_release.ps1
+
+AaptBadging:
+package: name='com.smoocontrol.timeclock' versionCode='87' versionName='0.1.82' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'
+application-label:'SmooControl Marcador'

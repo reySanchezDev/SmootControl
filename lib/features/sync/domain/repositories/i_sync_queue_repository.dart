@@ -9,6 +9,7 @@ abstract interface class ISyncQueueRepository {
     required String entityId,
     required SyncOperation operation,
     required Map<String, Object?> payload,
+    bool syncImmediately = true,
   });
 
   /// Returns pending or failed queue items eligible for processing.

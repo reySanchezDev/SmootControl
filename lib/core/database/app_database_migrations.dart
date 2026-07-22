@@ -30,6 +30,7 @@ extension _AppDatabaseMigrations on AppDatabase {
     await _upgradeSchemaFrom29(migrator, from);
     await _upgradeSchemaFrom30(migrator, from);
     await _upgradeSchemaFrom31(migrator, from);
+    await _upgradeSchemaFrom32(migrator, from);
   }
 
   Future<void> _upgradeSchemaFrom7To20(Migrator migrator, int from) async {
@@ -222,6 +223,29 @@ extension _AppDatabaseMigrations on AppDatabase {
         localSales.exchangeRateInCents.$name,
       )) {
         await migrator.addColumn(localSales, localSales.exchangeRateInCents);
+      }
+    }
+  }
+
+  Future<void> _upgradeSchemaFrom32(Migrator migrator, int from) async {
+    if (from < 32) {
+      if (!await _tableExists(localAttendanceEntries.actualTableName)) {
+        await migrator.createTable(localAttendanceEntries);
+      }
+      if (!await _columnExists(
+        localEmployees.actualTableName,
+        localEmployees.photoUrl.$name,
+      )) {
+        await migrator.addColumn(localEmployees, localEmployees.photoUrl);
+      }
+      if (!await _columnExists(
+        localEmployees.actualTableName,
+        localEmployees.showInTimeClock.$name,
+      )) {
+        await migrator.addColumn(
+          localEmployees,
+          localEmployees.showInTimeClock,
+        );
       }
     }
   }

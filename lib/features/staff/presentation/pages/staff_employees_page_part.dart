@@ -93,6 +93,9 @@ class _StaffPageState extends State<StaffPage> {
     if (!mounted) return;
     switch (saved) {
       case AppSuccess():
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Empleado guardado.')),
+        );
         setState(_reload);
       case AppFailureResult(:final error):
         await showAppMessageDialog(context: context, message: error.message);
@@ -178,12 +181,17 @@ class _EmployeeDialogState extends State<_EmployeeDialog> {
   );
   late String? _positionId = widget.employee?.positionName;
   late bool _active = widget.employee?.isActive ?? true;
+  late bool _showInTimeClock = widget.employee?.showInTimeClock ?? true;
+  late final _photoUrl = TextEditingController(
+    text: widget.employee?.photoUrl ?? '',
+  );
   String? _error;
 
   @override
   void dispose() {
     _name.dispose();
     _salary.dispose();
+    _photoUrl.dispose();
     super.dispose();
   }
 
@@ -220,11 +228,23 @@ class _EmployeeDialogState extends State<_EmployeeDialog> {
               decoration: const InputDecoration(labelText: 'Salario quincenal'),
               keyboardType: TextInputType.number,
             ),
+            TextField(
+              controller: _photoUrl,
+              decoration: const InputDecoration(labelText: 'Foto URL'),
+            ),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
               title: const Text('Activo'),
               value: _active,
               onChanged: (value) => setState(() => _active = value),
+            ),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Mostrar en marcador'),
+              value: _showInTimeClock,
+              onChanged: (value) {
+                setState(() => _showInTimeClock = value);
+              },
             ),
             if (_error != null)
               Text(
@@ -259,6 +279,8 @@ class _EmployeeDialogState extends State<_EmployeeDialog> {
         positionName: _positionId,
         baseSalaryInCents: (salary * 100).round(),
         isActive: _active,
+        photoUrl: _photoUrl.text.trim().isEmpty ? null : _photoUrl.text.trim(),
+        showInTimeClock: _showInTimeClock,
       ),
     );
   }

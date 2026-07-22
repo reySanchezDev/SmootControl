@@ -104,6 +104,7 @@ final class _SyncQueueRepositoryFake implements ISyncQueueRepository {
     required String entityId,
     required SyncOperation operation,
     required Map<String, Object?> payload,
+    bool syncImmediately = true,
   }) async {
     final item = _syncItem();
     _items.add(item);

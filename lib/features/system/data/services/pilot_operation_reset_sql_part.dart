@@ -106,4 +106,5 @@ const _operationalTables = [
   'local_inventory_movements',
   'local_packaging_movements',
   'local_salary_advances',
+  'local_attendance_entries',
 ];

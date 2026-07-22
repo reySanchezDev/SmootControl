@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smoo_control/core/design_system/app_button.dart';
@@ -7,6 +9,7 @@ import 'package:smoo_control/core/design_system/app_text.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/core/result/app_result.dart';
 import 'package:smoo_control/core/theme/app_palette.dart';
+import 'package:smoo_control/features/auth/data/services/pos_device_name_service.dart';
 import 'package:smoo_control/features/auth/domain/services/device_initialization_service.dart';
 import 'package:smoo_control/features/auth/domain/services/remote_bootstrap_session.dart';
 import 'package:smoo_control/features/auth/presentation/bloc/auth_bloc.dart';
@@ -15,7 +18,10 @@ import 'package:smoo_control/features/auth/presentation/bloc/auth_event.dart';
 /// Secure bootstrap page for clean tablets connected to Supabase.
 class DeviceInitializationPage extends StatefulWidget {
   /// Creates the device initialization page.
-  const DeviceInitializationPage({super.key});
+  const DeviceInitializationPage({super.key, this.onInitialized});
+
+  /// Optional callback used by alternate app modes after initialization.
+  final VoidCallback? onInitialized;
 
   @override
   State<DeviceInitializationPage> createState() =>
@@ -25,6 +31,7 @@ class DeviceInitializationPage extends StatefulWidget {
 class _DeviceInitializationPageState extends State<DeviceInitializationPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _deviceNameController = TextEditingController();
   final _pinController = TextEditingController();
   final _pinConfirmationController = TextEditingController();
   final DeviceInitializationService _service =
@@ -35,9 +42,16 @@ class _DeviceInitializationPageState extends State<DeviceInitializationPage> {
   bool _busy = false;
 
   @override
+  void initState() {
+    super.initState();
+    unawaited(_loadSuggestedDeviceName());
+  }
+
+  @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _deviceNameController.dispose();
     _pinController.dispose();
     _pinConfirmationController.dispose();
     super.dispose();
@@ -103,6 +117,11 @@ class _DeviceInitializationPageState extends State<DeviceInitializationPage> {
                           controller: _passwordController,
                           obscureText: true,
                         ),
+                        const SizedBox(height: 12),
+                        AppInput(
+                          label: 'Nombre del POS',
+                          controller: _deviceNameController,
+                        ),
                       ] else ...[
                         AppInput(
                           label: 'PIN local',
@@ -163,8 +182,13 @@ class _DeviceInitializationPageState extends State<DeviceInitializationPage> {
   Future<void> _signInAndRestore() async {
     final email = _emailController.text.trim();
     final password = _passwordController.text;
+    final deviceName = _deviceNameController.text.trim();
     if (email.isEmpty || password.isEmpty) {
       setState(() => _error = 'Correo y clave remota son requeridos.');
+      return;
+    }
+    if (deviceName.length < 2) {
+      setState(() => _error = 'Indica un nombre para este POS.');
       return;
     }
 
@@ -237,7 +261,10 @@ class _DeviceInitializationPageState extends State<DeviceInitializationPage> {
   }
 
   Future<void> _restore(RemoteBootstrapSession session) async {
-    final result = await _service.restoreDevice(session: session);
+    final result = await _service.restoreDevice(
+      session: session,
+      deviceDisplayName: _deviceNameController.text.trim(),
+    );
     if (!mounted) return;
 
     switch (result) {
@@ -257,7 +284,18 @@ class _DeviceInitializationPageState extends State<DeviceInitializationPage> {
               'administrativo seguira trabajando contra Supabase.',
         );
         if (!mounted) return;
+        final onInitialized = widget.onInitialized;
+        if (onInitialized != null) {
+          onInitialized();
+          return;
+        }
         context.read<AuthBloc>().add(const AuthSessionRequested());
     }
+  }
+
+  Future<void> _loadSuggestedDeviceName() async {
+    final name = await const PosDeviceNameService().resolveName();
+    if (!mounted || _deviceNameController.text.trim().isNotEmpty) return;
+    setState(() => _deviceNameController.text = name);
   }
 }

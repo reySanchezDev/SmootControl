@@ -26,6 +26,7 @@ abstract final class RouteAccess {
       AppRoutes.inventoryValueReport ||
       AppRoutes.negativeInventoryReport ||
       AppRoutes.payrollPaymentsReport => const ['reportes.ver'],
+      AppRoutes.attendanceReport => const ['reportes.marcadas.ver'],
       AppRoutes.catalog ||
       AppRoutes.products ||
       AppRoutes.recipes ||
@@ -61,6 +62,8 @@ abstract final class RouteAccess {
       AppRoutes.payroll ||
       AppRoutes.staffOvertime ||
       AppRoutes.staffPayrollPayments => const ['planilla.gestionar'],
+      AppRoutes.attendance => const ['marcadas.gestionar', 'marcadas.ver'],
+      AppRoutes.overtimeApprovals => const ['horas_extra.autorizar'],
       AppRoutes.businessRules => const ['reglas_negocio.gestionar'],
       AppRoutes.sync => const ['sync.configurar'],
       AppRoutes.systemMaintenance => const ['sistema.reiniciar_operacion'],

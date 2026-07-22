@@ -37,6 +37,20 @@ android {
         versionName = flutter.versionName
     }
 
+    flavorDimensions += "app"
+    productFlavors {
+        create("production") {
+            dimension = "app"
+            applicationId = "com.smoocontrol.pos"
+            resValue("string", "app_name", "SmooControl")
+        }
+        create("timeClock") {
+            dimension = "app"
+            applicationId = "com.smoocontrol.timeclock"
+            resValue("string", "app_name", "SmooControl Marcador")
+        }
+    }
+
     signingConfigs {
         create("release") {
             if (keystorePropertiesFile.exists()) {

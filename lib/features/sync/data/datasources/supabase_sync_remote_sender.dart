@@ -55,6 +55,8 @@ final class SupabaseSyncRemoteSender implements ISyncRemoteSender {
         await _pushBusinessSettings(item);
       case 'cash_register_sessions':
         await _pushCashRegisterSession(item);
+      case 'employee_attendance_entries':
+        await _pushEmployeeAttendanceEntry(item);
       case 'exchange_rates':
         await _upsert(
           'exchange_rates',

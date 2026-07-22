@@ -248,9 +248,12 @@ final class RemoteBootstrapAuthService {
     required RemoteBootstrapSession session,
     required String deviceId,
     required String deviceSecret,
+    String? deviceName,
   }) async {
     try {
-      final deviceName = await _deviceNameService.resolveName();
+      final resolvedName =
+          _cleanDeviceName(deviceName) ??
+          await _deviceNameService.resolveName();
       final response = await _client.post(
         _config.rpcUri('register_pos_device'),
         headers: _jsonHeaders(session.accessToken),
@@ -258,7 +261,7 @@ final class RemoteBootstrapAuthService {
           'p_restaurant_id': _restaurantService.restaurantId,
           'p_device_id': deviceId,
           'p_device_secret': deviceSecret,
-          'p_name': deviceName,
+          'p_name': resolvedName,
         }),
       );
       _ensureSuccess(response, 'register_pos_device');
@@ -272,5 +275,11 @@ final class RemoteBootstrapAuthService {
         ),
       );
     }
+  }
+
+  String? _cleanDeviceName(String? value) {
+    final normalized = value?.trim().replaceAll(RegExp(r'\s+'), ' ');
+    if (normalized == null || normalized.length < 2) return null;
+    return normalized.length > 80 ? normalized.substring(0, 80) : normalized;
   }
 }

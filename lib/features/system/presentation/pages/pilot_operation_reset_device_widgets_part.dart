@@ -41,7 +41,8 @@ class _DeviceCleanupCard extends StatelessWidget {
             const SizedBox(height: 8),
             const AppText(
               'Borra solo ventas, caja, gastos, adelantos y movimientos '
-              'creados por el POS seleccionado.',
+              'creados por el POS seleccionado. Tambien borra marcadas '
+              'y horas extra pendientes del marcador.',
               maxLines: 3,
               overflow: TextOverflow.ellipsis,
               variant: AppTextVariant.label,
@@ -56,7 +57,7 @@ class _DeviceCleanupCard extends StatelessWidget {
                   DropdownMenuItem(
                     value: device.id,
                     child: Text(
-                      '${device.name} (${device.totalRows})',
+                      _deviceLabel(device),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
@@ -80,6 +81,11 @@ class _DeviceCleanupCard extends StatelessWidget {
       if (device.id == selectedDeviceId) return device;
     }
     return null;
+  }
+
+  String _deviceLabel(PosDeviceCleanupCandidate device) {
+    final marker = device.isCurrentDevice ? ' - este dispositivo' : '';
+    return '${device.name}$marker (${device.totalRows})';
   }
 }
 
@@ -154,6 +160,8 @@ class _DeviceCleanupFooter extends StatelessWidget {
           child: AppText(
             selected == null
                 ? 'No hay dispositivos con datos trazables.'
+                : selected!.isCurrentDevice
+                ? 'Este dispositivo: ${selected!.totalRows} registros'
                 : 'Registros trazables: ${selected!.totalRows}',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,

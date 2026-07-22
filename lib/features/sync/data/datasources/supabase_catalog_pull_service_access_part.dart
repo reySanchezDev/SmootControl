@@ -167,6 +167,10 @@ extension on SupabaseCatalogPullService {
               positionName: Value(_optionalText(row['position_name'])),
               baseSalaryInCents: Value(_moneyCents(row['base_salary'])),
               isActive: Value(_bool(row['is_active'], defaultValue: true)),
+              photoUrl: Value(_optionalText(row['photo_url'])),
+              showInTimeClock: Value(
+                _bool(row['show_in_time_clock'], defaultValue: true),
+              ),
               remoteId: Value(id),
               syncStatus: const Value('synced'),
               syncError: const Value(null),

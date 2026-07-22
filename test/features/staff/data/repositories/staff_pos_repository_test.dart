@@ -73,6 +73,7 @@ final class _SyncQueueRepositoryFake implements ISyncQueueRepository {
     required String entityId,
     required SyncOperation operation,
     required Map<String, Object?> payload,
+    bool syncImmediately = true,
   }) async {
     final item = SyncQueueItem(
       id: 'queue-${items.length + 1}',

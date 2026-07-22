@@ -112,6 +112,7 @@ final class DeviceInitializationService {
     required String email,
     required String password,
     required String pin,
+    String? deviceDisplayName,
   }) async {
     final salt = _pinHasher.generateSalt();
     final hash = _pinHasher.hashPin(pin: pin, salt: salt);
@@ -125,7 +126,10 @@ final class DeviceInitializationService {
 
     return switch (sessionResult) {
       AppFailureResult(:final error) => AppFailureResult(error),
-      AppSuccess(:final value) => restoreDevice(session: value),
+      AppSuccess(:final value) => restoreDevice(
+        session: value,
+        deviceDisplayName: deviceDisplayName,
+      ),
     };
   }
 
@@ -146,6 +150,7 @@ final class DeviceInitializationService {
   /// Restores the full operational dataset and marks this device initialized.
   Future<AppResult<CatalogPullSummary>> restoreDevice({
     required RemoteBootstrapSession session,
+    String? deviceDisplayName,
   }) async {
     try {
       final summary = await _catalogPullService
@@ -169,7 +174,11 @@ final class DeviceInitializationService {
         );
       }
 
-      await _markInitialized(session: session, summary: summary);
+      await _markInitialized(
+        session: session,
+        summary: summary,
+        deviceDisplayName: deviceDisplayName,
+      );
       return AppSuccess(summary);
     } on Object catch (error) {
       await _markRestoreFailed(session: session, error: error.toString());

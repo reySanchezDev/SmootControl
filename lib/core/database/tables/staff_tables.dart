@@ -21,6 +21,13 @@ class LocalEmployees extends Table with SyncColumns {
   /// Whether this employee can be selected in POS.
   BoolColumn get isActive => boolean().withDefault(const Constant(true))();
 
+  /// Optional image URL/path shown by the time-clock.
+  TextColumn get photoUrl => text().nullable()();
+
+  /// Whether the employee appears in the time-clock APK.
+  BoolColumn get showInTimeClock =>
+      boolean().withDefault(const Constant(true))();
+
   @override
   Set<Column<Object>> get primaryKey => {id};
 }
@@ -68,6 +75,40 @@ class LocalSalaryAdvances extends Table with SyncColumns {
 
   /// Pending, synced, voided or applied.
   TextColumn get status => text().withDefault(const Constant('pending'))();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+/// Local attendance entries created by the time-clock APK.
+class LocalAttendanceEntries extends Table with SyncColumns {
+  /// Local attendance identifier.
+  TextColumn get id => text()();
+
+  /// Employee identifier.
+  TextColumn get employeeId => text()();
+
+  /// Work day used for payroll grouping.
+  DateTimeColumn get workDate => dateTime()();
+
+  /// Clock-in timestamp.
+  DateTimeColumn get clockInAt => dateTime().nullable()();
+
+  /// Clock-out timestamp.
+  DateTimeColumn get clockOutAt => dateTime().nullable()();
+
+  /// open, closed or voided.
+  TextColumn get status => text().withDefault(const Constant('open'))();
+
+  /// Source of the record.
+  TextColumn get source => text().withDefault(const Constant('time_clock'))();
+
+  /// Verification method used in V1.
+  TextColumn get verificationMethod =>
+      text().withDefault(const Constant('photo_tap'))();
+
+  /// Optional note.
+  TextColumn get note => text().nullable()();
 
   @override
   Set<Column<Object>> get primaryKey => {id};

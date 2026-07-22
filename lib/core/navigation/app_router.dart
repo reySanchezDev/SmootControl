@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:smoo_control/core/navigation/admin_online_guard.dart';
 import 'package:smoo_control/core/navigation/app_routes.dart';
 import 'package:smoo_control/core/navigation/route_access.dart';
+import 'package:smoo_control/features/attendance/presentation/pages/attendance_admin_page.dart';
+import 'package:smoo_control/features/attendance/presentation/pages/overtime_approvals_page.dart';
 import 'package:smoo_control/features/audit/presentation/pages/audit_log_page.dart';
 import 'package:smoo_control/features/cash_register/presentation/pages/cash_register_admin_page.dart';
 import 'package:smoo_control/features/catalog/presentation/pages/catalog_page.dart';
@@ -53,6 +55,7 @@ Widget _guardedPage(String? routeName) {
     AppRoutes.inventoryValueReport => const InventoryValueReportPage(),
     AppRoutes.negativeInventoryReport => const NegativeInventoryReportPage(),
     AppRoutes.payrollPaymentsReport => const PayrollPaymentsReportPage(),
+    AppRoutes.attendanceReport => const AttendanceAdminPage(readOnly: true),
     AppRoutes.catalog => const CatalogPage(),
     AppRoutes.products => const ProductsPage(),
     AppRoutes.recipes => const RecipesPage(),
@@ -77,6 +80,8 @@ Widget _guardedPage(String? routeName) {
     AppRoutes.salaryAdvances => const SalaryAdvancesPage(),
     AppRoutes.payroll => const PayrollPage(),
     AppRoutes.staffOvertime => const StaffOvertimePage(),
+    AppRoutes.attendance => const AttendanceAdminPage(),
+    AppRoutes.overtimeApprovals => const OvertimeApprovalsPage(),
     AppRoutes.staffPayrollPayments => const PayrollPaymentsReportPage(
       mode: PayrollPaymentsPageMode.staffAdmin,
     ),
@@ -120,6 +125,8 @@ bool _requiresOnlineAdmin(String? routeName) {
     AppRoutes.salaryAdvances ||
     AppRoutes.payroll ||
     AppRoutes.staffOvertime ||
+    AppRoutes.attendance ||
+    AppRoutes.overtimeApprovals ||
     AppRoutes.staffPayrollPayments ||
     AppRoutes.businessRules ||
     AppRoutes.systemMaintenance ||
@@ -132,7 +139,8 @@ bool _requiresOnlineAdmin(String? routeName) {
     AppRoutes.monthlyOperationalReport ||
     AppRoutes.inventoryValueReport ||
     AppRoutes.negativeInventoryReport ||
-    AppRoutes.payrollPaymentsReport => true,
+    AppRoutes.payrollPaymentsReport ||
+    AppRoutes.attendanceReport => true,
     _ => false,
   };
 }

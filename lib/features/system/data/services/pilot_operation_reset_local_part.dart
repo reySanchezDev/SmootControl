@@ -18,6 +18,7 @@ extension _PilotOperationResetLocal on PilotOperationResetService {
       await _database.delete(_database.localInventoryMovements).go();
       await _database.delete(_database.localPackagingMovements).go();
       await _database.delete(_database.localSalaryAdvances).go();
+      await _database.delete(_database.localAttendanceEntries).go();
 
       await _database
           .update(_database.localInventoryStock)

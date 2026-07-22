@@ -1,6 +1,25 @@
 part of 'supabase_sync_remote_sender.dart';
 
 extension on SupabaseSyncRemoteSender {
+  Future<void> _pushEmployeeAttendanceEntry(SyncQueueItem item) async {
+    final payload = item.payload;
+    await _deviceRpc('pos_sync_employee_attendance_entry', {
+      'p_payload': {
+        'id': _remoteUuid(payload['id'], scope: 'employee_attendance_entries'),
+        'local_id': payload['id'],
+        'employee_id': payload['employeeId'],
+        'work_date': payload['workDate'],
+        'clock_in_at': payload['clockInAt'],
+        'clock_out_at': payload['clockOutAt'],
+        'status': payload['status'],
+        'source': payload['source'] ?? 'time_clock',
+        'verification_method': payload['verificationMethod'] ?? 'photo_tap',
+        'note': payload['note'],
+        'created_at': payload['createdAt'],
+      },
+    });
+  }
+
   Future<void> _pushSaleWithDevice(SyncQueueItem item) async {
     final salePayload = _mapPayload(item.payload['sale']);
     final itemPayloads = _listPayload(item.payload['items']);

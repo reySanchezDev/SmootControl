@@ -24893,6 +24893,32 @@ class $LocalEmployeesTable extends LocalEmployees
     ),
     defaultValue: const Constant(true),
   );
+  static const VerificationMeta _photoUrlMeta = const VerificationMeta(
+    'photoUrl',
+  );
+  @override
+  late final GeneratedColumn<String> photoUrl = GeneratedColumn<String>(
+    'photo_url',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _showInTimeClockMeta = const VerificationMeta(
+    'showInTimeClock',
+  );
+  @override
+  late final GeneratedColumn<bool> showInTimeClock = GeneratedColumn<bool>(
+    'show_in_time_clock',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("show_in_time_clock" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     remoteId,
@@ -24907,6 +24933,8 @@ class $LocalEmployeesTable extends LocalEmployees
     positionName,
     baseSalaryInCents,
     isActive,
+    photoUrl,
+    showInTimeClock,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -25003,6 +25031,21 @@ class $LocalEmployeesTable extends LocalEmployees
         isActive.isAcceptableOrUnknown(data['is_active']!, _isActiveMeta),
       );
     }
+    if (data.containsKey('photo_url')) {
+      context.handle(
+        _photoUrlMeta,
+        photoUrl.isAcceptableOrUnknown(data['photo_url']!, _photoUrlMeta),
+      );
+    }
+    if (data.containsKey('show_in_time_clock')) {
+      context.handle(
+        _showInTimeClockMeta,
+        showInTimeClock.isAcceptableOrUnknown(
+          data['show_in_time_clock']!,
+          _showInTimeClockMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -25060,6 +25103,14 @@ class $LocalEmployeesTable extends LocalEmployees
         DriftSqlType.bool,
         data['${effectivePrefix}is_active'],
       )!,
+      photoUrl: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}photo_url'],
+      ),
+      showInTimeClock: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}show_in_time_clock'],
+      )!,
     );
   }
 
@@ -25105,6 +25156,12 @@ class LocalEmployee extends DataClass implements Insertable<LocalEmployee> {
 
   /// Whether this employee can be selected in POS.
   final bool isActive;
+
+  /// Optional image URL/path shown by the time-clock.
+  final String? photoUrl;
+
+  /// Whether the employee appears in the time-clock APK.
+  final bool showInTimeClock;
   const LocalEmployee({
     this.remoteId,
     required this.syncStatus,
@@ -25118,6 +25175,8 @@ class LocalEmployee extends DataClass implements Insertable<LocalEmployee> {
     this.positionName,
     required this.baseSalaryInCents,
     required this.isActive,
+    this.photoUrl,
+    required this.showInTimeClock,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -25144,6 +25203,10 @@ class LocalEmployee extends DataClass implements Insertable<LocalEmployee> {
     }
     map['base_salary_in_cents'] = Variable<int>(baseSalaryInCents);
     map['is_active'] = Variable<bool>(isActive);
+    if (!nullToAbsent || photoUrl != null) {
+      map['photo_url'] = Variable<String>(photoUrl);
+    }
+    map['show_in_time_clock'] = Variable<bool>(showInTimeClock);
     return map;
   }
 
@@ -25169,6 +25232,10 @@ class LocalEmployee extends DataClass implements Insertable<LocalEmployee> {
           : Value(positionName),
       baseSalaryInCents: Value(baseSalaryInCents),
       isActive: Value(isActive),
+      photoUrl: photoUrl == null && nullToAbsent
+          ? const Value.absent()
+          : Value(photoUrl),
+      showInTimeClock: Value(showInTimeClock),
     );
   }
 
@@ -25190,6 +25257,8 @@ class LocalEmployee extends DataClass implements Insertable<LocalEmployee> {
       positionName: serializer.fromJson<String?>(json['positionName']),
       baseSalaryInCents: serializer.fromJson<int>(json['baseSalaryInCents']),
       isActive: serializer.fromJson<bool>(json['isActive']),
+      photoUrl: serializer.fromJson<String?>(json['photoUrl']),
+      showInTimeClock: serializer.fromJson<bool>(json['showInTimeClock']),
     );
   }
   @override
@@ -25208,6 +25277,8 @@ class LocalEmployee extends DataClass implements Insertable<LocalEmployee> {
       'positionName': serializer.toJson<String?>(positionName),
       'baseSalaryInCents': serializer.toJson<int>(baseSalaryInCents),
       'isActive': serializer.toJson<bool>(isActive),
+      'photoUrl': serializer.toJson<String?>(photoUrl),
+      'showInTimeClock': serializer.toJson<bool>(showInTimeClock),
     };
   }
 
@@ -25224,6 +25295,8 @@ class LocalEmployee extends DataClass implements Insertable<LocalEmployee> {
     Value<String?> positionName = const Value.absent(),
     int? baseSalaryInCents,
     bool? isActive,
+    Value<String?> photoUrl = const Value.absent(),
+    bool? showInTimeClock,
   }) => LocalEmployee(
     remoteId: remoteId.present ? remoteId.value : this.remoteId,
     syncStatus: syncStatus ?? this.syncStatus,
@@ -25237,6 +25310,8 @@ class LocalEmployee extends DataClass implements Insertable<LocalEmployee> {
     positionName: positionName.present ? positionName.value : this.positionName,
     baseSalaryInCents: baseSalaryInCents ?? this.baseSalaryInCents,
     isActive: isActive ?? this.isActive,
+    photoUrl: photoUrl.present ? photoUrl.value : this.photoUrl,
+    showInTimeClock: showInTimeClock ?? this.showInTimeClock,
   );
   LocalEmployee copyWithCompanion(LocalEmployeesCompanion data) {
     return LocalEmployee(
@@ -25258,6 +25333,10 @@ class LocalEmployee extends DataClass implements Insertable<LocalEmployee> {
           ? data.baseSalaryInCents.value
           : this.baseSalaryInCents,
       isActive: data.isActive.present ? data.isActive.value : this.isActive,
+      photoUrl: data.photoUrl.present ? data.photoUrl.value : this.photoUrl,
+      showInTimeClock: data.showInTimeClock.present
+          ? data.showInTimeClock.value
+          : this.showInTimeClock,
     );
   }
 
@@ -25275,7 +25354,9 @@ class LocalEmployee extends DataClass implements Insertable<LocalEmployee> {
           ..write('fullName: $fullName, ')
           ..write('positionName: $positionName, ')
           ..write('baseSalaryInCents: $baseSalaryInCents, ')
-          ..write('isActive: $isActive')
+          ..write('isActive: $isActive, ')
+          ..write('photoUrl: $photoUrl, ')
+          ..write('showInTimeClock: $showInTimeClock')
           ..write(')'))
         .toString();
   }
@@ -25294,6 +25375,8 @@ class LocalEmployee extends DataClass implements Insertable<LocalEmployee> {
     positionName,
     baseSalaryInCents,
     isActive,
+    photoUrl,
+    showInTimeClock,
   );
   @override
   bool operator ==(Object other) =>
@@ -25310,7 +25393,9 @@ class LocalEmployee extends DataClass implements Insertable<LocalEmployee> {
           other.fullName == this.fullName &&
           other.positionName == this.positionName &&
           other.baseSalaryInCents == this.baseSalaryInCents &&
-          other.isActive == this.isActive);
+          other.isActive == this.isActive &&
+          other.photoUrl == this.photoUrl &&
+          other.showInTimeClock == this.showInTimeClock);
 }
 
 class LocalEmployeesCompanion extends UpdateCompanion<LocalEmployee> {
@@ -25326,6 +25411,8 @@ class LocalEmployeesCompanion extends UpdateCompanion<LocalEmployee> {
   final Value<String?> positionName;
   final Value<int> baseSalaryInCents;
   final Value<bool> isActive;
+  final Value<String?> photoUrl;
+  final Value<bool> showInTimeClock;
   final Value<int> rowid;
   const LocalEmployeesCompanion({
     this.remoteId = const Value.absent(),
@@ -25340,6 +25427,8 @@ class LocalEmployeesCompanion extends UpdateCompanion<LocalEmployee> {
     this.positionName = const Value.absent(),
     this.baseSalaryInCents = const Value.absent(),
     this.isActive = const Value.absent(),
+    this.photoUrl = const Value.absent(),
+    this.showInTimeClock = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   LocalEmployeesCompanion.insert({
@@ -25355,6 +25444,8 @@ class LocalEmployeesCompanion extends UpdateCompanion<LocalEmployee> {
     this.positionName = const Value.absent(),
     this.baseSalaryInCents = const Value.absent(),
     this.isActive = const Value.absent(),
+    this.photoUrl = const Value.absent(),
+    this.showInTimeClock = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : createdAt = Value(createdAt),
        updatedAt = Value(updatedAt),
@@ -25373,6 +25464,8 @@ class LocalEmployeesCompanion extends UpdateCompanion<LocalEmployee> {
     Expression<String>? positionName,
     Expression<int>? baseSalaryInCents,
     Expression<bool>? isActive,
+    Expression<String>? photoUrl,
+    Expression<bool>? showInTimeClock,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -25388,6 +25481,8 @@ class LocalEmployeesCompanion extends UpdateCompanion<LocalEmployee> {
       if (positionName != null) 'position_name': positionName,
       if (baseSalaryInCents != null) 'base_salary_in_cents': baseSalaryInCents,
       if (isActive != null) 'is_active': isActive,
+      if (photoUrl != null) 'photo_url': photoUrl,
+      if (showInTimeClock != null) 'show_in_time_clock': showInTimeClock,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -25405,6 +25500,8 @@ class LocalEmployeesCompanion extends UpdateCompanion<LocalEmployee> {
     Value<String?>? positionName,
     Value<int>? baseSalaryInCents,
     Value<bool>? isActive,
+    Value<String?>? photoUrl,
+    Value<bool>? showInTimeClock,
     Value<int>? rowid,
   }) {
     return LocalEmployeesCompanion(
@@ -25420,6 +25517,8 @@ class LocalEmployeesCompanion extends UpdateCompanion<LocalEmployee> {
       positionName: positionName ?? this.positionName,
       baseSalaryInCents: baseSalaryInCents ?? this.baseSalaryInCents,
       isActive: isActive ?? this.isActive,
+      photoUrl: photoUrl ?? this.photoUrl,
+      showInTimeClock: showInTimeClock ?? this.showInTimeClock,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -25463,6 +25562,12 @@ class LocalEmployeesCompanion extends UpdateCompanion<LocalEmployee> {
     if (isActive.present) {
       map['is_active'] = Variable<bool>(isActive.value);
     }
+    if (photoUrl.present) {
+      map['photo_url'] = Variable<String>(photoUrl.value);
+    }
+    if (showInTimeClock.present) {
+      map['show_in_time_clock'] = Variable<bool>(showInTimeClock.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -25484,6 +25589,8 @@ class LocalEmployeesCompanion extends UpdateCompanion<LocalEmployee> {
           ..write('positionName: $positionName, ')
           ..write('baseSalaryInCents: $baseSalaryInCents, ')
           ..write('isActive: $isActive, ')
+          ..write('photoUrl: $photoUrl, ')
+          ..write('showInTimeClock: $showInTimeClock, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -26988,6 +27095,891 @@ class LocalSalaryAdvancesCompanion extends UpdateCompanion<LocalSalaryAdvance> {
   }
 }
 
+class $LocalAttendanceEntriesTable extends LocalAttendanceEntries
+    with TableInfo<$LocalAttendanceEntriesTable, LocalAttendanceEntry> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LocalAttendanceEntriesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _remoteIdMeta = const VerificationMeta(
+    'remoteId',
+  );
+  @override
+  late final GeneratedColumn<String> remoteId = GeneratedColumn<String>(
+    'remote_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _syncStatusMeta = const VerificationMeta(
+    'syncStatus',
+  );
+  @override
+  late final GeneratedColumn<String> syncStatus = GeneratedColumn<String>(
+    'sync_status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('pending'),
+  );
+  static const VerificationMeta _syncErrorMeta = const VerificationMeta(
+    'syncError',
+  );
+  @override
+  late final GeneratedColumn<String> syncError = GeneratedColumn<String>(
+    'sync_error',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _syncedAtMeta = const VerificationMeta(
+    'syncedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> syncedAt = GeneratedColumn<DateTime>(
+    'synced_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _employeeIdMeta = const VerificationMeta(
+    'employeeId',
+  );
+  @override
+  late final GeneratedColumn<String> employeeId = GeneratedColumn<String>(
+    'employee_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _workDateMeta = const VerificationMeta(
+    'workDate',
+  );
+  @override
+  late final GeneratedColumn<DateTime> workDate = GeneratedColumn<DateTime>(
+    'work_date',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _clockInAtMeta = const VerificationMeta(
+    'clockInAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> clockInAt = GeneratedColumn<DateTime>(
+    'clock_in_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _clockOutAtMeta = const VerificationMeta(
+    'clockOutAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> clockOutAt = GeneratedColumn<DateTime>(
+    'clock_out_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('open'),
+  );
+  static const VerificationMeta _sourceMeta = const VerificationMeta('source');
+  @override
+  late final GeneratedColumn<String> source = GeneratedColumn<String>(
+    'source',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('time_clock'),
+  );
+  static const VerificationMeta _verificationMethodMeta =
+      const VerificationMeta('verificationMethod');
+  @override
+  late final GeneratedColumn<String> verificationMethod =
+      GeneratedColumn<String>(
+        'verification_method',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant('photo_tap'),
+      );
+  static const VerificationMeta _noteMeta = const VerificationMeta('note');
+  @override
+  late final GeneratedColumn<String> note = GeneratedColumn<String>(
+    'note',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    remoteId,
+    syncStatus,
+    syncError,
+    createdAt,
+    updatedAt,
+    syncedAt,
+    id,
+    employeeId,
+    workDate,
+    clockInAt,
+    clockOutAt,
+    status,
+    source,
+    verificationMethod,
+    note,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_attendance_entries';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LocalAttendanceEntry> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('remote_id')) {
+      context.handle(
+        _remoteIdMeta,
+        remoteId.isAcceptableOrUnknown(data['remote_id']!, _remoteIdMeta),
+      );
+    }
+    if (data.containsKey('sync_status')) {
+      context.handle(
+        _syncStatusMeta,
+        syncStatus.isAcceptableOrUnknown(data['sync_status']!, _syncStatusMeta),
+      );
+    }
+    if (data.containsKey('sync_error')) {
+      context.handle(
+        _syncErrorMeta,
+        syncError.isAcceptableOrUnknown(data['sync_error']!, _syncErrorMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    if (data.containsKey('synced_at')) {
+      context.handle(
+        _syncedAtMeta,
+        syncedAt.isAcceptableOrUnknown(data['synced_at']!, _syncedAtMeta),
+      );
+    }
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('employee_id')) {
+      context.handle(
+        _employeeIdMeta,
+        employeeId.isAcceptableOrUnknown(data['employee_id']!, _employeeIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_employeeIdMeta);
+    }
+    if (data.containsKey('work_date')) {
+      context.handle(
+        _workDateMeta,
+        workDate.isAcceptableOrUnknown(data['work_date']!, _workDateMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_workDateMeta);
+    }
+    if (data.containsKey('clock_in_at')) {
+      context.handle(
+        _clockInAtMeta,
+        clockInAt.isAcceptableOrUnknown(data['clock_in_at']!, _clockInAtMeta),
+      );
+    }
+    if (data.containsKey('clock_out_at')) {
+      context.handle(
+        _clockOutAtMeta,
+        clockOutAt.isAcceptableOrUnknown(
+          data['clock_out_at']!,
+          _clockOutAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    }
+    if (data.containsKey('source')) {
+      context.handle(
+        _sourceMeta,
+        source.isAcceptableOrUnknown(data['source']!, _sourceMeta),
+      );
+    }
+    if (data.containsKey('verification_method')) {
+      context.handle(
+        _verificationMethodMeta,
+        verificationMethod.isAcceptableOrUnknown(
+          data['verification_method']!,
+          _verificationMethodMeta,
+        ),
+      );
+    }
+    if (data.containsKey('note')) {
+      context.handle(
+        _noteMeta,
+        note.isAcceptableOrUnknown(data['note']!, _noteMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  LocalAttendanceEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalAttendanceEntry(
+      remoteId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}remote_id'],
+      ),
+      syncStatus: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sync_status'],
+      )!,
+      syncError: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sync_error'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      syncedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}synced_at'],
+      ),
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      employeeId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}employee_id'],
+      )!,
+      workDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}work_date'],
+      )!,
+      clockInAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}clock_in_at'],
+      ),
+      clockOutAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}clock_out_at'],
+      ),
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      source: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source'],
+      )!,
+      verificationMethod: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}verification_method'],
+      )!,
+      note: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}note'],
+      ),
+    );
+  }
+
+  @override
+  $LocalAttendanceEntriesTable createAlias(String alias) {
+    return $LocalAttendanceEntriesTable(attachedDatabase, alias);
+  }
+}
+
+class LocalAttendanceEntry extends DataClass
+    implements Insertable<LocalAttendanceEntry> {
+  /// Remote Supabase identifier when the row has been synced.
+  final String? remoteId;
+
+  /// Local sync state.
+  final String syncStatus;
+
+  /// Last sync error, if any.
+  final String? syncError;
+
+  /// Local creation timestamp.
+  final DateTime createdAt;
+
+  /// Local update timestamp.
+  final DateTime updatedAt;
+
+  /// Last successful sync timestamp.
+  final DateTime? syncedAt;
+
+  /// Local attendance identifier.
+  final String id;
+
+  /// Employee identifier.
+  final String employeeId;
+
+  /// Work day used for payroll grouping.
+  final DateTime workDate;
+
+  /// Clock-in timestamp.
+  final DateTime? clockInAt;
+
+  /// Clock-out timestamp.
+  final DateTime? clockOutAt;
+
+  /// open, closed or voided.
+  final String status;
+
+  /// Source of the record.
+  final String source;
+
+  /// Verification method used in V1.
+  final String verificationMethod;
+
+  /// Optional note.
+  final String? note;
+  const LocalAttendanceEntry({
+    this.remoteId,
+    required this.syncStatus,
+    this.syncError,
+    required this.createdAt,
+    required this.updatedAt,
+    this.syncedAt,
+    required this.id,
+    required this.employeeId,
+    required this.workDate,
+    this.clockInAt,
+    this.clockOutAt,
+    required this.status,
+    required this.source,
+    required this.verificationMethod,
+    this.note,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (!nullToAbsent || remoteId != null) {
+      map['remote_id'] = Variable<String>(remoteId);
+    }
+    map['sync_status'] = Variable<String>(syncStatus);
+    if (!nullToAbsent || syncError != null) {
+      map['sync_error'] = Variable<String>(syncError);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    if (!nullToAbsent || syncedAt != null) {
+      map['synced_at'] = Variable<DateTime>(syncedAt);
+    }
+    map['id'] = Variable<String>(id);
+    map['employee_id'] = Variable<String>(employeeId);
+    map['work_date'] = Variable<DateTime>(workDate);
+    if (!nullToAbsent || clockInAt != null) {
+      map['clock_in_at'] = Variable<DateTime>(clockInAt);
+    }
+    if (!nullToAbsent || clockOutAt != null) {
+      map['clock_out_at'] = Variable<DateTime>(clockOutAt);
+    }
+    map['status'] = Variable<String>(status);
+    map['source'] = Variable<String>(source);
+    map['verification_method'] = Variable<String>(verificationMethod);
+    if (!nullToAbsent || note != null) {
+      map['note'] = Variable<String>(note);
+    }
+    return map;
+  }
+
+  LocalAttendanceEntriesCompanion toCompanion(bool nullToAbsent) {
+    return LocalAttendanceEntriesCompanion(
+      remoteId: remoteId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(remoteId),
+      syncStatus: Value(syncStatus),
+      syncError: syncError == null && nullToAbsent
+          ? const Value.absent()
+          : Value(syncError),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+      syncedAt: syncedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(syncedAt),
+      id: Value(id),
+      employeeId: Value(employeeId),
+      workDate: Value(workDate),
+      clockInAt: clockInAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(clockInAt),
+      clockOutAt: clockOutAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(clockOutAt),
+      status: Value(status),
+      source: Value(source),
+      verificationMethod: Value(verificationMethod),
+      note: note == null && nullToAbsent ? const Value.absent() : Value(note),
+    );
+  }
+
+  factory LocalAttendanceEntry.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalAttendanceEntry(
+      remoteId: serializer.fromJson<String?>(json['remoteId']),
+      syncStatus: serializer.fromJson<String>(json['syncStatus']),
+      syncError: serializer.fromJson<String?>(json['syncError']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      syncedAt: serializer.fromJson<DateTime?>(json['syncedAt']),
+      id: serializer.fromJson<String>(json['id']),
+      employeeId: serializer.fromJson<String>(json['employeeId']),
+      workDate: serializer.fromJson<DateTime>(json['workDate']),
+      clockInAt: serializer.fromJson<DateTime?>(json['clockInAt']),
+      clockOutAt: serializer.fromJson<DateTime?>(json['clockOutAt']),
+      status: serializer.fromJson<String>(json['status']),
+      source: serializer.fromJson<String>(json['source']),
+      verificationMethod: serializer.fromJson<String>(
+        json['verificationMethod'],
+      ),
+      note: serializer.fromJson<String?>(json['note']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'remoteId': serializer.toJson<String?>(remoteId),
+      'syncStatus': serializer.toJson<String>(syncStatus),
+      'syncError': serializer.toJson<String?>(syncError),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'syncedAt': serializer.toJson<DateTime?>(syncedAt),
+      'id': serializer.toJson<String>(id),
+      'employeeId': serializer.toJson<String>(employeeId),
+      'workDate': serializer.toJson<DateTime>(workDate),
+      'clockInAt': serializer.toJson<DateTime?>(clockInAt),
+      'clockOutAt': serializer.toJson<DateTime?>(clockOutAt),
+      'status': serializer.toJson<String>(status),
+      'source': serializer.toJson<String>(source),
+      'verificationMethod': serializer.toJson<String>(verificationMethod),
+      'note': serializer.toJson<String?>(note),
+    };
+  }
+
+  LocalAttendanceEntry copyWith({
+    Value<String?> remoteId = const Value.absent(),
+    String? syncStatus,
+    Value<String?> syncError = const Value.absent(),
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    Value<DateTime?> syncedAt = const Value.absent(),
+    String? id,
+    String? employeeId,
+    DateTime? workDate,
+    Value<DateTime?> clockInAt = const Value.absent(),
+    Value<DateTime?> clockOutAt = const Value.absent(),
+    String? status,
+    String? source,
+    String? verificationMethod,
+    Value<String?> note = const Value.absent(),
+  }) => LocalAttendanceEntry(
+    remoteId: remoteId.present ? remoteId.value : this.remoteId,
+    syncStatus: syncStatus ?? this.syncStatus,
+    syncError: syncError.present ? syncError.value : this.syncError,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    syncedAt: syncedAt.present ? syncedAt.value : this.syncedAt,
+    id: id ?? this.id,
+    employeeId: employeeId ?? this.employeeId,
+    workDate: workDate ?? this.workDate,
+    clockInAt: clockInAt.present ? clockInAt.value : this.clockInAt,
+    clockOutAt: clockOutAt.present ? clockOutAt.value : this.clockOutAt,
+    status: status ?? this.status,
+    source: source ?? this.source,
+    verificationMethod: verificationMethod ?? this.verificationMethod,
+    note: note.present ? note.value : this.note,
+  );
+  LocalAttendanceEntry copyWithCompanion(LocalAttendanceEntriesCompanion data) {
+    return LocalAttendanceEntry(
+      remoteId: data.remoteId.present ? data.remoteId.value : this.remoteId,
+      syncStatus: data.syncStatus.present
+          ? data.syncStatus.value
+          : this.syncStatus,
+      syncError: data.syncError.present ? data.syncError.value : this.syncError,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      syncedAt: data.syncedAt.present ? data.syncedAt.value : this.syncedAt,
+      id: data.id.present ? data.id.value : this.id,
+      employeeId: data.employeeId.present
+          ? data.employeeId.value
+          : this.employeeId,
+      workDate: data.workDate.present ? data.workDate.value : this.workDate,
+      clockInAt: data.clockInAt.present ? data.clockInAt.value : this.clockInAt,
+      clockOutAt: data.clockOutAt.present
+          ? data.clockOutAt.value
+          : this.clockOutAt,
+      status: data.status.present ? data.status.value : this.status,
+      source: data.source.present ? data.source.value : this.source,
+      verificationMethod: data.verificationMethod.present
+          ? data.verificationMethod.value
+          : this.verificationMethod,
+      note: data.note.present ? data.note.value : this.note,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalAttendanceEntry(')
+          ..write('remoteId: $remoteId, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('syncError: $syncError, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('syncedAt: $syncedAt, ')
+          ..write('id: $id, ')
+          ..write('employeeId: $employeeId, ')
+          ..write('workDate: $workDate, ')
+          ..write('clockInAt: $clockInAt, ')
+          ..write('clockOutAt: $clockOutAt, ')
+          ..write('status: $status, ')
+          ..write('source: $source, ')
+          ..write('verificationMethod: $verificationMethod, ')
+          ..write('note: $note')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    remoteId,
+    syncStatus,
+    syncError,
+    createdAt,
+    updatedAt,
+    syncedAt,
+    id,
+    employeeId,
+    workDate,
+    clockInAt,
+    clockOutAt,
+    status,
+    source,
+    verificationMethod,
+    note,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalAttendanceEntry &&
+          other.remoteId == this.remoteId &&
+          other.syncStatus == this.syncStatus &&
+          other.syncError == this.syncError &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.syncedAt == this.syncedAt &&
+          other.id == this.id &&
+          other.employeeId == this.employeeId &&
+          other.workDate == this.workDate &&
+          other.clockInAt == this.clockInAt &&
+          other.clockOutAt == this.clockOutAt &&
+          other.status == this.status &&
+          other.source == this.source &&
+          other.verificationMethod == this.verificationMethod &&
+          other.note == this.note);
+}
+
+class LocalAttendanceEntriesCompanion
+    extends UpdateCompanion<LocalAttendanceEntry> {
+  final Value<String?> remoteId;
+  final Value<String> syncStatus;
+  final Value<String?> syncError;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<DateTime?> syncedAt;
+  final Value<String> id;
+  final Value<String> employeeId;
+  final Value<DateTime> workDate;
+  final Value<DateTime?> clockInAt;
+  final Value<DateTime?> clockOutAt;
+  final Value<String> status;
+  final Value<String> source;
+  final Value<String> verificationMethod;
+  final Value<String?> note;
+  final Value<int> rowid;
+  const LocalAttendanceEntriesCompanion({
+    this.remoteId = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.syncError = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.syncedAt = const Value.absent(),
+    this.id = const Value.absent(),
+    this.employeeId = const Value.absent(),
+    this.workDate = const Value.absent(),
+    this.clockInAt = const Value.absent(),
+    this.clockOutAt = const Value.absent(),
+    this.status = const Value.absent(),
+    this.source = const Value.absent(),
+    this.verificationMethod = const Value.absent(),
+    this.note = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LocalAttendanceEntriesCompanion.insert({
+    this.remoteId = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.syncError = const Value.absent(),
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    this.syncedAt = const Value.absent(),
+    required String id,
+    required String employeeId,
+    required DateTime workDate,
+    this.clockInAt = const Value.absent(),
+    this.clockOutAt = const Value.absent(),
+    this.status = const Value.absent(),
+    this.source = const Value.absent(),
+    this.verificationMethod = const Value.absent(),
+    this.note = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt),
+       id = Value(id),
+       employeeId = Value(employeeId),
+       workDate = Value(workDate);
+  static Insertable<LocalAttendanceEntry> custom({
+    Expression<String>? remoteId,
+    Expression<String>? syncStatus,
+    Expression<String>? syncError,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<DateTime>? syncedAt,
+    Expression<String>? id,
+    Expression<String>? employeeId,
+    Expression<DateTime>? workDate,
+    Expression<DateTime>? clockInAt,
+    Expression<DateTime>? clockOutAt,
+    Expression<String>? status,
+    Expression<String>? source,
+    Expression<String>? verificationMethod,
+    Expression<String>? note,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (remoteId != null) 'remote_id': remoteId,
+      if (syncStatus != null) 'sync_status': syncStatus,
+      if (syncError != null) 'sync_error': syncError,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (syncedAt != null) 'synced_at': syncedAt,
+      if (id != null) 'id': id,
+      if (employeeId != null) 'employee_id': employeeId,
+      if (workDate != null) 'work_date': workDate,
+      if (clockInAt != null) 'clock_in_at': clockInAt,
+      if (clockOutAt != null) 'clock_out_at': clockOutAt,
+      if (status != null) 'status': status,
+      if (source != null) 'source': source,
+      if (verificationMethod != null) 'verification_method': verificationMethod,
+      if (note != null) 'note': note,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LocalAttendanceEntriesCompanion copyWith({
+    Value<String?>? remoteId,
+    Value<String>? syncStatus,
+    Value<String?>? syncError,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<DateTime?>? syncedAt,
+    Value<String>? id,
+    Value<String>? employeeId,
+    Value<DateTime>? workDate,
+    Value<DateTime?>? clockInAt,
+    Value<DateTime?>? clockOutAt,
+    Value<String>? status,
+    Value<String>? source,
+    Value<String>? verificationMethod,
+    Value<String?>? note,
+    Value<int>? rowid,
+  }) {
+    return LocalAttendanceEntriesCompanion(
+      remoteId: remoteId ?? this.remoteId,
+      syncStatus: syncStatus ?? this.syncStatus,
+      syncError: syncError ?? this.syncError,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      syncedAt: syncedAt ?? this.syncedAt,
+      id: id ?? this.id,
+      employeeId: employeeId ?? this.employeeId,
+      workDate: workDate ?? this.workDate,
+      clockInAt: clockInAt ?? this.clockInAt,
+      clockOutAt: clockOutAt ?? this.clockOutAt,
+      status: status ?? this.status,
+      source: source ?? this.source,
+      verificationMethod: verificationMethod ?? this.verificationMethod,
+      note: note ?? this.note,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (remoteId.present) {
+      map['remote_id'] = Variable<String>(remoteId.value);
+    }
+    if (syncStatus.present) {
+      map['sync_status'] = Variable<String>(syncStatus.value);
+    }
+    if (syncError.present) {
+      map['sync_error'] = Variable<String>(syncError.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (syncedAt.present) {
+      map['synced_at'] = Variable<DateTime>(syncedAt.value);
+    }
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (employeeId.present) {
+      map['employee_id'] = Variable<String>(employeeId.value);
+    }
+    if (workDate.present) {
+      map['work_date'] = Variable<DateTime>(workDate.value);
+    }
+    if (clockInAt.present) {
+      map['clock_in_at'] = Variable<DateTime>(clockInAt.value);
+    }
+    if (clockOutAt.present) {
+      map['clock_out_at'] = Variable<DateTime>(clockOutAt.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (source.present) {
+      map['source'] = Variable<String>(source.value);
+    }
+    if (verificationMethod.present) {
+      map['verification_method'] = Variable<String>(verificationMethod.value);
+    }
+    if (note.present) {
+      map['note'] = Variable<String>(note.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalAttendanceEntriesCompanion(')
+          ..write('remoteId: $remoteId, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('syncError: $syncError, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('syncedAt: $syncedAt, ')
+          ..write('id: $id, ')
+          ..write('employeeId: $employeeId, ')
+          ..write('workDate: $workDate, ')
+          ..write('clockInAt: $clockInAt, ')
+          ..write('clockOutAt: $clockOutAt, ')
+          ..write('status: $status, ')
+          ..write('source: $source, ')
+          ..write('verificationMethod: $verificationMethod, ')
+          ..write('note: $note, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -27060,6 +28052,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       $LocalBusinessRulesTable(this);
   late final $LocalSalaryAdvancesTable localSalaryAdvances =
       $LocalSalaryAdvancesTable(this);
+  late final $LocalAttendanceEntriesTable localAttendanceEntries =
+      $LocalAttendanceEntriesTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -27102,6 +28096,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     localEmployees,
     localBusinessRules,
     localSalaryAdvances,
+    localAttendanceEntries,
   ];
 }
 
@@ -38854,6 +39849,8 @@ typedef $$LocalEmployeesTableCreateCompanionBuilder =
       Value<String?> positionName,
       Value<int> baseSalaryInCents,
       Value<bool> isActive,
+      Value<String?> photoUrl,
+      Value<bool> showInTimeClock,
       Value<int> rowid,
     });
 typedef $$LocalEmployeesTableUpdateCompanionBuilder =
@@ -38870,6 +39867,8 @@ typedef $$LocalEmployeesTableUpdateCompanionBuilder =
       Value<String?> positionName,
       Value<int> baseSalaryInCents,
       Value<bool> isActive,
+      Value<String?> photoUrl,
+      Value<bool> showInTimeClock,
       Value<int> rowid,
     });
 
@@ -38939,6 +39938,16 @@ class $$LocalEmployeesTableFilterComposer
 
   ColumnFilters<bool> get isActive => $composableBuilder(
     column: $table.isActive,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get photoUrl => $composableBuilder(
+    column: $table.photoUrl,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get showInTimeClock => $composableBuilder(
+    column: $table.showInTimeClock,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -39011,6 +40020,16 @@ class $$LocalEmployeesTableOrderingComposer
     column: $table.isActive,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get photoUrl => $composableBuilder(
+    column: $table.photoUrl,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get showInTimeClock => $composableBuilder(
+    column: $table.showInTimeClock,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$LocalEmployeesTableAnnotationComposer
@@ -39063,6 +40082,14 @@ class $$LocalEmployeesTableAnnotationComposer
 
   GeneratedColumn<bool> get isActive =>
       $composableBuilder(column: $table.isActive, builder: (column) => column);
+
+  GeneratedColumn<String> get photoUrl =>
+      $composableBuilder(column: $table.photoUrl, builder: (column) => column);
+
+  GeneratedColumn<bool> get showInTimeClock => $composableBuilder(
+    column: $table.showInTimeClock,
+    builder: (column) => column,
+  );
 }
 
 class $$LocalEmployeesTableTableManager
@@ -39110,6 +40137,8 @@ class $$LocalEmployeesTableTableManager
                 Value<String?> positionName = const Value.absent(),
                 Value<int> baseSalaryInCents = const Value.absent(),
                 Value<bool> isActive = const Value.absent(),
+                Value<String?> photoUrl = const Value.absent(),
+                Value<bool> showInTimeClock = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => LocalEmployeesCompanion(
                 remoteId: remoteId,
@@ -39124,6 +40153,8 @@ class $$LocalEmployeesTableTableManager
                 positionName: positionName,
                 baseSalaryInCents: baseSalaryInCents,
                 isActive: isActive,
+                photoUrl: photoUrl,
+                showInTimeClock: showInTimeClock,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -39140,6 +40171,8 @@ class $$LocalEmployeesTableTableManager
                 Value<String?> positionName = const Value.absent(),
                 Value<int> baseSalaryInCents = const Value.absent(),
                 Value<bool> isActive = const Value.absent(),
+                Value<String?> photoUrl = const Value.absent(),
+                Value<bool> showInTimeClock = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => LocalEmployeesCompanion.insert(
                 remoteId: remoteId,
@@ -39154,6 +40187,8 @@ class $$LocalEmployeesTableTableManager
                 positionName: positionName,
                 baseSalaryInCents: baseSalaryInCents,
                 isActive: isActive,
+                photoUrl: photoUrl,
+                showInTimeClock: showInTimeClock,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -39890,6 +40925,423 @@ typedef $$LocalSalaryAdvancesTableProcessedTableManager =
       LocalSalaryAdvance,
       PrefetchHooks Function()
     >;
+typedef $$LocalAttendanceEntriesTableCreateCompanionBuilder =
+    LocalAttendanceEntriesCompanion Function({
+      Value<String?> remoteId,
+      Value<String> syncStatus,
+      Value<String?> syncError,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+      Value<DateTime?> syncedAt,
+      required String id,
+      required String employeeId,
+      required DateTime workDate,
+      Value<DateTime?> clockInAt,
+      Value<DateTime?> clockOutAt,
+      Value<String> status,
+      Value<String> source,
+      Value<String> verificationMethod,
+      Value<String?> note,
+      Value<int> rowid,
+    });
+typedef $$LocalAttendanceEntriesTableUpdateCompanionBuilder =
+    LocalAttendanceEntriesCompanion Function({
+      Value<String?> remoteId,
+      Value<String> syncStatus,
+      Value<String?> syncError,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<DateTime?> syncedAt,
+      Value<String> id,
+      Value<String> employeeId,
+      Value<DateTime> workDate,
+      Value<DateTime?> clockInAt,
+      Value<DateTime?> clockOutAt,
+      Value<String> status,
+      Value<String> source,
+      Value<String> verificationMethod,
+      Value<String?> note,
+      Value<int> rowid,
+    });
+
+class $$LocalAttendanceEntriesTableFilterComposer
+    extends Composer<_$AppDatabase, $LocalAttendanceEntriesTable> {
+  $$LocalAttendanceEntriesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get remoteId => $composableBuilder(
+    column: $table.remoteId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncError => $composableBuilder(
+    column: $table.syncError,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get syncedAt => $composableBuilder(
+    column: $table.syncedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get employeeId => $composableBuilder(
+    column: $table.employeeId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get workDate => $composableBuilder(
+    column: $table.workDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get clockInAt => $composableBuilder(
+    column: $table.clockInAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get clockOutAt => $composableBuilder(
+    column: $table.clockOutAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get source => $composableBuilder(
+    column: $table.source,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get verificationMethod => $composableBuilder(
+    column: $table.verificationMethod,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LocalAttendanceEntriesTableOrderingComposer
+    extends Composer<_$AppDatabase, $LocalAttendanceEntriesTable> {
+  $$LocalAttendanceEntriesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get remoteId => $composableBuilder(
+    column: $table.remoteId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncError => $composableBuilder(
+    column: $table.syncError,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get syncedAt => $composableBuilder(
+    column: $table.syncedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get employeeId => $composableBuilder(
+    column: $table.employeeId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get workDate => $composableBuilder(
+    column: $table.workDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get clockInAt => $composableBuilder(
+    column: $table.clockInAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get clockOutAt => $composableBuilder(
+    column: $table.clockOutAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get source => $composableBuilder(
+    column: $table.source,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get verificationMethod => $composableBuilder(
+    column: $table.verificationMethod,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LocalAttendanceEntriesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LocalAttendanceEntriesTable> {
+  $$LocalAttendanceEntriesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get remoteId =>
+      $composableBuilder(column: $table.remoteId, builder: (column) => column);
+
+  GeneratedColumn<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get syncError =>
+      $composableBuilder(column: $table.syncError, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get syncedAt =>
+      $composableBuilder(column: $table.syncedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get employeeId => $composableBuilder(
+    column: $table.employeeId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get workDate =>
+      $composableBuilder(column: $table.workDate, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get clockInAt =>
+      $composableBuilder(column: $table.clockInAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get clockOutAt => $composableBuilder(
+    column: $table.clockOutAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<String> get source =>
+      $composableBuilder(column: $table.source, builder: (column) => column);
+
+  GeneratedColumn<String> get verificationMethod => $composableBuilder(
+    column: $table.verificationMethod,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get note =>
+      $composableBuilder(column: $table.note, builder: (column) => column);
+}
+
+class $$LocalAttendanceEntriesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LocalAttendanceEntriesTable,
+          LocalAttendanceEntry,
+          $$LocalAttendanceEntriesTableFilterComposer,
+          $$LocalAttendanceEntriesTableOrderingComposer,
+          $$LocalAttendanceEntriesTableAnnotationComposer,
+          $$LocalAttendanceEntriesTableCreateCompanionBuilder,
+          $$LocalAttendanceEntriesTableUpdateCompanionBuilder,
+          (
+            LocalAttendanceEntry,
+            BaseReferences<
+              _$AppDatabase,
+              $LocalAttendanceEntriesTable,
+              LocalAttendanceEntry
+            >,
+          ),
+          LocalAttendanceEntry,
+          PrefetchHooks Function()
+        > {
+  $$LocalAttendanceEntriesTableTableManager(
+    _$AppDatabase db,
+    $LocalAttendanceEntriesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LocalAttendanceEntriesTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$LocalAttendanceEntriesTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$LocalAttendanceEntriesTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String?> remoteId = const Value.absent(),
+                Value<String> syncStatus = const Value.absent(),
+                Value<String?> syncError = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<DateTime?> syncedAt = const Value.absent(),
+                Value<String> id = const Value.absent(),
+                Value<String> employeeId = const Value.absent(),
+                Value<DateTime> workDate = const Value.absent(),
+                Value<DateTime?> clockInAt = const Value.absent(),
+                Value<DateTime?> clockOutAt = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<String> source = const Value.absent(),
+                Value<String> verificationMethod = const Value.absent(),
+                Value<String?> note = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalAttendanceEntriesCompanion(
+                remoteId: remoteId,
+                syncStatus: syncStatus,
+                syncError: syncError,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                syncedAt: syncedAt,
+                id: id,
+                employeeId: employeeId,
+                workDate: workDate,
+                clockInAt: clockInAt,
+                clockOutAt: clockOutAt,
+                status: status,
+                source: source,
+                verificationMethod: verificationMethod,
+                note: note,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                Value<String?> remoteId = const Value.absent(),
+                Value<String> syncStatus = const Value.absent(),
+                Value<String?> syncError = const Value.absent(),
+                required DateTime createdAt,
+                required DateTime updatedAt,
+                Value<DateTime?> syncedAt = const Value.absent(),
+                required String id,
+                required String employeeId,
+                required DateTime workDate,
+                Value<DateTime?> clockInAt = const Value.absent(),
+                Value<DateTime?> clockOutAt = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<String> source = const Value.absent(),
+                Value<String> verificationMethod = const Value.absent(),
+                Value<String?> note = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalAttendanceEntriesCompanion.insert(
+                remoteId: remoteId,
+                syncStatus: syncStatus,
+                syncError: syncError,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                syncedAt: syncedAt,
+                id: id,
+                employeeId: employeeId,
+                workDate: workDate,
+                clockInAt: clockInAt,
+                clockOutAt: clockOutAt,
+                status: status,
+                source: source,
+                verificationMethod: verificationMethod,
+                note: note,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LocalAttendanceEntriesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LocalAttendanceEntriesTable,
+      LocalAttendanceEntry,
+      $$LocalAttendanceEntriesTableFilterComposer,
+      $$LocalAttendanceEntriesTableOrderingComposer,
+      $$LocalAttendanceEntriesTableAnnotationComposer,
+      $$LocalAttendanceEntriesTableCreateCompanionBuilder,
+      $$LocalAttendanceEntriesTableUpdateCompanionBuilder,
+      (
+        LocalAttendanceEntry,
+        BaseReferences<
+          _$AppDatabase,
+          $LocalAttendanceEntriesTable,
+          LocalAttendanceEntry
+        >,
+      ),
+      LocalAttendanceEntry,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -40001,4 +41453,9 @@ class $AppDatabaseManager {
       $$LocalBusinessRulesTableTableManager(_db, _db.localBusinessRules);
   $$LocalSalaryAdvancesTableTableManager get localSalaryAdvances =>
       $$LocalSalaryAdvancesTableTableManager(_db, _db.localSalaryAdvances);
+  $$LocalAttendanceEntriesTableTableManager get localAttendanceEntries =>
+      $$LocalAttendanceEntriesTableTableManager(
+        _db,
+        _db.localAttendanceEntries,
+      );
 }

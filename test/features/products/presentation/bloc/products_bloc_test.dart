@@ -70,7 +70,7 @@ void main() {
       act: (bloc) => bloc.add(const ProductSaved(product)),
       expect: () => const [
         ProductsLoading(),
-        ProductsLoaded([product]),
+        ProductsLoaded([product], successMessage: 'product_saved'),
       ],
       verify: (_) {
         expect(auditRepository.entries.single.action, 'products.save');

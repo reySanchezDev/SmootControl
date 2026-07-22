@@ -38,6 +38,7 @@ final class SyncQueueRepository implements ISyncQueueRepository {
     required String entityId,
     required SyncOperation operation,
     required Map<String, Object?> payload,
+    bool syncImmediately = true,
   }) async {
     try {
       final now = DateTime.now();
@@ -54,7 +55,9 @@ final class SyncQueueRepository implements ISyncQueueRepository {
       );
 
       final saved = await _localDataSource.saveItem(item);
-      _scheduleImmediateSync(saved.toEntity());
+      if (syncImmediately) {
+        _scheduleImmediateSync(saved.toEntity());
+      }
 
       return AppSuccess(saved.toEntity());
     } on Object catch (error) {

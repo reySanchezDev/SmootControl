@@ -10,7 +10,7 @@ mixin _SupabaseStaffEmployeesMixin on _SupabaseStaffAdminRepositoryBase {
           'restaurant_id': 'eq.$_restaurantId',
           'select':
               'id,code,full_name,position_name,base_salary,is_active,'
-              'employee_number,position_id',
+              'employee_number,position_id,photo_url,show_in_time_clock',
           'order': 'full_name.asc',
         });
         return rows.map(_employeeFromRow).toList();
@@ -31,6 +31,8 @@ mixin _SupabaseStaffEmployeesMixin on _SupabaseStaffAdminRepositoryBase {
             'position_id': employee.positionName,
             'base_salary': _money(employee.baseSalaryInCents),
             'is_active': employee.isActive,
+            'photo_url': employee.photoUrl,
+            'show_in_time_clock': employee.showInTimeClock,
           },
         });
         return _employeeFromRow(row);

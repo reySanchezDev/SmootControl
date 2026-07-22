@@ -15,6 +15,7 @@ extension _DeviceInitializationLocalSupport on DeviceInitializationService {
   Future<void> _markInitialized({
     required RemoteBootstrapSession session,
     required CatalogPullSummary summary,
+    String? deviceDisplayName,
   }) async {
     final now = DateTime.now();
     final deviceId = _uuid.v4();
@@ -23,6 +24,7 @@ extension _DeviceInitializationLocalSupport on DeviceInitializationService {
       session: session,
       deviceId: deviceId,
       deviceSecret: deviceSecret,
+      deviceName: deviceDisplayName,
     );
     if (registration case AppFailureResult(:final error)) {
       throw StateError(error.message);

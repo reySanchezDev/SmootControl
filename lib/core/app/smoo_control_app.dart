@@ -2,10 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:smoo_control/core/config/app_run_mode.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/core/navigation/app_router.dart';
 import 'package:smoo_control/core/session/current_remote_session_service.dart';
 import 'package:smoo_control/core/theme/app_theme.dart';
+import 'package:smoo_control/features/attendance/presentation/pages/time_clock_gate.dart';
 import 'package:smoo_control/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:smoo_control/features/auth/presentation/bloc/auth_event.dart';
 import 'package:smoo_control/features/auth/presentation/pages/auth_gate.dart';
@@ -51,7 +53,7 @@ class _SmooControlAppState extends State<SmooControlApp> {
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         navigatorKey: _navigatorKey,
         onGenerateTitle: (context) => AppLocalizations.of(context).appTitle,
-        home: const AuthGate(),
+        home: AppRunMode.isTimeClock ? const TimeClockGate() : const AuthGate(),
         onGenerateRoute: onGenerateAppRoute,
         supportedLocales: const [Locale('es')],
         theme: AppTheme.light,

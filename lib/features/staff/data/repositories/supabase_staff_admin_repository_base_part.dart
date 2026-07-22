@@ -158,6 +158,8 @@ abstract class _SupabaseStaffAdminRepositoryBase {
           _optionalText(row['position_name']),
       baseSalaryInCents: _moneyToCents(row['base_salary']),
       isActive: _bool(row['is_active'], fallback: true),
+      photoUrl: _optionalText(row['photo_url']),
+      showInTimeClock: _bool(row['show_in_time_clock'], fallback: true),
     );
   }
 

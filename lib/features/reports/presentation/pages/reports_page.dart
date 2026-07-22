@@ -148,6 +148,13 @@ class ReportsPage extends StatelessWidget {
                     'de planilla.',
                 title: 'Planillas pagadas',
               ),
+              _ReportOptionCard(
+                icon: Icons.schedule_outlined,
+                routeName: AppRoutes.attendanceReport,
+                subtitle:
+                    'Marcadas de entrada y salida por periodo y empleado.',
+                title: 'Marcadas',
+              ),
             ],
           ),
         ],

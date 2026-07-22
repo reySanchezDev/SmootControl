@@ -11,6 +11,20 @@ void _registerOperationsDependencies() {
         syncQueueRepository: serviceLocator<ISyncQueueRepository>(),
       ),
     )
+    ..registerLazySingleton<LocalAttendanceDataSource>(
+      () => LocalAttendanceDataSource(serviceLocator<AppDatabase>()),
+    )
+    ..registerLazySingleton<IAttendanceRepository>(
+      () => AttendanceRepository(
+        client: serviceLocator<http.Client>(),
+        config: serviceLocator<SupabaseAppConfig>(),
+        localDataSource: serviceLocator<LocalAttendanceDataSource>(),
+        remoteSessionService: serviceLocator<CurrentRemoteSessionService>(),
+        restaurantService: serviceLocator<CurrentRestaurantService>(),
+        remoteSender: serviceLocator<ISyncRemoteSender>(),
+        syncQueueRepository: serviceLocator<ISyncQueueRepository>(),
+      ),
+    )
     ..registerFactory<CashRegisterBloc>(
       () => CashRegisterBloc(
         repository: serviceLocator<ICashRegisterRepository>(),

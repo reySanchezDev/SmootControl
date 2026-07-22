@@ -41,14 +41,14 @@ foreach ($key in $requiredKeys) {
   $dartDefines += "--dart-define=$key=$($values[$key])"
 }
 
-flutter build apk --release @dartDefines
+flutter build apk --release --flavor production @dartDefines
 if ($LASTEXITCODE -ne 0) {
-  throw "flutter build apk --release fallo. No se genero APK release valido."
+  throw "flutter build apk --release --flavor production fallo. No se genero APK release valido."
 }
 
 New-Item -ItemType Directory -Force -Path "release" | Out-Null
 $apkPath = Join-Path "release" $OutputName
-Copy-Item -Force "build/app/outputs/flutter-apk/app-release.apk" $apkPath
+Copy-Item -Force "build/app/outputs/flutter-apk/app-production-release.apk" $apkPath
 
 $pubspecVersion = (Select-String -Path "pubspec.yaml" -Pattern "^version:" |
   Select-Object -First 1).Line.Replace("version:", "").Trim()

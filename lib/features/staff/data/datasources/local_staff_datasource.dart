@@ -59,6 +59,8 @@ final class LocalStaffDataSource {
       positionName: row.positionName,
       baseSalaryInCents: row.baseSalaryInCents,
       isActive: row.isActive,
+      photoUrl: row.photoUrl,
+      showInTimeClock: row.showInTimeClock,
     );
   }
 }

@@ -6,6 +6,7 @@ final class PosDeviceCleanupCandidate {
   const PosDeviceCleanupCandidate({
     required this.id,
     required this.name,
+    required this.isCurrentDevice,
     required this.totalRows,
     this.lastActivityAt,
   });
@@ -15,6 +16,9 @@ final class PosDeviceCleanupCandidate {
 
   /// Human-friendly POS device name.
   final String name;
+
+  /// Whether this remote device matches the local initialized POS.
+  final bool isCurrentDevice;
 
   /// Rows currently linked to this POS device.
   final int totalRows;
@@ -29,6 +33,7 @@ extension PilotOperationResetDeviceCleanup on PilotOperationResetService {
   Future<AppResult<List<PosDeviceCleanupCandidate>>>
   listDevicesForCleanup() async {
     try {
+      final currentDeviceId = await _currentDeviceId();
       final decoded = await _postRpc(
         rpcName: 'app_list_pos_devices_for_cleanup',
         body: {'p_restaurant_id': _restaurantService.restaurantId},
@@ -39,13 +44,17 @@ extension PilotOperationResetDeviceCleanup on PilotOperationResetService {
           PosDeviceCleanupCandidate(
             id: item['id']?.toString() ?? '',
             name: item['name']?.toString() ?? 'POS sin nombre',
-            totalRows: _int(item['sales_count']) +
+            isCurrentDevice: item['id']?.toString() == currentDeviceId,
+            totalRows:
+                _int(item['sales_count']) +
                 _int(item['staff_consumptions_count']) +
                 _int(item['expenses_count']) +
                 _int(item['salary_advances_count']) +
                 _int(item['cash_sessions_count']) +
                 _int(item['inventory_movements_count']) +
-                _int(item['packaging_movements_count']),
+                _int(item['packaging_movements_count']) +
+                _int(item['attendance_count']) +
+                _int(item['overtime_candidates_count']),
             lastActivityAt: DateTime.tryParse(
               item['last_activity_at']?.toString() ?? '',
             ),
@@ -60,6 +69,13 @@ extension PilotOperationResetDeviceCleanup on PilotOperationResetService {
         ),
       );
     }
+  }
+
+  Future<String?> _currentDeviceId() async {
+    final state = await (_database.select(
+      _database.localDeviceState,
+    )..where((row) => row.id.equals('default'))).getSingleOrNull();
+    return state?.syncDeviceId ?? state?.deviceId;
   }
 
   /// Cleans remote operational rows linked to one POS device.

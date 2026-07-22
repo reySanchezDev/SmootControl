@@ -36,6 +36,9 @@ abstract final class AppRoutes {
   /// Paid payroll report route.
   static const payrollPaymentsReport = '/reports/payroll-payments';
 
+  /// Attendance report route.
+  static const attendanceReport = '/reports/attendance';
+
   /// Categories route.
   static const catalog = '/catalog';
 
@@ -107,6 +110,12 @@ abstract final class AppRoutes {
 
   /// Employee overtime route.
   static const staffOvertime = '/staff-overtime';
+
+  /// Employee attendance admin route.
+  static const attendance = '/attendance';
+
+  /// Overtime approval route.
+  static const overtimeApprovals = '/overtime-approvals';
 
   /// Staff payroll payment administration route.
   static const staffPayrollPayments = '/staff/payroll-payments';

@@ -228,6 +228,16 @@ class _DashboardContent extends StatelessWidget {
             route: AppRoutes.staffOvertime,
           ),
           _ModuleDefinition(
+            icon: Icons.schedule_outlined,
+            label: 'Marcadas',
+            route: AppRoutes.attendance,
+          ),
+          _ModuleDefinition(
+            icon: Icons.fact_check_outlined,
+            label: 'Autorizar extras',
+            route: AppRoutes.overtimeApprovals,
+          ),
+          _ModuleDefinition(
             icon: Icons.history_outlined,
             label: 'Pagos planilla',
             route: AppRoutes.staffPayrollPayments,

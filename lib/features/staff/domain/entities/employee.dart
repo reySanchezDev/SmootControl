@@ -10,6 +10,8 @@ final class Employee extends Equatable {
     this.positionName,
     this.baseSalaryInCents = 0,
     this.isActive = true,
+    this.photoUrl,
+    this.showInTimeClock = true,
   });
 
   /// Unique identifier.
@@ -30,6 +32,12 @@ final class Employee extends Equatable {
   /// Whether employee can be used.
   final bool isActive;
 
+  /// Optional photo URL/path for the attendance kiosk.
+  final String? photoUrl;
+
+  /// Whether employee appears in the attendance kiosk.
+  final bool showInTimeClock;
+
   @override
   List<Object?> get props => [
     id,
@@ -38,5 +46,7 @@ final class Employee extends Equatable {
     positionName,
     baseSalaryInCents,
     isActive,
+    photoUrl,
+    showInTimeClock,
   ];
 }
