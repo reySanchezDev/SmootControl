@@ -85,6 +85,7 @@ Tablas:
 | 6. Validacion | Completado parcial | `flutter analyze` limpio; prueba PDF bloqueada por crash de Flutter al copiar `sqlite3.dll`. |
 | 7. Release | Completado | Version `0.1.88+93`, APK reconstruido en `release/SmooControl-produccion.apk`. |
 | 8. Correccion post-prueba | Completado | Migracion 080 alinea `apply_inventory_movement` con el tipo `staff_raw_material_consumption`. |
+| 9. Auditoria ventas admin | Completado | La pantalla Admin Ventas filtra solo `sales.sale_kind = sale`. |
 
 ## Correcciones Post-Prueba
 
@@ -93,6 +94,10 @@ Tablas:
   `apply_inventory_movement` conservaba una lista cerrada anterior. La
   migracion 080 reemplaza la RPC y deja permitido el mismo tipo en ambos
   puntos de validacion.
+- 2026-07-24: Se corrigio el repositorio remoto de Admin Ventas para consultar
+  solo ventas reales (`sale_kind = sale`) tanto por rango de fechas como por
+  sesion de caja. Los consumos POS (`staff_consumption`) quedan fuera del modulo
+  Ventas y se revisan desde las pantallas de Personal.
 
 ## Pruebas Minimas
 

@@ -51,6 +51,7 @@ final class SupabaseSalesAdminRepository implements ISalesRepository {
             'sales_type_id,sales_type_name,status,sync_status,total_amount,'
             'sold_at,created_at',
         'restaurant_id': 'eq.${_restaurantService.restaurantId}',
+        'sale_kind': 'eq.sale',
         'and': _dateRangeFilter('sold_at', from, to),
         'order': 'sold_at.desc',
       });
@@ -80,6 +81,7 @@ final class SupabaseSalesAdminRepository implements ISalesRepository {
             'sold_at,created_at',
         'restaurant_id': 'eq.${_restaurantService.restaurantId}',
         'cash_register_session_id': 'eq.$sessionId',
+        'sale_kind': 'eq.sale',
         'order': 'sold_at.desc',
       });
 
