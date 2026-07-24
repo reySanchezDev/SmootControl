@@ -10,7 +10,8 @@ class BusinessRulesPage extends StatefulWidget {
 }
 
 class _BusinessRulesPageState extends State<BusinessRulesPage> {
-  late Future<AppResult<List<BusinessRule>>> _future;
+  late Future<({List<BusinessRule> rules, List<EmployeeWorkShift> shifts})>
+  _future;
 
   SupabaseStaffAdminRepository get _repository =>
       serviceLocator<SupabaseStaffAdminRepository>();
@@ -18,30 +19,52 @@ class _BusinessRulesPageState extends State<BusinessRulesPage> {
   @override
   void initState() {
     super.initState();
-    _future = _repository.getBusinessRules();
+    _future = _load();
+  }
+
+  Future<({List<BusinessRule> rules, List<EmployeeWorkShift> shifts})>
+  _load() async {
+    final rules = await _repository.getBusinessRules();
+    final shifts = await _repository.getWorkShifts();
+    return (
+      rules: switch (rules) {
+        AppSuccess(:final value) => value,
+        AppFailureResult(:final error) => throw StateError(error.message),
+      },
+      shifts: switch (shifts) {
+        AppSuccess(:final value) => value,
+        AppFailureResult(:final error) => throw StateError(error.message),
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return AppPageScaffold(
       title: 'Reglas del negocio',
-      body: FutureBuilder<AppResult<List<BusinessRule>>>(
-        future: _future,
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) return const AppLoadingPage();
-          return switch (snapshot.requireData) {
-            AppSuccess(:final value) => _BusinessRulesList(
-              rules: value,
-              onChanged: _saveRule,
-            ),
-            AppFailureResult(:final error) => AppEmptyState(
-              icon: Icons.rule_outlined,
-              title: 'Reglas del negocio',
-              message: error.message,
-            ),
-          };
-        },
-      ),
+      body:
+          FutureBuilder<
+            ({List<BusinessRule> rules, List<EmployeeWorkShift> shifts})
+          >(
+            future: _future,
+            builder: (context, snapshot) {
+              if (snapshot.hasError) {
+                return AppEmptyState(
+                  icon: Icons.rule_outlined,
+                  title: 'Reglas del negocio',
+                  message: snapshot.error.toString(),
+                );
+              }
+              if (!snapshot.hasData) return const AppLoadingPage();
+              final data = snapshot.requireData;
+              return _BusinessRulesList(
+                rules: data.rules,
+                shifts: data.shifts,
+                onChanged: _saveRule,
+                onShiftChanged: _saveShift,
+              );
+            },
+          ),
     );
   }
 
@@ -50,7 +73,24 @@ class _BusinessRulesPageState extends State<BusinessRulesPage> {
     if (!mounted) return;
     switch (result) {
       case AppSuccess():
-        setState(() => _future = _repository.getBusinessRules());
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Regla guardada.')),
+        );
+        setState(() => _future = _load());
+      case AppFailureResult(:final error):
+        await showAppMessageDialog(context: context, message: error.message);
+    }
+  }
+
+  Future<void> _saveShift(EmployeeWorkShift shift) async {
+    final result = await _repository.saveWorkShift(shift);
+    if (!mounted) return;
+    switch (result) {
+      case AppSuccess():
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Turno guardado.')),
+        );
+        setState(() => _future = _load());
       case AppFailureResult(:final error):
         await showAppMessageDialog(context: context, message: error.message);
     }
@@ -58,10 +98,17 @@ class _BusinessRulesPageState extends State<BusinessRulesPage> {
 }
 
 class _BusinessRulesList extends StatelessWidget {
-  const _BusinessRulesList({required this.rules, required this.onChanged});
+  const _BusinessRulesList({
+    required this.rules,
+    required this.shifts,
+    required this.onChanged,
+    required this.onShiftChanged,
+  });
 
   final List<BusinessRule> rules;
+  final List<EmployeeWorkShift> shifts;
   final ValueChanged<BusinessRule> onChanged;
+  final ValueChanged<EmployeeWorkShift> onShiftChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -113,6 +160,8 @@ class _BusinessRulesList extends StatelessWidget {
             BusinessRule(key: recipeNegativeRule.key, boolValue: value),
           ),
         ),
+        const SizedBox(height: 12),
+        _WorkShiftSection(shifts: shifts, onChanged: onShiftChanged),
         const SizedBox(height: 12),
         _OvertimeRateTile(rule: overtimeRule, onChanged: onChanged),
       ],

@@ -12,6 +12,10 @@ final class Employee extends Equatable {
     this.isActive = true,
     this.photoUrl,
     this.showInTimeClock = true,
+    this.workShiftId,
+    this.workShiftName,
+    this.workShiftStartTime,
+    this.workShiftEndTime,
   });
 
   /// Unique identifier.
@@ -38,6 +42,18 @@ final class Employee extends Equatable {
   /// Whether employee appears in the attendance kiosk.
   final bool showInTimeClock;
 
+  /// Assigned work shift id.
+  final String? workShiftId;
+
+  /// Assigned work shift display name.
+  final String? workShiftName;
+
+  /// Assigned shift expected entry time, HH:mm.
+  final String? workShiftStartTime;
+
+  /// Assigned shift expected exit time, HH:mm.
+  final String? workShiftEndTime;
+
   @override
   List<Object?> get props => [
     id,
@@ -48,5 +64,9 @@ final class Employee extends Equatable {
     isActive,
     photoUrl,
     showInTimeClock,
+    workShiftId,
+    workShiftName,
+    workShiftStartTime,
+    workShiftEndTime,
   ];
 }

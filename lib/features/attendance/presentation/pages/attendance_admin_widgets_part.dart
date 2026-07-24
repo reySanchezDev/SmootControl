@@ -61,6 +61,11 @@ class _AttendanceEntryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final worked = _workedHours(entry.clockInAt, entry.clockOutAt);
+    final scheduled = _scheduledHours(entry);
+    final overtime = worked == null || scheduled == null
+        ? null
+        : (worked - scheduled).clamp(0, double.infinity).toDouble();
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(12),
@@ -92,8 +97,27 @@ class _AttendanceEntryCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 8),
+            if (entry.workShiftName != null)
+              _InfoRow(
+                label: 'Turno',
+                value:
+                    '${entry.workShiftName} '
+                    '${entry.workShiftStartTime ?? ''}-'
+                    '${entry.workShiftEndTime ?? ''}',
+              ),
             _InfoRow(label: 'Entrada', value: _time(entry.clockInAt)),
             _InfoRow(label: 'Salida', value: _time(entry.clockOutAt)),
+            if (worked != null)
+              _InfoRow(label: 'Horas laboradas', value: _hours(worked)),
+            if (overtime != null)
+              _InfoRow(label: 'Horas extra estimadas', value: _hours(overtime)),
+            if (entry.overtimeHours != null)
+              _InfoRow(
+                label: 'Horas extra en bandeja',
+                value:
+                    '${_hours(entry.overtimeHours!)} '
+                    '(${_status(entry.overtimeStatus ?? 'pending')})',
+              ),
             _InfoRow(label: 'Estado', value: _status(entry.status)),
             if (entry.deviceName != null)
               _InfoRow(label: 'Dispositivo', value: entry.deviceName!),
@@ -291,6 +315,40 @@ String _status(String status) {
     'open' => 'Abierta',
     'closed' => 'Cerrada',
     'voided' => 'Anulada',
+    'pending' => 'Pendiente',
+    'approved' => 'Aprobada',
+    'rejected' => 'Rechazada',
     _ => status,
   };
+}
+
+double? _workedHours(DateTime? input, DateTime? output) {
+  if (input == null || output == null) return null;
+  return output.difference(input).inMinutes / 60;
+}
+
+double? _scheduledHours(AttendanceEntry entry) {
+  final start = _timeOfDay(entry.workShiftStartTime);
+  final end = _timeOfDay(entry.workShiftEndTime);
+  if (start == null || end == null) return null;
+  final startDate = _dateTime(entry.workDate, start);
+  var endDate = _dateTime(entry.workDate, end);
+  if (!endDate.isAfter(startDate)) {
+    endDate = endDate.add(const Duration(days: 1));
+  }
+  return endDate.difference(startDate).inMinutes / 60;
+}
+
+TimeOfDay? _timeOfDay(String? value) {
+  if (value == null) return null;
+  final parts = value.split(':');
+  if (parts.length < 2) return null;
+  final hour = int.tryParse(parts[0]);
+  final minute = int.tryParse(parts[1]);
+  if (hour == null || minute == null) return null;
+  return TimeOfDay(hour: hour, minute: minute);
+}
+
+String _hours(double value) {
+  return '${value.toStringAsFixed(2)} h';
 }

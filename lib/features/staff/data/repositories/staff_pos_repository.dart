@@ -5,6 +5,7 @@ import 'package:smoo_control/features/staff/domain/entities/business_rule.dart';
 import 'package:smoo_control/features/staff/domain/entities/employee.dart';
 import 'package:smoo_control/features/staff/domain/entities/employee_overtime_entry.dart';
 import 'package:smoo_control/features/staff/domain/entities/employee_position.dart';
+import 'package:smoo_control/features/staff/domain/entities/employee_work_shift.dart';
 import 'package:smoo_control/features/staff/domain/entities/payroll_pending_line.dart';
 import 'package:smoo_control/features/staff/domain/entities/salary_advance.dart';
 import 'package:smoo_control/features/staff/domain/repositories/i_staff_repository.dart';
@@ -98,6 +99,11 @@ final class StaffPosRepository implements IStaffRepository {
   }
 
   @override
+  Future<AppResult<List<EmployeeWorkShift>>> getWorkShifts() async {
+    return const AppSuccess(<EmployeeWorkShift>[]);
+  }
+
+  @override
   Future<AppResult<List<PayrollPendingLine>>> getPendingPayrollLines() async {
     return const AppSuccess(<PayrollPendingLine>[]);
   }
@@ -171,6 +177,18 @@ final class StaffPosRepository implements IStaffRepository {
       AppFailure(
         code: 'position_local_write_blocked',
         message: 'Los puestos se administran desde el modo administrador.',
+      ),
+    );
+  }
+
+  @override
+  Future<AppResult<EmployeeWorkShift>> saveWorkShift(
+    EmployeeWorkShift shift,
+  ) async {
+    return const AppFailureResult(
+      AppFailure(
+        code: 'work_shift_local_write_blocked',
+        message: 'Los turnos se administran desde el modo administrador.',
       ),
     );
   }

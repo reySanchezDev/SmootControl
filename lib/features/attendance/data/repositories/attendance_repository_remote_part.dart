@@ -160,6 +160,11 @@ mixin _AttendanceRemoteMixin on Object {
       verificationMethod: _text(row['verification_method']),
       note: _optionalText(row['note']),
       deviceName: _optionalText(row['device_name']),
+      workShiftName: _optionalText(row['work_shift_name']),
+      workShiftStartTime: _optionalText(row['work_shift_start_time']),
+      workShiftEndTime: _optionalText(row['work_shift_end_time']),
+      overtimeHours: double.tryParse(_text(row['overtime_hours'])),
+      overtimeStatus: _optionalText(row['overtime_status']),
       createdAt: _date(row['created_at']),
     );
   }

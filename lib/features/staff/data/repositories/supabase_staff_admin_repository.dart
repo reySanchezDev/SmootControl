@@ -10,6 +10,7 @@ import 'package:smoo_control/features/staff/domain/entities/business_rule.dart';
 import 'package:smoo_control/features/staff/domain/entities/employee.dart';
 import 'package:smoo_control/features/staff/domain/entities/employee_overtime_entry.dart';
 import 'package:smoo_control/features/staff/domain/entities/employee_position.dart';
+import 'package:smoo_control/features/staff/domain/entities/employee_work_shift.dart';
 import 'package:smoo_control/features/staff/domain/entities/payroll_pending_line.dart';
 import 'package:smoo_control/features/staff/domain/entities/salary_advance.dart';
 import 'package:smoo_control/features/staff/domain/entities/staff_consumption.dart';

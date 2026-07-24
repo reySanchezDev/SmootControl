@@ -3,6 +3,7 @@ import 'package:smoo_control/features/staff/domain/entities/business_rule.dart';
 import 'package:smoo_control/features/staff/domain/entities/employee.dart';
 import 'package:smoo_control/features/staff/domain/entities/employee_overtime_entry.dart';
 import 'package:smoo_control/features/staff/domain/entities/employee_position.dart';
+import 'package:smoo_control/features/staff/domain/entities/employee_work_shift.dart';
 import 'package:smoo_control/features/staff/domain/entities/payroll_pending_line.dart';
 import 'package:smoo_control/features/staff/domain/entities/salary_advance.dart';
 
@@ -19,6 +20,12 @@ abstract interface class IStaffRepository {
 
   /// Saves one employee position.
   Future<AppResult<EmployeePosition>> savePosition(EmployeePosition position);
+
+  /// Returns employee work shifts.
+  Future<AppResult<List<EmployeeWorkShift>>> getWorkShifts();
+
+  /// Saves one employee work shift.
+  Future<AppResult<EmployeeWorkShift>> saveWorkShift(EmployeeWorkShift shift);
 
   /// Returns business rules.
   Future<AppResult<List<BusinessRule>>> getBusinessRules();

@@ -149,6 +149,8 @@ abstract class _SupabaseStaffAdminRepositoryBase {
   }
 
   Employee _employeeFromRow(Map<String, Object?> row) {
+    final shift = row['employee_work_shifts'];
+    final shiftRow = shift is Map<Object?, Object?> ? _map(shift) : null;
     return Employee(
       id: _text(row['id']),
       code: _optionalText(row['code']) ?? _optionalText(row['employee_number']),
@@ -160,6 +162,16 @@ abstract class _SupabaseStaffAdminRepositoryBase {
       isActive: _bool(row['is_active'], fallback: true),
       photoUrl: _optionalText(row['photo_url']),
       showInTimeClock: _bool(row['show_in_time_clock'], fallback: true),
+      workShiftId: _optionalText(row['work_shift_id']),
+      workShiftName:
+          _optionalText(row['work_shift_name']) ??
+          _optionalText(shiftRow?['name']),
+      workShiftStartTime:
+          _optionalText(row['work_shift_start_time']) ??
+          _optionalText(shiftRow?['start_time']),
+      workShiftEndTime:
+          _optionalText(row['work_shift_end_time']) ??
+          _optionalText(shiftRow?['end_time']),
     );
   }
 
@@ -177,6 +189,16 @@ abstract class _SupabaseStaffAdminRepositoryBase {
       key: _text(row['key']),
       boolValue: row['bool_value'] as bool?,
       textValue: _optionalText(row['text_value']),
+    );
+  }
+
+  EmployeeWorkShift _workShiftFromRow(Map<String, Object?> row) {
+    return EmployeeWorkShift(
+      id: _text(row['id']),
+      name: _text(row['name']),
+      startTime: _text(row['start_time'], defaultValue: '08:00'),
+      endTime: _text(row['end_time'], defaultValue: '17:00'),
+      isActive: _bool(row['is_active'], fallback: true),
     );
   }
 

@@ -10,7 +10,13 @@ class StaffPage extends StatefulWidget {
 }
 
 class _StaffPageState extends State<StaffPage> {
-  late Future<({List<Employee> employees, List<EmployeePosition> positions})>
+  late Future<
+    ({
+      List<Employee> employees,
+      List<EmployeePosition> positions,
+      List<EmployeeWorkShift> shifts,
+    })
+  >
   _future;
 
   SupabaseStaffAdminRepository get _repository =>
@@ -26,16 +32,27 @@ class _StaffPageState extends State<StaffPage> {
     _future = _load();
   }
 
-  Future<({List<Employee> employees, List<EmployeePosition> positions})>
+  Future<
+    ({
+      List<Employee> employees,
+      List<EmployeePosition> positions,
+      List<EmployeeWorkShift> shifts,
+    })
+  >
   _load() async {
     final employees = await _repository.getEmployees();
     final positions = await _repository.getPositions();
+    final shifts = await _repository.getWorkShifts();
     return (
       employees: switch (employees) {
         AppSuccess(:final value) => value,
         AppFailureResult(:final error) => throw StateError(error.message),
       },
       positions: switch (positions) {
+        AppSuccess(:final value) => value,
+        AppFailureResult(:final error) => throw StateError(error.message),
+      },
+      shifts: switch (shifts) {
         AppSuccess(:final value) => value,
         AppFailureResult(:final error) => throw StateError(error.message),
       },
@@ -54,7 +71,11 @@ class _StaffPageState extends State<StaffPage> {
       ],
       body:
           FutureBuilder<
-            ({List<Employee> employees, List<EmployeePosition> positions})
+            ({
+              List<Employee> employees,
+              List<EmployeePosition> positions,
+              List<EmployeeWorkShift> shifts,
+            })
           >(
             future: _future,
             builder: (context, snapshot) {
@@ -70,6 +91,7 @@ class _StaffPageState extends State<StaffPage> {
               return _EmployeeList(
                 employees: data.employees,
                 positions: data.positions,
+                shifts: data.shifts,
                 onEdit: (employee) => unawaited(_editEmployee(employee)),
               );
             },
@@ -85,6 +107,7 @@ class _StaffPageState extends State<StaffPage> {
       builder: (_) => _EmployeeDialog(
         employee: employee,
         positions: data.positions,
+        shifts: data.shifts,
       ),
     );
     if (result == null || !mounted) return;
@@ -107,11 +130,13 @@ class _EmployeeList extends StatelessWidget {
   const _EmployeeList({
     required this.employees,
     required this.positions,
+    required this.shifts,
     required this.onEdit,
   });
 
   final List<Employee> employees;
   final List<EmployeePosition> positions;
+  final List<EmployeeWorkShift> shifts;
   final ValueChanged<Employee> onEdit;
 
   @override
@@ -129,6 +154,7 @@ class _EmployeeList extends StatelessWidget {
       itemBuilder: (context, index) {
         final employee = employees[index];
         final position = _positionName(employee.positionName, positions);
+        final shift = _shiftName(employee.workShiftId, shifts);
         return ListTile(
           leading: Icon(
             employee.isActive ? Icons.badge_outlined : Icons.block_outlined,
@@ -137,6 +163,7 @@ class _EmployeeList extends StatelessWidget {
           subtitle: Text(
             [
               ?position,
+              if (shift != null) 'Turno: $shift',
               if (employee.code != null) 'No. ${employee.code}',
               'Salario: ${_money(employee.baseSalaryInCents)}',
               if (employee.showInTimeClock) 'Marca asistencia',
@@ -162,13 +189,26 @@ class _EmployeeList extends StatelessWidget {
     }
     return positionId;
   }
+
+  String? _shiftName(String? shiftId, List<EmployeeWorkShift> shifts) {
+    if (shiftId == null) return null;
+    for (final shift in shifts) {
+      if (shift.id == shiftId) return shift.name;
+    }
+    return shiftId;
+  }
 }
 
 class _EmployeeDialog extends StatefulWidget {
-  const _EmployeeDialog({required this.positions, this.employee});
+  const _EmployeeDialog({
+    required this.positions,
+    required this.shifts,
+    this.employee,
+  });
 
   final Employee? employee;
   final List<EmployeePosition> positions;
+  final List<EmployeeWorkShift> shifts;
 
   @override
   State<_EmployeeDialog> createState() => _EmployeeDialogState();
@@ -182,6 +222,7 @@ class _EmployeeDialogState extends State<_EmployeeDialog> {
     text: ((widget.employee?.baseSalaryInCents ?? 0) / 100).toStringAsFixed(2),
   );
   late String? _positionId = widget.employee?.positionName;
+  late String? _shiftId = widget.employee?.workShiftId;
   late bool _active = widget.employee?.isActive ?? true;
   late bool _showInTimeClock = widget.employee?.showInTimeClock ?? true;
   late final _photoUrl = TextEditingController(
@@ -224,6 +265,23 @@ class _EmployeeDialogState extends State<_EmployeeDialog> {
                   ),
               ],
               onChanged: (value) => setState(() => _positionId = value),
+            ),
+            DropdownButtonFormField<String>(
+              initialValue: _shiftId,
+              decoration: const InputDecoration(labelText: 'Turno'),
+              items: [
+                const DropdownMenuItem(child: Text('Sin turno')),
+                for (final shift in widget.shifts.where(
+                  (shift) => shift.isActive,
+                ))
+                  DropdownMenuItem(
+                    value: shift.id,
+                    child: Text(
+                      '${shift.name} (${shift.startTime} - ${shift.endTime})',
+                    ),
+                  ),
+              ],
+              onChanged: (value) => setState(() => _shiftId = value),
             ),
             TextField(
               controller: _salary,
@@ -287,6 +345,7 @@ class _EmployeeDialogState extends State<_EmployeeDialog> {
         isActive: _active,
         photoUrl: _photoUrl.text.trim().isEmpty ? null : _photoUrl.text.trim(),
         showInTimeClock: _showInTimeClock,
+        workShiftId: _shiftId,
       ),
     );
   }
