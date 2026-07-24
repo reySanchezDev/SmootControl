@@ -19,6 +19,7 @@ void main() {
       baseSalaryInCents: 405000,
       overtimeInCents: 56950,
       consumptionInCents: 0,
+      rawMaterialConsumptionInCents: 0,
       advanceDeductionInCents: 87250,
       netPayInCents: 374750,
       paymentAmountInCents: 374750,
@@ -26,6 +27,7 @@ void main() {
       balanceAfterInCents: 0,
       advanceBalanceAfterInCents: 0,
       consumptions: const [],
+      rawMaterialConsumptions: const [],
       overtimeEntries: [
         PayrollReceiptOvertime(
           date: from,

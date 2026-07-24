@@ -58,6 +58,9 @@ abstract final class RouteAccess {
       AppRoutes.staff => const ['personal.gestionar'],
       AppRoutes.staffPositions => const ['personal.gestionar'],
       AppRoutes.staffConsumptions => const ['personal.consumos.ver'],
+      AppRoutes.rawMaterialStaffConsumptions => const [
+        'personal.consumos_materia.ver',
+      ],
       AppRoutes.salaryAdvances => const ['personal.adelantos.gestionar'],
       AppRoutes.payroll ||
       AppRoutes.staffOvertime ||

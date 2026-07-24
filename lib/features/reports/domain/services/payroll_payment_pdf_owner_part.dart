@@ -50,7 +50,8 @@ extension _PayrollPaymentOwnerPdf on PayrollPaymentPdfService {
           _pairedAmounts([
             ('Salario', receipt.baseSalaryInCents),
             ('Horas extras', receipt.overtimeInCents),
-            ('Consumo', receipt.consumptionInCents),
+            ('Consumo POS', receipt.consumptionInCents),
+            ('Materia prima', receipt.rawMaterialConsumptionInCents),
             ('Adelanto', receipt.advanceDeductionInCents),
             ('Neto planilla', receipt.netPayInCents),
             ('Pendiente', receipt.balanceAfterInCents),

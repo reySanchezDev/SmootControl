@@ -17,7 +17,11 @@ class _PayrollReceiptDetail extends StatelessWidget {
             const Divider(height: 24),
             _DetailRow('Salario', receipt.baseSalaryInCents),
             _DetailRow('Horas extras', receipt.overtimeInCents),
-            _DetailRow('Consumo', receipt.consumptionInCents),
+            _DetailRow('Consumo POS', receipt.consumptionInCents),
+            _DetailRow(
+              'Materia prima',
+              receipt.rawMaterialConsumptionInCents,
+            ),
             _DetailRow('Abono adelanto', receipt.advanceDeductionInCents),
             _DetailRow('Neto planilla', receipt.netPayInCents),
             _DetailRow('Pagado', receipt.paymentAmountInCents, strong: true),
@@ -26,6 +30,11 @@ class _PayrollReceiptDetail extends StatelessWidget {
             _DetailRow('Saldo adelantos', receipt.advanceBalanceAfterInCents),
             const SizedBox(height: 12),
             _ReceiptDetailList(title: 'Consumos', rows: _consumptionRows()),
+            const SizedBox(height: 12),
+            _ReceiptDetailList(
+              title: 'Consumos materia prima',
+              rows: _rawConsumptionRows(),
+            ),
             const SizedBox(height: 12),
             _ReceiptDetailList(title: 'Horas extras', rows: _overtimeRows()),
             const SizedBox(height: 12),
@@ -45,6 +54,20 @@ class _PayrollReceiptDetail extends StatelessWidget {
     }
     return [
       for (final item in receipt.consumptions) _consumptionLabel(item),
+    ];
+  }
+
+  List<String> _rawConsumptionRows() {
+    if (receipt.rawMaterialConsumptions.isEmpty &&
+        receipt.rawMaterialConsumptionInCents > 0) {
+      final amount = MoneyFormatter.format(
+        receipt.rawMaterialConsumptionInCents,
+      );
+      return ['Materia prima aplicada - $amount'];
+    }
+    return [
+      for (final item in receipt.rawMaterialConsumptions)
+        _consumptionLabel(item),
     ];
   }
 

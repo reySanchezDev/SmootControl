@@ -1,10 +1,7 @@
 part of 'dashboard_page.dart';
-
 class _DashboardContent extends StatelessWidget {
   const _DashboardContent({required this.access});
-
   final _DashboardAccess access;
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -26,7 +23,6 @@ class _DashboardContent extends StatelessWidget {
           builder: (context, size) {
             final isMobile = size == ResponsiveSize.mobile;
             final horizontalPadding = isMobile ? 16.0 : 32.0;
-
             return ListView(
               padding: EdgeInsets.all(horizontalPadding),
               children: [
@@ -211,6 +207,11 @@ class _DashboardContent extends StatelessWidget {
             icon: Icons.receipt_long_outlined,
             label: 'Consumos personal',
             route: AppRoutes.staffConsumptions,
+          ),
+          _ModuleDefinition(
+            icon: Icons.restaurant_menu_outlined,
+            label: 'Consumo materia',
+            route: AppRoutes.rawMaterialStaffConsumptions,
           ),
           _ModuleDefinition(
             icon: Icons.payments_outlined,

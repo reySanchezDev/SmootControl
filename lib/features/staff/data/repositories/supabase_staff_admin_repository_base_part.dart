@@ -1,5 +1,4 @@
 part of 'supabase_staff_admin_repository.dart';
-
 abstract class _SupabaseStaffAdminRepositoryBase {
   /// Creates the repository.
   const _SupabaseStaffAdminRepositoryBase({
@@ -16,9 +15,7 @@ abstract class _SupabaseStaffAdminRepositoryBase {
   final CurrentRestaurantService _restaurantService;
   final CurrentRemoteSessionService _remoteSessionService;
   final http.Client _client;
-
   String get _restaurantId => _restaurantService.restaurantId;
-
   Future<AppResult<T>> _guard<T>(
     String code,
     String message,
@@ -36,13 +33,11 @@ abstract class _SupabaseStaffAdminRepositoryBase {
       );
     }
   }
-
   String _withCause(String message, Object error) {
     final detail = _remoteErrorMessage(error);
     if (detail == null || detail.isEmpty) return message;
     return '$message\n\nDetalle: $detail';
   }
-
   String? _remoteErrorMessage(Object error) {
     final text = error.toString();
     final jsonStart = text.indexOf('{');
@@ -58,7 +53,6 @@ abstract class _SupabaseStaffAdminRepositoryBase {
     }
     return text.replaceFirst('Bad state: ', '');
   }
-
   Future<List<Map<String, Object?>>> _getRows(
     String table,
     Map<String, String> query,
@@ -72,7 +66,6 @@ abstract class _SupabaseStaffAdminRepositoryBase {
     if (body is! List) return const [];
     return body.whereType<Map<Object?, Object?>>().map(_map).toList();
   }
-
   Future<void> _upsert(
     String table,
     Map<String, Object?> payload, {
@@ -87,7 +80,6 @@ abstract class _SupabaseStaffAdminRepositoryBase {
     );
     _ensureSuccess(response, table);
   }
-
   Future<void> _rpc(String functionName, Map<String, Object?> payload) async {
     final response = await _client.post(
       _config.rpcUri(functionName),
@@ -96,7 +88,6 @@ abstract class _SupabaseStaffAdminRepositoryBase {
     );
     _ensureSuccess(response, functionName);
   }
-
   Future<Map<String, Object?>> _rpcRow(
     String functionName,
     Map<String, Object?> payload,
@@ -111,7 +102,6 @@ abstract class _SupabaseStaffAdminRepositoryBase {
     if (body is Map<Object?, Object?>) return _map(body);
     throw StateError('Respuesta invalida de $functionName');
   }
-
   Future<List<Map<String, Object?>>> _rpcRows(
     String functionName,
     Map<String, Object?> payload,
@@ -126,7 +116,6 @@ abstract class _SupabaseStaffAdminRepositoryBase {
     if (body is! List) return const [];
     return body.whereType<Map<Object?, Object?>>().map(_map).toList();
   }
-
   Future<Map<String, String>> _headers({String? prefer}) async {
     final token = _remoteSessionService.accessToken;
     if (!_config.isConfigured || token == null) {
@@ -139,7 +128,6 @@ abstract class _SupabaseStaffAdminRepositoryBase {
       ...?(prefer == null ? null : {'prefer': prefer}),
     };
   }
-
   void _ensureSuccess(http.Response response, String context) {
     if (response.statusCode >= 200 && response.statusCode < 300) return;
     if (response.statusCode == 401 || response.statusCode == 403) {
@@ -225,6 +213,10 @@ abstract class _SupabaseStaffAdminRepositoryBase {
     final start =
         DateTime.tryParse(_text(row['period_start'])) ?? DateTime.now();
     final end = DateTime.tryParse(_text(row['period_end'])) ?? start;
+    final posConsumption = _moneyToCents(row['staff_consumption_amount']);
+    final rawConsumption = _moneyToCents(
+      row['raw_material_consumption_amount'],
+    );
     return PayrollPendingLine(
       payrollRunId: _text(row['payroll_run_id']),
       employeeId: _text(row['employee_id']),
@@ -233,7 +225,9 @@ abstract class _SupabaseStaffAdminRepositoryBase {
       periodEnd: end,
       periodLabel: _text(row['period_label'], defaultValue: 'Planilla'),
       baseSalaryInCents: _moneyToCents(row['base_salary']),
-      consumptionInCents: _moneyToCents(row['staff_consumption_amount']),
+      consumptionInCents: posConsumption + rawConsumption,
+      posConsumptionInCents: posConsumption,
+      rawMaterialConsumptionInCents: rawConsumption,
       overtimeInCents: _moneyToCents(row['overtime_amount']),
       salaryAdvanceDeductionInCents: _moneyToCents(
         row['salary_advance_deduction'],

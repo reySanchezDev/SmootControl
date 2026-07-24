@@ -4,6 +4,7 @@ class _PayrollDraftList extends StatelessWidget {
   const _PayrollDraftList({
     required this.advances,
     required this.consumptions,
+    required this.rawConsumptions,
     required this.employees,
     required this.overtimeEntries,
     required this.pendingLines,
@@ -13,6 +14,7 @@ class _PayrollDraftList extends StatelessWidget {
 
   final List<SalaryAdvance> advances;
   final List<StaffConsumption> consumptions;
+  final List<RawMaterialStaffConsumption> rawConsumptions;
   final List<Employee> employees;
   final List<EmployeeOvertimeEntry> overtimeEntries;
   final List<PayrollPendingLine> pendingLines;
@@ -66,6 +68,16 @@ class _PayrollDraftList extends StatelessWidget {
                   value: entry.overtimeInCents,
                 ),
                 _PayrollRow(label: 'Consumo', value: entry.consumptionInCents),
+                if (entry.rawMaterialConsumptionInCents > 0) ...[
+                  _PayrollRow(
+                    label: 'Consumo POS',
+                    value: entry.posConsumptionInCents,
+                  ),
+                  _PayrollRow(
+                    label: 'Materia prima',
+                    value: entry.rawMaterialConsumptionInCents,
+                  ),
+                ],
                 _PayrollRow(
                   label: entry.canEditAdvanceDeduction
                       ? 'Neto antes de adelanto'
@@ -134,6 +146,18 @@ class _PayrollDraftList extends StatelessWidget {
         ifAbsent: () => consumption.totalInCents,
       );
     }
+    final rawConsumptionByEmployee = <String, int>{};
+    for (final consumption in rawConsumptions.where((item) {
+      return item.payrollRunId == null &&
+          !_isBeforeDate(item.consumedAt, period.start) &&
+          !_isAfterDate(item.consumedAt, period.end);
+    })) {
+      rawConsumptionByEmployee.update(
+        consumption.employeeId,
+        (current) => current + consumption.totalInCents,
+        ifAbsent: () => consumption.totalInCents,
+      );
+    }
     final advancesByEmployee = <String, int>{};
     for (final advance in advances.where((item) {
       return item.status == 'pending' || item.status == 'partially_paid';
@@ -178,9 +202,11 @@ class _PayrollDraftList extends StatelessWidget {
         continue;
       }
       final consumption = consumptionByEmployee[employee.id] ?? 0;
+      final rawConsumption = rawConsumptionByEmployee[employee.id] ?? 0;
+      final totalConsumption = consumption + rawConsumption;
       final overtime = overtimeByEmployee[employee.id] ?? 0;
       final advance = advancesByEmployee[employee.id] ?? 0;
-      final balance = employee.baseSalaryInCents + overtime - consumption;
+      final balance = employee.baseSalaryInCents + overtime - totalConsumption;
       if (balance <= 0) continue;
       entries.add(
         _PayrollEntry(
@@ -190,7 +216,9 @@ class _PayrollDraftList extends StatelessWidget {
           periodEnd: period.end,
           periodLabel: period.label,
           baseSalaryInCents: employee.baseSalaryInCents,
-          consumptionInCents: consumption,
+          consumptionInCents: totalConsumption,
+          posConsumptionInCents: consumption,
+          rawMaterialConsumptionInCents: rawConsumption,
           overtimeInCents: overtime,
           advanceBalanceInCents: advance,
           advanceDeductionInCents: 0,

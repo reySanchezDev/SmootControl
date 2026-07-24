@@ -123,6 +123,9 @@ final class SupabasePayrollReportService {
       baseSalaryInCents: _moneyToCents(row['base_salary']),
       overtimeInCents: _moneyToCents(row['overtime_amount']),
       consumptionInCents: _moneyToCents(row['staff_consumption_amount']),
+      rawMaterialConsumptionInCents: _moneyToCents(
+        row['raw_material_consumption_amount'],
+      ),
       advanceDeductionInCents: _moneyToCents(
         row['salary_advance_deduction'],
       ),
@@ -134,6 +137,9 @@ final class SupabasePayrollReportService {
         row['advance_balance_after'],
       ),
       consumptions: _consumptions(details['consumptions']),
+      rawMaterialConsumptions: _consumptions(
+        details['raw_material_consumptions'],
+      ),
       overtimeEntries: _overtime(details['overtime_entries']),
       advances: _advances(details['salary_advances']),
       paidAt: _date(row['paid_at']),

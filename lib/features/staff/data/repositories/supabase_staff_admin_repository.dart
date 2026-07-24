@@ -12,6 +12,7 @@ import 'package:smoo_control/features/staff/domain/entities/employee_overtime_en
 import 'package:smoo_control/features/staff/domain/entities/employee_position.dart';
 import 'package:smoo_control/features/staff/domain/entities/employee_work_shift.dart';
 import 'package:smoo_control/features/staff/domain/entities/payroll_pending_line.dart';
+import 'package:smoo_control/features/staff/domain/entities/raw_material_staff_consumption.dart';
 import 'package:smoo_control/features/staff/domain/entities/salary_advance.dart';
 import 'package:smoo_control/features/staff/domain/entities/staff_consumption.dart';
 import 'package:smoo_control/features/staff/domain/repositories/i_staff_repository.dart';
@@ -23,6 +24,7 @@ part 'supabase_staff_admin_repository_consumptions_part.dart';
 part 'supabase_staff_admin_repository_employees_part.dart';
 part 'supabase_staff_admin_repository_overtime_part.dart';
 part 'supabase_staff_admin_repository_payroll_part.dart';
+part 'supabase_staff_admin_repository_raw_consumptions_part.dart';
 
 /// Remote-only staff repository used by administrative screens.
 final class SupabaseStaffAdminRepository
@@ -33,7 +35,8 @@ final class SupabaseStaffAdminRepository
         _SupabaseStaffAdvancesMixin,
         _SupabaseStaffConsumptionsMixin,
         _SupabaseStaffOvertimeMixin,
-        _SupabaseStaffPayrollMixin
+        _SupabaseStaffPayrollMixin,
+        _SupabaseStaffRawConsumptionsMixin
     implements IStaffRepository {
   /// Creates the repository.
   const SupabaseStaffAdminRepository({

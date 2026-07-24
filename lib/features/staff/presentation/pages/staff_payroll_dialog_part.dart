@@ -56,6 +56,16 @@ class _PayrollPaymentDialogState extends State<_PayrollPaymentDialog> {
             label: 'Consumo',
             value: request.entry.consumptionInCents,
           ),
+          if (request.entry.rawMaterialConsumptionInCents > 0) ...[
+            _PayrollRow(
+              label: 'Consumo POS',
+              value: request.entry.posConsumptionInCents,
+            ),
+            _PayrollRow(
+              label: 'Materia prima',
+              value: request.entry.rawMaterialConsumptionInCents,
+            ),
+          ],
           _PayrollRow(
             label: request.entry.canEditAdvanceDeduction
                 ? 'Neto antes de adelanto'

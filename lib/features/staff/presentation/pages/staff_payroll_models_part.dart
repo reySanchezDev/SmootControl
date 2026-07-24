@@ -16,6 +16,8 @@ class _PayrollEntry {
     required this.periodLabel,
     required this.baseSalaryInCents,
     required this.consumptionInCents,
+    required this.posConsumptionInCents,
+    required this.rawMaterialConsumptionInCents,
     required this.overtimeInCents,
     required this.advanceBalanceInCents,
     required this.advanceDeductionInCents,
@@ -39,6 +41,8 @@ class _PayrollEntry {
       periodLabel: line.periodLabel,
       baseSalaryInCents: line.baseSalaryInCents,
       consumptionInCents: line.consumptionInCents,
+      posConsumptionInCents: line.posConsumptionInCents,
+      rawMaterialConsumptionInCents: line.rawMaterialConsumptionInCents,
       overtimeInCents: line.overtimeInCents,
       advanceBalanceInCents: advanceDeduction + remainingAdvanceInCents,
       advanceDeductionInCents: advanceDeduction,
@@ -57,6 +61,8 @@ class _PayrollEntry {
   final String periodLabel;
   final int baseSalaryInCents;
   final int consumptionInCents;
+  final int posConsumptionInCents;
+  final int rawMaterialConsumptionInCents;
   final int overtimeInCents;
   final int advanceBalanceInCents;
   final int advanceDeductionInCents;

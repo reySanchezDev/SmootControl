@@ -102,6 +102,10 @@ abstract final class AppRoutes {
   /// Staff consumptions route.
   static const staffConsumptions = '/staff-consumptions';
 
+  /// Raw material staff consumptions route.
+  static const rawMaterialStaffConsumptions =
+      '/staff/raw-material-consumptions';
+
   /// Salary advances route.
   static const salaryAdvances = '/salary-advances';
 

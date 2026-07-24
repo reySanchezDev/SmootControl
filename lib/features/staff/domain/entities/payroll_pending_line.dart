@@ -17,6 +17,8 @@ final class PayrollPendingLine extends Equatable {
     required this.netPayInCents,
     required this.paidInCents,
     required this.balanceInCents,
+    this.posConsumptionInCents = 0,
+    this.rawMaterialConsumptionInCents = 0,
   });
 
   /// Payroll run identifier.
@@ -43,6 +45,12 @@ final class PayrollPendingLine extends Equatable {
   /// Staff consumption deducted in minor currency units.
   final int consumptionInCents;
 
+  /// POS product consumption deducted in minor currency units.
+  final int posConsumptionInCents;
+
+  /// Raw-material consumption deducted in minor currency units.
+  final int rawMaterialConsumptionInCents;
+
   /// Overtime amount included in the line.
   final int overtimeInCents;
 
@@ -68,6 +76,8 @@ final class PayrollPendingLine extends Equatable {
     periodLabel,
     baseSalaryInCents,
     consumptionInCents,
+    posConsumptionInCents,
+    rawMaterialConsumptionInCents,
     overtimeInCents,
     salaryAdvanceDeductionInCents,
     netPayInCents,

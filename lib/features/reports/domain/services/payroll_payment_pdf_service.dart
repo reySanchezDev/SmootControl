@@ -5,6 +5,7 @@ import 'package:smoo_control/core/formatters/money_formatter.dart';
 import 'package:smoo_control/features/reports/domain/entities/payroll_payment_receipt.dart';
 
 part 'payroll_payment_pdf_owner_part.dart';
+part 'payroll_payment_pdf_details_part.dart';
 
 const _showEmployeePositionOnReceipt = false;
 
@@ -32,13 +33,19 @@ final class PayrollPaymentPdfService {
           _amountsTable([
             ('Salario quincenal', receipt.baseSalaryInCents),
             ('Horas extras', receipt.overtimeInCents),
-            ('Consumo descontado', receipt.consumptionInCents),
+            ('Consumo POS', receipt.consumptionInCents),
+            ('Materia prima', receipt.rawMaterialConsumptionInCents),
             ('Abono a adelanto', receipt.advanceDeductionInCents),
             ('Neto planilla', receipt.netPayInCents),
             ('Total pagado', receipt.paymentAmountInCents),
           ]),
           pw.SizedBox(height: 14),
           _detailsSection('Consumos aplicados', _consumptionRows(receipt)),
+          pw.SizedBox(height: 10),
+          _detailsSection(
+            'Consumos materia prima',
+            _rawConsumptionRows(receipt),
+          ),
           pw.SizedBox(height: 10),
           _detailsSection('Horas extras pagadas', _overtimeRows(receipt)),
           pw.SizedBox(height: 10),
@@ -78,7 +85,8 @@ final class PayrollPaymentPdfService {
           _amountsTable([
             ('Total salarios', totals.salary),
             ('Horas extras', totals.overtime),
-            ('Consumos descontados', totals.consumption),
+            ('Consumos POS', totals.consumption),
+            ('Consumos materia prima', totals.rawConsumption),
             ('Adelantos abonados', totals.advance),
             ('Neto planilla', totals.netPay),
             ('Total pagado', totals.paid),
@@ -154,72 +162,6 @@ final class PayrollPaymentPdfService {
     );
   }
 
-  List<List<String>> _consumptionRows(PayrollPaymentReceipt receipt) {
-    if (receipt.consumptions.isEmpty && receipt.consumptionInCents > 0) {
-      return [
-        [
-          _date(receipt.paidAt),
-          'Consumo aplicado',
-          MoneyFormatter.format(receipt.consumptionInCents),
-          '-',
-        ],
-      ];
-    }
-    return [
-      for (final item in receipt.consumptions)
-        [
-          _date(item.date),
-          item.receipt,
-          MoneyFormatter.format(item.amountInCents),
-          '-',
-        ],
-    ];
-  }
-
-  List<List<String>> _overtimeRows(PayrollPaymentReceipt receipt) {
-    if (receipt.overtimeEntries.isEmpty && receipt.overtimeInCents > 0) {
-      return [
-        [
-          _date(receipt.paidAt),
-          'Horas extras',
-          MoneyFormatter.format(receipt.overtimeInCents),
-          '-',
-        ],
-      ];
-    }
-    return [
-      for (final item in receipt.overtimeEntries)
-        [
-          _date(item.date),
-          '${item.hours} h x ${MoneyFormatter.format(item.hourRateInCents)}',
-          MoneyFormatter.format(item.amountInCents),
-          item.note ?? '-',
-        ],
-    ];
-  }
-
-  List<List<String>> _advanceRows(PayrollPaymentReceipt receipt) {
-    if (receipt.advances.isEmpty && receipt.advanceDeductionInCents > 0) {
-      return [
-        [
-          _date(receipt.paidAt),
-          'Adelanto aplicado',
-          MoneyFormatter.format(receipt.advanceDeductionInCents),
-          MoneyFormatter.format(receipt.advanceBalanceAfterInCents),
-        ],
-      ];
-    }
-    return [
-      for (final item in receipt.advances)
-        [
-          _date(item.deliveredAt),
-          MoneyFormatter.format(item.originalAmountInCents),
-          MoneyFormatter.format(item.appliedAmountInCents),
-          MoneyFormatter.format(item.balanceAfterInCents),
-        ],
-    ];
-  }
-
   Future<pw.Font> _font(String path) async {
     final data = await rootBundle.load(path);
     return pw.Font.ttf(data);
@@ -241,6 +183,7 @@ final class _PayrollTotals {
     required this.salary,
     required this.overtime,
     required this.consumption,
+    required this.rawConsumption,
     required this.advance,
     required this.netPay,
     required this.paid,
@@ -255,6 +198,7 @@ final class _PayrollTotals {
       salary: sum((receipt) => receipt.baseSalaryInCents),
       overtime: sum((receipt) => receipt.overtimeInCents),
       consumption: sum((receipt) => receipt.consumptionInCents),
+      rawConsumption: sum((receipt) => receipt.rawMaterialConsumptionInCents),
       advance: sum((receipt) => receipt.advanceDeductionInCents),
       netPay: sum((receipt) => receipt.netPayInCents),
       paid: sum((receipt) => receipt.paymentAmountInCents),
@@ -273,6 +217,7 @@ final class _PayrollTotals {
   final int salary;
   final int overtime;
   final int consumption;
+  final int rawConsumption;
   final int advance;
   final int netPay;
   final int paid;

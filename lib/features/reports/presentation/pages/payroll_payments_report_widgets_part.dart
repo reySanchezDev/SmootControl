@@ -131,6 +131,9 @@ class _PayrollReceiptSummary extends StatelessWidget {
     final paid = _sum((receipt) => receipt.paymentAmountInCents);
     final overtime = _sum((receipt) => receipt.overtimeInCents);
     final consumption = _sum((receipt) => receipt.consumptionInCents);
+    final rawConsumption = _sum(
+      (receipt) => receipt.rawMaterialConsumptionInCents,
+    );
     final advance = _sum((receipt) => receipt.advanceDeductionInCents);
     return Card(
       child: Padding(
@@ -148,6 +151,10 @@ class _PayrollReceiptSummary extends StatelessWidget {
             _SummaryChip(
               label: 'Consumo',
               value: MoneyFormatter.format(consumption),
+            ),
+            _SummaryChip(
+              label: 'Materia prima',
+              value: MoneyFormatter.format(rawConsumption),
             ),
             _SummaryChip(
               label: 'Adelantos',

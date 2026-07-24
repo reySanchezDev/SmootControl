@@ -15,6 +15,7 @@ final class PayrollPaymentReceipt extends Equatable {
     required this.baseSalaryInCents,
     required this.overtimeInCents,
     required this.consumptionInCents,
+    required this.rawMaterialConsumptionInCents,
     required this.advanceDeductionInCents,
     required this.netPayInCents,
     required this.paymentAmountInCents,
@@ -22,6 +23,7 @@ final class PayrollPaymentReceipt extends Equatable {
     required this.balanceAfterInCents,
     required this.advanceBalanceAfterInCents,
     required this.consumptions,
+    required this.rawMaterialConsumptions,
     required this.overtimeEntries,
     required this.advances,
     required this.paidAt,
@@ -60,6 +62,9 @@ final class PayrollPaymentReceipt extends Equatable {
   /// Staff consumption deducted in this receipt.
   final int consumptionInCents;
 
+  /// Raw material staff consumption deducted in this receipt.
+  final int rawMaterialConsumptionInCents;
+
   /// Salary advance applied in this receipt.
   final int advanceDeductionInCents;
 
@@ -80,6 +85,9 @@ final class PayrollPaymentReceipt extends Equatable {
 
   /// Consumption details captured at payment time.
   final List<PayrollReceiptConsumption> consumptions;
+
+  /// Raw material consumption details captured at payment time.
+  final List<PayrollReceiptConsumption> rawMaterialConsumptions;
 
   /// Overtime details captured at payment time.
   final List<PayrollReceiptOvertime> overtimeEntries;
@@ -103,6 +111,7 @@ final class PayrollPaymentReceipt extends Equatable {
     baseSalaryInCents,
     overtimeInCents,
     consumptionInCents,
+    rawMaterialConsumptionInCents,
     advanceDeductionInCents,
     netPayInCents,
     paymentAmountInCents,
@@ -110,6 +119,7 @@ final class PayrollPaymentReceipt extends Equatable {
     balanceAfterInCents,
     advanceBalanceAfterInCents,
     consumptions,
+    rawMaterialConsumptions,
     overtimeEntries,
     advances,
     paidAt,
