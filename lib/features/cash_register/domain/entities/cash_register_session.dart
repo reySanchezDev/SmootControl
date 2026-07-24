@@ -19,6 +19,7 @@ final class CashRegisterSession extends Equatable {
     required this.openingCashInCents,
     required this.status,
     this.physicalClosingCashInCents,
+    this.posDeviceId,
   });
 
   /// Unique session identifier.
@@ -26,6 +27,9 @@ final class CashRegisterSession extends Equatable {
 
   /// Cashier user identifier.
   final String cashierId;
+
+  /// POS device that owns this cash register session.
+  final String? posDeviceId;
 
   /// Business date controlled by this session.
   final DateTime businessDate;
@@ -43,6 +47,7 @@ final class CashRegisterSession extends Equatable {
   List<Object?> get props => [
     id,
     cashierId,
+    posDeviceId,
     businessDate,
     openingCashInCents,
     physicalClosingCashInCents,

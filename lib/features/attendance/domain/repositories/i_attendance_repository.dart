@@ -11,6 +11,9 @@ abstract interface class IAttendanceRepository {
   /// Returns the local open entry for an employee, if any.
   Future<AppResult<AttendanceEntry?>> getOpenEntry(String employeeId);
 
+  /// Refreshes today's remote attendance entries into the local marker cache.
+  Future<AppResult<void>> refreshTodayEntries({String? employeeId});
+
   /// Registers an entry mark locally and queues sync.
   Future<AppResult<AttendanceEntry>> clockIn(Employee employee);
 

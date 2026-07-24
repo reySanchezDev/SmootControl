@@ -15264,6 +15264,17 @@ class $LocalCashRegisterSessionsTable extends LocalCashRegisterSessions
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _posDeviceIdMeta = const VerificationMeta(
+    'posDeviceId',
+  );
+  @override
+  late final GeneratedColumn<String> posDeviceId = GeneratedColumn<String>(
+    'pos_device_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _businessDateMeta = const VerificationMeta(
     'businessDate',
   );
@@ -15316,6 +15327,7 @@ class $LocalCashRegisterSessionsTable extends LocalCashRegisterSessions
     syncedAt,
     id,
     cashierId,
+    posDeviceId,
     businessDate,
     openingCashInCents,
     physicalClosingCashInCents,
@@ -15385,6 +15397,15 @@ class $LocalCashRegisterSessionsTable extends LocalCashRegisterSessions
       );
     } else if (isInserting) {
       context.missing(_cashierIdMeta);
+    }
+    if (data.containsKey('pos_device_id')) {
+      context.handle(
+        _posDeviceIdMeta,
+        posDeviceId.isAcceptableOrUnknown(
+          data['pos_device_id']!,
+          _posDeviceIdMeta,
+        ),
+      );
     }
     if (data.containsKey('business_date')) {
       context.handle(
@@ -15467,6 +15488,10 @@ class $LocalCashRegisterSessionsTable extends LocalCashRegisterSessions
         DriftSqlType.string,
         data['${effectivePrefix}cashier_id'],
       )!,
+      posDeviceId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}pos_device_id'],
+      ),
       businessDate: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}business_date'],
@@ -15518,6 +15543,9 @@ class LocalCashRegisterSession extends DataClass
   /// Cashier user identifier.
   final String cashierId;
 
+  /// Remote POS device that owns this local cash register session.
+  final String? posDeviceId;
+
   /// Business date as yyyy-MM-dd.
   final String businessDate;
 
@@ -15538,6 +15566,7 @@ class LocalCashRegisterSession extends DataClass
     this.syncedAt,
     required this.id,
     required this.cashierId,
+    this.posDeviceId,
     required this.businessDate,
     required this.openingCashInCents,
     this.physicalClosingCashInCents,
@@ -15560,6 +15589,9 @@ class LocalCashRegisterSession extends DataClass
     }
     map['id'] = Variable<String>(id);
     map['cashier_id'] = Variable<String>(cashierId);
+    if (!nullToAbsent || posDeviceId != null) {
+      map['pos_device_id'] = Variable<String>(posDeviceId);
+    }
     map['business_date'] = Variable<String>(businessDate);
     map['opening_cash_in_cents'] = Variable<int>(openingCashInCents);
     if (!nullToAbsent || physicalClosingCashInCents != null) {
@@ -15587,6 +15619,9 @@ class LocalCashRegisterSession extends DataClass
           : Value(syncedAt),
       id: Value(id),
       cashierId: Value(cashierId),
+      posDeviceId: posDeviceId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(posDeviceId),
       businessDate: Value(businessDate),
       openingCashInCents: Value(openingCashInCents),
       physicalClosingCashInCents:
@@ -15611,6 +15646,7 @@ class LocalCashRegisterSession extends DataClass
       syncedAt: serializer.fromJson<DateTime?>(json['syncedAt']),
       id: serializer.fromJson<String>(json['id']),
       cashierId: serializer.fromJson<String>(json['cashierId']),
+      posDeviceId: serializer.fromJson<String?>(json['posDeviceId']),
       businessDate: serializer.fromJson<String>(json['businessDate']),
       openingCashInCents: serializer.fromJson<int>(json['openingCashInCents']),
       physicalClosingCashInCents: serializer.fromJson<int?>(
@@ -15631,6 +15667,7 @@ class LocalCashRegisterSession extends DataClass
       'syncedAt': serializer.toJson<DateTime?>(syncedAt),
       'id': serializer.toJson<String>(id),
       'cashierId': serializer.toJson<String>(cashierId),
+      'posDeviceId': serializer.toJson<String?>(posDeviceId),
       'businessDate': serializer.toJson<String>(businessDate),
       'openingCashInCents': serializer.toJson<int>(openingCashInCents),
       'physicalClosingCashInCents': serializer.toJson<int?>(
@@ -15649,6 +15686,7 @@ class LocalCashRegisterSession extends DataClass
     Value<DateTime?> syncedAt = const Value.absent(),
     String? id,
     String? cashierId,
+    Value<String?> posDeviceId = const Value.absent(),
     String? businessDate,
     int? openingCashInCents,
     Value<int?> physicalClosingCashInCents = const Value.absent(),
@@ -15662,6 +15700,7 @@ class LocalCashRegisterSession extends DataClass
     syncedAt: syncedAt.present ? syncedAt.value : this.syncedAt,
     id: id ?? this.id,
     cashierId: cashierId ?? this.cashierId,
+    posDeviceId: posDeviceId.present ? posDeviceId.value : this.posDeviceId,
     businessDate: businessDate ?? this.businessDate,
     openingCashInCents: openingCashInCents ?? this.openingCashInCents,
     physicalClosingCashInCents: physicalClosingCashInCents.present
@@ -15683,6 +15722,9 @@ class LocalCashRegisterSession extends DataClass
       syncedAt: data.syncedAt.present ? data.syncedAt.value : this.syncedAt,
       id: data.id.present ? data.id.value : this.id,
       cashierId: data.cashierId.present ? data.cashierId.value : this.cashierId,
+      posDeviceId: data.posDeviceId.present
+          ? data.posDeviceId.value
+          : this.posDeviceId,
       businessDate: data.businessDate.present
           ? data.businessDate.value
           : this.businessDate,
@@ -15707,6 +15749,7 @@ class LocalCashRegisterSession extends DataClass
           ..write('syncedAt: $syncedAt, ')
           ..write('id: $id, ')
           ..write('cashierId: $cashierId, ')
+          ..write('posDeviceId: $posDeviceId, ')
           ..write('businessDate: $businessDate, ')
           ..write('openingCashInCents: $openingCashInCents, ')
           ..write('physicalClosingCashInCents: $physicalClosingCashInCents, ')
@@ -15725,6 +15768,7 @@ class LocalCashRegisterSession extends DataClass
     syncedAt,
     id,
     cashierId,
+    posDeviceId,
     businessDate,
     openingCashInCents,
     physicalClosingCashInCents,
@@ -15742,6 +15786,7 @@ class LocalCashRegisterSession extends DataClass
           other.syncedAt == this.syncedAt &&
           other.id == this.id &&
           other.cashierId == this.cashierId &&
+          other.posDeviceId == this.posDeviceId &&
           other.businessDate == this.businessDate &&
           other.openingCashInCents == this.openingCashInCents &&
           other.physicalClosingCashInCents == this.physicalClosingCashInCents &&
@@ -15758,6 +15803,7 @@ class LocalCashRegisterSessionsCompanion
   final Value<DateTime?> syncedAt;
   final Value<String> id;
   final Value<String> cashierId;
+  final Value<String?> posDeviceId;
   final Value<String> businessDate;
   final Value<int> openingCashInCents;
   final Value<int?> physicalClosingCashInCents;
@@ -15772,6 +15818,7 @@ class LocalCashRegisterSessionsCompanion
     this.syncedAt = const Value.absent(),
     this.id = const Value.absent(),
     this.cashierId = const Value.absent(),
+    this.posDeviceId = const Value.absent(),
     this.businessDate = const Value.absent(),
     this.openingCashInCents = const Value.absent(),
     this.physicalClosingCashInCents = const Value.absent(),
@@ -15787,6 +15834,7 @@ class LocalCashRegisterSessionsCompanion
     this.syncedAt = const Value.absent(),
     required String id,
     required String cashierId,
+    this.posDeviceId = const Value.absent(),
     required String businessDate,
     required int openingCashInCents,
     this.physicalClosingCashInCents = const Value.absent(),
@@ -15807,6 +15855,7 @@ class LocalCashRegisterSessionsCompanion
     Expression<DateTime>? syncedAt,
     Expression<String>? id,
     Expression<String>? cashierId,
+    Expression<String>? posDeviceId,
     Expression<String>? businessDate,
     Expression<int>? openingCashInCents,
     Expression<int>? physicalClosingCashInCents,
@@ -15822,6 +15871,7 @@ class LocalCashRegisterSessionsCompanion
       if (syncedAt != null) 'synced_at': syncedAt,
       if (id != null) 'id': id,
       if (cashierId != null) 'cashier_id': cashierId,
+      if (posDeviceId != null) 'pos_device_id': posDeviceId,
       if (businessDate != null) 'business_date': businessDate,
       if (openingCashInCents != null)
         'opening_cash_in_cents': openingCashInCents,
@@ -15841,6 +15891,7 @@ class LocalCashRegisterSessionsCompanion
     Value<DateTime?>? syncedAt,
     Value<String>? id,
     Value<String>? cashierId,
+    Value<String?>? posDeviceId,
     Value<String>? businessDate,
     Value<int>? openingCashInCents,
     Value<int?>? physicalClosingCashInCents,
@@ -15856,6 +15907,7 @@ class LocalCashRegisterSessionsCompanion
       syncedAt: syncedAt ?? this.syncedAt,
       id: id ?? this.id,
       cashierId: cashierId ?? this.cashierId,
+      posDeviceId: posDeviceId ?? this.posDeviceId,
       businessDate: businessDate ?? this.businessDate,
       openingCashInCents: openingCashInCents ?? this.openingCashInCents,
       physicalClosingCashInCents:
@@ -15892,6 +15944,9 @@ class LocalCashRegisterSessionsCompanion
     if (cashierId.present) {
       map['cashier_id'] = Variable<String>(cashierId.value);
     }
+    if (posDeviceId.present) {
+      map['pos_device_id'] = Variable<String>(posDeviceId.value);
+    }
     if (businessDate.present) {
       map['business_date'] = Variable<String>(businessDate.value);
     }
@@ -15923,6 +15978,7 @@ class LocalCashRegisterSessionsCompanion
           ..write('syncedAt: $syncedAt, ')
           ..write('id: $id, ')
           ..write('cashierId: $cashierId, ')
+          ..write('posDeviceId: $posDeviceId, ')
           ..write('businessDate: $businessDate, ')
           ..write('openingCashInCents: $openingCashInCents, ')
           ..write('physicalClosingCashInCents: $physicalClosingCashInCents, ')
@@ -35341,6 +35397,7 @@ typedef $$LocalCashRegisterSessionsTableCreateCompanionBuilder =
       Value<DateTime?> syncedAt,
       required String id,
       required String cashierId,
+      Value<String?> posDeviceId,
       required String businessDate,
       required int openingCashInCents,
       Value<int?> physicalClosingCashInCents,
@@ -35357,6 +35414,7 @@ typedef $$LocalCashRegisterSessionsTableUpdateCompanionBuilder =
       Value<DateTime?> syncedAt,
       Value<String> id,
       Value<String> cashierId,
+      Value<String?> posDeviceId,
       Value<String> businessDate,
       Value<int> openingCashInCents,
       Value<int?> physicalClosingCashInCents,
@@ -35410,6 +35468,11 @@ class $$LocalCashRegisterSessionsTableFilterComposer
 
   ColumnFilters<String> get cashierId => $composableBuilder(
     column: $table.cashierId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get posDeviceId => $composableBuilder(
+    column: $table.posDeviceId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -35483,6 +35546,11 @@ class $$LocalCashRegisterSessionsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get posDeviceId => $composableBuilder(
+    column: $table.posDeviceId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get businessDate => $composableBuilder(
     column: $table.businessDate,
     builder: (column) => ColumnOrderings(column),
@@ -35538,6 +35606,11 @@ class $$LocalCashRegisterSessionsTableAnnotationComposer
 
   GeneratedColumn<String> get cashierId =>
       $composableBuilder(column: $table.cashierId, builder: (column) => column);
+
+  GeneratedColumn<String> get posDeviceId => $composableBuilder(
+    column: $table.posDeviceId,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<String> get businessDate => $composableBuilder(
     column: $table.businessDate,
@@ -35612,6 +35685,7 @@ class $$LocalCashRegisterSessionsTableTableManager
                 Value<DateTime?> syncedAt = const Value.absent(),
                 Value<String> id = const Value.absent(),
                 Value<String> cashierId = const Value.absent(),
+                Value<String?> posDeviceId = const Value.absent(),
                 Value<String> businessDate = const Value.absent(),
                 Value<int> openingCashInCents = const Value.absent(),
                 Value<int?> physicalClosingCashInCents = const Value.absent(),
@@ -35626,6 +35700,7 @@ class $$LocalCashRegisterSessionsTableTableManager
                 syncedAt: syncedAt,
                 id: id,
                 cashierId: cashierId,
+                posDeviceId: posDeviceId,
                 businessDate: businessDate,
                 openingCashInCents: openingCashInCents,
                 physicalClosingCashInCents: physicalClosingCashInCents,
@@ -35642,6 +35717,7 @@ class $$LocalCashRegisterSessionsTableTableManager
                 Value<DateTime?> syncedAt = const Value.absent(),
                 required String id,
                 required String cashierId,
+                Value<String?> posDeviceId = const Value.absent(),
                 required String businessDate,
                 required int openingCashInCents,
                 Value<int?> physicalClosingCashInCents = const Value.absent(),
@@ -35656,6 +35732,7 @@ class $$LocalCashRegisterSessionsTableTableManager
                 syncedAt: syncedAt,
                 id: id,
                 cashierId: cashierId,
+                posDeviceId: posDeviceId,
                 businessDate: businessDate,
                 openingCashInCents: openingCashInCents,
                 physicalClosingCashInCents: physicalClosingCashInCents,

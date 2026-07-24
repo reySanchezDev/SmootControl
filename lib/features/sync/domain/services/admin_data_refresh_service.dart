@@ -78,4 +78,9 @@ final class AdminDataRefreshService {
   Future<AppResult<void>> refreshPackaging() {
     return refresh(scopes: {CatalogPullScope.packaging});
   }
+
+  /// Refreshes employees and operational rules used by POS/time-clock.
+  Future<AppResult<void>> refreshStaff() {
+    return refresh(scopes: {CatalogPullScope.staff});
+  }
 }

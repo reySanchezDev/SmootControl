@@ -13,6 +13,7 @@ final class CashRegisterSessionModel extends Equatable {
     required this.openingCashInCents,
     required this.status,
     this.physicalClosingCashInCents,
+    this.posDeviceId,
   });
 
   /// Creates a model from a local Drift row.
@@ -20,6 +21,7 @@ final class CashRegisterSessionModel extends Equatable {
     return CashRegisterSessionModel(
       id: row.id,
       cashierId: row.cashierId,
+      posDeviceId: row.posDeviceId,
       businessDate: BusinessDateFormatter.parse(row.businessDate),
       openingCashInCents: row.openingCashInCents,
       physicalClosingCashInCents: row.physicalClosingCashInCents,
@@ -32,6 +34,7 @@ final class CashRegisterSessionModel extends Equatable {
     return CashRegisterSessionModel(
       id: entity.id,
       cashierId: entity.cashierId,
+      posDeviceId: entity.posDeviceId,
       businessDate: entity.businessDate,
       openingCashInCents: entity.openingCashInCents,
       physicalClosingCashInCents: entity.physicalClosingCashInCents,
@@ -44,6 +47,9 @@ final class CashRegisterSessionModel extends Equatable {
 
   /// Cashier user identifier.
   final String cashierId;
+
+  /// POS device that owns this cash register session.
+  final String? posDeviceId;
 
   /// Business date.
   final DateTime businessDate;
@@ -68,6 +74,7 @@ final class CashRegisterSessionModel extends Equatable {
     return CashRegisterSession(
       id: id,
       cashierId: cashierId,
+      posDeviceId: posDeviceId,
       businessDate: businessDate,
       openingCashInCents: openingCashInCents,
       physicalClosingCashInCents: physicalClosingCashInCents,
@@ -86,6 +93,7 @@ final class CashRegisterSessionModel extends Equatable {
   List<Object?> get props => [
     id,
     cashierId,
+    posDeviceId,
     businessDate,
     openingCashInCents,
     physicalClosingCashInCents,

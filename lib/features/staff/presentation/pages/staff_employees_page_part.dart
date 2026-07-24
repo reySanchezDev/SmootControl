@@ -139,6 +139,8 @@ class _EmployeeList extends StatelessWidget {
               ?position,
               if (employee.code != null) 'No. ${employee.code}',
               'Salario: ${_money(employee.baseSalaryInCents)}',
+              if (employee.showInTimeClock) 'Marca asistencia',
+              if (!employee.showInTimeClock) 'No marca',
               if (employee.isActive) 'Activo',
               if (!employee.isActive) 'Inactivo',
             ].join(' - '),
@@ -236,11 +238,15 @@ class _EmployeeDialogState extends State<_EmployeeDialog> {
               contentPadding: EdgeInsets.zero,
               title: const Text('Activo'),
               value: _active,
-              onChanged: (value) => setState(() => _active = value),
+              onChanged: (value) => setState(() {
+                _active = value;
+                if (!value) _showInTimeClock = false;
+              }),
             ),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('Mostrar en marcador'),
+              title: const Text('Marca asistencia'),
+              subtitle: const Text('Si esta activo, aparece en el marcador.'),
               value: _showInTimeClock,
               onChanged: (value) {
                 setState(() => _showInTimeClock = value);

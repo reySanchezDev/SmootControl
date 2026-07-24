@@ -167,6 +167,7 @@ extension on SupabaseCatalogPullService {
             LocalCashRegisterSessionsCompanion(
               id: Value(id),
               cashierId: Value(cashierId),
+              posDeviceId: Value(_optionalText(row['pos_device_id'])),
               businessDate: Value(BusinessDateFormatter.format(businessDate)),
               openingCashInCents: Value(
                 _moneyCents(row['opening_cash_amount']),

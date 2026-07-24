@@ -9,6 +9,9 @@ class LocalCashRegisterSessions extends Table with SyncColumns {
   /// Cashier user identifier.
   TextColumn get cashierId => text()();
 
+  /// Remote POS device that owns this local cash register session.
+  TextColumn get posDeviceId => text().nullable()();
+
   /// Business date as yyyy-MM-dd.
   TextColumn get businessDate => text()();
 

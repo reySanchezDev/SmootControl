@@ -1,4 +1,4 @@
-﻿part of 'app_database.dart';
+part of 'app_database.dart';
 
 extension _AppDatabaseMigrationHelpers on AppDatabase {
   Future<void> _createPackagingAndSalesTypeTables(Migrator migrator) async {
@@ -158,6 +158,33 @@ extension _AppDatabaseMigrationHelpers on AppDatabase {
       "('33333333-3333-4333-8333-333333333333', "
       "'Adelantos de salario', NULL, 1, 'synced', "
       "datetime('now'), datetime('now'))",
+    );
+  }
+
+  Future<void> _addCashRegisterDeviceColumnIfMissing(
+    Migrator migrator,
+  ) async {
+    if (!await _columnExists(
+      localCashRegisterSessions.actualTableName,
+      localCashRegisterSessions.posDeviceId.$name,
+    )) {
+      await migrator.addColumn(
+        localCashRegisterSessions,
+        localCashRegisterSessions.posDeviceId,
+      );
+    }
+
+    final deviceRows = await select(localDeviceState).get();
+    if (deviceRows.isEmpty) return;
+    final device = deviceRows.first;
+    final posDeviceId = device.syncDeviceId ?? device.deviceId;
+    if (posDeviceId.trim().isEmpty) return;
+
+    await customStatement(
+      'UPDATE local_cash_register_sessions '
+      'SET pos_device_id = ? '
+      'WHERE pos_device_id IS NULL',
+      [posDeviceId],
     );
   }
 

@@ -11,6 +11,7 @@ import 'package:smoo_control/core/result/app_result.dart';
 import 'package:smoo_control/features/attendance/domain/entities/attendance_entry.dart';
 import 'package:smoo_control/features/attendance/domain/repositories/i_attendance_repository.dart';
 import 'package:smoo_control/features/staff/domain/entities/employee.dart';
+import 'package:smoo_control/features/sync/domain/services/admin_data_refresh_service.dart';
 
 part 'time_clock_widgets_part.dart';
 
@@ -27,6 +28,8 @@ class _TimeClockPageState extends State<TimeClockPage> {
   late Future<List<Employee>> _future;
   IAttendanceRepository get _repository =>
       serviceLocator<IAttendanceRepository>();
+  AdminDataRefreshService get _refreshService =>
+      serviceLocator<AdminDataRefreshService>();
 
   @override
   void initState() {
@@ -39,6 +42,7 @@ class _TimeClockPageState extends State<TimeClockPage> {
   }
 
   Future<List<Employee>> _loadEmployees() async {
+    await _repository.refreshTodayEntries();
     final result = await _repository.getClockEmployees();
     return switch (result) {
       AppSuccess(:final value) => value,
@@ -50,6 +54,13 @@ class _TimeClockPageState extends State<TimeClockPage> {
   Widget build(BuildContext context) {
     return AppPageScaffold(
       title: 'Marcador',
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.refresh),
+          tooltip: 'Refrescar personal',
+          onPressed: () => unawaited(_refreshEmployees()),
+        ),
+      ],
       body: FutureBuilder<List<Employee>>(
         future: _future,
         builder: (context, snapshot) {
@@ -78,7 +89,31 @@ class _TimeClockPageState extends State<TimeClockPage> {
     );
   }
 
+  Future<void> _refreshEmployees() async {
+    final result = await _refreshService.refreshStaff();
+    if (!mounted) return;
+    switch (result) {
+      case AppSuccess():
+        await _repository.refreshTodayEntries();
+        if (!mounted) return;
+        setState(_reload);
+        await showAppMessageDialog(
+          context: context,
+          title: 'Personal actualizado',
+          message: 'La lista del marcador fue refrescada desde Supabase.',
+        );
+      case AppFailureResult(:final error):
+        await showAppMessageDialog(
+          context: context,
+          title: 'No se pudo refrescar',
+          message: error.message,
+        );
+    }
+  }
+
   Future<void> _selectEmployee(Employee employee) async {
+    await _repository.refreshTodayEntries(employeeId: employee.id);
+    if (!mounted) return;
     final openResult = await _repository.getOpenEntry(employee.id);
     if (!mounted) return;
     final todayEntry = switch (openResult) {

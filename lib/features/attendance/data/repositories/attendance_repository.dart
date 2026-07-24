@@ -72,6 +72,27 @@ final class AttendanceRepository
   }
 
   @override
+  Future<AppResult<void>> refreshTodayEntries({String? employeeId}) {
+    return _guard(
+      'attendance_today_refresh_failed',
+      'No se pudieron refrescar las marcadas del dia.',
+      () async {
+        final today = _today();
+        final entries = await _deviceEntries(
+          from: today,
+          to: today,
+          employeeId: employeeId,
+        );
+        await _localDataSource.applyRemoteEntriesForDate(
+          workDate: today,
+          entries: entries,
+          employeeId: employeeId,
+        );
+      },
+    );
+  }
+
+  @override
   Future<AppResult<AttendanceEntry>> clockIn(Employee employee) async {
     return _saveLocalMark(employee: employee, openEntry: null);
   }
@@ -116,13 +137,16 @@ final class AttendanceRepository
                 createdAt: openEntry.createdAt,
               );
         final saved = await _localDataSource.saveEntry(entry);
-        await _enqueueAndTrySync(saved);
+        final syncResult = await _enqueueAndTrySync(saved);
+        if (syncResult case AppFailureResult(:final error)) {
+          throw StateError(error.message);
+        }
         return saved;
       },
     );
   }
 
-  Future<void> _enqueueAndTrySync(AttendanceEntry entry) async {
+  Future<AppResult<void>> _enqueueAndTrySync(AttendanceEntry entry) async {
     final queued = await _syncQueueRepository.enqueue(
       entityType: 'employee_attendance_entries',
       entityId: entry.id,
@@ -144,22 +168,83 @@ final class AttendanceRepository
 
     switch (queued) {
       case AppFailureResult():
-        return;
+        return const AppSuccess<void>(null);
       case AppSuccess(:final value):
-        await _trySyncNow(value);
+        return _trySyncNow(value);
     }
   }
 
-  Future<void> _trySyncNow(SyncQueueItem item) async {
+  Future<AppResult<void>> _trySyncNow(SyncQueueItem item) async {
     try {
       await _remoteSender.push(item).timeout(const Duration(seconds: 12));
       await _syncQueueRepository.markSynced(item.id);
+      return const AppSuccess<void>(null);
     } on Object catch (error) {
+      final message = syncErrorMessage(error);
       await _syncQueueRepository.markError(
         itemId: item.id,
-        error: syncErrorMessage(error),
+        error: message,
       );
+      if (_isDuplicateAttendanceError(message)) {
+        final employeeId = item.payload['employeeId']?.toString();
+        await refreshTodayEntries(employeeId: employeeId);
+        await _syncQueueRepository.markSynced(item.id);
+        return AppFailureResult(
+          AppFailure(
+            code: 'attendance_remote_duplicate',
+            message:
+                'Ya existe una marcada para esta persona hoy. '
+                'Refresque el marcador y vuelva a intentarlo.',
+            cause: error,
+          ),
+        );
+      }
+      return const AppSuccess<void>(null);
     }
+  }
+
+  Future<List<AttendanceEntry>> _deviceEntries({
+    required DateTime from,
+    required DateTime to,
+    String? employeeId,
+  }) async {
+    final credentials = await _localDataSource.deviceCredentials();
+    final response = await _client.post(
+      _config.rpcUri('pos_get_employee_attendance_entries'),
+      headers: {
+        'apikey': _config.publishableKey,
+        'content-type': 'application/json',
+        'accept': 'application/json',
+      },
+      body: jsonEncode({
+        'p_restaurant_id': _restaurantService.restaurantId,
+        'p_device_id': credentials.deviceId,
+        'p_device_secret': credentials.secret,
+        'p_from': _dateOnly(from),
+        'p_to': _dateOnly(to),
+        'p_employee_id': employeeId,
+      }),
+    );
+    _ensureDeviceSuccess(response, 'pos_get_employee_attendance_entries');
+    final decoded = response.body.trim().isEmpty
+        ? const <Object?>[]
+        : jsonDecode(response.body);
+    if (decoded is! List) return const [];
+    return decoded.map((row) => _attendanceFromRow(_mapRow(row))).toList();
+  }
+
+  void _ensureDeviceSuccess(http.Response response, String context) {
+    if (response.statusCode >= 200 && response.statusCode < 300) return;
+    throw StateError('Supabase rechazo $context: ${response.body}');
+  }
+
+  DateTime _today() {
+    final now = DateTime.now();
+    return DateTime(now.year, now.month, now.day);
+  }
+
+  bool _isDuplicateAttendanceError(String message) {
+    return message.contains('Empleado ya tiene marcada registrada');
   }
 
   @override

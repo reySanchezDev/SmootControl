@@ -11,6 +11,14 @@ final class LocalCashRegisterDataSource {
 
   final AppDatabase _database;
 
+  /// Returns the current initialized POS device identifier, if available.
+  Future<String?> getCurrentPosDeviceId() async {
+    final state = await _database.select(_database.localDeviceState).get();
+    if (state.isEmpty) return null;
+    final device = state.first;
+    return _nonEmpty(device.syncDeviceId) ?? _nonEmpty(device.deviceId);
+  }
+
   /// Opens a local cash register session.
   Future<CashRegisterSessionModel> openSession(
     CashRegisterSessionModel session,
@@ -23,6 +31,7 @@ final class LocalCashRegisterDataSource {
           LocalCashRegisterSessionsCompanion(
             id: Value(session.id),
             cashierId: Value(session.cashierId),
+            posDeviceId: Value(session.posDeviceId),
             businessDate: Value(session.businessDateValue),
             openingCashInCents: Value(session.openingCashInCents),
             physicalClosingCashInCents: Value(
@@ -40,11 +49,13 @@ final class LocalCashRegisterDataSource {
   /// Returns the open cash register session for a business date, if any.
   Future<CashRegisterSessionModel?> getOpenSession(
     DateTime businessDate,
+    String? posDeviceId,
   ) async {
     final businessDateValue = BusinessDateFormatter.format(businessDate);
     final query = _database.select(_database.localCashRegisterSessions)
       ..where((session) {
         return session.businessDate.equals(businessDateValue) &
+            _deviceScope(session, posDeviceId) &
             session.status.equals('open');
       })
       ..orderBy([(session) => OrderingTerm.desc(session.createdAt)])
@@ -58,12 +69,14 @@ final class LocalCashRegisterDataSource {
   Future<CashRegisterSessionModel?> getOpenSessionForCashier({
     required DateTime businessDate,
     required String cashierId,
+    required String? posDeviceId,
   }) async {
     final businessDateValue = BusinessDateFormatter.format(businessDate);
     final query = _database.select(_database.localCashRegisterSessions)
       ..where((session) {
         return session.businessDate.equals(businessDateValue) &
             session.cashierId.equals(cashierId) &
+            _deviceScope(session, posDeviceId) &
             session.status.equals('open');
       })
       ..orderBy([(session) => OrderingTerm.desc(session.createdAt)])
@@ -77,12 +90,14 @@ final class LocalCashRegisterDataSource {
   Future<CashRegisterSessionModel?> getSessionForCashierOnDate({
     required DateTime businessDate,
     required String cashierId,
+    required String? posDeviceId,
   }) async {
     final businessDateValue = BusinessDateFormatter.format(businessDate);
     final query = _database.select(_database.localCashRegisterSessions)
       ..where((session) {
         return session.businessDate.equals(businessDateValue) &
-            session.cashierId.equals(cashierId);
+            session.cashierId.equals(cashierId) &
+            _deviceScope(session, posDeviceId);
       })
       ..orderBy([(session) => OrderingTerm.desc(session.createdAt)])
       ..limit(1);
@@ -105,10 +120,12 @@ final class LocalCashRegisterDataSource {
   /// Returns any open cash register session for one cashier, if any.
   Future<CashRegisterSessionModel?> getAnyOpenSessionForCashier(
     String cashierId,
+    String? posDeviceId,
   ) async {
     final query = _database.select(_database.localCashRegisterSessions)
       ..where((session) {
         return session.cashierId.equals(cashierId) &
+            _deviceScope(session, posDeviceId) &
             session.status.equals('open');
       })
       ..orderBy([(session) => OrderingTerm.asc(session.businessDate)])
@@ -195,5 +212,20 @@ final class LocalCashRegisterDataSource {
     )..where((session) => session.id.equals(sessionId))).getSingle();
 
     return CashRegisterSessionModel.fromLocal(row);
+  }
+
+  Expression<bool> _deviceScope(
+    $LocalCashRegisterSessionsTable session,
+    String? posDeviceId,
+  ) {
+    final id = _nonEmpty(posDeviceId);
+    if (id == null) return session.posDeviceId.isNull();
+    return session.posDeviceId.equals(id);
+  }
+
+  String? _nonEmpty(String? value) {
+    final normalized = value?.trim();
+    if (normalized == null || normalized.isEmpty) return null;
+    return normalized;
   }
 }

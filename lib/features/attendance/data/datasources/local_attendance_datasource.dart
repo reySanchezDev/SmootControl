@@ -10,6 +10,21 @@ final class LocalAttendanceDataSource {
 
   final AppDatabase _database;
 
+  /// Returns device credentials for device-authenticated attendance RPCs.
+  Future<AttendanceDeviceCredentials> deviceCredentials() async {
+    final state = await (_database.select(
+      _database.localDeviceState,
+    )..where((row) => row.id.equals('default'))).getSingleOrNull();
+    final deviceId = _nonEmpty(state?.syncDeviceId ?? state?.deviceId);
+    final secret = _nonEmpty(state?.syncDeviceSecret);
+    if (deviceId == null || secret == null) {
+      throw StateError(
+        'Este marcador no tiene credenciales de sincronizacion.',
+      );
+    }
+    return AttendanceDeviceCredentials(deviceId: deviceId, secret: secret);
+  }
+
   /// Returns active employees visible in the time-clock.
   Future<List<Employee>> getClockEmployees() async {
     final rows =
@@ -47,28 +62,43 @@ final class LocalAttendanceDataSource {
 
   /// Saves one local attendance entry.
   Future<AttendanceEntry> saveEntry(AttendanceEntry entry) async {
-    final now = DateTime.now();
-    await _database
-        .into(_database.localAttendanceEntries)
-        .insert(
-          LocalAttendanceEntriesCompanion(
-            id: Value(entry.id),
-            employeeId: Value(entry.employeeId),
-            workDate: Value(entry.workDate),
-            clockInAt: Value(entry.clockInAt),
-            clockOutAt: Value(entry.clockOutAt),
-            status: Value(entry.status),
-            source: Value(entry.source),
-            verificationMethod: Value(entry.verificationMethod),
-            note: Value(entry.note),
-            syncStatus: const Value('pending'),
-            syncError: const Value(null),
-            createdAt: Value(entry.createdAt),
-            updatedAt: Value(now),
-          ),
-          mode: InsertMode.insertOrReplace,
-        );
+    await _saveEntry(entry, syncStatus: 'pending');
     return entry;
+  }
+
+  /// Replaces local day state with the remote source of truth.
+  Future<void> applyRemoteEntriesForDate({
+    required DateTime workDate,
+    required List<AttendanceEntry> entries,
+    String? employeeId,
+  }) async {
+    final date = DateTime(workDate.year, workDate.month, workDate.day);
+    await _database.transaction(() async {
+      final remoteIds = entries.map((entry) => entry.id).toSet();
+      final employees = employeeId == null
+          ? entries.map((entry) => entry.employeeId).toSet()
+          : {employeeId};
+
+      for (final currentEmployeeId in employees) {
+        await (_database.delete(_database.localAttendanceEntries)..where((
+              entry,
+            ) {
+              final sameEmployeeAndDate =
+                  entry.employeeId.equals(currentEmployeeId) &
+                  entry.workDate.equals(date);
+              if (remoteIds.isEmpty) {
+                return sameEmployeeAndDate & entry.syncStatus.equals('synced');
+              }
+              final differentRemoteEntry = entry.id.isNotIn(remoteIds);
+              return sameEmployeeAndDate & differentRemoteEntry;
+            }))
+            .go();
+      }
+
+      for (final entry in entries) {
+        await _saveEntry(entry, syncStatus: 'synced');
+      }
+    });
   }
 
   Future<Employee?> _employeeById(String id) async {
@@ -109,4 +139,53 @@ final class LocalAttendanceDataSource {
       showInTimeClock: row.showInTimeClock,
     );
   }
+
+  Future<void> _saveEntry(
+    AttendanceEntry entry, {
+    required String syncStatus,
+  }) async {
+    final now = DateTime.now();
+    await _database
+        .into(_database.localAttendanceEntries)
+        .insert(
+          LocalAttendanceEntriesCompanion(
+            id: Value(entry.id),
+            employeeId: Value(entry.employeeId),
+            workDate: Value(entry.workDate),
+            clockInAt: Value(entry.clockInAt),
+            clockOutAt: Value(entry.clockOutAt),
+            status: Value(entry.status),
+            source: Value(entry.source),
+            verificationMethod: Value(entry.verificationMethod),
+            note: Value(entry.note),
+            syncStatus: Value(syncStatus),
+            syncError: const Value(null),
+            createdAt: Value(entry.createdAt),
+            updatedAt: Value(now),
+            syncedAt: syncStatus == 'synced' ? Value(now) : const Value(null),
+          ),
+          mode: InsertMode.insertOrReplace,
+        );
+  }
+
+  String? _nonEmpty(String? value) {
+    final text = value?.trim();
+    if (text == null || text.isEmpty) return null;
+    return text;
+  }
+}
+
+/// Device credentials used by the standalone marker.
+final class AttendanceDeviceCredentials {
+  /// Creates device credentials.
+  const AttendanceDeviceCredentials({
+    required this.deviceId,
+    required this.secret,
+  });
+
+  /// Remote POS device id.
+  final String deviceId;
+
+  /// Device secret used by Supabase RPCs.
+  final String secret;
 }

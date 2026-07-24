@@ -31,6 +31,7 @@ extension _AppDatabaseMigrations on AppDatabase {
     await _upgradeSchemaFrom30(migrator, from);
     await _upgradeSchemaFrom31(migrator, from);
     await _upgradeSchemaFrom32(migrator, from);
+    await _upgradeSchemaFrom33(migrator, from);
   }
 
   Future<void> _upgradeSchemaFrom7To20(Migrator migrator, int from) async {
@@ -247,6 +248,12 @@ extension _AppDatabaseMigrations on AppDatabase {
           localEmployees.showInTimeClock,
         );
       }
+    }
+  }
+
+  Future<void> _upgradeSchemaFrom33(Migrator migrator, int from) async {
+    if (from < 33) {
+      await _addCashRegisterDeviceColumnIfMissing(migrator);
     }
   }
 }

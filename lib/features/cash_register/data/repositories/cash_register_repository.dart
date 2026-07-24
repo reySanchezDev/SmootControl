@@ -25,9 +25,11 @@ final class CashRegisterRepository implements ICashRegisterRepository {
     CashRegisterSession session,
   ) async {
     try {
+      final posDeviceId = await _localDataSource.getCurrentPosDeviceId();
       final sameDaySession = await _localDataSource.getSessionForCashierOnDate(
         businessDate: session.businessDate,
         cashierId: session.cashierId,
+        posDeviceId: posDeviceId,
       );
       if (sameDaySession != null && sameDaySession.id != session.id) {
         return AppFailureResult(
@@ -43,7 +45,7 @@ final class CashRegisterRepository implements ICashRegisterRepository {
       }
 
       final existingSession = await _localDataSource
-          .getAnyOpenSessionForCashier(session.cashierId);
+          .getAnyOpenSessionForCashier(session.cashierId, posDeviceId);
       if (existingSession != null && existingSession.id != session.id) {
         final isSameBusinessDate =
             BusinessDateFormatter.format(existingSession.businessDate) ==
@@ -62,7 +64,17 @@ final class CashRegisterRepository implements ICashRegisterRepository {
         );
       }
 
-      final model = CashRegisterSessionModel.fromEntity(session);
+      final model = CashRegisterSessionModel.fromEntity(
+        CashRegisterSession(
+          id: session.id,
+          cashierId: session.cashierId,
+          posDeviceId: posDeviceId,
+          businessDate: session.businessDate,
+          openingCashInCents: session.openingCashInCents,
+          physicalClosingCashInCents: session.physicalClosingCashInCents,
+          status: session.status,
+        ),
+      );
       final saved = await _localDataSource.openSession(model);
       final entity = saved.toEntity();
       await _enqueueSession(entity, SyncOperation.create);
@@ -84,7 +96,11 @@ final class CashRegisterRepository implements ICashRegisterRepository {
     DateTime businessDate,
   ) async {
     try {
-      final session = await _localDataSource.getOpenSession(businessDate);
+      final posDeviceId = await _localDataSource.getCurrentPosDeviceId();
+      final session = await _localDataSource.getOpenSession(
+        businessDate,
+        posDeviceId,
+      );
       return AppSuccess(session?.toEntity());
     } on Object catch (error) {
       return AppFailureResult(
@@ -103,9 +119,11 @@ final class CashRegisterRepository implements ICashRegisterRepository {
     required String cashierId,
   }) async {
     try {
+      final posDeviceId = await _localDataSource.getCurrentPosDeviceId();
       final session = await _localDataSource.getOpenSessionForCashier(
         businessDate: businessDate,
         cashierId: cashierId,
+        posDeviceId: posDeviceId,
       );
       return AppSuccess(session?.toEntity());
     } on Object catch (error) {
@@ -124,8 +142,10 @@ final class CashRegisterRepository implements ICashRegisterRepository {
     String cashierId,
   ) async {
     try {
+      final posDeviceId = await _localDataSource.getCurrentPosDeviceId();
       final session = await _localDataSource.getAnyOpenSessionForCashier(
         cashierId,
+        posDeviceId,
       );
       return AppSuccess(session?.toEntity());
     } on Object catch (error) {
@@ -220,6 +240,7 @@ final class CashRegisterRepository implements ICashRegisterRepository {
       payload: {
         'id': session.id,
         'cashierId': session.cashierId,
+        'posDeviceId': session.posDeviceId,
         'businessDate': session.businessDate.toIso8601String(),
         'openingCashInCents': session.openingCashInCents,
         'physicalClosingCashInCents': session.physicalClosingCashInCents,
