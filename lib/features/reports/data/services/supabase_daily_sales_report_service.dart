@@ -54,33 +54,12 @@ final class SupabaseDailySalesReportService {
     }
 
     try {
-      final exclusiveTo = safeTo.add(const Duration(days: 1));
-      final sales = await _loadSales(from: safeFrom, exclusiveTo: exclusiveTo);
-      final saleIds = sales.map((sale) => sale.id).toSet();
-      final items = await _loadSaleItems(saleIds);
-      final dateBySaleId = {
-        for (final sale in sales) sale.id: _dateOnly(sale.soldAt),
-      };
-      final rowsByDate = <DateTime, _DailySalesAccumulator>{};
-
-      for (final sale in sales) {
-        final date = _dateOnly(sale.soldAt);
-        rowsByDate.putIfAbsent(date, _DailySalesAccumulator.new).salesInCents +=
-            sale.totalInCents;
-      }
-
-      for (final item in items) {
-        final date = dateBySaleId[item.saleId];
-        if (date == null) continue;
-        rowsByDate.putIfAbsent(date, _DailySalesAccumulator.new).costInCents +=
-            item.totalCostInCents;
-      }
-
-      final rows = rowsByDate.entries.map((entry) {
+      final reportRows = await _loadRows(safeFrom, safeTo);
+      final rows = reportRows.map((entry) {
         return DailySalesReportRow(
-          date: entry.key,
-          totalCostInCents: entry.value.costInCents,
-          totalSalesInCents: entry.value.salesInCents,
+          date: _dateOnly(_dateTime(entry['date'])),
+          totalCostInCents: _moneyToCents(entry['cost_amount']),
+          totalSalesInCents: _moneyToCents(entry['sales_amount']),
         );
       }).toList()..sort((a, b) => a.date.compareTo(b.date));
 
@@ -98,60 +77,30 @@ final class SupabaseDailySalesReportService {
     }
   }
 
-  Future<List<_RemoteDailySale>> _loadSales({
-    required DateTime exclusiveTo,
-    required DateTime from,
-  }) async {
-    final rows = await _getRows('sales', {
-      'select': 'id,total_amount,sold_at',
-      'restaurant_id': 'eq.${_restaurantService.restaurantId}',
-      'status': 'eq.completed',
-      'sale_kind': 'eq.sale',
-      'and': _dateRangeFilter('sold_at', from, exclusiveTo),
-      'order': 'sold_at.asc',
+  Future<List<Map<String, Object?>>> _loadRows(DateTime from, DateTime to) {
+    return _rpcRows('app_get_daily_sales_report', {
+      'p_restaurant_id': _restaurantService.restaurantId,
+      'p_from': _dateParam(from),
+      'p_to': _dateParam(to),
+      'p_timezone': 'America/Managua',
     });
-
-    return rows.map((row) {
-      return _RemoteDailySale(
-        id: _requiredText(row, 'id'),
-        soldAt: _dateTime(row['sold_at']),
-        totalInCents: _moneyToCents(row['total_amount']),
-      );
-    }).toList();
   }
 
-  Future<List<_RemoteDailySaleItem>> _loadSaleItems(Set<String> saleIds) async {
-    if (saleIds.isEmpty) return const [];
-
-    final rows = await _getRows('sale_items', {
-      'select': 'sale_id,quantity,unit_cost',
-      'sale_id': _inFilter(saleIds),
-    });
-
-    return rows.map((row) {
-      final quantity = _quantity(row['quantity']);
-      final unitCost = _moneyToCents(row['unit_cost']);
-      return _RemoteDailySaleItem(
-        saleId: _requiredText(row, 'sale_id'),
-        totalCostInCents: (quantity * unitCost).round(),
-      );
-    }).toList();
-  }
-
-  Future<List<Map<String, Object?>>> _getRows(
-    String table,
-    Map<String, String> queryParameters,
+  Future<List<Map<String, Object?>>> _rpcRows(
+    String functionName,
+    Map<String, Object?> payload,
   ) async {
-    final response = await _client.get(
-      _config.restUri(table, queryParameters),
+    final response = await _client.post(
+      _config.rpcUri(functionName),
       headers: _headers(),
+      body: jsonEncode(payload),
     );
     if (response.statusCode < 200 || response.statusCode >= 300) {
       if (response.statusCode == 401 || response.statusCode == 403) {
         _remoteSessionService.expire();
       }
       throw StateError(
-        'Supabase rechazo consulta de $table '
+        'Supabase rechazo consulta de $functionName '
         '(${response.statusCode}): ${response.body}',
       );
     }
@@ -172,13 +121,13 @@ final class SupabaseDailySalesReportService {
     };
   }
 
-  String _dateRangeFilter(String column, DateTime from, DateTime to) {
-    return '($column.gte.${from.toUtc().toIso8601String()},'
-        '$column.lt.${to.toUtc().toIso8601String()})';
-  }
-
   DateTime _dateOnly(DateTime value) =>
       DateTime(value.year, value.month, value.day);
+
+  String _dateParam(DateTime value) {
+    String two(int number) => number.toString().padLeft(2, '0');
+    return '${value.year}-${two(value.month)}-${two(value.day)}';
+  }
 
   DateTime _dateTime(Object? value) {
     final text = value?.toString().trim();
@@ -188,52 +137,9 @@ final class SupabaseDailySalesReportService {
     return DateTime.parse(text).toLocal();
   }
 
-  String _inFilter(Set<String> values) => 'in.(${values.join(',')})';
-
   int _moneyToCents(Object? value) {
     if (value == null) return 0;
     if (value is num) return (value * 100).round();
     return ((num.tryParse(value.toString()) ?? 0) * 100).round();
   }
-
-  num _quantity(Object? value) {
-    if (value == null) return 0;
-    if (value is num) return value;
-    return num.tryParse(value.toString()) ?? 0;
-  }
-
-  String _requiredText(Map<String, Object?> row, String key) {
-    final value = row[key]?.toString().trim();
-    if (value == null || value.isEmpty) {
-      throw StateError('Missing required field $key.');
-    }
-    return value;
-  }
-}
-
-final class _DailySalesAccumulator {
-  int costInCents = 0;
-  int salesInCents = 0;
-}
-
-final class _RemoteDailySale {
-  const _RemoteDailySale({
-    required this.id,
-    required this.soldAt,
-    required this.totalInCents,
-  });
-
-  final String id;
-  final DateTime soldAt;
-  final int totalInCents;
-}
-
-final class _RemoteDailySaleItem {
-  const _RemoteDailySaleItem({
-    required this.saleId,
-    required this.totalCostInCents,
-  });
-
-  final String saleId;
-  final int totalCostInCents;
 }

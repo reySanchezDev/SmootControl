@@ -308,6 +308,13 @@
 - Edge cases: La fecha inicial es inclusiva; la fecha final seleccionada se consulta como fin exclusivo del dia siguiente para no perder movimientos de ese dia.
 - Data impact: `sales.created_at`, `operating_expenses.created_at`, `sale_voids.voided_at`, `cash_register_sessions.business_date`.
 
+### Regla: Ventas al dia remoto agregado
+- Description: El reporte `Ventas al dia` debe calcular ventas, costos y utilidad por dia mediante RPC remota agregada, usando fecha de negocio local.
+- Rationale: Evita fallas por rangos grandes, URLs extensas o listas `sale_id in (...)` al consultar detalles de ventas.
+- Example(s): Consultar del 01/07/2026 al 31/07/2026 devuelve una fila por dia con venta, costo historico y utilidad bruta.
+- Edge cases: Los botones `Hoy`, `Mes` y el selector de rango deben recargar inmediatamente con la misma RPC.
+- Data impact: `sales.sale_kind = sale`, `sales.status = completed`, `sales.sold_at`, `sale_items.unit_cost`.
+
 ### Regla: Reporte dedicado de gastos
 - Description: Los gastos registrados se consultan desde Reportes, no desde mantenimiento de categorias de gasto. El reporte de gastos usa el rango seleccionado y permite filtrar por categoria.
 - Rationale: La pantalla de gastos queda para gestionar catalogo; la consulta operativa e historica pertenece al modulo de reportes.

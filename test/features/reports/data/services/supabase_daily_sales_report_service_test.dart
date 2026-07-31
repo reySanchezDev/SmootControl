@@ -23,42 +23,31 @@ void main() {
         final service = SupabaseDailySalesReportService(
           client: _FakeClient((request) async {
             expect(request.headers['authorization'], 'Bearer remote-token');
-            if (request.url.path.endsWith('/sales')) {
-              expect(request.url.queryParameters['status'], 'eq.completed');
-              expect(request.url.queryParameters['sale_kind'], 'eq.sale');
-              return http.Response(
-                jsonEncode([
-                  {
-                    'id': 'sale-1',
-                    'total_amount': 100,
-                    'sold_at': '2026-07-01T10:00:00Z',
-                  },
-                  {
-                    'id': 'sale-2',
-                    'total_amount': 50,
-                    'sold_at': '2026-07-01T13:00:00Z',
-                  },
-                  {
-                    'id': 'sale-3',
-                    'total_amount': 80,
-                    'sold_at': '2026-07-02T09:00:00Z',
-                  },
-                ]),
-                200,
-                headers: {'content-type': 'application/json'},
-              );
-            }
+            expect(
+              request.url.path,
+              endsWith('/rpc/app_get_daily_sales_report'),
+            );
+            final body = (request as http.Request).body;
+            final payload =
+                jsonDecode(body) as Map<String, dynamic>;
+            expect(payload['p_restaurant_id'], 'restaurant-1');
+            expect(payload['p_from'], '2026-07-01');
+            expect(payload['p_to'], '2026-07-02');
+            expect(payload['p_timezone'], 'America/Managua');
 
-            if (request.url.path.endsWith('/sale_items')) {
-              expect(
-                request.url.queryParameters['sale_id'],
-                'in.(sale-1,sale-2,sale-3)',
-              );
+            if (request.url.path.endsWith('/rpc/app_get_daily_sales_report')) {
               return http.Response(
                 jsonEncode([
-                  {'sale_id': 'sale-1', 'quantity': 2, 'unit_cost': 20},
-                  {'sale_id': 'sale-2', 'quantity': 1, 'unit_cost': 10},
-                  {'sale_id': 'sale-3', 'quantity': 4, 'unit_cost': 5},
+                  {
+                    'date': '2026-07-01',
+                    'sales_amount': 150,
+                    'cost_amount': 50,
+                  },
+                  {
+                    'date': '2026-07-02',
+                    'sales_amount': 80,
+                    'cost_amount': 20,
+                  },
                 ]),
                 200,
                 headers: {'content-type': 'application/json'},

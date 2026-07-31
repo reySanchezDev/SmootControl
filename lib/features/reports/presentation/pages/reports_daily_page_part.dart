@@ -84,6 +84,7 @@ class _DailySalesReportPageState extends State<DailySalesReportPage> {
     setState(() {
       _from = range.start;
       _to = range.end;
+      _future = _load();
     });
   }
 
