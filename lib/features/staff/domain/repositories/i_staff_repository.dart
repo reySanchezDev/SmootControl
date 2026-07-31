@@ -34,7 +34,11 @@ abstract interface class IStaffRepository {
   Future<AppResult<BusinessRule>> saveBusinessRule(BusinessRule rule);
 
   /// Returns salary advances.
-  Future<AppResult<List<SalaryAdvance>>> getSalaryAdvances();
+  Future<AppResult<List<SalaryAdvance>>> getSalaryAdvances({
+    DateTime? from,
+    DateTime? to,
+    List<String>? statuses,
+  });
 
   /// Saves one salary advance.
   Future<AppResult<SalaryAdvance>> saveSalaryAdvance(SalaryAdvance advance);

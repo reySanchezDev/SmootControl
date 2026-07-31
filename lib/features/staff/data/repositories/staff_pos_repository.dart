@@ -84,7 +84,11 @@ final class StaffPosRepository implements IStaffRepository {
   }
 
   @override
-  Future<AppResult<List<SalaryAdvance>>> getSalaryAdvances() async {
+  Future<AppResult<List<SalaryAdvance>>> getSalaryAdvances({
+    DateTime? from,
+    DateTime? to,
+    List<String>? statuses,
+  }) async {
     return const AppSuccess(<SalaryAdvance>[]);
   }
 

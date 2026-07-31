@@ -36,6 +36,9 @@ abstract final class AppRoutes {
   /// Paid payroll report route.
   static const payrollPaymentsReport = '/reports/payroll-payments';
 
+  /// Salary advances report route.
+  static const salaryAdvancesReport = '/reports/salary-advances';
+
   /// Attendance report route.
   static const attendanceReport = '/reports/attendance';
 

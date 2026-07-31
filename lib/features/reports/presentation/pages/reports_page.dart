@@ -149,6 +149,13 @@ class ReportsPage extends StatelessWidget {
                 title: 'Planillas pagadas',
               ),
               _ReportOptionCard(
+                icon: Icons.account_balance_wallet_outlined,
+                routeName: AppRoutes.salaryAdvancesReport,
+                subtitle:
+                    'Historial de adelantos por fecha, estado y empleado.',
+                title: 'Adelantos',
+              ),
+              _ReportOptionCard(
                 icon: Icons.schedule_outlined,
                 routeName: AppRoutes.attendanceReport,
                 subtitle:

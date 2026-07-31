@@ -26,6 +26,7 @@ abstract final class RouteAccess {
       AppRoutes.inventoryValueReport ||
       AppRoutes.negativeInventoryReport ||
       AppRoutes.payrollPaymentsReport => const ['reportes.ver'],
+      AppRoutes.salaryAdvancesReport => const ['planilla.gestionar'],
       AppRoutes.attendanceReport => const ['reportes.marcadas.ver'],
       AppRoutes.catalog ||
       AppRoutes.products ||

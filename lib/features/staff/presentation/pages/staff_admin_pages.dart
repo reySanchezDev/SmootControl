@@ -35,6 +35,7 @@ part 'staff_payroll_widgets_part.dart';
 part 'staff_positions_page_part.dart';
 part 'staff_salary_advance_dialog_part.dart';
 part 'staff_salary_advances_page_part.dart';
+part 'staff_salary_advances_widgets_part.dart';
 part 'staff_overtime_page_part.dart';
 part 'staff_overtime_dialog_part.dart';
 part 'staff_raw_material_consumptions_dialog_part.dart';

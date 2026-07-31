@@ -440,6 +440,14 @@
 - Related screens/flows: `Adelantos`, `Planilla`.
 - Data impact: `employee_salary_advances.amount`, `employee_salary_advances.balance_amount`.
 
+### Regla: Adelantos operativos e historicos separados
+- Description: La pantalla operativa `Adelantos` carga por defecto el mes actual y solo adelantos pendientes o parcialmente pagados. Los adelantos pagados se consultan desde `Reportes > Planilla > Adelantos`.
+- Rationale: La gestion diaria debe enfocarse en saldos vivos; mezclar adelantos completamente abonados dificulta ubicar deudas reales por empleado y periodo.
+- Example(s): Si Ana tuvo adelantos entre el 15 y el 30 de julio, la pantalla operativa permite filtrar ese rango y muestra solo los que aun tienen saldo. Un adelanto pagado al 100% deja de aparecer ahi, pero queda visible en el reporte historico.
+- Edge cases: El reporte historico permite ver pagados, pendientes, parciales o todos, agrupados por empleado o como lista individual. Las lecturas siempre son remotas contra Supabase.
+- Related screens/flows: `Adelantos`, `Reportes > Planilla > Adelantos`.
+- Data impact: lectura filtrada de `employee_salary_advances.delivered_at`, `employee_salary_advances.status`, `employee_salary_advances.balance_amount`.
+
 ### Regla: Recibos historicos de planilla pagada
 - Description: Cada pago de planilla crea un recibo historico con la foto del salario, consumo, adelanto aplicado, monto pagado y saldos posteriores.
 - Rationale: Las esquelas y reportes formales no deben recalcularse con datos vivos porque los adelantos, consumos o saldos pueden cambiar despues del pago.

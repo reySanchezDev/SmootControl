@@ -1,19 +1,30 @@
 part of 'supabase_staff_admin_repository.dart';
 
 mixin _SupabaseStaffAdvancesMixin on _SupabaseStaffAdminRepositoryBase {
-  Future<AppResult<List<SalaryAdvance>>> getSalaryAdvances() {
+  Future<AppResult<List<SalaryAdvance>>> getSalaryAdvances({
+    DateTime? from,
+    DateTime? to,
+    List<String>? statuses,
+  }) {
     return _guard(
       'salary_advances_read_failed',
       'No se pudieron leer adelantos.',
       () async {
-        final rows = await _getRows('employee_salary_advances', {
+        final query = <String, String>{
           'restaurant_id': 'eq.$_restaurantId',
           'select':
               'id,employee_id,cash_register_session_id,amount,affects_cash,'
               'balance_amount,note,created_by_user_id,status,created_at,'
               'delivered_at',
           'order': 'delivered_at.desc,created_at.desc',
-        });
+        };
+        if (from != null && to != null) {
+          query['and'] = _dateRangeFilter('delivered_at', from, to);
+        }
+        if (statuses != null && statuses.isNotEmpty) {
+          query['status'] = 'in.(${statuses.join(',')})';
+        }
+        final rows = await _getRows('employee_salary_advances', query);
         return rows.map(_advanceFromRow).toList();
       },
     );
@@ -55,5 +66,14 @@ mixin _SupabaseStaffAdvancesMixin on _SupabaseStaffAdminRepositoryBase {
         });
       },
     );
+  }
+
+  String _dateRangeFilter(String column, DateTime from, DateTime to) {
+    final safeFrom = DateTime(from.year, from.month, from.day);
+    final safeTo = DateTime(to.year, to.month, to.day).add(
+      const Duration(days: 1),
+    );
+    return '($column.gte.${safeFrom.toUtc().toIso8601String()},'
+        '$column.lt.${safeTo.toUtc().toIso8601String()})';
   }
 }

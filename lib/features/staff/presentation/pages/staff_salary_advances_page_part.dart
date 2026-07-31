@@ -10,10 +10,14 @@ class SalaryAdvancesPage extends StatefulWidget {
 }
 
 class _SalaryAdvancesPageState extends State<SalaryAdvancesPage> {
+  static const _activeStatuses = ['pending', 'partially_paid'];
+
   final _searchController = TextEditingController();
   late Future<({List<Employee> employees, List<SalaryAdvance> advances})>
   _future;
+  late DateTime _from;
   String _query = '';
+  late DateTime _to;
 
   SupabaseStaffAdminRepository get _repository =>
       serviceLocator<SupabaseStaffAdminRepository>();
@@ -21,6 +25,9 @@ class _SalaryAdvancesPageState extends State<SalaryAdvancesPage> {
   @override
   void initState() {
     super.initState();
+    final now = DateTime.now();
+    _from = DateTime(now.year, now.month);
+    _to = DateTime(now.year, now.month, now.day);
     _reload();
   }
 
@@ -37,7 +44,11 @@ class _SalaryAdvancesPageState extends State<SalaryAdvancesPage> {
   Future<({List<Employee> employees, List<SalaryAdvance> advances})>
   _load() async {
     final employees = await _repository.getEmployees();
-    final advances = await _repository.getSalaryAdvances();
+    final advances = await _repository.getSalaryAdvances(
+      from: _from,
+      statuses: _activeStatuses,
+      to: _to,
+    );
     return (
       employees: switch (employees) {
         AppSuccess(:final value) => value,
@@ -77,6 +88,13 @@ class _SalaryAdvancesPageState extends State<SalaryAdvancesPage> {
               final data = snapshot.requireData;
               return Column(
                 children: [
+                  _SalaryAdvanceRangeFilter(
+                    from: _from,
+                    onChanged: _selectRange,
+                    onMonth: _selectCurrentMonth,
+                    onReload: () => setState(_reload),
+                    to: _to,
+                  ),
                   _StaffSearchField(
                     controller: _searchController,
                     hintText: 'Buscar por empleado, fecha, estado o monto',
@@ -160,83 +178,21 @@ class _SalaryAdvancesPageState extends State<SalaryAdvancesPage> {
       return values.contains(query);
     }).toList();
   }
-}
 
-class _SalaryAdvanceList extends StatelessWidget {
-  const _SalaryAdvanceList({
-    required this.advances,
-    required this.employees,
-    required this.hasFilter,
-    required this.onDelete,
-  });
-
-  final List<SalaryAdvance> advances;
-  final List<Employee> employees;
-  final bool hasFilter;
-  final ValueChanged<SalaryAdvance> onDelete;
-
-  @override
-  Widget build(BuildContext context) {
-    if (advances.isEmpty) {
-      return AppEmptyState(
-        icon: Icons.payments_outlined,
-        title: hasFilter ? 'Sin resultados' : 'Sin adelantos',
-        message: hasFilter
-            ? 'No hay adelantos que coincidan con la busqueda.'
-            : 'Los adelantos registrados apareceran aqui.',
-      );
-    }
-    final employeeById = {
-      for (final employee in employees) employee.id: employee,
-    };
-    return ListView.separated(
-      itemCount: advances.length,
-      separatorBuilder: (context, index) => const Divider(height: 1),
-      itemBuilder: (context, index) {
-        final advance = advances[index];
-        final employee = employeeById[advance.employeeId];
-        final balance = advance.balanceInCents ?? advance.amountInCents;
-        final paid = advance.amountInCents - balance;
-        return ListTile(
-          leading: Icon(
-            advance.affectsCash
-                ? Icons.point_of_sale_outlined
-                : Icons.account_balance_outlined,
-          ),
-          title: Text(employee?.fullName ?? 'Empleado'),
-          subtitle: Text(
-            [
-              'Entrega: ${_dateOnly(advance.deliveredAt)}',
-              if (advance.affectsCash) 'Afecta caja',
-              if (!advance.affectsCash) 'Cuenta externa',
-              _salaryAdvanceStatusLabel(advance.status),
-              'Adelanto: ${_money(advance.amountInCents)}',
-              'Abonado: ${_money(paid)}',
-              'Saldo: ${_money(balance)}',
-            ].join(' - '),
-          ),
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(_money(balance)),
-              IconButton(
-                tooltip: 'Eliminar',
-                icon: const Icon(Icons.delete_outline),
-                onPressed: () => onDelete(advance),
-              ),
-            ],
-          ),
-        );
-      },
-    );
+  void _selectCurrentMonth() {
+    final now = DateTime.now();
+    setState(() {
+      _from = DateTime(now.year, now.month);
+      _to = DateTime(now.year, now.month, now.day);
+      _reload();
+    });
   }
-}
 
-String _salaryAdvanceStatusLabel(String status) {
-  return switch (status) {
-    'pending' => 'Pendiente',
-    'partially_paid' => 'Parcial',
-    'paid' => 'Pagado',
-    _ => status,
-  };
+  void _selectRange(DateTimeRange range) {
+    setState(() {
+      _from = range.start;
+      _to = range.end;
+      _reload();
+    });
+  }
 }
