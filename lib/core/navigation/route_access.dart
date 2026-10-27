@@ -16,7 +16,6 @@ abstract final class RouteAccess {
   static List<String> anyPermissionsFor(String? route) {
     return switch (route) {
       AppRoutes.pos => const ['ventas.registrar'],
-      AppRoutes.backofficePreview => const ['configuracion.gestionar'],
       AppRoutes.reports ||
       AppRoutes.reportSummary ||
       AppRoutes.cashClosingReport ||
