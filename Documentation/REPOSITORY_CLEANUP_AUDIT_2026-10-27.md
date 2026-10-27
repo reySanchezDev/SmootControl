@@ -50,3 +50,21 @@
 - `main` queda intacto mientras este PR esté en borrador.
 - La limpieza no debe alterar reglas de negocio, esquema, ventas, caja, datos locales ni sincronización.
 - Los cambios de estructura grandes deben ir en commits separados y ser verificables.
+
+## Validación local reportada — 2026-10-27
+
+Codex comprobó en la rama remota de mantenimiento:
+- Flutter 3.41.7 / Dart 3.11.5.
+- `flutter pub get`: correcto.
+- `flutter analyze`: sin incidencias.
+- `flutter test`: 300 pruebas aprobadas; advertencia no fatal de hit-test en prueba POS.
+- `tool/build_web_release.ps1`: correcto; worker, WASM, HTML, manifest e iconos presentes. Se emitió advertencia de deprecación de `--pwa-strategy`.
+- `flutter build apk --debug`: **no concluyente** por bloqueo prolongado en Gradle; se canceló.
+- Se observó el archivo temporal local `android/.kotlin/sessions/*.salive`; la ruta `/android/.kotlin/` se añadió a `.gitignore` en esta rama. La exclusión Git **no borra** el residuo local.
+- Los dos `release/*.buildinfo.txt` locales se conservaron sin cambios.
+
+### Pendientes para otra fase
+- Determinar uso real de `lib/core/config/app_build_info.dart`, `iconos/marcada.png`, `cupertino_icons` y `mocktail` antes de cualquier eliminación.
+- Verificar compilación Android en un entorno Gradle estable; el bloqueo no demuestra fallo del código.
+- Depurar localmente logs ignorados y residuo `.salive` solo después de comprobar que no pertenecen a procesos activos y sin borrar registros que se deseen conservar.
+- Mantener las compilaciones de producción fuera del alcance de esta limpieza.
