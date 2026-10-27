@@ -109,7 +109,7 @@ class _BackofficeWorkspaceState extends State<BackofficeWorkspace> {
         if (_openIds.isEmpty) {
           _activeId = null;
         } else {
-          _activeId = _openIds[oldIndex.clamp(0, _openIds.length - 1)];
+          _activeId = _openIds[oldIndex.clamp(0, _openIds.length - 1).toInt()];
         }
       }
     });
