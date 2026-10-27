@@ -4,6 +4,7 @@ import 'package:smoo_control/core/design_system/navigation/backoffice_sidebar.da
 /// Identifies a work tab without conflating separate records of one module.
 @immutable
 class BackofficeWorkspaceItem {
+  /// Creates a workspace destination.
   const BackofficeWorkspaceItem({
     required this.id,
     required this.label,
@@ -13,11 +14,22 @@ class BackofficeWorkspaceItem {
     this.closable = true,
   });
 
+  /// Stable identifier used to preserve the tab and page state.
   final String id;
+
+  /// Label displayed in the sidebar and tab strip.
   final String label;
+
+  /// Existing application route represented by this destination.
   final String route;
+
+  /// Icon displayed in the sidebar and tab strip.
   final IconData icon;
+
+  /// Group heading used by the sidebar.
   final String group;
+
+  /// Whether the tab may be closed by the user.
   final bool closable;
 }
 
@@ -33,6 +45,7 @@ typedef BackofficeWorkspacePageBuilder =
 /// are switched. Closing a tab disposes its subtree; browser refresh does not
 /// persist unsaved form data.
 class BackofficeWorkspace extends StatefulWidget {
+  /// Creates an isolated, opt-in Backoffice workspace shell.
   const BackofficeWorkspace({
     required this.items,
     required this.pageBuilder,
@@ -98,7 +111,9 @@ class _BackofficeWorkspaceState extends State<BackofficeWorkspace> {
   }
 
   Future<void> _close(String id) async {
-    final item = widget.items.where((candidate) => candidate.id == id).firstOrNull;
+    final item = widget.items
+        .where((candidate) => candidate.id == id)
+        .firstOrNull;
     if (item == null || !item.closable) return;
     final allowed = await widget.onCloseRequested?.call(item) ?? true;
     if (!allowed || !mounted) return;
@@ -109,7 +124,7 @@ class _BackofficeWorkspaceState extends State<BackofficeWorkspace> {
         if (_openIds.isEmpty) {
           _activeId = null;
         } else {
-          _activeId = _openIds[oldIndex.clamp(0, _openIds.length - 1).toInt()];
+          _activeId = _openIds[oldIndex.clamp(0, _openIds.length - 1)];
         }
       }
     });
@@ -183,7 +198,10 @@ class _BackofficeWorkspaceState extends State<BackofficeWorkspace> {
                                   IconButton(
                                     onPressed: () => _close(item.id),
                                     tooltip: 'Cerrar ${item.label}',
-                                    icon: const Icon(Icons.close_rounded, size: 16),
+                                    icon: const Icon(
+                                      Icons.close_rounded,
+                                      size: 16,
+                                    ),
                                   ),
                                 const SizedBox(width: 8),
                               ],

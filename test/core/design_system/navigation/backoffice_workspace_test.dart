@@ -33,7 +33,10 @@ void main() {
     await tester.tap(find.text('Productos').first);
     await tester.pumpAndSettle();
     expect(find.text('Página products'), findsOneWidget);
-    expect(find.text('Página home'), findsOneWidget);
+    expect(
+      find.text('Página home', skipOffstage: false),
+      findsOneWidget,
+    );
     expect(find.byTooltip('Cerrar Productos'), findsOneWidget);
     await tester.tap(find.byTooltip('Cerrar Productos'));
     await tester.pumpAndSettle();
@@ -41,8 +44,9 @@ void main() {
     expect(find.text('Página home'), findsOneWidget);
   });
 
-  testWidgets('veto preserves a tab when there are unsaved changes',
-      (tester) async {
+  testWidgets('veto preserves a tab when there are unsaved changes', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       MaterialApp(
         home: BackofficeWorkspace(
