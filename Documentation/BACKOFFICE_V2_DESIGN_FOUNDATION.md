@@ -28,3 +28,11 @@ Identidad: Executive Ivory. Navegación: sidebar contraíble con control central
 - `onCloseRequested` ofrece un veto asíncrono; cada formulario debe implementar su chequeo de cambios no guardados antes de usarse en producción.
 - Sin integración en el router y sin cambios en POS; este avance requiere pruebas locales de formato, análisis, widgets y revisión visual.
 - Estado de menú y tabs todavía efímero; persistencia, deep links y restauración se implementarán en una fase posterior con reglas de seguridad.
+
+## Integración directa al Backoffice (2026-10-27)
+- Usuarios autenticados no-POS ahora entran en `BackofficeHomePage`, que aloja `BackofficeWorkspace` y módulos administrativos reales mediante `guardedBackofficePage`. POS permanece bajo su flujo original.
+- Sidebar filtra destinos por permisos de rol; cada pestaña conserva también `RouteAccessGuard` y `AdminOnlineGuard` en su pantalla. Carga de permisos fallida bloquea el workspace.
+- Se añade cerrar sesión al encabezado global.
+- No se fusiona a main hasta compilar, probar autorización y revisar navegación. Navegación interna existente mediante Navigator.pushNamed puede seguir abriendo pantallas a nivel superior hasta migrarla al gestor de pestañas; no confundir con integración completa.
+- Cierre de pestañas no puede proteger cambios no guardados hasta que cada formulario aporte un validador.
+- No hay cambios de esquema o de datos.
