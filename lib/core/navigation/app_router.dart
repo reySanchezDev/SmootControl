@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:smoo_control/core/navigation/admin_online_guard.dart';
+import 'package:smoo_control/core/design_system/navigation/backoffice_preview_page.dart';
 import 'package:smoo_control/core/navigation/app_routes.dart';
 import 'package:smoo_control/core/navigation/route_access.dart';
 import 'package:smoo_control/features/attendance/presentation/pages/attendance_admin_page.dart';
@@ -48,6 +49,7 @@ Widget _guardedPage(String? routeName) {
   final page = switch (routeName) {
     AppRoutes.dashboard || null => const DashboardPage(),
     AppRoutes.pos => const PosPage(),
+    AppRoutes.backofficePreview => const BackofficePreviewPage(),
     AppRoutes.reports => const ReportsPage(),
     AppRoutes.reportSummary => const ReportSummaryPage(),
     AppRoutes.cashClosingReport => const CashClosingReportPage(),
@@ -109,6 +111,7 @@ Widget _guardedPage(String? routeName) {
 
 bool _requiresOnlineAdmin(String? routeName) {
   return switch (routeName) {
+    AppRoutes.backofficePreview ||
     AppRoutes.catalog ||
     AppRoutes.products ||
     AppRoutes.recipes ||
