@@ -162,6 +162,14 @@ class ReportsPage extends StatelessWidget {
                     'Marcadas de entrada y salida por periodo y empleado.',
                 title: 'Marcadas',
               ),
+              _ReportOptionCard(
+                icon: Icons.beach_access_outlined,
+                routeName: AppRoutes.vacationSummaryReport,
+                subtitle:
+                    'Dias acumulados, tomados, programados y saldo por '
+                    'empleado.',
+                title: 'Vacaciones',
+              ),
             ],
           ),
         ],

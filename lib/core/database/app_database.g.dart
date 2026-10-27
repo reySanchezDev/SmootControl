@@ -28036,6 +28036,887 @@ class LocalAttendanceEntriesCompanion
   }
 }
 
+class $LocalVacationRequestsTable extends LocalVacationRequests
+    with TableInfo<$LocalVacationRequestsTable, LocalVacationRequest> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LocalVacationRequestsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _remoteIdMeta = const VerificationMeta(
+    'remoteId',
+  );
+  @override
+  late final GeneratedColumn<String> remoteId = GeneratedColumn<String>(
+    'remote_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _syncStatusMeta = const VerificationMeta(
+    'syncStatus',
+  );
+  @override
+  late final GeneratedColumn<String> syncStatus = GeneratedColumn<String>(
+    'sync_status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('pending'),
+  );
+  static const VerificationMeta _syncErrorMeta = const VerificationMeta(
+    'syncError',
+  );
+  @override
+  late final GeneratedColumn<String> syncError = GeneratedColumn<String>(
+    'sync_error',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _syncedAtMeta = const VerificationMeta(
+    'syncedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> syncedAt = GeneratedColumn<DateTime>(
+    'synced_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _employeeIdMeta = const VerificationMeta(
+    'employeeId',
+  );
+  @override
+  late final GeneratedColumn<String> employeeId = GeneratedColumn<String>(
+    'employee_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _startDateMeta = const VerificationMeta(
+    'startDate',
+  );
+  @override
+  late final GeneratedColumn<DateTime> startDate = GeneratedColumn<DateTime>(
+    'start_date',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _endDateMeta = const VerificationMeta(
+    'endDate',
+  );
+  @override
+  late final GeneratedColumn<DateTime> endDate = GeneratedColumn<DateTime>(
+    'end_date',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _requestedDaysMeta = const VerificationMeta(
+    'requestedDays',
+  );
+  @override
+  late final GeneratedColumn<double> requestedDays = GeneratedColumn<double>(
+    'requested_days',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _requestTypeMeta = const VerificationMeta(
+    'requestType',
+  );
+  @override
+  late final GeneratedColumn<String> requestType = GeneratedColumn<String>(
+    'request_type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('planned'),
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('pending'),
+  );
+  static const VerificationMeta _sourceMeta = const VerificationMeta('source');
+  @override
+  late final GeneratedColumn<String> source = GeneratedColumn<String>(
+    'source',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('time_clock'),
+  );
+  static const VerificationMeta _noteMeta = const VerificationMeta('note');
+  @override
+  late final GeneratedColumn<String> note = GeneratedColumn<String>(
+    'note',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    remoteId,
+    syncStatus,
+    syncError,
+    createdAt,
+    updatedAt,
+    syncedAt,
+    id,
+    employeeId,
+    startDate,
+    endDate,
+    requestedDays,
+    requestType,
+    status,
+    source,
+    note,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_vacation_requests';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LocalVacationRequest> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('remote_id')) {
+      context.handle(
+        _remoteIdMeta,
+        remoteId.isAcceptableOrUnknown(data['remote_id']!, _remoteIdMeta),
+      );
+    }
+    if (data.containsKey('sync_status')) {
+      context.handle(
+        _syncStatusMeta,
+        syncStatus.isAcceptableOrUnknown(data['sync_status']!, _syncStatusMeta),
+      );
+    }
+    if (data.containsKey('sync_error')) {
+      context.handle(
+        _syncErrorMeta,
+        syncError.isAcceptableOrUnknown(data['sync_error']!, _syncErrorMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    if (data.containsKey('synced_at')) {
+      context.handle(
+        _syncedAtMeta,
+        syncedAt.isAcceptableOrUnknown(data['synced_at']!, _syncedAtMeta),
+      );
+    }
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('employee_id')) {
+      context.handle(
+        _employeeIdMeta,
+        employeeId.isAcceptableOrUnknown(data['employee_id']!, _employeeIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_employeeIdMeta);
+    }
+    if (data.containsKey('start_date')) {
+      context.handle(
+        _startDateMeta,
+        startDate.isAcceptableOrUnknown(data['start_date']!, _startDateMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_startDateMeta);
+    }
+    if (data.containsKey('end_date')) {
+      context.handle(
+        _endDateMeta,
+        endDate.isAcceptableOrUnknown(data['end_date']!, _endDateMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_endDateMeta);
+    }
+    if (data.containsKey('requested_days')) {
+      context.handle(
+        _requestedDaysMeta,
+        requestedDays.isAcceptableOrUnknown(
+          data['requested_days']!,
+          _requestedDaysMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_requestedDaysMeta);
+    }
+    if (data.containsKey('request_type')) {
+      context.handle(
+        _requestTypeMeta,
+        requestType.isAcceptableOrUnknown(
+          data['request_type']!,
+          _requestTypeMeta,
+        ),
+      );
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    }
+    if (data.containsKey('source')) {
+      context.handle(
+        _sourceMeta,
+        source.isAcceptableOrUnknown(data['source']!, _sourceMeta),
+      );
+    }
+    if (data.containsKey('note')) {
+      context.handle(
+        _noteMeta,
+        note.isAcceptableOrUnknown(data['note']!, _noteMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  LocalVacationRequest map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalVacationRequest(
+      remoteId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}remote_id'],
+      ),
+      syncStatus: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sync_status'],
+      )!,
+      syncError: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sync_error'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      syncedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}synced_at'],
+      ),
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      employeeId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}employee_id'],
+      )!,
+      startDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}start_date'],
+      )!,
+      endDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}end_date'],
+      )!,
+      requestedDays: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}requested_days'],
+      )!,
+      requestType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}request_type'],
+      )!,
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      source: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source'],
+      )!,
+      note: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}note'],
+      ),
+    );
+  }
+
+  @override
+  $LocalVacationRequestsTable createAlias(String alias) {
+    return $LocalVacationRequestsTable(attachedDatabase, alias);
+  }
+}
+
+class LocalVacationRequest extends DataClass
+    implements Insertable<LocalVacationRequest> {
+  /// Remote Supabase identifier when the row has been synced.
+  final String? remoteId;
+
+  /// Local sync state.
+  final String syncStatus;
+
+  /// Last sync error, if any.
+  final String? syncError;
+
+  /// Local creation timestamp.
+  final DateTime createdAt;
+
+  /// Local update timestamp.
+  final DateTime updatedAt;
+
+  /// Last successful sync timestamp.
+  final DateTime? syncedAt;
+
+  /// Local request identifier.
+  final String id;
+
+  /// Employee identifier.
+  final String employeeId;
+
+  /// First vacation day.
+  final DateTime startDate;
+
+  /// Last vacation day.
+  final DateTime endDate;
+
+  /// Requested days.
+  final double requestedDays;
+
+  /// planned or taken.
+  final String requestType;
+
+  /// pending, approved, rejected or cancelled.
+  final String status;
+
+  /// admin or time_clock.
+  final String source;
+
+  /// Optional note.
+  final String? note;
+  const LocalVacationRequest({
+    this.remoteId,
+    required this.syncStatus,
+    this.syncError,
+    required this.createdAt,
+    required this.updatedAt,
+    this.syncedAt,
+    required this.id,
+    required this.employeeId,
+    required this.startDate,
+    required this.endDate,
+    required this.requestedDays,
+    required this.requestType,
+    required this.status,
+    required this.source,
+    this.note,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (!nullToAbsent || remoteId != null) {
+      map['remote_id'] = Variable<String>(remoteId);
+    }
+    map['sync_status'] = Variable<String>(syncStatus);
+    if (!nullToAbsent || syncError != null) {
+      map['sync_error'] = Variable<String>(syncError);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    if (!nullToAbsent || syncedAt != null) {
+      map['synced_at'] = Variable<DateTime>(syncedAt);
+    }
+    map['id'] = Variable<String>(id);
+    map['employee_id'] = Variable<String>(employeeId);
+    map['start_date'] = Variable<DateTime>(startDate);
+    map['end_date'] = Variable<DateTime>(endDate);
+    map['requested_days'] = Variable<double>(requestedDays);
+    map['request_type'] = Variable<String>(requestType);
+    map['status'] = Variable<String>(status);
+    map['source'] = Variable<String>(source);
+    if (!nullToAbsent || note != null) {
+      map['note'] = Variable<String>(note);
+    }
+    return map;
+  }
+
+  LocalVacationRequestsCompanion toCompanion(bool nullToAbsent) {
+    return LocalVacationRequestsCompanion(
+      remoteId: remoteId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(remoteId),
+      syncStatus: Value(syncStatus),
+      syncError: syncError == null && nullToAbsent
+          ? const Value.absent()
+          : Value(syncError),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+      syncedAt: syncedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(syncedAt),
+      id: Value(id),
+      employeeId: Value(employeeId),
+      startDate: Value(startDate),
+      endDate: Value(endDate),
+      requestedDays: Value(requestedDays),
+      requestType: Value(requestType),
+      status: Value(status),
+      source: Value(source),
+      note: note == null && nullToAbsent ? const Value.absent() : Value(note),
+    );
+  }
+
+  factory LocalVacationRequest.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalVacationRequest(
+      remoteId: serializer.fromJson<String?>(json['remoteId']),
+      syncStatus: serializer.fromJson<String>(json['syncStatus']),
+      syncError: serializer.fromJson<String?>(json['syncError']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      syncedAt: serializer.fromJson<DateTime?>(json['syncedAt']),
+      id: serializer.fromJson<String>(json['id']),
+      employeeId: serializer.fromJson<String>(json['employeeId']),
+      startDate: serializer.fromJson<DateTime>(json['startDate']),
+      endDate: serializer.fromJson<DateTime>(json['endDate']),
+      requestedDays: serializer.fromJson<double>(json['requestedDays']),
+      requestType: serializer.fromJson<String>(json['requestType']),
+      status: serializer.fromJson<String>(json['status']),
+      source: serializer.fromJson<String>(json['source']),
+      note: serializer.fromJson<String?>(json['note']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'remoteId': serializer.toJson<String?>(remoteId),
+      'syncStatus': serializer.toJson<String>(syncStatus),
+      'syncError': serializer.toJson<String?>(syncError),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'syncedAt': serializer.toJson<DateTime?>(syncedAt),
+      'id': serializer.toJson<String>(id),
+      'employeeId': serializer.toJson<String>(employeeId),
+      'startDate': serializer.toJson<DateTime>(startDate),
+      'endDate': serializer.toJson<DateTime>(endDate),
+      'requestedDays': serializer.toJson<double>(requestedDays),
+      'requestType': serializer.toJson<String>(requestType),
+      'status': serializer.toJson<String>(status),
+      'source': serializer.toJson<String>(source),
+      'note': serializer.toJson<String?>(note),
+    };
+  }
+
+  LocalVacationRequest copyWith({
+    Value<String?> remoteId = const Value.absent(),
+    String? syncStatus,
+    Value<String?> syncError = const Value.absent(),
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    Value<DateTime?> syncedAt = const Value.absent(),
+    String? id,
+    String? employeeId,
+    DateTime? startDate,
+    DateTime? endDate,
+    double? requestedDays,
+    String? requestType,
+    String? status,
+    String? source,
+    Value<String?> note = const Value.absent(),
+  }) => LocalVacationRequest(
+    remoteId: remoteId.present ? remoteId.value : this.remoteId,
+    syncStatus: syncStatus ?? this.syncStatus,
+    syncError: syncError.present ? syncError.value : this.syncError,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    syncedAt: syncedAt.present ? syncedAt.value : this.syncedAt,
+    id: id ?? this.id,
+    employeeId: employeeId ?? this.employeeId,
+    startDate: startDate ?? this.startDate,
+    endDate: endDate ?? this.endDate,
+    requestedDays: requestedDays ?? this.requestedDays,
+    requestType: requestType ?? this.requestType,
+    status: status ?? this.status,
+    source: source ?? this.source,
+    note: note.present ? note.value : this.note,
+  );
+  LocalVacationRequest copyWithCompanion(LocalVacationRequestsCompanion data) {
+    return LocalVacationRequest(
+      remoteId: data.remoteId.present ? data.remoteId.value : this.remoteId,
+      syncStatus: data.syncStatus.present
+          ? data.syncStatus.value
+          : this.syncStatus,
+      syncError: data.syncError.present ? data.syncError.value : this.syncError,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      syncedAt: data.syncedAt.present ? data.syncedAt.value : this.syncedAt,
+      id: data.id.present ? data.id.value : this.id,
+      employeeId: data.employeeId.present
+          ? data.employeeId.value
+          : this.employeeId,
+      startDate: data.startDate.present ? data.startDate.value : this.startDate,
+      endDate: data.endDate.present ? data.endDate.value : this.endDate,
+      requestedDays: data.requestedDays.present
+          ? data.requestedDays.value
+          : this.requestedDays,
+      requestType: data.requestType.present
+          ? data.requestType.value
+          : this.requestType,
+      status: data.status.present ? data.status.value : this.status,
+      source: data.source.present ? data.source.value : this.source,
+      note: data.note.present ? data.note.value : this.note,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalVacationRequest(')
+          ..write('remoteId: $remoteId, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('syncError: $syncError, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('syncedAt: $syncedAt, ')
+          ..write('id: $id, ')
+          ..write('employeeId: $employeeId, ')
+          ..write('startDate: $startDate, ')
+          ..write('endDate: $endDate, ')
+          ..write('requestedDays: $requestedDays, ')
+          ..write('requestType: $requestType, ')
+          ..write('status: $status, ')
+          ..write('source: $source, ')
+          ..write('note: $note')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    remoteId,
+    syncStatus,
+    syncError,
+    createdAt,
+    updatedAt,
+    syncedAt,
+    id,
+    employeeId,
+    startDate,
+    endDate,
+    requestedDays,
+    requestType,
+    status,
+    source,
+    note,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalVacationRequest &&
+          other.remoteId == this.remoteId &&
+          other.syncStatus == this.syncStatus &&
+          other.syncError == this.syncError &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.syncedAt == this.syncedAt &&
+          other.id == this.id &&
+          other.employeeId == this.employeeId &&
+          other.startDate == this.startDate &&
+          other.endDate == this.endDate &&
+          other.requestedDays == this.requestedDays &&
+          other.requestType == this.requestType &&
+          other.status == this.status &&
+          other.source == this.source &&
+          other.note == this.note);
+}
+
+class LocalVacationRequestsCompanion
+    extends UpdateCompanion<LocalVacationRequest> {
+  final Value<String?> remoteId;
+  final Value<String> syncStatus;
+  final Value<String?> syncError;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<DateTime?> syncedAt;
+  final Value<String> id;
+  final Value<String> employeeId;
+  final Value<DateTime> startDate;
+  final Value<DateTime> endDate;
+  final Value<double> requestedDays;
+  final Value<String> requestType;
+  final Value<String> status;
+  final Value<String> source;
+  final Value<String?> note;
+  final Value<int> rowid;
+  const LocalVacationRequestsCompanion({
+    this.remoteId = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.syncError = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.syncedAt = const Value.absent(),
+    this.id = const Value.absent(),
+    this.employeeId = const Value.absent(),
+    this.startDate = const Value.absent(),
+    this.endDate = const Value.absent(),
+    this.requestedDays = const Value.absent(),
+    this.requestType = const Value.absent(),
+    this.status = const Value.absent(),
+    this.source = const Value.absent(),
+    this.note = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LocalVacationRequestsCompanion.insert({
+    this.remoteId = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.syncError = const Value.absent(),
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    this.syncedAt = const Value.absent(),
+    required String id,
+    required String employeeId,
+    required DateTime startDate,
+    required DateTime endDate,
+    required double requestedDays,
+    this.requestType = const Value.absent(),
+    this.status = const Value.absent(),
+    this.source = const Value.absent(),
+    this.note = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt),
+       id = Value(id),
+       employeeId = Value(employeeId),
+       startDate = Value(startDate),
+       endDate = Value(endDate),
+       requestedDays = Value(requestedDays);
+  static Insertable<LocalVacationRequest> custom({
+    Expression<String>? remoteId,
+    Expression<String>? syncStatus,
+    Expression<String>? syncError,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<DateTime>? syncedAt,
+    Expression<String>? id,
+    Expression<String>? employeeId,
+    Expression<DateTime>? startDate,
+    Expression<DateTime>? endDate,
+    Expression<double>? requestedDays,
+    Expression<String>? requestType,
+    Expression<String>? status,
+    Expression<String>? source,
+    Expression<String>? note,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (remoteId != null) 'remote_id': remoteId,
+      if (syncStatus != null) 'sync_status': syncStatus,
+      if (syncError != null) 'sync_error': syncError,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (syncedAt != null) 'synced_at': syncedAt,
+      if (id != null) 'id': id,
+      if (employeeId != null) 'employee_id': employeeId,
+      if (startDate != null) 'start_date': startDate,
+      if (endDate != null) 'end_date': endDate,
+      if (requestedDays != null) 'requested_days': requestedDays,
+      if (requestType != null) 'request_type': requestType,
+      if (status != null) 'status': status,
+      if (source != null) 'source': source,
+      if (note != null) 'note': note,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LocalVacationRequestsCompanion copyWith({
+    Value<String?>? remoteId,
+    Value<String>? syncStatus,
+    Value<String?>? syncError,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<DateTime?>? syncedAt,
+    Value<String>? id,
+    Value<String>? employeeId,
+    Value<DateTime>? startDate,
+    Value<DateTime>? endDate,
+    Value<double>? requestedDays,
+    Value<String>? requestType,
+    Value<String>? status,
+    Value<String>? source,
+    Value<String?>? note,
+    Value<int>? rowid,
+  }) {
+    return LocalVacationRequestsCompanion(
+      remoteId: remoteId ?? this.remoteId,
+      syncStatus: syncStatus ?? this.syncStatus,
+      syncError: syncError ?? this.syncError,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      syncedAt: syncedAt ?? this.syncedAt,
+      id: id ?? this.id,
+      employeeId: employeeId ?? this.employeeId,
+      startDate: startDate ?? this.startDate,
+      endDate: endDate ?? this.endDate,
+      requestedDays: requestedDays ?? this.requestedDays,
+      requestType: requestType ?? this.requestType,
+      status: status ?? this.status,
+      source: source ?? this.source,
+      note: note ?? this.note,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (remoteId.present) {
+      map['remote_id'] = Variable<String>(remoteId.value);
+    }
+    if (syncStatus.present) {
+      map['sync_status'] = Variable<String>(syncStatus.value);
+    }
+    if (syncError.present) {
+      map['sync_error'] = Variable<String>(syncError.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (syncedAt.present) {
+      map['synced_at'] = Variable<DateTime>(syncedAt.value);
+    }
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (employeeId.present) {
+      map['employee_id'] = Variable<String>(employeeId.value);
+    }
+    if (startDate.present) {
+      map['start_date'] = Variable<DateTime>(startDate.value);
+    }
+    if (endDate.present) {
+      map['end_date'] = Variable<DateTime>(endDate.value);
+    }
+    if (requestedDays.present) {
+      map['requested_days'] = Variable<double>(requestedDays.value);
+    }
+    if (requestType.present) {
+      map['request_type'] = Variable<String>(requestType.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (source.present) {
+      map['source'] = Variable<String>(source.value);
+    }
+    if (note.present) {
+      map['note'] = Variable<String>(note.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalVacationRequestsCompanion(')
+          ..write('remoteId: $remoteId, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('syncError: $syncError, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('syncedAt: $syncedAt, ')
+          ..write('id: $id, ')
+          ..write('employeeId: $employeeId, ')
+          ..write('startDate: $startDate, ')
+          ..write('endDate: $endDate, ')
+          ..write('requestedDays: $requestedDays, ')
+          ..write('requestType: $requestType, ')
+          ..write('status: $status, ')
+          ..write('source: $source, ')
+          ..write('note: $note, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -28110,6 +28991,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       $LocalSalaryAdvancesTable(this);
   late final $LocalAttendanceEntriesTable localAttendanceEntries =
       $LocalAttendanceEntriesTable(this);
+  late final $LocalVacationRequestsTable localVacationRequests =
+      $LocalVacationRequestsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -28153,6 +29036,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     localBusinessRules,
     localSalaryAdvances,
     localAttendanceEntries,
+    localVacationRequests,
   ];
 }
 
@@ -41419,6 +42303,423 @@ typedef $$LocalAttendanceEntriesTableProcessedTableManager =
       LocalAttendanceEntry,
       PrefetchHooks Function()
     >;
+typedef $$LocalVacationRequestsTableCreateCompanionBuilder =
+    LocalVacationRequestsCompanion Function({
+      Value<String?> remoteId,
+      Value<String> syncStatus,
+      Value<String?> syncError,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+      Value<DateTime?> syncedAt,
+      required String id,
+      required String employeeId,
+      required DateTime startDate,
+      required DateTime endDate,
+      required double requestedDays,
+      Value<String> requestType,
+      Value<String> status,
+      Value<String> source,
+      Value<String?> note,
+      Value<int> rowid,
+    });
+typedef $$LocalVacationRequestsTableUpdateCompanionBuilder =
+    LocalVacationRequestsCompanion Function({
+      Value<String?> remoteId,
+      Value<String> syncStatus,
+      Value<String?> syncError,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<DateTime?> syncedAt,
+      Value<String> id,
+      Value<String> employeeId,
+      Value<DateTime> startDate,
+      Value<DateTime> endDate,
+      Value<double> requestedDays,
+      Value<String> requestType,
+      Value<String> status,
+      Value<String> source,
+      Value<String?> note,
+      Value<int> rowid,
+    });
+
+class $$LocalVacationRequestsTableFilterComposer
+    extends Composer<_$AppDatabase, $LocalVacationRequestsTable> {
+  $$LocalVacationRequestsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get remoteId => $composableBuilder(
+    column: $table.remoteId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncError => $composableBuilder(
+    column: $table.syncError,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get syncedAt => $composableBuilder(
+    column: $table.syncedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get employeeId => $composableBuilder(
+    column: $table.employeeId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get startDate => $composableBuilder(
+    column: $table.startDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get endDate => $composableBuilder(
+    column: $table.endDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get requestedDays => $composableBuilder(
+    column: $table.requestedDays,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get requestType => $composableBuilder(
+    column: $table.requestType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get source => $composableBuilder(
+    column: $table.source,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LocalVacationRequestsTableOrderingComposer
+    extends Composer<_$AppDatabase, $LocalVacationRequestsTable> {
+  $$LocalVacationRequestsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get remoteId => $composableBuilder(
+    column: $table.remoteId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncError => $composableBuilder(
+    column: $table.syncError,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get syncedAt => $composableBuilder(
+    column: $table.syncedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get employeeId => $composableBuilder(
+    column: $table.employeeId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get startDate => $composableBuilder(
+    column: $table.startDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get endDate => $composableBuilder(
+    column: $table.endDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get requestedDays => $composableBuilder(
+    column: $table.requestedDays,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get requestType => $composableBuilder(
+    column: $table.requestType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get source => $composableBuilder(
+    column: $table.source,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LocalVacationRequestsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LocalVacationRequestsTable> {
+  $$LocalVacationRequestsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get remoteId =>
+      $composableBuilder(column: $table.remoteId, builder: (column) => column);
+
+  GeneratedColumn<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get syncError =>
+      $composableBuilder(column: $table.syncError, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get syncedAt =>
+      $composableBuilder(column: $table.syncedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get employeeId => $composableBuilder(
+    column: $table.employeeId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get startDate =>
+      $composableBuilder(column: $table.startDate, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get endDate =>
+      $composableBuilder(column: $table.endDate, builder: (column) => column);
+
+  GeneratedColumn<double> get requestedDays => $composableBuilder(
+    column: $table.requestedDays,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get requestType => $composableBuilder(
+    column: $table.requestType,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<String> get source =>
+      $composableBuilder(column: $table.source, builder: (column) => column);
+
+  GeneratedColumn<String> get note =>
+      $composableBuilder(column: $table.note, builder: (column) => column);
+}
+
+class $$LocalVacationRequestsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LocalVacationRequestsTable,
+          LocalVacationRequest,
+          $$LocalVacationRequestsTableFilterComposer,
+          $$LocalVacationRequestsTableOrderingComposer,
+          $$LocalVacationRequestsTableAnnotationComposer,
+          $$LocalVacationRequestsTableCreateCompanionBuilder,
+          $$LocalVacationRequestsTableUpdateCompanionBuilder,
+          (
+            LocalVacationRequest,
+            BaseReferences<
+              _$AppDatabase,
+              $LocalVacationRequestsTable,
+              LocalVacationRequest
+            >,
+          ),
+          LocalVacationRequest,
+          PrefetchHooks Function()
+        > {
+  $$LocalVacationRequestsTableTableManager(
+    _$AppDatabase db,
+    $LocalVacationRequestsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LocalVacationRequestsTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$LocalVacationRequestsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$LocalVacationRequestsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String?> remoteId = const Value.absent(),
+                Value<String> syncStatus = const Value.absent(),
+                Value<String?> syncError = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<DateTime?> syncedAt = const Value.absent(),
+                Value<String> id = const Value.absent(),
+                Value<String> employeeId = const Value.absent(),
+                Value<DateTime> startDate = const Value.absent(),
+                Value<DateTime> endDate = const Value.absent(),
+                Value<double> requestedDays = const Value.absent(),
+                Value<String> requestType = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<String> source = const Value.absent(),
+                Value<String?> note = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalVacationRequestsCompanion(
+                remoteId: remoteId,
+                syncStatus: syncStatus,
+                syncError: syncError,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                syncedAt: syncedAt,
+                id: id,
+                employeeId: employeeId,
+                startDate: startDate,
+                endDate: endDate,
+                requestedDays: requestedDays,
+                requestType: requestType,
+                status: status,
+                source: source,
+                note: note,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                Value<String?> remoteId = const Value.absent(),
+                Value<String> syncStatus = const Value.absent(),
+                Value<String?> syncError = const Value.absent(),
+                required DateTime createdAt,
+                required DateTime updatedAt,
+                Value<DateTime?> syncedAt = const Value.absent(),
+                required String id,
+                required String employeeId,
+                required DateTime startDate,
+                required DateTime endDate,
+                required double requestedDays,
+                Value<String> requestType = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<String> source = const Value.absent(),
+                Value<String?> note = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalVacationRequestsCompanion.insert(
+                remoteId: remoteId,
+                syncStatus: syncStatus,
+                syncError: syncError,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                syncedAt: syncedAt,
+                id: id,
+                employeeId: employeeId,
+                startDate: startDate,
+                endDate: endDate,
+                requestedDays: requestedDays,
+                requestType: requestType,
+                status: status,
+                source: source,
+                note: note,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LocalVacationRequestsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LocalVacationRequestsTable,
+      LocalVacationRequest,
+      $$LocalVacationRequestsTableFilterComposer,
+      $$LocalVacationRequestsTableOrderingComposer,
+      $$LocalVacationRequestsTableAnnotationComposer,
+      $$LocalVacationRequestsTableCreateCompanionBuilder,
+      $$LocalVacationRequestsTableUpdateCompanionBuilder,
+      (
+        LocalVacationRequest,
+        BaseReferences<
+          _$AppDatabase,
+          $LocalVacationRequestsTable,
+          LocalVacationRequest
+        >,
+      ),
+      LocalVacationRequest,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -41535,4 +42836,6 @@ class $AppDatabaseManager {
         _db,
         _db.localAttendanceEntries,
       );
+  $$LocalVacationRequestsTableTableManager get localVacationRequests =>
+      $$LocalVacationRequestsTableTableManager(_db, _db.localVacationRequests);
 }

@@ -42,6 +42,9 @@ abstract final class AppRoutes {
   /// Attendance report route.
   static const attendanceReport = '/reports/attendance';
 
+  /// Vacation balance report route.
+  static const vacationSummaryReport = '/reports/vacations';
+
   /// Categories route.
   static const catalog = '/catalog';
 
@@ -120,6 +123,9 @@ abstract final class AppRoutes {
 
   /// Employee attendance admin route.
   static const attendance = '/attendance';
+
+  /// Employee vacations route.
+  static const vacations = '/vacations';
 
   /// Overtime approval route.
   static const overtimeApprovals = '/overtime-approvals';

@@ -4,6 +4,7 @@ import 'package:smoo_control/core/navigation/app_routes.dart';
 import 'package:smoo_control/core/navigation/route_access.dart';
 import 'package:smoo_control/features/attendance/presentation/pages/attendance_admin_page.dart';
 import 'package:smoo_control/features/attendance/presentation/pages/overtime_approvals_page.dart';
+import 'package:smoo_control/features/attendance/presentation/pages/vacation_requests_page.dart';
 import 'package:smoo_control/features/audit/presentation/pages/audit_log_page.dart';
 import 'package:smoo_control/features/cash_register/presentation/pages/cash_register_admin_page.dart';
 import 'package:smoo_control/features/catalog/presentation/pages/catalog_page.dart';
@@ -25,6 +26,7 @@ import 'package:smoo_control/features/reports/presentation/pages/negative_invent
 import 'package:smoo_control/features/reports/presentation/pages/payroll_payments_report_page.dart';
 import 'package:smoo_control/features/reports/presentation/pages/reports_page.dart';
 import 'package:smoo_control/features/reports/presentation/pages/salary_advances_report_page.dart';
+import 'package:smoo_control/features/reports/presentation/pages/vacation_summary_report_page.dart';
 import 'package:smoo_control/features/roles/presentation/pages/roles_page.dart';
 import 'package:smoo_control/features/sales/presentation/pages/sales_page.dart';
 import 'package:smoo_control/features/settings/presentation/pages/settings_page.dart';
@@ -58,6 +60,7 @@ Widget _guardedPage(String? routeName) {
     AppRoutes.payrollPaymentsReport => const PayrollPaymentsReportPage(),
     AppRoutes.salaryAdvancesReport => const SalaryAdvancesReportPage(),
     AppRoutes.attendanceReport => const AttendanceAdminPage(readOnly: true),
+    AppRoutes.vacationSummaryReport => const VacationSummaryReportPage(),
     AppRoutes.catalog => const CatalogPage(),
     AppRoutes.products => const ProductsPage(),
     AppRoutes.recipes => const RecipesPage(),
@@ -85,6 +88,7 @@ Widget _guardedPage(String? routeName) {
     AppRoutes.payroll => const PayrollPage(),
     AppRoutes.staffOvertime => const StaffOvertimePage(),
     AppRoutes.attendance => const AttendanceAdminPage(),
+    AppRoutes.vacations => const VacationRequestsPage(),
     AppRoutes.overtimeApprovals => const OvertimeApprovalsPage(),
     AppRoutes.staffPayrollPayments => const PayrollPaymentsReportPage(
       mode: PayrollPaymentsPageMode.staffAdmin,
@@ -131,6 +135,7 @@ bool _requiresOnlineAdmin(String? routeName) {
     AppRoutes.payroll ||
     AppRoutes.staffOvertime ||
     AppRoutes.attendance ||
+    AppRoutes.vacations ||
     AppRoutes.overtimeApprovals ||
     AppRoutes.staffPayrollPayments ||
     AppRoutes.businessRules ||
@@ -146,7 +151,8 @@ bool _requiresOnlineAdmin(String? routeName) {
     AppRoutes.negativeInventoryReport ||
     AppRoutes.payrollPaymentsReport ||
     AppRoutes.salaryAdvancesReport ||
-    AppRoutes.attendanceReport => true,
+    AppRoutes.attendanceReport ||
+    AppRoutes.vacationSummaryReport => true,
     _ => false,
   };
 }

@@ -28,6 +28,7 @@ abstract final class RouteAccess {
       AppRoutes.payrollPaymentsReport => const ['reportes.ver'],
       AppRoutes.salaryAdvancesReport => const ['planilla.gestionar'],
       AppRoutes.attendanceReport => const ['reportes.marcadas.ver'],
+      AppRoutes.vacationSummaryReport => const ['reportes.vacaciones.ver'],
       AppRoutes.catalog ||
       AppRoutes.products ||
       AppRoutes.recipes ||
@@ -67,6 +68,7 @@ abstract final class RouteAccess {
       AppRoutes.staffOvertime ||
       AppRoutes.staffPayrollPayments => const ['planilla.gestionar'],
       AppRoutes.attendance => const ['marcadas.gestionar', 'marcadas.ver'],
+      AppRoutes.vacations => const ['vacaciones.gestionar', 'vacaciones.ver'],
       AppRoutes.overtimeApprovals => const ['horas_extra.autorizar'],
       AppRoutes.businessRules => const ['reglas_negocio.gestionar'],
       AppRoutes.sync => const ['sync.configurar'],

@@ -9,6 +9,8 @@ import 'package:smoo_control/core/session/current_restaurant_service.dart';
 import 'package:smoo_control/features/attendance/data/datasources/local_attendance_datasource.dart';
 import 'package:smoo_control/features/attendance/domain/entities/attendance_entry.dart';
 import 'package:smoo_control/features/attendance/domain/entities/overtime_candidate.dart';
+import 'package:smoo_control/features/attendance/domain/entities/vacation_request.dart';
+import 'package:smoo_control/features/attendance/domain/entities/vacation_summary.dart';
 import 'package:smoo_control/features/attendance/domain/repositories/i_attendance_repository.dart';
 import 'package:smoo_control/features/staff/domain/entities/employee.dart';
 import 'package:smoo_control/features/sync/domain/entities/sync_queue_item.dart';
@@ -18,10 +20,12 @@ import 'package:smoo_control/features/sync/domain/services/sync_error_message.da
 import 'package:uuid/uuid.dart';
 
 part 'attendance_repository_remote_part.dart';
+part 'attendance_repository_vacation_remote_part.dart';
+part 'attendance_repository_vacation_local_part.dart';
 
 /// Attendance repository for local time-clock and remote admin operations.
 final class AttendanceRepository
-    with _AttendanceRemoteMixin
+    with _AttendanceRemoteMixin, _AttendanceVacationRemoteMixin
     implements IAttendanceRepository {
   /// Creates the attendance repository.
   const AttendanceRepository({
@@ -101,6 +105,20 @@ final class AttendanceRepository
   Future<AppResult<AttendanceEntry>> clockOut(AttendanceEntry entry) async {
     return _saveLocalMark(employee: null, openEntry: entry);
   }
+
+  @override
+  Future<AppResult<VacationRequest>> requestVacation({
+    required Employee employee,
+    required DateTime startDate,
+    required DateTime endDate,
+    String? note,
+  }) => _requestVacation(
+    this,
+    employee: employee,
+    startDate: startDate,
+    endDate: endDate,
+    note: note,
+  );
 
   Future<AppResult<AttendanceEntry>> _saveLocalMark({
     required Employee? employee,

@@ -32,6 +32,7 @@ extension _AppDatabaseMigrations on AppDatabase {
     await _upgradeSchemaFrom31(migrator, from);
     await _upgradeSchemaFrom32(migrator, from);
     await _upgradeSchemaFrom33(migrator, from);
+    await _upgradeSchemaFrom34(migrator, from);
   }
 
   Future<void> _upgradeSchemaFrom7To20(Migrator migrator, int from) async {
@@ -254,6 +255,14 @@ extension _AppDatabaseMigrations on AppDatabase {
   Future<void> _upgradeSchemaFrom33(Migrator migrator, int from) async {
     if (from < 33) {
       await _addCashRegisterDeviceColumnIfMissing(migrator);
+    }
+  }
+
+  Future<void> _upgradeSchemaFrom34(Migrator migrator, int from) async {
+    if (from < 34) {
+      if (!await _tableExists(localVacationRequests.actualTableName)) {
+        await migrator.createTable(localVacationRequests);
+      }
     }
   }
 }

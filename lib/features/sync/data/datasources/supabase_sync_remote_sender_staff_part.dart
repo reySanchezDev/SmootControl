@@ -20,6 +20,25 @@ extension on SupabaseSyncRemoteSender {
     });
   }
 
+  Future<void> _pushEmployeeVacationRequest(SyncQueueItem item) async {
+    final payload = item.payload;
+    await _deviceRpc('pos_sync_employee_vacation_request', {
+      'p_payload': {
+        'id': _remoteUuid(payload['id'], scope: 'employee_vacation_requests'),
+        'local_id': payload['id'],
+        'employee_id': payload['employeeId'],
+        'start_date': payload['startDate'],
+        'end_date': payload['endDate'],
+        'requested_days': payload['requestedDays'],
+        'request_type': payload['requestType'] ?? 'planned',
+        'status': payload['status'] ?? 'pending',
+        'source': payload['source'] ?? 'time_clock',
+        'note': payload['note'],
+        'created_at': payload['createdAt'],
+      },
+    });
+  }
+
   Future<void> _pushSaleWithDevice(SyncQueueItem item) async {
     final salePayload = _mapPayload(item.payload['sale']);
     final itemPayloads = _listPayload(item.payload['items']);

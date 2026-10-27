@@ -130,14 +130,18 @@ class _TimeClockPageState extends State<TimeClockPage> {
       );
       return;
     }
-    final confirmed = await showDialog<bool>(
+    final action = await showDialog<_ClockAction>(
       context: context,
       builder: (_) => _ClockConfirmDialog(
         employee: employee,
         openEntry: todayEntry,
       ),
     );
-    if (confirmed != true || !mounted) return;
+    if (action == null || !mounted) return;
+    if (action == _ClockAction.vacation) {
+      await _requestVacation(employee);
+      return;
+    }
 
     final result = todayEntry == null
         ? await _repository.clockIn(employee)
@@ -159,6 +163,37 @@ class _TimeClockPageState extends State<TimeClockPage> {
         await showAppMessageDialog(
           context: context,
           title: 'No se pudo marcar',
+          message: error.message,
+        );
+    }
+  }
+
+  Future<void> _requestVacation(Employee employee) async {
+    final range = await showDialog<_VacationRange>(
+      context: context,
+      builder: (_) => _VacationRequestDialog(employee: employee),
+    );
+    if (range == null || !mounted) return;
+    final result = await _repository.requestVacation(
+      employee: employee,
+      startDate: range.from,
+      endDate: range.to,
+      note: range.note,
+    );
+    if (!mounted) return;
+    switch (result) {
+      case AppSuccess():
+        await showAppMessageDialog(
+          context: context,
+          title: 'Solicitud enviada',
+          message:
+              'La solicitud quedo registrada. Admin debe autorizarla en '
+              'backoffice.',
+        );
+      case AppFailureResult(:final error):
+        await showAppMessageDialog(
+          context: context,
+          title: 'No se pudo solicitar',
           message: error.message,
         );
     }

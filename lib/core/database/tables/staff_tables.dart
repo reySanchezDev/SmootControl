@@ -113,3 +113,36 @@ class LocalAttendanceEntries extends Table with SyncColumns {
   @override
   Set<Column<Object>> get primaryKey => {id};
 }
+
+/// Local vacation requests created by the time-clock APK.
+class LocalVacationRequests extends Table with SyncColumns {
+  /// Local request identifier.
+  TextColumn get id => text()();
+
+  /// Employee identifier.
+  TextColumn get employeeId => text()();
+
+  /// First vacation day.
+  DateTimeColumn get startDate => dateTime()();
+
+  /// Last vacation day.
+  DateTimeColumn get endDate => dateTime()();
+
+  /// Requested days.
+  RealColumn get requestedDays => real()();
+
+  /// planned or taken.
+  TextColumn get requestType => text().withDefault(const Constant('planned'))();
+
+  /// pending, approved, rejected or cancelled.
+  TextColumn get status => text().withDefault(const Constant('pending'))();
+
+  /// admin or time_clock.
+  TextColumn get source => text().withDefault(const Constant('time_clock'))();
+
+  /// Optional note.
+  TextColumn get note => text().nullable()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}

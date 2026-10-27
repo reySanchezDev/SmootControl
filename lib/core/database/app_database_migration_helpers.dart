@@ -164,6 +164,9 @@ extension _AppDatabaseMigrationHelpers on AppDatabase {
   Future<void> _addCashRegisterDeviceColumnIfMissing(
     Migrator migrator,
   ) async {
+    if (!await _tableExists(localCashRegisterSessions.actualTableName)) {
+      return;
+    }
     if (!await _columnExists(
       localCashRegisterSessions.actualTableName,
       localCashRegisterSessions.posDeviceId.$name,

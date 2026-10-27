@@ -1,5 +1,7 @@
 part of 'time_clock_page.dart';
 
+enum _ClockAction { mark, vacation }
+
 class _EmployeeClockGrid extends StatelessWidget {
   const _EmployeeClockGrid({
     required this.employees,
@@ -145,9 +147,109 @@ class _ClockConfirmDialog extends StatelessWidget {
         FilledButton.icon(
           icon: Icon(isExit ? Icons.logout : Icons.login),
           label: Text(isExit ? 'Marcar salida' : 'Marcar entrada'),
-          onPressed: () => Navigator.of(context).pop(true),
+          onPressed: () => Navigator.of(context).pop(_ClockAction.mark),
+        ),
+        TextButton.icon(
+          icon: const Icon(Icons.beach_access_outlined),
+          label: const Text('Vacaciones'),
+          onPressed: () => Navigator.of(context).pop(_ClockAction.vacation),
         ),
       ],
     );
   }
+}
+
+class _VacationRange {
+  const _VacationRange({required this.from, required this.to, this.note});
+
+  final DateTime from;
+  final DateTime to;
+  final String? note;
+}
+
+class _VacationRequestDialog extends StatefulWidget {
+  const _VacationRequestDialog({required this.employee});
+
+  final Employee employee;
+
+  @override
+  State<_VacationRequestDialog> createState() => _VacationRequestDialogState();
+}
+
+class _VacationRequestDialogState extends State<_VacationRequestDialog> {
+  final _note = TextEditingController();
+  DateTime _from = DateTime.now();
+  DateTime _to = DateTime.now();
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('Vacaciones: ${widget.employee.fullName}'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ActionChip(
+            avatar: const Icon(Icons.calendar_month_outlined),
+            label: Text('Desde ${_fmt(_from)}'),
+            onPressed: () => _pick(isFrom: true),
+          ),
+          const SizedBox(height: 8),
+          ActionChip(
+            avatar: const Icon(Icons.calendar_month_outlined),
+            label: Text('Hasta ${_fmt(_to)}'),
+            onPressed: () => _pick(isFrom: false),
+          ),
+          TextField(
+            controller: _note,
+            decoration: const InputDecoration(labelText: 'Nota'),
+            maxLines: 2,
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancelar'),
+        ),
+        FilledButton.icon(
+          icon: const Icon(Icons.send_outlined),
+          label: const Text('Solicitar'),
+          onPressed: _submit,
+        ),
+      ],
+    );
+  }
+
+  Future<void> _pick({required bool isFrom}) async {
+    final picked = await showDatePicker(
+      context: context,
+      firstDate: DateTime.now(),
+      initialDate: isFrom ? _from : _to,
+      lastDate: DateTime(2100),
+    );
+    if (picked == null || !mounted) return;
+    setState(() {
+      if (isFrom) {
+        _from = picked;
+        if (_to.isBefore(_from)) _to = _from;
+      } else {
+        _to = picked.isBefore(_from) ? _from : picked;
+      }
+    });
+  }
+
+  void _submit() {
+    Navigator.of(context).pop(
+      _VacationRange(
+        from: DateTime(_from.year, _from.month, _from.day),
+        to: DateTime(_to.year, _to.month, _to.day),
+        note: _note.text.trim().isEmpty ? null : _note.text.trim(),
+      ),
+    );
+  }
+}
+
+String _fmt(DateTime date) {
+  String two(int value) => value.toString().padLeft(2, '0');
+  return '${two(date.day)}/${two(date.month)}/${date.year}';
 }

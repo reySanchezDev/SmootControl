@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:smoo_control/core/database/app_database.dart';
 import 'package:smoo_control/features/attendance/domain/entities/attendance_entry.dart';
+import 'package:smoo_control/features/attendance/domain/entities/vacation_request.dart';
 import 'package:smoo_control/features/staff/domain/entities/employee.dart';
 
 /// Local datasource for attendance marks created by the time-clock APK.
@@ -64,6 +65,32 @@ final class LocalAttendanceDataSource {
   Future<AttendanceEntry> saveEntry(AttendanceEntry entry) async {
     await _saveEntry(entry, syncStatus: 'pending');
     return entry;
+  }
+
+  /// Saves one local vacation request created by the marker.
+  Future<VacationRequest> saveVacationRequest(VacationRequest request) async {
+    final now = DateTime.now();
+    await _database
+        .into(_database.localVacationRequests)
+        .insert(
+          LocalVacationRequestsCompanion(
+            id: Value(request.id),
+            employeeId: Value(request.employeeId),
+            startDate: Value(request.startDate),
+            endDate: Value(request.endDate),
+            requestedDays: Value(request.requestedDays),
+            requestType: Value(request.requestType),
+            status: Value(request.status),
+            source: Value(request.source),
+            note: Value(request.note),
+            syncStatus: const Value('pending'),
+            syncError: const Value(null),
+            createdAt: Value(request.createdAt),
+            updatedAt: Value(now),
+          ),
+          mode: InsertMode.insertOrReplace,
+        );
+    return request;
   }
 
   /// Replaces local day state with the remote source of truth.

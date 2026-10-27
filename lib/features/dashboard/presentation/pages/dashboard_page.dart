@@ -20,6 +20,7 @@ import 'package:smoo_control/features/roles/domain/services/default_access_roles
 import 'package:smoo_control/l10n/app_localizations.dart';
 
 part 'dashboard_content_part.dart';
+part 'dashboard_staff_section_part.dart';
 part 'dashboard_widgets_part.dart';
 
 /// Initial responsive dashboard while the V1 modules are scaffolded.

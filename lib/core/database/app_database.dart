@@ -58,6 +58,7 @@ part 'app_database_migration_helpers.dart';
     LocalBusinessRules,
     LocalSalaryAdvances,
     LocalAttendanceEntries,
+    LocalVacationRequests,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -65,7 +66,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 33;
+  int get schemaVersion => 34;
 
   @override
   MigrationStrategy get migration {
