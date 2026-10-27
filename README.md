@@ -27,6 +27,7 @@ La versión del proyecto se declara en `pubspec.yaml`. No asumir que los cambios
 
 ## Documentación
 
+- [Índice completo de documentación](Documentation/README.md)
 - [Arquitectura](Documentation/ARCHITECTURE.md)
 - [Reglas de negocio](Documentation/BUSINESS_RULES.md)
 - [Sincronización offline](Documentation/OFFLINE_SYNC.md)
