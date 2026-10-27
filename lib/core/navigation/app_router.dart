@@ -114,7 +114,7 @@ Widget _guardedPage(String? routeName) {
   );
 }
 
-bool _requiresOnlineAdmin(String? routeName) {
+/// Builds an operational page with its original permission and online guards.\n/// Used only inside the authenticated Backoffice workspace.\nWidget guardedBackofficePage(String routeName) => _guardedPage(routeName);\n\nbool _requiresOnlineAdmin(String? routeName) {
   return switch (routeName) {
     AppRoutes.catalog ||
     AppRoutes.products ||
