@@ -30,7 +30,7 @@ void main() {
     );
 
     expect(find.text('Página home'), findsOneWidget);
-    await tester.tap(find.byTooltip('Productos').first);
+    await tester.tap(find.text('Productos').first);
     await tester.pumpAndSettle();
     expect(find.text('Página products'), findsOneWidget);
     expect(find.text('Página home'), findsOneWidget);
