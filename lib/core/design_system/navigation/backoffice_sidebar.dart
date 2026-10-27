@@ -1,19 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 /// Executive Ivory dimensions and motion tokens for the Backoffice sidebar.
 ///
 /// Kept independent of the POS navigation and styling.
 abstract final class BackofficeSidebarTokens {
+  /// Width of the expanded sidebar content.
   static const double expandedWidth = 248;
+
+  /// Width of the collapsed sidebar content.
   static const double collapsedWidth = 64;
+
+  /// Width reserved for the centered collapse handle.
   static const double handleProtrusion = 20;
+
+  /// Vertical hit area of the collapse handle.
   static const double handleHitHeight = 64;
+
+  /// Duration used for sidebar width and handle transitions.
   static const Duration transition = Duration(milliseconds: 240);
 }
 
 /// One permission-filtered navigation destination.
 @immutable
 class BackofficeNavItem {
+  /// Creates a navigation destination.
   const BackofficeNavItem({
     required this.id,
     required this.label,
@@ -21,9 +32,16 @@ class BackofficeNavItem {
     this.group = 'General',
   });
 
+  /// Stable identifier passed to the shell when this item is selected.
   final String id;
+
+  /// Visible destination label when the sidebar is expanded.
   final String label;
+
+  /// Icon displayed for this destination.
   final IconData icon;
+
+  /// Group heading used when the sidebar is expanded.
   final String group;
 }
 
@@ -32,6 +50,7 @@ class BackofficeNavItem {
 /// [items] must already be filtered by the existing route access policy.
 /// State is externally controlled so a Backoffice shell can persist it.
 class BackofficeSidebar extends StatelessWidget {
+  /// Creates a controlled Backoffice sidebar.
   const BackofficeSidebar({
     required this.items,
     required this.activeId,
@@ -41,10 +60,19 @@ class BackofficeSidebar extends StatelessWidget {
     super.key,
   });
 
+  /// Permission-filtered destinations to display.
   final List<BackofficeNavItem> items;
+
+  /// Identifier of the currently selected destination.
   final String activeId;
+
+  /// Whether labels and group headings are hidden.
   final bool collapsed;
+
+  /// Called when the centered handle changes the collapsed state.
   final ValueChanged<bool> onCollapsedChanged;
+
+  /// Called when a destination is selected.
   final ValueChanged<String> onSelected;
 
   @override
@@ -88,11 +116,16 @@ class BackofficeSidebar extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.restaurant_menu_rounded, color: colors.primary),
+                      Icon(
+                        Icons.restaurant_menu_rounded,
+                        color: colors.primary,
+                      ),
                       if (!collapsed) ...[
                         const SizedBox(width: 10),
-                        Text('SmooControl',
-                            style: Theme.of(context).textTheme.titleMedium),
+                        Text(
+                          'SmooControl',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
                       ],
                     ],
                   ),
@@ -100,7 +133,9 @@ class BackofficeSidebar extends StatelessWidget {
                 const SizedBox(height: 20),
                 Expanded(
                   child: ListView(
-                    padding: EdgeInsets.symmetric(horizontal: collapsed ? 8 : 12),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: collapsed ? 8 : 12,
+                    ),
                     children: [
                       for (final entry in groups.entries) ...[
                         if (!collapsed)
@@ -108,9 +143,10 @@ class BackofficeSidebar extends StatelessWidget {
                             padding: const EdgeInsets.fromLTRB(10, 16, 10, 8),
                             child: Text(
                               entry.key.toUpperCase(),
-                              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                color: colors.onSurfaceVariant,
-                              ),
+                              style: Theme.of(context).textTheme.labelSmall
+                                  ?.copyWith(
+                                    color: colors.onSurfaceVariant,
+                                  ),
                             ),
                           )
                         else
@@ -125,37 +161,56 @@ class BackofficeSidebar extends StatelessWidget {
                               message: collapsed ? item.label : '',
                               child: Semantics(
                                 selected: item.id == activeId,
-                                child: Material(
-                                  color: item.id == activeId
-                                      ? colors.primaryContainer
-                                      : Colors.transparent,
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: InkWell(
+                                button: true,
+                                child: Focus(
+                                  onKeyEvent: (node, event) {
+                                    if (event is KeyDownEvent &&
+                                        (event.logicalKey ==
+                                                LogicalKeyboardKey.enter ||
+                                            event.logicalKey ==
+                                                LogicalKeyboardKey.space)) {
+                                      onSelected(item.id);
+                                      return KeyEventResult.handled;
+                                    }
+                                    return KeyEventResult.ignored;
+                                  },
+                                  child: Material(
+                                    color: item.id == activeId
+                                        ? colors.primaryContainer
+                                        : Colors.transparent,
                                     borderRadius: BorderRadius.circular(8),
-                                    onTap: () => onSelected(item.id),
-                                    child: SizedBox(
-                                      height: 42,
-                                      child: Row(
-                                        mainAxisAlignment: collapsed
-                                            ? MainAxisAlignment.center
-                                            : MainAxisAlignment.start,
-                                        children: [
-                                          if (!collapsed) const SizedBox(width: 12),
-                                          Icon(item.icon, size: 20,
+                                    child: InkWell(
+                                      borderRadius: BorderRadius.circular(8),
+                                      onTap: () => onSelected(item.id),
+                                      child: SizedBox(
+                                        height: 42,
+                                        child: Row(
+                                          mainAxisAlignment: collapsed
+                                              ? MainAxisAlignment.center
+                                              : MainAxisAlignment.start,
+                                          children: [
+                                            if (!collapsed)
+                                              const SizedBox(width: 12),
+                                            Icon(
+                                              item.icon,
+                                              size: 20,
                                               color: item.id == activeId
                                                   ? colors.onPrimaryContainer
-                                                  : colors.onSurfaceVariant),
-                                          if (!collapsed) ...[
-                                            const SizedBox(width: 12),
-                                            Expanded(
-                                              child: Text(
-                                                item.label,
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
+                                                  : colors.onSurfaceVariant,
                                             ),
+                                            if (!collapsed) ...[
+                                              const SizedBox(width: 12),
+                                              Expanded(
+                                                child: Text(
+                                                  item.label,
+                                                  maxLines: 1,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                            ],
                                           ],
-                                        ],
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -185,18 +240,29 @@ class BackofficeSidebar extends StatelessWidget {
                   child: SizedBox(
                     width: BackofficeSidebarTokens.handleProtrusion,
                     height: BackofficeSidebarTokens.handleHitHeight,
-                    child: Material(
-                      type: MaterialType.transparency,
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(24),
-                        onTap: () => onCollapsedChanged(!collapsed),
-                        child: Center(
-                          child: Icon(
-                            collapsed
-                                ? Icons.chevron_right_rounded
-                                : Icons.chevron_left_rounded,
-                            size: 20,
-                            color: colors.primary,
+                    child: Focus(
+                      onKeyEvent: (node, event) {
+                        if (event is KeyDownEvent &&
+                            (event.logicalKey == LogicalKeyboardKey.enter ||
+                                event.logicalKey == LogicalKeyboardKey.space)) {
+                          onCollapsedChanged(!collapsed);
+                          return KeyEventResult.handled;
+                        }
+                        return KeyEventResult.ignored;
+                      },
+                      child: Material(
+                        type: MaterialType.transparency,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(24),
+                          onTap: () => onCollapsedChanged(!collapsed),
+                          child: Center(
+                            child: Icon(
+                              collapsed
+                                  ? Icons.chevron_right_rounded
+                                  : Icons.chevron_left_rounded,
+                              size: 20,
+                              color: colors.primary,
+                            ),
                           ),
                         ),
                       ),
@@ -233,21 +299,31 @@ class _SidebarShapePainter extends CustomPainter {
       ..moveTo(0, 0)
       ..lineTo(baseWidth, 0)
       ..lineTo(baseWidth, center - halfNotch)
-      ..cubicTo(baseWidth, center - 22, baseWidth + protrusion,
-          center - 22, baseWidth + protrusion, center)
-      ..cubicTo(baseWidth + protrusion, center + 22, baseWidth,
-          center + 22, baseWidth, center + halfNotch)
+      ..cubicTo(
+        baseWidth,
+        center - 22,
+        baseWidth + protrusion,
+        center - 22,
+        baseWidth + protrusion,
+        center,
+      )
+      ..cubicTo(
+        baseWidth + protrusion,
+        center + 22,
+        baseWidth,
+        center + 22,
+        baseWidth,
+        center + halfNotch,
+      )
       ..lineTo(baseWidth, size.height)
       ..lineTo(0, size.height)
       ..close();
     canvas.drawPath(path, Paint()..color = fill);
-    canvas.drawPath(
-      path,
-      Paint()
-        ..color = edge
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 0.8,
-    );
+    final edgePaint = Paint()
+      ..color = edge
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.8;
+    canvas.drawPath(path, edgePaint);
   }
 
   @override
