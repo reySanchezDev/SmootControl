@@ -50,6 +50,7 @@ class BackofficeWorkspace extends StatefulWidget {
     required this.items,
     required this.pageBuilder,
     this.initialItemId,
+    this.onSignOut,
     this.onCloseRequested,
     super.key,
   });
@@ -59,6 +60,9 @@ class BackofficeWorkspace extends StatefulWidget {
 
   /// Must return a page protected by the established route access guards.
   final BackofficeWorkspacePageBuilder pageBuilder;
+
+  /// Logout action supplied by the existing authentication flow.
+  final VoidCallback? onSignOut;
 
   /// An optional initially selected destination.
   final String? initialItemId;
@@ -167,9 +171,19 @@ class _BackofficeWorkspaceState extends State<BackofficeWorkspace> {
                     color: scheme.surfaceContainerLow,
                     alignment: Alignment.centerLeft,
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Text(
-                      'SmooControl · Backoffice',
-                      style: Theme.of(context).textTheme.titleSmall,
+                    child: Row(
+                      children: [
+                        Expanded(child: Text(
+                          'SmooControl · Backoffice',
+                          style: Theme.of(context).textTheme.titleSmall,
+                        )),
+                        if (widget.onSignOut != null)
+                          IconButton(
+                            tooltip: 'Cerrar sesión',
+                            onPressed: widget.onSignOut,
+                            icon: const Icon(Icons.logout_rounded),
+                          ),
+                      ],
                     ),
                   ),
                   SizedBox(
