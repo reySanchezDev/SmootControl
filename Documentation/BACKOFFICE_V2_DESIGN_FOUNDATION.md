@@ -20,3 +20,11 @@ Identidad: Executive Ivory. Navegación: sidebar contraíble con control central
 6. Comparar capturas antes/después y aprobar visualmente antes de migrar módulos.
 
 **No modificar producción ni ejecutar migraciones.** Ninguna ruta del sistema consume todavía el nuevo sidebar. Los cambios permanecen aislados hasta validar y aprobar la integración.
+
+## Segunda entrega — Workspace multipestaña aislado
+- `lib/core/design_system/navigation/backoffice_workspace.dart`: BackofficeWorkspace con barra de pestañas, navegación hacia módulos ya abiertos, cierre opcional, y conservación de estado montado por `IndexedStack`.
+- `test/core/design_system/navigation/backoffice_workspace_test.dart`: pruebas iniciales de apertura/cierre y veto de cierre.
+- El consumidor inyecta destinos permitidos y un `pageBuilder` que **debe envolver la página en los guards existentes**. No conectar directamente páginas sin permisos.
+- `onCloseRequested` ofrece un veto asíncrono; cada formulario debe implementar su chequeo de cambios no guardados antes de usarse en producción.
+- Sin integración en el router y sin cambios en POS; este avance requiere pruebas locales de formato, análisis, widgets y revisión visual.
+- Estado de menú y tabs todavía efímero; persistencia, deep links y restauración se implementarán en una fase posterior con reglas de seguridad.
