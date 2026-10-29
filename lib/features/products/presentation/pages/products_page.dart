@@ -39,6 +39,7 @@ class ProductsPage extends StatelessWidget {
           serviceLocator<ProductsBloc>()..add(const ProductsLoadRequested()),
       child: Builder(
         builder: (context) => AppPageScaffold(
+          showAppBar: MediaQuery.sizeOf(context).width < 1024,
           actions: [
             IconButton(
               icon: const Icon(Icons.add),
@@ -78,6 +79,7 @@ class ProductsPage extends StatelessWidget {
                     if (MediaQuery.sizeOf(context).width >= 1024) {
                       return _BackofficeProductsTable(
                         products: products,
+                        onCreate: () => _openCreateDialog(context),
                         categories: categories,
                         categoryPathFor: _categoryPathFor,
                         onEdit: (product) => _openEditDialog(context, product),
