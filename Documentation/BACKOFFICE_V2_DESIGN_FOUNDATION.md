@@ -54,3 +54,11 @@ Ejecutar `dart format` de todos los archivos Dart modificados, `flutter analyze`
 - La tabla compartida fija las columnas encabezado y desplaza las filas en un viewport vertical propio; desplazamiento horizontal compartido garantiza alineación. Filas construidas a demanda.
 - Se conserva el listado móvil y las operaciones BLoC/dialog existentes; no hay nuevas operaciones de escritura.
 - Esta propuesta no es patrón aprobado aún: requiere compilación, revisión visual del dueño y sus cambios antes de aplicarla a otros módulos. No ejecutar otras migraciones administrativas todavía.
+
+## Productos — Boceto visual aprobado (29/10/2026)
+- Referencia: propuesta Executive Ivory aprobada por el usuario, con **fotografías ilustrativas expresamente excluidas**.
+- Cabecera administrativa con una única acción Nuevo producto; KPIs compactados, sin texto de relleno.
+- Tabla compacta: 42 px por fila y 38 px de encabezado anclado; indicadores de estado, POS e inventario con chips discretos; acciones existentes de edición y desactivación.
+- Paginación local funcional de 10, 15, 25 o 50 registros por página, con anterior/siguiente y rango visible. Sin nuevas operaciones de servidor.
+- Se conservan datos reales y flujos previos de Product BLoC y diálogos; no añadir imágenes ni funcionalidades inventadas.
+- **Pendiente:** sincronización, dart format, flutter analyze, pruebas y build en el equipo de Codex; revisión visual del usuario antes de aplicar patrón a otras pantallas.
