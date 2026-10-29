@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:smoo_control/core/theme/backoffice_theme.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smoo_control/core/design_system/navigation/backoffice_workspace.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
@@ -188,7 +189,9 @@ class _BackofficeHomePageState extends State<BackofficeHomePage> {
                       );
                 })
                 .toList(growable: false);
-            return BackofficeWorkspace(
+            return Theme(
+              data: BackofficeTheme.executiveIvory,
+              child: BackofficeWorkspace(
               items: destinations,
               initialItemId: 'home',
               onSignOut: () =>
@@ -198,6 +201,7 @@ class _BackofficeHomePageState extends State<BackofficeHomePage> {
                 // is never treated as authorization.
                 return guardedBackofficePage(item.route);
               },
+              ),
             );
           },
         );
