@@ -47,3 +47,10 @@ Identidad: Executive Ivory. Navegación: sidebar contraíble con control central
 
 ### Verificación necesaria antes de integrar a main
 Ejecutar `dart format` de todos los archivos Dart modificados, `flutter analyze`, `flutter test` y el build Web oficial. Validar que las páginas administrativas reales están visibles y autorizadas en 8081; confirmar funcionamiento de crear/editar/desactivar con datos de prueba autorizados, sin operaciones destructivas de producción. No fusionar a main todavía.
+
+## Pantalla patrón Productos — revisión visual pendiente (29 octubre 2026)
+- Desktop (>=1024px): cabecera única Productos con acción explícita Nuevo producto; cuatro contadores basados en la colección cargada (Total, Activos, En POS, Con inventario).
+- Filtros funcionales: texto, estado, categoría, disponibilidad POS, control de inventario; botón Limpiar aparece solo cuando corresponde. Conteo de resultados sin ambigüedades.
+- La tabla compartida fija las columnas encabezado y desplaza las filas en un viewport vertical propio; desplazamiento horizontal compartido garantiza alineación. Filas construidas a demanda.
+- Se conserva el listado móvil y las operaciones BLoC/dialog existentes; no hay nuevas operaciones de escritura.
+- Esta propuesta no es patrón aprobado aún: requiere compilación, revisión visual del dueño y sus cambios antes de aplicarla a otros módulos. No ejecutar otras migraciones administrativas todavía.
