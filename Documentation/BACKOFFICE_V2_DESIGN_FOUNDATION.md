@@ -36,3 +36,14 @@ Identidad: Executive Ivory. Navegación: sidebar contraíble con control central
 - No se fusiona a main hasta compilar, probar autorización y revisar navegación. Navegación interna existente mediante Navigator.pushNamed puede seguir abriendo pantallas a nivel superior hasta migrarla al gestor de pestañas; no confundir con integración completa.
 - Cierre de pestañas no puede proteger cambios no guardados hasta que cada formulario aporte un validador.
 - No hay cambios de esquema o de datos.
+
+## Executive Ivory — Primera migración funcional de Productos
+- `lib/core/theme/backoffice_theme.dart`: tokens semánticos administrativos y configuración Material 3 exclusivamente bajo el Backoffice, evitando cambios accidentales de estilo en el POS.
+- `lib/core/design_system/backoffice_data_table.dart`: tabla compartida con encabezados, filas y desplazamiento horizontal para columnas amplias; estilos derivados del tema.
+- `lib/features/products/presentation/pages/backoffice_products_table.dart`: tabla de productos a partir del estado BLoC existente; búsqueda local, filtro de activos, categorías, precio, disponibilidad POS, seguimiento de inventario, editar y desactivar.
+- `ProductsPage` conserva el listado compacto para anchuras menores a 1024 px y sus diálogos, persistencia, eventos BLoC y reglas de negocio originales.
+- `test/core/design_system/backoffice_data_table_test.dart`: prueba del componente compartido.
+- No se agregaron endpoints, migraciones, cambios de esquema ni capacidades de negocio ficticias.
+
+### Verificación necesaria antes de integrar a main
+Ejecutar `dart format` de todos los archivos Dart modificados, `flutter analyze`, `flutter test` y el build Web oficial. Validar que las páginas administrativas reales están visibles y autorizadas en 8081; confirmar funcionamiento de crear/editar/desactivar con datos de prueba autorizados, sin operaciones destructivas de producción. No fusionar a main todavía.
