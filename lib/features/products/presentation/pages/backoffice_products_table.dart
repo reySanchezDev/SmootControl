@@ -19,7 +19,8 @@ class _BackofficeProductsTable extends StatefulWidget {
   final VoidCallback onCreate;
 
   @override
-  State<_BackofficeProductsTable> createState() => _BackofficeProductsTableState();
+  State<_BackofficeProductsTable> createState() =>
+      _BackofficeProductsTableState();
 }
 
 class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
@@ -62,8 +63,12 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
     final active = widget.products.where((p) => p.isActive).length;
     final available = widget.products.where((p) => p.isAvailableInPos).length;
     final tracked = widget.products.where((p) => p.tracksInventory).length;
-    final hasFilters = _query.isNotEmpty || _status != 'all' ||
-        _pos != 'all' || _inventory != 'all' || _category != null;
+    final hasFilters =
+        _query.isNotEmpty ||
+        _status != 'all' ||
+        _pos != 'all' ||
+        _inventory != 'all' ||
+        _category != null;
     final categories = widget.categories.toList()
       ..sort((a, b) => a.name.compareTo(b.name));
 
@@ -109,48 +114,64 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
                   decoration: InputDecoration(
                     hintText: 'Buscar producto',
                     prefixIcon: const Icon(Icons.search),
-                    suffixIcon: _query.isEmpty ? null : IconButton(
-                      tooltip: 'Borrar búsqueda',
-                      onPressed: () => setState(() {
-                        _search.clear();
-                        _query = '';
-                      }),
-                      icon: const Icon(Icons.close, size: 18),
-                    ),
+                    suffixIcon: _query.isEmpty
+                        ? null
+                        : IconButton(
+                            tooltip: 'Borrar búsqueda',
+                            onPressed: () => setState(() {
+                              _search.clear();
+                              _query = '';
+                            }),
+                            icon: const Icon(Icons.close, size: 18),
+                          ),
                     isDense: true,
                   ),
                 ),
               ),
               _selector('Estado', _status, const {
-                'all': 'Todos', 'active': 'Activos', 'inactive': 'Inactivos',
+                'all': 'Todos',
+                'active': 'Activos',
+                'inactive': 'Inactivos',
               }, (value) => setState(() => _status = value)),
               SizedBox(
                 width: 180,
                 child: DropdownButtonFormField<String?>(
                   initialValue: _category,
-                  isExpanded: true,
                   decoration: const InputDecoration(
-                    labelText: 'Categoría', isDense: true,
+                    labelText: 'Categoría',
+                    isDense: true,
                   ),
                   items: [
                     const DropdownMenuItem<String?>(
-                      value: null, child: Text('Todas'),
+                      child: Text('Todas'),
                     ),
                     for (final category in categories)
                       DropdownMenuItem<String?>(
                         value: category.id,
-                        child: Text(category.name, overflow: TextOverflow.ellipsis),
+                        child: Text(
+                          category.name,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                   ],
                   onChanged: (value) => setState(() => _category = value),
                 ),
               ),
               _selector('POS', _pos, const {
-                'all': 'Todos', 'yes': 'Disponible', 'no': 'No disponible',
+                'all': 'Todos',
+                'yes': 'Disponible',
+                'no': 'No disponible',
               }, (value) => setState(() => _pos = value)),
-              _selector('Inventario', _inventory, const {
-                'all': 'Todos', 'yes': 'Controla', 'no': 'No controla',
-              }, (value) => setState(() => _inventory = value)),
+              _selector(
+                'Inventario',
+                _inventory,
+                const {
+                  'all': 'Todos',
+                  'yes': 'Controla',
+                  'no': 'No controla',
+                },
+                (value) => setState(() => _inventory = value),
+              ),
               if (hasFilters)
                 TextButton.icon(
                   onPressed: () => setState(() {
@@ -177,27 +198,46 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
                 ? Center(child: Text(l10n.emptySearchMessage))
                 : BackofficeDataTable(
                     columns: const [
-                      'Producto', 'Categoría', 'Precio',
-                      'Estado', 'POS', 'Inventario', 'Acciones',
+                      'Producto',
+                      'Categoría',
+                      'Precio',
+                      'Estado',
+                      'POS',
+                      'Inventario',
+                      'Acciones',
                     ],
                     columnWidths: const [240, 200, 110, 110, 130, 135, 125],
                     rows: [
                       for (final product in filtered)
                         [
-                          Text(product.name,
-                            maxLines: 2, overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(fontWeight: FontWeight.w500)),
+                          Text(
+                            product.name,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(fontWeight: FontWeight.w500),
+                          ),
                           Tooltip(
                             message: widget.categoryPathFor(
-                              product.categoryId, widget.categories),
-                            child: Text(widget.categoryPathFor(
-                              product.categoryId, widget.categories),
-                              maxLines: 2, overflow: TextOverflow.ellipsis),
+                              product.categoryId,
+                              widget.categories,
+                            ),
+                            child: Text(
+                              widget.categoryPathFor(
+                                product.categoryId,
+                                widget.categories,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
                           Text(MoneyFormatter.format(product.priceInCents)),
-                          _statusLabel(context, product.isActive
-                              ? l10n.activeStatus : l10n.inactiveStatus,
-                              product.isActive),
+                          _statusLabel(
+                            context,
+                            product.isActive
+                                ? l10n.activeStatus
+                                : l10n.inactiveStatus,
+                            product.isActive,
+                          ),
                           Text(product.isAvailableInPos ? 'Sí' : 'No'),
                           Text(product.tracksInventory ? 'Sí' : 'No'),
                           Row(
@@ -212,8 +252,11 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
                                 IconButton(
                                   tooltip: l10n.deactivateAction,
                                   onPressed: () => widget.onDeactivate(product),
-                                  icon: Icon(Icons.block_outlined, size: 19,
-                                    color: theme.colorScheme.error),
+                                  icon: Icon(
+                                    Icons.block_outlined,
+                                    size: 19,
+                                    color: theme.colorScheme.error,
+                                  ),
                                 ),
                             ],
                           ),
@@ -247,8 +290,12 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
     );
   }
 
-  Widget _selector(String label, String current,
-      Map<String, String> choices, ValueChanged<String> changed) {
+  Widget _selector(
+    String label,
+    String current,
+    Map<String, String> choices,
+    ValueChanged<String> changed,
+  ) {
     return SizedBox(
       width: 148,
       child: DropdownButtonFormField<String>(

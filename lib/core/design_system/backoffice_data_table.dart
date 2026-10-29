@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 ///
 /// Its horizontal viewport is shared by both sections, keeping alignment exact.
 class BackofficeDataTable extends StatelessWidget {
+  /// Creates a table with a fixed header and a scrollable body.
   const BackofficeDataTable({
     required this.columns,
     required this.rows,
@@ -11,17 +12,24 @@ class BackofficeDataTable extends StatelessWidget {
     super.key,
   });
 
+  /// Column titles shown in the fixed header.
   final List<String> columns;
+
+  /// Cells rendered in the independently scrolling body.
   final List<List<Widget>> rows;
+
+  /// Optional fixed width for each column.
   final List<double>? columnWidths;
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final widths = columnWidths ??
-        List<double>.filled(columns.length, 160, growable: false);
-    assert(widths.length == columns.length);
-    assert(rows.every((row) => row.length == columns.length));
+    final widths = columnWidths ?? List<double>.filled(columns.length, 160);
+    assert(widths.length == columns.length, 'Every column needs a width.');
+    assert(
+      rows.every((row) => row.length == columns.length),
+      'Every row must contain one cell per column.',
+    );
     final totalWidth = widths.fold<double>(0, (sum, width) => sum + width);
 
     Widget cell(Widget child, {bool heading = false}) => Padding(
@@ -62,7 +70,10 @@ class BackofficeDataTable extends StatelessWidget {
                       TableRow(
                         children: [
                           for (final title in columns)
-                            SizedBox(height: 44, child: cell(Text(title), heading: true)),
+                            SizedBox(
+                              height: 44,
+                              child: cell(Text(title), heading: true),
+                            ),
                         ],
                       ),
                     ],
