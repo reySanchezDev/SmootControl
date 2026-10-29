@@ -4,8 +4,9 @@ import 'package:smoo_control/core/design_system/backoffice_data_table.dart';
 import 'package:smoo_control/core/theme/backoffice_theme.dart';
 
 void main() {
-  testWidgets('Executive Ivory table renders headings and action cells',
-      (tester) async {
+  testWidgets('Executive Ivory table renders headings and action cells', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       MaterialApp(
         theme: BackofficeTheme.executiveIvory,
@@ -17,7 +18,7 @@ void main() {
               rows: [
                 [
                   const Text('Café'),
-                  const Text('C$ 50'),
+                  const Text(r'C$ 50'),
                   IconButton(
                     tooltip: 'Editar',
                     icon: const Icon(Icons.edit_outlined),
@@ -32,7 +33,7 @@ void main() {
     );
     expect(find.text('Producto'), findsOneWidget);
     expect(find.text('Café'), findsOneWidget);
-    expect(find.text('C$ 50'), findsOneWidget);
+    expect(find.text(r'C$ 50'), findsOneWidget);
     expect(find.byTooltip('Editar'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });

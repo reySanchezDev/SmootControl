@@ -77,36 +77,54 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable> {
                   children: [
                     BackofficeDataTable(
                       columns: const [
-                        'Producto', 'Categoría', 'Precio',
-                        'Estado', 'POS', 'Inventario', 'Acciones',
+                        'Producto',
+                        'Categoría',
+                        'Precio',
+                        'Estado',
+                        'POS',
+                        'Inventario',
+                        'Acciones',
                       ],
                       rows: [
                         for (final product in filtered)
                           [
-                            Text(product.name,
-                                maxLines: 2, overflow: TextOverflow.ellipsis),
+                            Text(
+                              product.name,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                             ConstrainedBox(
                               constraints: const BoxConstraints(maxWidth: 180),
                               child: Text(
                                 widget.categoryPathFor(
-                                  product.categoryId, widget.categories),
-                                maxLines: 2, overflow: TextOverflow.ellipsis,
+                                  product.categoryId,
+                                  widget.categories,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                             Text(MoneyFormatter.format(product.priceInCents)),
-                            Text(product.isActive
-                                ? l10n.activeStatus : l10n.inactiveStatus),
+                            Text(
+                              product.isActive
+                                  ? l10n.activeStatus
+                                  : l10n.inactiveStatus,
+                            ),
                             Icon(
                               product.isAvailableInPos
                                   ? Icons.check_circle_outline
                                   : Icons.remove_circle_outline,
                               color: product.isAvailableInPos
                                   ? Theme.of(context).colorScheme.primary
-                                  : Theme.of(context).colorScheme.onSurfaceVariant,
+                                  : Theme.of(
+                                      context,
+                                    ).colorScheme.onSurfaceVariant,
                             ),
-                            Icon(product.tracksInventory
-                                ? Icons.inventory_2_outlined
-                                : Icons.horizontal_rule_rounded),
+                            Icon(
+                              product.tracksInventory
+                                  ? Icons.inventory_2_outlined
+                                  : Icons.horizontal_rule_rounded,
+                            ),
                             Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
@@ -118,9 +136,14 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable> {
                                 if (product.isActive)
                                   IconButton(
                                     tooltip: l10n.deactivateAction,
-                                    onPressed: () => widget.onDeactivate(product),
-                                    icon: Icon(Icons.block_outlined,
-                                      color: Theme.of(context).colorScheme.error),
+                                    onPressed: () =>
+                                        widget.onDeactivate(product),
+                                    icon: Icon(
+                                      Icons.block_outlined,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.error,
+                                    ),
                                   ),
                               ],
                             ),

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smoo_control/core/design_system/app_empty_state.dart';
-import 'package:smoo_control/core/design_system/backoffice_data_table.dart';
 import 'package:smoo_control/core/design_system/app_loading_page.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
 import 'package:smoo_control/core/design_system/app_searchable_list_section.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
 import 'package:smoo_control/core/design_system/app_tile_actions.dart';
+import 'package:smoo_control/core/design_system/backoffice_data_table.dart';
 import 'package:smoo_control/core/design_system/confirm_deactivate_dialog.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/core/formatters/money_formatter.dart';
@@ -81,7 +81,8 @@ class ProductsPage extends StatelessWidget {
                         categories: categories,
                         categoryPathFor: _categoryPathFor,
                         onEdit: (product) => _openEditDialog(context, product),
-                        onDeactivate: (product) => _deactivateProduct(context, product),
+                        onDeactivate: (product) =>
+                            _deactivateProduct(context, product),
                       );
                     }
                     return AppSearchableListSection<Product>(

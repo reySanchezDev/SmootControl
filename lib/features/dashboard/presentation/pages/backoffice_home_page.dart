@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:smoo_control/core/theme/backoffice_theme.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smoo_control/core/design_system/navigation/backoffice_workspace.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
@@ -7,6 +6,7 @@ import 'package:smoo_control/core/navigation/app_router.dart';
 import 'package:smoo_control/core/navigation/app_routes.dart';
 import 'package:smoo_control/core/navigation/route_access.dart';
 import 'package:smoo_control/core/result/app_result.dart';
+import 'package:smoo_control/core/theme/backoffice_theme.dart';
 import 'package:smoo_control/features/admin_remote/data/repositories/supabase_admin_repository.dart';
 import 'package:smoo_control/features/auth/domain/entities/auth_session.dart';
 import 'package:smoo_control/features/auth/presentation/bloc/auth_bloc.dart';
@@ -192,15 +192,15 @@ class _BackofficeHomePageState extends State<BackofficeHomePage> {
             return Theme(
               data: BackofficeTheme.executiveIvory,
               child: BackofficeWorkspace(
-              items: destinations,
-              initialItemId: 'home',
-              onSignOut: () =>
-                  context.read<AuthBloc>().add(const AuthSignOutRequested()),
-              pageBuilder: (context, item) {
-                // Reuse the real router guards; sidebar visibility alone
-                // is never treated as authorization.
-                return guardedBackofficePage(item.route);
-              },
+                items: destinations,
+                initialItemId: 'home',
+                onSignOut: () =>
+                    context.read<AuthBloc>().add(const AuthSignOutRequested()),
+                pageBuilder: (context, item) {
+                  // Reuse the real router guards; sidebar visibility alone
+                  // is never treated as authorization.
+                  return guardedBackofficePage(item.route);
+                },
               ),
             );
           },
