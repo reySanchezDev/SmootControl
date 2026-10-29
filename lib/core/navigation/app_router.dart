@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:smoo_control/core/navigation/admin_online_guard.dart';
-import 'package:smoo_control/core/navigation/backoffice_preview_guard.dart';
 import 'package:smoo_control/core/design_system/navigation/backoffice_preview_page.dart';
+import 'package:smoo_control/core/navigation/admin_online_guard.dart';
 import 'package:smoo_control/core/navigation/app_routes.dart';
+import 'package:smoo_control/core/navigation/backoffice_preview_guard.dart';
 import 'package:smoo_control/core/navigation/route_access.dart';
 import 'package:smoo_control/features/attendance/presentation/pages/attendance_admin_page.dart';
 import 'package:smoo_control/features/attendance/presentation/pages/overtime_approvals_page.dart';
@@ -114,7 +114,12 @@ Widget _guardedPage(String? routeName) {
   );
 }
 
-/// Builds an operational page with its original permission and online guards.\n/// Used only inside the authenticated Backoffice workspace.\nWidget guardedBackofficePage(String routeName) => _guardedPage(routeName);\n\nbool _requiresOnlineAdmin(String? routeName) {
+/// Builds an operational page with its original permission and online guards.
+///
+/// Used only inside the authenticated Backoffice workspace.
+Widget guardedBackofficePage(String routeName) => _guardedPage(routeName);
+
+bool _requiresOnlineAdmin(String? routeName) {
   return switch (routeName) {
     AppRoutes.catalog ||
     AppRoutes.products ||

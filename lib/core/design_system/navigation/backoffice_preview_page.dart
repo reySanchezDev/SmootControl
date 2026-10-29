@@ -9,19 +9,49 @@ class BackofficePreviewPage extends StatelessWidget {
   const BackofficePreviewPage({super.key});
 
   static const _destinations = <BackofficeWorkspaceItem>[
-    BackofficeWorkspaceItem(id: 'overview', label: 'Inicio', route: '/',
-        icon: Icons.dashboard_outlined, group: 'Principal', closable: false),
-    BackofficeWorkspaceItem(id: 'products', label: 'Productos',
-        route: '/products', icon: Icons.inventory_2_outlined, group: 'Operación'),
-    BackofficeWorkspaceItem(id: 'inventory', label: 'Inventario',
-        route: '/inventory', icon: Icons.warehouse_outlined, group: 'Operación'),
-    BackofficeWorkspaceItem(id: 'sales', label: 'Ventas',
-        route: '/sales', icon: Icons.receipt_long_outlined, group: 'Operación'),
-    BackofficeWorkspaceItem(id: 'staff', label: 'Personal',
-        route: '/staff', icon: Icons.groups_outlined, group: 'Administración'),
-    BackofficeWorkspaceItem(id: 'reports', label: 'Reportes',
-        route: '/reports', icon: Icons.bar_chart_outlined,
-        group: 'Administración'),
+    BackofficeWorkspaceItem(
+      id: 'overview',
+      label: 'Inicio',
+      route: '/',
+      icon: Icons.dashboard_outlined,
+      group: 'Principal',
+      closable: false,
+    ),
+    BackofficeWorkspaceItem(
+      id: 'products',
+      label: 'Productos',
+      route: '/products',
+      icon: Icons.inventory_2_outlined,
+      group: 'Operación',
+    ),
+    BackofficeWorkspaceItem(
+      id: 'inventory',
+      label: 'Inventario',
+      route: '/inventory',
+      icon: Icons.warehouse_outlined,
+      group: 'Operación',
+    ),
+    BackofficeWorkspaceItem(
+      id: 'sales',
+      label: 'Ventas',
+      route: '/sales',
+      icon: Icons.receipt_long_outlined,
+      group: 'Operación',
+    ),
+    BackofficeWorkspaceItem(
+      id: 'staff',
+      label: 'Personal',
+      route: '/staff',
+      icon: Icons.groups_outlined,
+      group: 'Administración',
+    ),
+    BackofficeWorkspaceItem(
+      id: 'reports',
+      label: 'Reportes',
+      route: '/reports',
+      icon: Icons.bar_chart_outlined,
+      group: 'Administración',
+    ),
   ];
 
   @override
@@ -49,20 +79,25 @@ class _PreviewCanvasState extends State<_PreviewCanvas> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     const sample = ['Café americano', 'Agua 1L', 'Arroz', 'Bistec'];
-    final filtered = sample.where((entry) =>
-      entry.toLowerCase().contains(_query.toLowerCase())).toList();
+    final filtered = sample
+        .where((entry) => entry.toLowerCase().contains(_query.toLowerCase()))
+        .toList();
     return ColoredBox(
       color: theme.colorScheme.surface,
       child: ListView(
         padding: const EdgeInsets.all(24),
         children: [
-          Text('VISTA PREVIA · DATOS ILUSTRATIVOS',
-              style: theme.textTheme.labelSmall),
+          Text(
+            'VISTA PREVIA · DATOS ILUSTRATIVOS',
+            style: theme.textTheme.labelSmall,
+          ),
           const SizedBox(height: 12),
           Text(widget.item.label, style: theme.textTheme.headlineMedium),
           const SizedBox(height: 8),
-          const Text('Esta vista demuestra el espacio de trabajo; '
-              'no consulta ni modifica información del restaurante.'),
+          const Text(
+            'Esta vista demuestra el espacio de trabajo; '
+            'no consulta ni modifica información del restaurante.',
+          ),
           const SizedBox(height: 24),
           TextField(
             decoration: const InputDecoration(

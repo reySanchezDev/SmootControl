@@ -173,10 +173,12 @@ class _BackofficeWorkspaceState extends State<BackofficeWorkspace> {
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Row(
                       children: [
-                        Expanded(child: Text(
-                          'SmooControl · Backoffice',
-                          style: Theme.of(context).textTheme.titleSmall,
-                        )),
+                        Expanded(
+                          child: Text(
+                            'SmooControl · Backoffice',
+                            style: Theme.of(context).textTheme.titleSmall,
+                          ),
+                        ),
                         if (widget.onSignOut != null)
                           IconButton(
                             tooltip: 'Cerrar sesión',
