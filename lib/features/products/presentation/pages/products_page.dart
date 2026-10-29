@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smoo_control/core/design_system/app_empty_state.dart';
+import 'package:smoo_control/core/design_system/backoffice_data_table.dart';
 import 'package:smoo_control/core/design_system/app_loading_page.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
 import 'package:smoo_control/core/design_system/app_searchable_list_section.dart';
@@ -22,6 +23,7 @@ import 'package:smoo_control/features/products/presentation/widgets/create_produ
 import 'package:smoo_control/l10n/app_localizations.dart';
 
 part 'product_tile.dart';
+part 'backoffice_products_table.dart';
 
 /// Product management page.
 class ProductsPage extends StatelessWidget {
@@ -73,6 +75,15 @@ class ProductsPage extends StatelessWidget {
                   builder: (context, snapshot) {
                     final categories = snapshot.data ?? <ProductCategory>[];
 
+                    if (MediaQuery.sizeOf(context).width >= 1024) {
+                      return _BackofficeProductsTable(
+                        products: products,
+                        categories: categories,
+                        categoryPathFor: _categoryPathFor,
+                        onEdit: (product) => _openEditDialog(context, product),
+                        onDeactivate: (product) => _deactivateProduct(context, product),
+                      );
+                    }
                     return AppSearchableListSection<Product>(
                       emptyMessage: l10n.emptySearchMessage,
                       emptyTitle: l10n.emptySearchTitle,
