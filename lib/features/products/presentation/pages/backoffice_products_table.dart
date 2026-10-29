@@ -31,6 +31,8 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
   String _pos = 'all';
   String _inventory = 'all';
   String? _category;
+  int _page = 0;
+  int _pageSize = 15;
 
   @override
   bool get wantKeepAlive => true;
@@ -60,6 +62,10 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
       ].join(' ').toLowerCase().contains(_query.trim().toLowerCase());
     }).toList();
 
+    final pageCount = filtered.isEmpty ? 1 : (filtered.length + _pageSize - 1) ~/ _pageSize;
+    final page = _page.clamp(0, pageCount - 1);
+    final start = page * _pageSize;
+    final visible = filtered.skip(start).take(_pageSize).toList();
     final active = widget.products.where((p) => p.isActive).length;
     final available = widget.products.where((p) => p.isAvailableInPos).length;
     final tracked = widget.products.where((p) => p.tracksInventory).length;
@@ -73,14 +79,14 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
       ..sort((a, b) => a.name.compareTo(b.name));
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Row(
             children: [
               Expanded(
-                child: Text('Productos', style: theme.textTheme.headlineSmall),
+                child: Text('Productos', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700)),
               ),
               FilledButton.icon(
                 onPressed: widget.onCreate,
@@ -89,7 +95,7 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
               ),
             ],
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 8),
           Wrap(
             spacing: 10,
             runSpacing: 10,
@@ -100,7 +106,7 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
               _metric(context, 'Con inventario', tracked),
             ],
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 8),
           Wrap(
             crossAxisAlignment: WrapCrossAlignment.center,
             spacing: 10,
@@ -187,12 +193,12 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
                 ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 6),
           Text(
             '${filtered.length} de ${widget.products.length} productos',
             style: theme.textTheme.bodySmall,
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           Expanded(
             child: filtered.isEmpty
                 ? Center(child: Text(l10n.emptySearchMessage))
@@ -206,9 +212,9 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
                       'Inventario',
                       'Acciones',
                     ],
-                    columnWidths: const [240, 200, 110, 110, 130, 135, 125],
+                    columnWidths: const [280, 230, 120, 110, 95, 125, 112],
                     rows: [
-                      for (final product in filtered)
+                      for (final product in visible)
                         [
                           Text(
                             product.name,
@@ -238,8 +244,8 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
                                 : l10n.inactiveStatus,
                             product.isActive,
                           ),
-                          Text(product.isAvailableInPos ? 'Sí' : 'No'),
-                          Text(product.tracksInventory ? 'Sí' : 'No'),
+                          _statusLabel(context, product.isAvailableInPos ? 'Sí' : 'No', product.isAvailableInPos),
+                          _statusLabel(context, product.tracksInventory ? 'Sí' : 'No', product.tracksInventory),
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -264,6 +270,38 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
                     ],
                   ),
           ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              const Text('Filas'),
+              const SizedBox(width: 8),
+              DropdownButton<int>(
+                value: _pageSize,
+                items: const [
+                  DropdownMenuItem(value: 10, child: Text('10')),
+                  DropdownMenuItem(value: 15, child: Text('15')),
+                  DropdownMenuItem(value: 25, child: Text('25')),
+                  DropdownMenuItem(value: 50, child: Text('50')),
+                ],
+                onChanged: (value) {
+                  if (value != null) setState(() { _pageSize = value; _page = 0; });
+                },
+              ),
+              const Spacer(),
+              Text('${filtered.isEmpty ? 0 : start + 1}–${start + visible.length} de ${filtered.length}'),
+              IconButton(
+                tooltip: 'Página anterior',
+                onPressed: page > 0 ? () => setState(() => _page = page - 1) : null,
+                icon: const Icon(Icons.chevron_left),
+              ),
+              Text('${page + 1} / $pageCount'),
+              IconButton(
+                tooltip: 'Página siguiente',
+                onPressed: page + 1 < pageCount ? () => setState(() => _page = page + 1) : null,
+                icon: const Icon(Icons.chevron_right),
+              ),
+            ],
+          ),
         ],
       ),
     );
@@ -272,8 +310,8 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
   Widget _metric(BuildContext context, String label, int value) {
     final textTheme = Theme.of(context).textTheme;
     return Container(
-      constraints: const BoxConstraints(minWidth: 126),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      constraints: const BoxConstraints(minWidth: 112),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
@@ -283,8 +321,7 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(label, style: textTheme.labelSmall),
-          const SizedBox(height: 2),
-          Text('$value', style: textTheme.titleLarge),
+          Text('$value', style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
         ],
       ),
     );
@@ -318,12 +355,17 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
 
   Widget _statusLabel(BuildContext context, String text, bool active) {
     final colors = Theme.of(context).colorScheme;
-    return Text(
-      text,
-      style: TextStyle(
-        fontWeight: FontWeight.w600,
-        color: active ? colors.primary : colors.onSurfaceVariant,
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
+      decoration: BoxDecoration(
+        color: active ? const Color(0xFFE8F3E5) : const Color(0xFFF8E8E6),
+        borderRadius: BorderRadius.circular(20),
       ),
+      child: Text(text, style: TextStyle(
+        fontSize: 12,
+        fontWeight: FontWeight.w600,
+        color: active ? const Color(0xFF286837) : colors.error,
+      )),
     );
   }
 }
