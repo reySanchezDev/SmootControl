@@ -33,7 +33,7 @@ class BackofficeDataTable extends StatelessWidget {
     final totalWidth = widths.fold<double>(0, (sum, width) => sum + width);
 
     Widget cell(Widget child, {bool heading = false}) => Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       child: Align(
         alignment: Alignment.centerLeft,
         child: DefaultTextStyle.merge(
@@ -71,7 +71,7 @@ class BackofficeDataTable extends StatelessWidget {
                         children: [
                           for (final title in columns)
                             SizedBox(
-                              height: 44,
+                              height: 38,
                               child: cell(Text(title), heading: true),
                             ),
                         ],
@@ -100,7 +100,7 @@ class BackofficeDataTable extends StatelessWidget {
                             children: [
                               for (final value in rows[index])
                                 SizedBox(
-                                  height: 55,
+                                  height: 42,
                                   child: cell(value),
                                 ),
                             ],
