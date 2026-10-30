@@ -15,14 +15,13 @@ class BackofficePreviewPage extends StatelessWidget {
       route: '/',
       icon: Icons.dashboard_outlined,
       group: 'Principal',
-      closable: false,
     ),
     BackofficeWorkspaceItem(
       id: 'products',
       label: 'Productos',
       route: '/products',
       icon: Icons.inventory_2_outlined,
-      group: 'Operación',
+      group: 'Catálogos',
     ),
     BackofficeWorkspaceItem(
       id: 'inventory',
@@ -50,7 +49,7 @@ class BackofficePreviewPage extends StatelessWidget {
       label: 'Reportes',
       route: '/reports',
       icon: Icons.bar_chart_outlined,
-      group: 'Administración',
+      group: 'Reportes',
     ),
   ];
 
