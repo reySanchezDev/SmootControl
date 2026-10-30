@@ -60,36 +60,18 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
       return [
         product.name,
         widget.categoryPathFor(product.categoryId, widget.categories),
+        MoneyFormatter.format(product.priceInCents),
+        product.isRawMaterial ? 'materia prima' : 'producto terminado',
+        product.isActive ? 'activo' : 'inactivo',
+        product.isAvailableInPos ? 'pos sí' : 'pos no',
+        product.tracksInventory ? 'inventario sí' : 'inventario no',
       ].join(' ').toLowerCase().contains(_query.trim().toLowerCase());
     }).toList();
 
-    int compareProducts(Product a, Product b) {
-      switch (_sortColumn) {
-        case 1:
-          return widget
-              .categoryPathFor(a.categoryId, widget.categories)
-              .compareTo(
-                widget.categoryPathFor(b.categoryId, widget.categories),
-              );
-        case 2:
-          return a.priceInCents.compareTo(b.priceInCents);
-        case 3:
-          return (a.isActive ? 1 : 0).compareTo(b.isActive ? 1 : 0);
-        case 4:
-          return (a.isAvailableInPos ? 1 : 0).compareTo(
-            b.isAvailableInPos ? 1 : 0,
-          );
-        case 5:
-          return (a.tracksInventory ? 1 : 0).compareTo(
-            b.tracksInventory ? 1 : 0,
-          );
-        default:
-          return a.name.toLowerCase().compareTo(b.name.toLowerCase());
-      }
-    }
-
     filtered.sort((a, b) {
-      final comparison = compareProducts(a, b);
+      final comparison = _compareProducts(
+        a, b, _sortColumn, widget.categoryPathFor, widget.categories,
+      );
       return _sortAscending ? comparison : -comparison;
     });
 
@@ -114,127 +96,36 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
         children: [
           Row(
             children: [
-              Expanded(
-                child: Text(
-                  'Productos',
-                  style: theme.textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
+
               FilledButton.icon(
                 onPressed: widget.onCreate,
                 icon: const Icon(Icons.add_rounded),
-                label: const Text('Nuevo producto'),
+                label: const Text('Nuevo'),
               ),
             ],
           ),
           const SizedBox(height: 12),
-          Wrap(
-            crossAxisAlignment: WrapCrossAlignment.center,
-            spacing: 10,
-            runSpacing: 8,
-            children: [
-              SizedBox(
-                width: 380,
-                child: TextField(
-                  controller: _search,
-                  onChanged: (value) => setState(() {
-                    _query = value;
-                    _page = 0;
-                  }),
-                  decoration: InputDecoration(
-                    hintText: 'Buscar producto',
-                    prefixIcon: const Icon(Icons.search),
-                    suffixIcon: _query.isEmpty
-                        ? null
-                        : IconButton(
-                            tooltip: 'Borrar búsqueda',
-                            onPressed: () => setState(() {
-                              _search.clear();
-                              _query = '';
-                              _page = 0;
-                            }),
-                            icon: const Icon(Icons.close, size: 18),
-                          ),
-                    isDense: true,
-                  ),
-                ),
-              ),
-              _selector(
-                'Tipo',
-                _kind,
-                const {
-                  'all': 'Todos',
-                  'raw': 'Materia prima',
-                  'finished': 'Producto terminado',
-                },
-                (value) => setState(() {
-                  _kind = value;
-                  _page = 0;
-                }),
-                width: 200,
-              ),
-              _selector(
-                'Estado',
-                _status,
-                const {
-                  'all': 'Todos',
-                  'active': 'Activos',
-                  'inactive': 'Inactivos',
-                },
-                (value) => setState(() {
-                  _status = value;
-                  _page = 0;
-                }),
-              ),
-              SizedBox(
-                width: 230,
-                child: DropdownButtonFormField<String?>(
-                  key: ValueKey(_category),
-                  initialValue: _category,
-                  decoration: const InputDecoration(
-                    labelText: 'Categoría',
-                    isDense: true,
-                  ),
-                  items: [
-                    const DropdownMenuItem<String?>(
-                      child: Text('Todas'),
-                    ),
-                    for (final category in categories)
-                      DropdownMenuItem<String?>(
-                        value: category.id,
-                        child: Text(
-                          category.parentId == null
-                              ? category.name
-                              : widget.categoryPathFor(
-                                  category.id,
-                                  widget.categories,
-                                ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                  ],
-                  onChanged: (value) => setState(() {
-                    _category = value;
-                    _page = 0;
-                  }),
-                ),
-              ),
-              if (hasFilters)
-                TextButton.icon(
-                  onPressed: () => setState(() {
-                    _search.clear();
-                    _query = '';
-                    _status = 'all';
-                    _kind = 'all';
-                    _page = 0;
-                    _category = null;
-                  }),
-                  icon: const Icon(Icons.filter_alt_off_outlined, size: 18),
-                  label: const Text('Limpiar'),
-                ),
-            ],
+          _ProductsFilterBar(
+            searchController: _search,
+            query: _query,
+            status: _status,
+            kind: _kind,
+            category: _category,
+            categories: categories,
+            categoryPathFor: widget.categoryPathFor,
+            onQueryChanged: (v) => setState(() { _query = v; _page = 0; }),
+            onKindChanged: (v) => setState(() { _kind = v; _page = 0; }),
+            onStatusChanged: (v) => setState(() { _status = v; _page = 0; }),
+            onCategoryChanged: (v) =>
+                setState(() { _category = v; _page = 0; }),
+            onClear: () => setState(() {
+              _search.clear();
+              _query = '';
+              _status = 'all';
+              _kind = 'all';
+              _category = null;
+              _page = 0;
+            }),
           ),
           const SizedBox(height: 10),
           Expanded(
@@ -251,6 +142,15 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
                       'Acciones',
                     ],
                     columnWidths: const [280, 230, 120, 110, 95, 125, 112],
+                    columnAlignments: const [
+                      Alignment.centerLeft,
+                      Alignment.centerLeft,
+                      Alignment.centerRight,
+                      Alignment.center,
+                      Alignment.center,
+                      Alignment.center,
+                      Alignment.center,
+                    ],
                     sortColumnIndex: _sortColumn,
                     sortAscending: _sortAscending,
                     onSort: (index) {
@@ -270,8 +170,7 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
                         [
                           Text(
                             product.name,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
+                            softWrap: true,
                             style: const TextStyle(fontWeight: FontWeight.w500),
                           ),
                           Tooltip(
@@ -284,24 +183,23 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
                                 product.categoryId,
                                 widget.categories,
                               ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
+                              softWrap: true,
                             ),
                           ),
                           Text(MoneyFormatter.format(product.priceInCents)),
-                          _statusLabel(
+                          _productStatusLabel(
                             context,
                             product.isActive
                                 ? l10n.activeStatus
                                 : l10n.inactiveStatus,
                             product.isActive,
                           ),
-                          _statusLabel(
+                          _productStatusLabel(
                             context,
                             product.isAvailableInPos ? 'Sí' : 'No',
                             product.isAvailableInPos,
                           ),
-                          _statusLabel(
+                          _productStatusLabel(
                             context,
                             product.tracksInventory ? 'Sí' : 'No',
                             product.tracksInventory,
@@ -333,7 +231,7 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
           const SizedBox(height: 8),
           Row(
             children: [
-              const Text('Filas'),
+              const Text('Registros por página'),
               const SizedBox(width: 8),
               DropdownButton<int>(
                 value: _pageSize,
@@ -392,49 +290,4 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
     return false;
   }
 
-  Widget _selector(
-    String label,
-    String current,
-    Map<String, String> choices,
-    ValueChanged<String> changed, {
-    double width = 148,
-  }) {
-    return SizedBox(
-      width: width,
-      child: DropdownButtonFormField<String>(
-        initialValue: current,
-        isExpanded: true,
-        decoration: InputDecoration(labelText: label, isDense: true),
-        items: [
-          for (final option in choices.entries)
-            DropdownMenuItem(
-              value: option.key,
-              child: Text(option.value, overflow: TextOverflow.ellipsis),
-            ),
-        ],
-        onChanged: (value) {
-          if (value != null) changed(value);
-        },
-      ),
-    );
-  }
-
-  Widget _statusLabel(BuildContext context, String text, bool active) {
-    final colors = Theme.of(context).colorScheme;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
-      decoration: BoxDecoration(
-        color: active ? const Color(0xFFE8F3E5) : const Color(0xFFF8E8E6),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-          color: active ? const Color(0xFF286837) : colors.error,
-        ),
-      ),
-    );
-  }
 }
