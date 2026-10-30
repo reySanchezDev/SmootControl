@@ -178,3 +178,35 @@ int _compareProducts(
       return a.name.toLowerCase().compareTo(b.name.toLowerCase());
   }
 }
+
+Widget _emptyProductsPanel(
+  BuildContext context,
+  AppLocalizations l10n,
+  VoidCallback onCreate,
+) {
+  return Column(
+    children: [
+      if (MediaQuery.sizeOf(context).width >= 1024)
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: FilledButton.icon(
+              onPressed: onCreate,
+              icon: const Icon(Icons.add_rounded),
+              label: Text(l10n.createAction),
+            ),
+          ),
+        ),
+      Expanded(
+        child: Center(
+          child: AppEmptyState(
+            icon: Icons.local_cafe_outlined,
+            message: l10n.emptyProductsMessage,
+            title: l10n.emptyProductsTitle,
+          ),
+        ),
+      ),
+    ],
+  );
+}
