@@ -7,6 +7,7 @@ import 'package:smoo_control/core/design_system/app_tile_actions.dart';
 import 'package:smoo_control/core/formatters/money_formatter.dart';
 import 'package:smoo_control/core/utils/search_text.dart';
 import 'package:smoo_control/features/expenses/domain/entities/expense_category.dart';
+import 'package:smoo_control/features/expenses/presentation/widgets/expenses_backoffice_table.dart';
 import 'package:smoo_control/l10n/app_localizations.dart';
 
 /// Searchable list for expense category groups.
@@ -47,7 +48,16 @@ class _ExpensesOverviewListState extends State<ExpensesOverviewList> {
     final l10n = AppLocalizations.of(context);
     final categories = _filteredCategories(l10n);
 
-    return Column(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth >= 850) {
+          return ExpensesBackofficeTable(
+            categories: widget.categories,
+            onEdit: widget.onCategoryEdit,
+            onDelete: widget.onCategoryDelete,
+          );
+        }
+        return Column(
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
@@ -86,6 +96,8 @@ class _ExpensesOverviewListState extends State<ExpensesOverviewList> {
                 ),
         ),
       ],
+    );
+      },
     );
   }
 
@@ -196,14 +208,10 @@ class _ExpenseCategoryTile extends StatelessWidget {
                 else
                   l10n.expenseCategoryCoverageExcluded,
             ].join(' - '),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
             variant: AppTextVariant.label,
           ),
           title: AppText(
             category.name,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
           ),
           trailing: AppTileActions(
             compact: compact,
