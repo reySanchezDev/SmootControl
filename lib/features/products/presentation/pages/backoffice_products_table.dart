@@ -161,6 +161,7 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
               SizedBox(
                 width: 180,
                 child: DropdownButtonFormField<String?>(
+                  key: ValueKey(_category),
                   initialValue: _category,
                   decoration: const InputDecoration(
                     labelText: 'Categoría',
