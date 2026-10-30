@@ -145,7 +145,7 @@
   "editAction": "Edit",
   "confirmAction": "Confirm",
   "cancelAction": "Cancel",
-  "okAction": "OK",
+  "okAction": "Accept",
   "saveAction": "Save",
   "reloadAction": "Reload",
   "backAction": "Back",
