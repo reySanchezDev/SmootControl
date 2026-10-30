@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:smoo_control/core/design_system/navigation/backoffice_sidebar_shape.dart';
 
 /// Executive Ivory dimensions and motion tokens for the Backoffice sidebar.
 ///
@@ -95,7 +96,7 @@ class BackofficeSidebar extends StatelessWidget {
         children: [
           Positioned.fill(
             child: CustomPaint(
-              painter: _SidebarShapePainter(
+              painter: BackofficeSidebarShapePainter(
                 baseWidth: width,
                 protrusion: BackofficeSidebarTokens.handleProtrusion,
                 fill: colors.surfaceContainerLow,
@@ -182,8 +183,8 @@ class BackofficeSidebar extends StatelessWidget {
                                     child: InkWell(
                                       borderRadius: BorderRadius.circular(8),
                                       onTap: () => onSelected(item.id),
-                                      child: SizedBox(
-                                        height: 42,
+                                      child: ConstrainedBox(
+                                        constraints: const BoxConstraints(minHeight: 42),
                                         child: Row(
                                           mainAxisAlignment: collapsed
                                               ? MainAxisAlignment.center
@@ -203,9 +204,7 @@ class BackofficeSidebar extends StatelessWidget {
                                               Expanded(
                                                 child: Text(
                                                   item.label,
-                                                  maxLines: 1,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
+                                                  softWrap: true,
                                                 ),
                                               ),
                                             ],
@@ -278,58 +277,3 @@ class BackofficeSidebar extends StatelessWidget {
   }
 }
 
-class _SidebarShapePainter extends CustomPainter {
-  const _SidebarShapePainter({
-    required this.baseWidth,
-    required this.protrusion,
-    required this.fill,
-    required this.edge,
-  });
-
-  final double baseWidth;
-  final double protrusion;
-  final Color fill;
-  final Color edge;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = size.height / 2;
-    const halfNotch = 38.0;
-    final path = Path()
-      ..moveTo(0, 0)
-      ..lineTo(baseWidth, 0)
-      ..lineTo(baseWidth, center - halfNotch)
-      ..cubicTo(
-        baseWidth,
-        center - 22,
-        baseWidth + protrusion,
-        center - 22,
-        baseWidth + protrusion,
-        center,
-      )
-      ..cubicTo(
-        baseWidth + protrusion,
-        center + 22,
-        baseWidth,
-        center + 22,
-        baseWidth,
-        center + halfNotch,
-      )
-      ..lineTo(baseWidth, size.height)
-      ..lineTo(0, size.height)
-      ..close();
-    canvas.drawPath(path, Paint()..color = fill);
-    final edgePaint = Paint()
-      ..color = edge
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 0.8;
-    canvas.drawPath(path, edgePaint);
-  }
-
-  @override
-  bool shouldRepaint(covariant _SidebarShapePainter old) =>
-      baseWidth != old.baseWidth ||
-      protrusion != old.protrusion ||
-      fill != old.fill ||
-      edge != old.edge;
-}
