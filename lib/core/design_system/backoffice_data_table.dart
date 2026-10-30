@@ -72,80 +72,95 @@ class BackofficeDataTable extends StatelessWidget {
               i: FixedColumnWidth(widths[i] * scale),
           };
           return SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: SizedBox(
-            width: totalWidth * scale,
-            child: Column(
-              children: [
-                ColoredBox(
-                  color: scheme.surfaceContainerLow,
-                  child: Table(
-                    columnWidths: effectiveWidths,
-                    children: [
-                      TableRow(
-                        children: [
-                          for (var i = 0; i < columns.length; i++)
-                            SizedBox(
-                              height: 38,
-                              child: InkWell(
-                                onTap: onSort == null || i == columns.length - 1
-                                    ? null : () => onSort!(i),
-                                child: cell(Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Flexible(child: Text(columns[i], overflow: TextOverflow.ellipsis)),
-                                    if (onSort != null && i != columns.length - 1) ...[
-                                      const SizedBox(width: 4),
-                                      Icon(sortColumnIndex == i
-                                        ? (sortAscending ? Icons.arrow_upward : Icons.arrow_downward)
-                                        : Icons.unfold_more,
-                                        size: 13, color: scheme.onSurfaceVariant),
-                                    ],
-                                  ],
-                                ), heading: true),
-                              ),
-                            ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                Divider(height: 1, color: scheme.outlineVariant),
-                Expanded(
-                  child: ListView.builder(
-                    primary: false,
-                    itemCount: rows.length,
-                    itemBuilder: (context, index) => DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: index.isEven
-                            ? scheme.surface
-                            : scheme.surfaceContainerLowest,
-                        border: Border(
-                          bottom: BorderSide(color: scheme.outlineVariant),
-                        ),
-                      ),
-                      child: Table(
-                        columnWidths: effectiveWidths,
-                        children: [
-                          TableRow(
-                            children: [
-                              for (final value in rows[index])
-                                SizedBox(
-                                  height: 42,
-                                  child: cell(value),
+            scrollDirection: Axis.horizontal,
+            child: SizedBox(
+              width: totalWidth * scale,
+              child: Column(
+                children: [
+                  ColoredBox(
+                    color: scheme.surfaceContainerLow,
+                    child: Table(
+                      columnWidths: effectiveWidths,
+                      children: [
+                        TableRow(
+                          children: [
+                            for (var i = 0; i < columns.length; i++)
+                              SizedBox(
+                                height: 38,
+                                child: InkWell(
+                                  onTap:
+                                      onSort == null || i == columns.length - 1
+                                      ? null
+                                      : () => onSort!(i),
+                                  child: cell(
+                                    Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Flexible(
+                                          child: Text(
+                                            columns[i],
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                        if (onSort != null &&
+                                            i != columns.length - 1) ...[
+                                          const SizedBox(width: 4),
+                                          Icon(
+                                            sortColumnIndex == i
+                                                ? (sortAscending
+                                                      ? Icons.arrow_upward
+                                                      : Icons.arrow_downward)
+                                                : Icons.unfold_more,
+                                            size: 13,
+                                            color: scheme.onSurfaceVariant,
+                                          ),
+                                        ],
+                                      ],
+                                    ),
+                                    heading: true,
+                                  ),
                                 ),
-                            ],
+                              ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  Divider(height: 1, color: scheme.outlineVariant),
+                  Expanded(
+                    child: ListView.builder(
+                      primary: false,
+                      itemCount: rows.length,
+                      itemBuilder: (context, index) => DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: index.isEven
+                              ? scheme.surface
+                              : scheme.surfaceContainerLowest,
+                          border: Border(
+                            bottom: BorderSide(color: scheme.outlineVariant),
                           ),
-                        ],
+                        ),
+                        child: Table(
+                          columnWidths: effectiveWidths,
+                          children: [
+                            TableRow(
+                              children: [
+                                for (final value in rows[index])
+                                  SizedBox(
+                                    height: 42,
+                                    child: cell(value),
+                                  ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ),
-      );
+          );
         },
       ),
     );

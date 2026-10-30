@@ -67,22 +67,28 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
     int compareProducts(Product a, Product b) {
       switch (_sortColumn) {
         case 1:
-          return widget.categoryPathFor(a.categoryId, widget.categories)
-              .compareTo(widget.categoryPathFor(b.categoryId, widget.categories));
+          return widget
+              .categoryPathFor(a.categoryId, widget.categories)
+              .compareTo(
+                widget.categoryPathFor(b.categoryId, widget.categories),
+              );
         case 2:
           return a.priceInCents.compareTo(b.priceInCents);
         case 3:
           return (a.isActive ? 1 : 0).compareTo(b.isActive ? 1 : 0);
         case 4:
-          return (a.isAvailableInPos ? 1 : 0)
-              .compareTo(b.isAvailableInPos ? 1 : 0);
+          return (a.isAvailableInPos ? 1 : 0).compareTo(
+            b.isAvailableInPos ? 1 : 0,
+          );
         case 5:
-          return (a.tracksInventory ? 1 : 0)
-              .compareTo(b.tracksInventory ? 1 : 0);
+          return (a.tracksInventory ? 1 : 0).compareTo(
+            b.tracksInventory ? 1 : 0,
+          );
         default:
           return a.name.toLowerCase().compareTo(b.name.toLowerCase());
       }
     }
+
     filtered.sort((a, b) {
       final comparison = compareProducts(a, b);
       return _sortAscending ? comparison : -comparison;
