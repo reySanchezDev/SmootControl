@@ -6,6 +6,7 @@ class AppInput extends StatelessWidget {
   const AppInput({
     required this.label,
     this.controller,
+    this.focusNode,
     this.keyboardType,
     this.maxLines = 1,
     this.onChanged,
@@ -24,6 +25,9 @@ class AppInput extends StatelessWidget {
 
   /// Optional controller.
   final TextEditingController? controller;
+
+  /// Optional focus node for keyboard navigation and validation errors.
+  final FocusNode? focusNode;
 
   /// Keyboard type.
   final TextInputType? keyboardType;
@@ -59,6 +63,7 @@ class AppInput extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextFormField(
       controller: controller,
+      focusNode: focusNode,
       decoration: InputDecoration(
         labelText: requiredField ? null : label,
         label: requiredField
