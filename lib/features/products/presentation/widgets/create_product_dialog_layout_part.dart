@@ -60,6 +60,7 @@ extension _CreateProductDialogLayout on _CreateProductDialogState {
                       AppInput(
                         label: l10n.nameField,
                         controller: _nameController,
+                        focusNode: _nameFocus,
                         requiredField: true,
                         errorText: _showValidation &&
                                 _nameController.text.trim().isEmpty
@@ -70,6 +71,7 @@ extension _CreateProductDialogLayout on _CreateProductDialogState {
                       ProductCategoryDropdown(
                         categories: widget.categories,
                         selectedCategoryId: _selectedCategoryId,
+                        focusNode: _categoryFocus,
                         onChanged: (value) {
                           setState(() {
                             _selectedCategoryId = value;
@@ -81,6 +83,7 @@ extension _CreateProductDialogLayout on _CreateProductDialogState {
                       AppInput(
                         label: l10n.priceInCentsField,
                         controller: _priceController,
+                        focusNode: _priceFocus,
                         requiredField: !_isRawMaterial,
                         keyboardType: const TextInputType.numberWithOptions(
                           decimal: true,
@@ -90,6 +93,7 @@ extension _CreateProductDialogLayout on _CreateProductDialogState {
                       AppInput(
                         label: costFieldLabel(l10n),
                         controller: _costController,
+                        focusNode: _costFocus,
                         requiredField: true,
                         keyboardType: const TextInputType.numberWithOptions(
                           decimal: true,
