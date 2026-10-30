@@ -76,7 +76,6 @@ class _ProductsFilterBar extends StatelessWidget {
           width: 320,
           label: const Text('Categoría'),
           enableFilter: true,
-          enableSearch: true,
           requestFocusOnTap: true,
           initialSelection: category ?? '',
           dropdownMenuEntries: [
