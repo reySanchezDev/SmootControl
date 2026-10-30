@@ -62,7 +62,9 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
       ].join(' ').toLowerCase().contains(_query.trim().toLowerCase());
     }).toList();
 
-    final pageCount = filtered.isEmpty ? 1 : (filtered.length + _pageSize - 1) ~/ _pageSize;
+    final pageCount = filtered.isEmpty
+        ? 1
+        : (filtered.length + _pageSize - 1) ~/ _pageSize;
     final page = _page.clamp(0, pageCount - 1);
     final start = page * _pageSize;
     final visible = filtered.skip(start).take(_pageSize).toList();
@@ -86,7 +88,12 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
           Row(
             children: [
               Expanded(
-                child: Text('Productos', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700)),
+                child: Text(
+                  'Productos',
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ),
               FilledButton.icon(
                 onPressed: widget.onCreate,
@@ -244,8 +251,16 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
                                 : l10n.inactiveStatus,
                             product.isActive,
                           ),
-                          _statusLabel(context, product.isAvailableInPos ? 'Sí' : 'No', product.isAvailableInPos),
-                          _statusLabel(context, product.tracksInventory ? 'Sí' : 'No', product.tracksInventory),
+                          _statusLabel(
+                            context,
+                            product.isAvailableInPos ? 'Sí' : 'No',
+                            product.isAvailableInPos,
+                          ),
+                          _statusLabel(
+                            context,
+                            product.tracksInventory ? 'Sí' : 'No',
+                            product.tracksInventory,
+                          ),
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -284,20 +299,32 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
                   DropdownMenuItem(value: 50, child: Text('50')),
                 ],
                 onChanged: (value) {
-                  if (value != null) setState(() { _pageSize = value; _page = 0; });
+                  if (value != null) {
+                    setState(() {
+                      _pageSize = value;
+                      _page = 0;
+                    });
+                  }
                 },
               ),
               const Spacer(),
-              Text('${filtered.isEmpty ? 0 : start + 1}–${start + visible.length} de ${filtered.length}'),
+              Text(
+                '${filtered.isEmpty ? 0 : start + 1}–'
+                '${start + visible.length} de ${filtered.length}',
+              ),
               IconButton(
                 tooltip: 'Página anterior',
-                onPressed: page > 0 ? () => setState(() => _page = page - 1) : null,
+                onPressed: page > 0
+                    ? () => setState(() => _page = page - 1)
+                    : null,
                 icon: const Icon(Icons.chevron_left),
               ),
               Text('${page + 1} / $pageCount'),
               IconButton(
                 tooltip: 'Página siguiente',
-                onPressed: page + 1 < pageCount ? () => setState(() => _page = page + 1) : null,
+                onPressed: page + 1 < pageCount
+                    ? () => setState(() => _page = page + 1)
+                    : null,
                 icon: const Icon(Icons.chevron_right),
               ),
             ],
@@ -321,7 +348,10 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(label, style: textTheme.labelSmall),
-          Text('$value', style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
+          Text(
+            '$value',
+            style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+          ),
         ],
       ),
     );
@@ -361,11 +391,14 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
         color: active ? const Color(0xFFE8F3E5) : const Color(0xFFF8E8E6),
         borderRadius: BorderRadius.circular(20),
       ),
-      child: Text(text, style: TextStyle(
-        fontSize: 12,
-        fontWeight: FontWeight.w600,
-        color: active ? const Color(0xFF286837) : colors.error,
-      )),
+      child: Text(
+        text,
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: active ? const Color(0xFF286837) : colors.error,
+        ),
+      ),
     );
   }
 }
