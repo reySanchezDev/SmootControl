@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:smoo_control/core/design_system/app_message_dialog.dart';
 import 'package:smoo_control/core/design_system/app_button.dart';
 import 'package:smoo_control/core/design_system/app_input.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
@@ -16,6 +19,7 @@ import 'package:smoo_control/l10n/app_localizations.dart';
 import 'package:uuid/uuid.dart';
 
 part 'create_product_dialog_units_part.dart';
+part 'create_product_dialog_layout_part.dart';
 
 /// Dialog used to create a product.
 class CreateProductDialog extends StatefulWidget {
@@ -55,6 +59,8 @@ class _CreateProductDialogState extends State<CreateProductDialog> {
   bool _usesRecipe = false;
   bool _tracksInventory = false;
   String? _error;
+  bool _showValidation = false;
+  late final String _initialSnapshot;
   String? _selectedCategoryId;
   String? _purchaseUnitId;
   String? _inventoryUnitId;
@@ -67,6 +73,7 @@ class _CreateProductDialogState extends State<CreateProductDialog> {
     super.initState();
     final product = widget.product;
     if (product == null) {
+      _wireInputs();
       return;
     }
 
@@ -86,6 +93,7 @@ class _CreateProductDialogState extends State<CreateProductDialog> {
     final factor = product.purchaseToInventoryFactor;
     if (factor != null) _purchaseFactorController.text = factor.toString();
     _selectedModifierGroupIds.addAll(product.modifierGroupIds);
+    _wireInputs();
   }
 
   @override
@@ -98,121 +106,64 @@ class _CreateProductDialogState extends State<CreateProductDialog> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
+  Widget build(BuildContext context) => buildProductForm(context);
 
-    return AlertDialog(
-      title: AppText(
-        widget.product == null
-            ? l10n.createProductTitle
-            : l10n.editProductTitle,
-        variant: AppTextVariant.titleMedium,
-      ),
-      content: SizedBox(
-        width: 360,
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              AppInput(label: l10n.nameField, controller: _nameController),
-              const SizedBox(height: 12),
-              ProductCategoryDropdown(
-                categories: widget.categories,
-                selectedCategoryId: _selectedCategoryId,
-                onChanged: (value) {
-                  setState(() {
-                    _selectedCategoryId = value;
-                    _error = null;
-                  });
-                },
-              ),
-              const SizedBox(height: 12),
-              AppInput(
-                label: l10n.priceInCentsField,
-                controller: _priceController,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-              ),
-              const SizedBox(height: 12),
-              AppInput(
-                label: costFieldLabel(l10n),
-                controller: _costController,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-              ),
-              const SizedBox(height: 8),
-              ProductFlagsSection(
-                isActive: _isActive,
-                isAvailableInPos: _isAvailableInPos,
-                isRawMaterial: _isRawMaterial,
-                usesRecipe: _usesRecipe,
-                tracksInventory: _tracksInventory,
-                onActiveChanged: (value) {
-                  setState(() => _isActive = value);
-                },
-                onAvailableInPosChanged: (value) {
-                  setState(() => _isAvailableInPos = value);
-                },
-                onRawMaterialChanged: (value) {
-                  setState(() {
-                    _isRawMaterial = value;
-                    if (value) {
-                      _isAvailableInPos = false;
-                      _usesRecipe = false;
-                    }
-                  });
-                },
-                onUsesRecipeChanged: (value) {
-                  setState(() => _usesRecipe = value);
-                },
-                onTracksInventoryChanged: (value) {
-                  setState(() => _tracksInventory = value);
-                },
-              ),
-              if (_tracksInventory) ...[
-                const SizedBox(height: 8),
-                ProductUnitsSummary(
-                  factor: _purchaseFactorController.text.trim(),
-                  inventoryUnitName: unitName(_inventoryUnitId),
-                  onConfigure: openUnitsDialog,
-                  purchaseUnitName: unitName(_purchaseUnitId),
-                  recipeUnitName: unitName(_recipeDefaultUnitId),
-                  displayUnitName: unitName(_inventoryDisplayUnitId),
-                ),
-              ],
-              ModifierGroupSelector(
-                groups: _activeModifierGroups,
-                selectedIds: _selectedModifierGroupIds,
-                onChanged: (groupId, {required selected}) {
-                  setState(() {
-                    if (selected) {
-                      _selectedModifierGroupIds.add(groupId);
-                    } else {
-                      _selectedModifierGroupIds.remove(groupId);
-                    }
-                    _error = null;
-                  });
-                },
-              ),
-              if (_error != null) AppText(_error!, maxLines: 2),
-            ],
-          ),
-        ),
-      ),
-      actions: [
-        AppButton(
-          label: l10n.cancelAction,
-          onPressed: () => Navigator.of(context).pop(),
-          primary: false,
-        ),
-        AppButton(label: l10n.saveAction, onPressed: _submit),
-      ],
-    );
+  void _wireInputs() {
+    _initialSnapshot = _snapshot;
+    for (final controller in [
+      _nameController,
+      _priceController,
+      _costController,
+      _purchaseFactorController,
+    ]) {
+      controller.addListener(_onFieldChanged);
+    }
   }
 
-  void _submit() {
+  void _onFieldChanged() {
+    if (mounted) setState(() {});
+  }
+
+  String get _snapshot {
+    final groups = _selectedModifierGroupIds.toList()..sort();
+    return [
+      _nameController.text,
+      _priceController.text,
+      _costController.text,
+      _purchaseFactorController.text,
+      _selectedCategoryId ?? '',
+      _purchaseUnitId ?? '',
+      _inventoryUnitId ?? '',
+      _recipeDefaultUnitId ?? '',
+      _inventoryDisplayUnitId ?? '',
+      _isActive.toString(),
+      _isAvailableInPos.toString(),
+      _isRawMaterial.toString(),
+      _usesRecipe.toString(),
+      _tracksInventory.toString(),
+      ...groups,
+    ].join('|');
+  }
+
+  bool get _hasChanges => _snapshot != _initialSnapshot;
+
+  Future<void> _requestClose() async {
+    if (_hasChanges) {
+      final l10n = AppLocalizations.of(context);
+      final discard = await showAppConfirmationDialog(
+        context,
+        title: l10n.unsavedChangesTitle,
+        message: l10n.unsavedChangesMessage,
+        confirmLabel: l10n.discardChangesAction,
+        cancelLabel: l10n.continueEditingAction,
+        destructive: true,
+      );
+      if (!discard || !mounted) return;
+    }
+    if (mounted) Navigator.of(context).pop();
+  }
+
+  Future<void> _submit() async {
     final l10n = AppLocalizations.of(context);
     final name = _nameController.text.trim();
     final parsedPrice = MoneyFormatter.parseToCents(_priceController.text);
@@ -223,7 +174,10 @@ class _CreateProductDialogState extends State<CreateProductDialog> {
     );
 
     if (name.isEmpty || _selectedCategoryId == null) {
-      setState(() => _error = l10n.fieldRequiredError);
+      setState(() {
+        _showValidation = true;
+        _error = l10n.fieldRequiredError;
+      });
       return;
     }
 
@@ -250,6 +204,18 @@ class _CreateProductDialogState extends State<CreateProductDialog> {
       return;
     }
 
+    if (widget.product != null) {
+      final confirmed = await showAppConfirmationDialog(
+        context,
+        title: l10n.confirmChangesTitle,
+        message: l10n.confirmChangesMessage,
+        confirmLabel: l10n.confirmAction,
+        cancelLabel: l10n.cancelAction,
+      );
+      if (!confirmed || !mounted) return;
+    }
+
+    if (!mounted) return;
     Navigator.of(context).pop(
       Product(
         id: widget.product?.id ?? const Uuid().v4(),
