@@ -25,7 +25,7 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(find.text('Renombrar mesa'), findsOneWidget);
     expect(find.text('ESPACIO'), findsOneWidget);
-    expect(find.text('OK'), findsOneWidget);
+    expect(find.text('Aceptar'), findsOneWidget);
 
     final firstKeyRect = tester.getRect(
       find.widgetWithText(OutlinedButton, '1').first,
@@ -64,7 +64,7 @@ void main() {
     expect(find.widgetWithText(OutlinedButton, '1000'), findsOneWidget);
     expect(find.widgetWithText(OutlinedButton, '00'), findsOneWidget);
     expect(find.widgetWithText(OutlinedButton, '000'), findsOneWidget);
-    expect(find.text('OK'), findsOneWidget);
+    expect(find.text('Aceptar'), findsOneWidget);
 
     final firstKeyRect = tester.getRect(
       find.widgetWithText(OutlinedButton, '7'),
@@ -83,6 +83,7 @@ Future<void> _pumpLauncher(
 }) async {
   await tester.pumpWidget(
     MaterialApp(
+      locale: const Locale('es'),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(
