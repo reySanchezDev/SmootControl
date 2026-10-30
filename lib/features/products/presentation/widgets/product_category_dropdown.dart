@@ -9,6 +9,7 @@ class ProductCategoryDropdown extends StatelessWidget {
     required this.categories,
     required this.onChanged,
     required this.selectedCategoryId,
+    this.focusNode,
     super.key,
   });
 
@@ -17,6 +18,9 @@ class ProductCategoryDropdown extends StatelessWidget {
 
   /// Currently selected category id.
   final String? selectedCategoryId;
+
+  /// Used to direct focus to a missing required category.
+  final FocusNode? focusNode;
 
   /// Callback invoked when the selection changes.
   final ValueChanged<String?> onChanged;
@@ -45,6 +49,7 @@ class ProductCategoryDropdown extends StatelessWidget {
         enableFilter: true,
         enableSearch: true,
         requestFocusOnTap: true,
+        focusNode: focusNode,
         dropdownMenuEntries: [
           for (final category in _activeCategories)
             DropdownMenuEntry(
