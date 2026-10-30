@@ -71,3 +71,10 @@ Ejecutar `dart format` de todos los archivos Dart modificados, `flutter analyze`
 - Filtro de categoría sincroniza su valor al limpiar.
 - No se añadieron fotos, selección múltiple, acciones masivas ni funcionalidades ficticias. No ampliar a otras pantallas antes de aprobación visual.
 - Pendiente exclusivamente de Codex: dart format, flutter analyze, flutter test y compilación/revisión real en 8081. No se declara validación ejecutada desde GitHub.
+
+## Filtros de Productos basados en el modelo remoto (octubre 2026)
+- Auditados en código: `SupabaseAdminRepository.getProducts` lee `products.is_raw_material`, `category_id`, `is_active`, `is_available_in_pos`, `tracks_inventory`. `saveProduct` mantiene `product_kind = raw_material|finished` según `isRawMaterial`, pero el lector actual usa `is_raw_material`; no asumimos equivalencia de datos históricos sin consulta SQL de consistencia.
+- Clasificación operativa **Tipo**: Todos, Materia prima (`isRawMaterial=true`), Producto terminado (`isRawMaterial=false`). Independiente de categorías y de inventario; una materia prima no necesariamente lleva el nombre de una categoría "MATERIA PRIMA".
+- **Categoría**: filtrado por categoría elegida e hijas vía `product_categories.parent_id`, con protección contra ciclos. Las subcategorías se muestran con ruta de jerarquía. **Estado**: activo/inactivo.
+- Se retiraron filtros POS e Inventario del primer nivel de la barra por prioridad operativa; esos atributos siguen disponibles en la tabla. Filtros combinables y paginación reiniciada al cambiar criterio.
+- No se alteró Supabase ni la lógica de persistencia. Revisión del modelo efectuada sobre código; no se ha consultado directamente el catálogo SQL ni validado integridad histórica de datos remotos.
