@@ -159,6 +159,10 @@ class _BackofficeCollectionViewState<T>
                             for (final column in widget.columns)
                               column.alignment,
                           ],
+                          sortableColumns: [
+                            for (final column in widget.columns)
+                              column.compare != null,
+                          ],
                           sortColumnIndex: _sortColumn,
                           sortAscending: _ascending,
                           onSort: (index) {
