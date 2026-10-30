@@ -32,10 +32,9 @@ class AppPageScaffold extends StatelessWidget {
       appBar: showAppBar && !insideWorkspace
           ? AppBar(
               actions: actions,
+              toolbarHeight: 72,
               title: AppText(
                 title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
                 variant: AppTextVariant.titleMedium,
               ),
             )
