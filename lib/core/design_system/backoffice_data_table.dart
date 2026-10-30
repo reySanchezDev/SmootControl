@@ -95,7 +95,9 @@ class BackofficeDataTable extends StatelessWidget {
                           children: [
                             for (var i = 0; i < columns.length; i++)
                               ConstrainedBox(
-                                constraints: const BoxConstraints(minHeight: 42),
+                                constraints: const BoxConstraints(
+                                  minHeight: 42,
+                                ),
                                 child: InkWell(
                                   onTap:
                                       onSort == null || i == columns.length - 1
