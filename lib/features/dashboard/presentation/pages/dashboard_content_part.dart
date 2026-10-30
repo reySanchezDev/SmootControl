@@ -33,8 +33,6 @@ class _DashboardContent extends StatelessWidget {
                     Expanded(
                       child: AppText(
                         l10n.dashboardTitle,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
                         variant: AppTextVariant.titleLarge,
                       ),
                     ),
