@@ -466,7 +466,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get cancelAction => 'Cancelar';
 
   @override
-  String get okAction => 'OK';
+  String get okAction => 'Aceptar';
 
   @override
   String get saveAction => 'Guardar';
@@ -1586,4 +1586,21 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get recipeSavedMessage => 'Receta guardada correctamente.';
+  @override
+  String get unsavedChangesTitle => 'Cambios sin guardar';
+
+  @override
+  String get unsavedChangesMessage => 'Realizaste cambios que todavía no se han guardado. ¿Deseás descartarlos?';
+
+  @override
+  String get discardChangesAction => 'Descartar cambios';
+
+  @override
+  String get continueEditingAction => 'Seguir editando';
+
+  @override
+  String get confirmChangesTitle => 'Confirmar cambios';
+
+  @override
+  String get confirmChangesMessage => '¿Deseás guardar los cambios realizados?';
 }

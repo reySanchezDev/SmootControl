@@ -119,13 +119,14 @@ const EdgeInsets.all(16)
 - **Validation placement**: Show validation close to the field, with a specific message and a corrective hint.
 - **Focus flow**: Keyboard/tab order must match the visual order; avoid jumps that confuse the user.
 - **Save feedback**: Every successful create, edit, delete, sync or reset action
-  must show a visible confirmation message, preferably a `SnackBar`, using
-  localized text. Never leave the user guessing whether a save worked.
+  must show a visible confirmation message in the shared application
+  dialog component, with localized text and correct success/error state.
+  Never report success before the persistence layer confirms it.
 
 ### Text Overflow & Visual Harmony (MANDATORY)
 
 - **No overflow is acceptable**: Text must never exceed the bounds of cards/components or cause pixel overflow.
-- **Use constraints**: Prefer `Flexible/Expanded`, and enforce `maxLines` + `overflow: TextOverflow.ellipsis` where appropriate.
+- **Use constraints**: Prefer `Flexible/Expanded`, natural wrapping, suitable widths and scrolling when needed. Do not truncate important labels or data with `TextOverflow.ellipsis`; any exception requires an accessible full-value alternative and explicit approval.
 - **Responsive typography**: Do not use excessively large or tiny text. Use Design System variants and keep hierarchy consistent.
 - **Consistency across screens**: Keep spacing, headings, and component density consistent with the first screens already implemented.
 - **Long-language safety**: Always consider that translations can be longer; design must still look clean in all supported locales.

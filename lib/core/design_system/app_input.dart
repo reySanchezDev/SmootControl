@@ -6,12 +6,17 @@ class AppInput extends StatelessWidget {
   const AppInput({
     required this.label,
     this.controller,
+    this.focusNode,
     this.keyboardType,
     this.maxLines = 1,
     this.onChanged,
     this.onTap,
     this.obscureText = false,
     this.readOnly = false,
+    this.requiredField = false,
+    this.errorText,
+    this.textInputAction,
+    this.onFieldSubmitted,
     super.key,
   });
 
@@ -20,6 +25,9 @@ class AppInput extends StatelessWidget {
 
   /// Optional controller.
   final TextEditingController? controller;
+
+  /// Optional focus node for keyboard navigation and validation errors.
+  final FocusNode? focusNode;
 
   /// Keyboard type.
   final TextInputType? keyboardType;
@@ -39,12 +47,47 @@ class AppInput extends StatelessWidget {
   /// Whether the field is read-only.
   final bool readOnly;
 
+  /// Clearly marks required fields before validation.
+  final bool requiredField;
+
+  /// Contextual validation error, when applicable.
+  final String? errorText;
+
+  /// Controls the software keyboard action.
+  final TextInputAction? textInputAction;
+
+  /// Optional explicit submit behavior; defaults to the next input.
+  final ValueChanged<String>? onFieldSubmitted;
+
   @override
   Widget build(BuildContext context) {
     return TextFormField(
       controller: controller,
-      decoration: InputDecoration(labelText: label),
+      focusNode: focusNode,
+      decoration: InputDecoration(
+        labelText: requiredField ? null : label,
+        label: requiredField
+            ? Text.rich(
+                TextSpan(
+                  children: [
+                    TextSpan(text: label),
+                    TextSpan(
+                      text: ' *',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            : null,
+        errorText: errorText,
+      ),
       keyboardType: keyboardType,
+      textInputAction: textInputAction ??
+          (maxLines == 1 ? TextInputAction.next : TextInputAction.newline),
+      onFieldSubmitted: onFieldSubmitted ??
+          (maxLines == 1 ? (_) => FocusScope.of(context).nextFocus() : null),
       maxLines: maxLines,
       onChanged: onChanged,
       obscureText: obscureText,

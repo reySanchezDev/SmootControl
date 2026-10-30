@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smoo_control/core/design_system/app_empty_state.dart';
 import 'package:smoo_control/core/design_system/app_loading_page.dart';
+import 'package:smoo_control/core/design_system/app_message_dialog.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
+import 'package:smoo_control/core/design_system/backoffice_new_action.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/features/expenses/domain/entities/expense_category.dart';
 import 'package:smoo_control/features/expenses/presentation/bloc/expenses_bloc.dart';
@@ -30,8 +32,7 @@ class ExpensesPage extends StatelessWidget {
       child: Builder(
         builder: (context) => AppPageScaffold(
           actions: [
-            IconButton(
-              icon: const Icon(Icons.add),
+            BackofficeNewAction(
               onPressed: () {
                 final state = context.read<ExpensesBloc>().state;
                 final categories = state is ExpensesOverviewLoaded
@@ -41,7 +42,6 @@ class ExpensesPage extends StatelessWidget {
                   _openCategoryDialog(context, categories: categories),
                 );
               },
-              tooltip: l10n.createExpenseCategoryTitle,
             ),
           ],
           title: l10n.moduleExpenses,
@@ -109,24 +109,15 @@ class ExpensesPage extends StatelessWidget {
     ExpenseCategory category,
   ) async {
     final l10n = AppLocalizations.of(context);
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(l10n.deleteExpenseCategoryTitle),
-        content: Text(l10n.deleteExpenseCategoryMessage(category.name)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(l10n.cancelAction),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(l10n.deleteAction),
-          ),
-        ],
-      ),
+    final confirmed = await showAppConfirmationDialog(
+      context,
+      title: l10n.deleteExpenseCategoryTitle,
+      message: l10n.deleteExpenseCategoryMessage(category.name),
+      confirmLabel: l10n.deleteAction,
+      cancelLabel: l10n.cancelAction,
+      destructive: true,
     );
-    if (confirmed != true || !context.mounted) {
+    if (!confirmed || !context.mounted) {
       return;
     }
 

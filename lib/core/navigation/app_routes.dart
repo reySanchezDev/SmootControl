@@ -3,6 +3,9 @@ abstract final class AppRoutes {
   /// Dashboard route.
   static const dashboard = '/';
 
+  /// Isolated Backoffice V2 visual preview.
+  static const backofficePreview = '/backoffice-v2-preview';
+
   /// POS route.
   static const pos = '/pos';
 

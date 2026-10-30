@@ -4,8 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smoo_control/core/design_system/app_empty_state.dart';
 import 'package:smoo_control/core/design_system/app_loading_page.dart';
+import 'package:smoo_control/core/design_system/app_message_dialog.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
-import 'package:smoo_control/core/design_system/app_searchable_list_section.dart';
+import 'package:smoo_control/core/design_system/backoffice_new_action.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/features/modifiers/domain/entities/modifier_group.dart';
 import 'package:smoo_control/features/modifiers/domain/entities/modifier_option.dart';
@@ -14,6 +15,7 @@ import 'package:smoo_control/features/modifiers/presentation/bloc/modifiers_even
 import 'package:smoo_control/features/modifiers/presentation/bloc/modifiers_state.dart';
 import 'package:smoo_control/features/modifiers/presentation/widgets/modifier_dialogs.dart';
 import 'package:smoo_control/features/modifiers/presentation/widgets/modifier_group_tile.dart';
+import 'package:smoo_control/features/modifiers/presentation/widgets/modifiers_backoffice_table.dart';
 import 'package:smoo_control/l10n/app_localizations.dart';
 
 /// Maintenance page for reusable POS modifiers.
@@ -31,10 +33,8 @@ class ModifiersPage extends StatelessWidget {
       child: Builder(
         builder: (context) => AppPageScaffold(
           actions: [
-            IconButton(
-              icon: const Icon(Icons.add),
+            BackofficeNewAction(
               onPressed: () => _openGroupDialog(context),
-              tooltip: l10n.createAction,
             ),
           ],
           title: l10n.moduleModifiers,
@@ -55,32 +55,31 @@ class ModifiersPage extends StatelessWidget {
                     title: l10n.emptyModifiersTitle,
                   ),
                 ModifiersLoaded(:final catalog) =>
-                  AppSearchableListSection<ModifierGroup>(
-                    emptyMessage: l10n.emptySearchMessage,
-                    emptyTitle: l10n.emptySearchTitle,
-                    items: catalog.groups,
-                    searchLabel: l10n.searchField,
-                    searchTextForItem: (group) => [
-                      group.name,
-                      for (final option in catalog.optionsFor(group.id))
-                        option.name,
-                    ].join(' '),
-                    itemBuilder: (context, group) => ModifierGroupTile(
+                  ModifiersBackofficeTable(
+                    groups: catalog.groups,
+                    optionsFor: catalog.optionsFor,
+                    onAddOption: (group) => _openOptionDialog(context, group),
+                    onEditGroup: (group) =>
+                        _openGroupDialog(context, group: group),
+                    onEditOption: (group, option) => _openOptionDialog(
+                      context,
+                      group,
+                      option: option,
+                    ),
+                    onDeactivateGroup: (group) =>
+                        _confirmDeactivateGroup(context, group),
+                    compactBuilder: (context, group) => ModifierGroupTile(
                       group: group,
                       onAddOption: () => _openOptionDialog(context, group),
-                      onEditGroup: () => _openGroupDialog(
-                        context,
-                        group: group,
-                      ),
+                      onEditGroup: () =>
+                          _openGroupDialog(context, group: group),
                       onEditOption: (option) => _openOptionDialog(
                         context,
                         group,
                         option: option,
                       ),
-                      onDeactivateGroup: () => _confirmDeactivateGroup(
-                        context,
-                        group,
-                      ),
+                      onDeactivateGroup: () =>
+                          _confirmDeactivateGroup(context, group),
                       onDeactivateOption: (option) {
                         unawaited(_confirmDeactivateOption(context, option));
                       },
@@ -127,24 +126,15 @@ class ModifiersPage extends StatelessWidget {
     ModifierGroup group,
   ) async {
     final l10n = AppLocalizations.of(context);
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(l10n.deactivateModifierGroupTitle),
-        content: Text(l10n.deactivateModifierGroupMessage(group.name)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(l10n.cancelAction),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(l10n.deactivateAction),
-          ),
-        ],
-      ),
+    final confirmed = await showAppConfirmationDialog(
+      context,
+      title: l10n.deactivateModifierGroupTitle,
+      message: l10n.deactivateModifierGroupMessage(group.name),
+      confirmLabel: l10n.deactivateAction,
+      cancelLabel: l10n.cancelAction,
+      destructive: true,
     );
-    if ((confirmed ?? false) && context.mounted) {
+    if (confirmed && context.mounted) {
       context.read<ModifiersBloc>().add(
         ModifierGroupSaved(
           ModifierGroup(
@@ -164,24 +154,15 @@ class ModifiersPage extends StatelessWidget {
     ModifierOption option,
   ) async {
     final l10n = AppLocalizations.of(context);
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(l10n.deactivateModifierOptionTitle),
-        content: Text(l10n.deactivateModifierOptionMessage(option.name)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(l10n.cancelAction),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(l10n.deactivateAction),
-          ),
-        ],
-      ),
+    final confirmed = await showAppConfirmationDialog(
+      context,
+      title: l10n.deactivateModifierOptionTitle,
+      message: l10n.deactivateModifierOptionMessage(option.name),
+      confirmLabel: l10n.deactivateAction,
+      cancelLabel: l10n.cancelAction,
+      destructive: true,
     );
-    if ((confirmed ?? false) && context.mounted) {
+    if (confirmed && context.mounted) {
       context.read<ModifiersBloc>().add(
         ModifierOptionSaved(
           ModifierOption(

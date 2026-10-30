@@ -16,44 +16,58 @@ class _ProductTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final compact = constraints.maxWidth < 560;
-        final price = MoneyFormatter.format(product.priceInCents);
-        return ListTile(
-          leading: const Icon(Icons.local_cafe_outlined),
-          subtitle: AppText(
-            compact ? '$price - ${_subtitle(l10n)}' : _subtitle(l10n),
-            maxLines: compact ? 3 : 2,
-            overflow: TextOverflow.ellipsis,
-            variant: AppTextVariant.label,
-          ),
-          title: AppText(
-            product.name,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-          trailing: AppTileActions(
-            compact: compact,
-            inlineLeading: AppText(price, variant: AppTextVariant.label),
-            actions: [
-              if (product.isActive)
-                AppTileAction(
-                  color: Theme.of(context).colorScheme.error,
-                  icon: Icons.delete_outline,
-                  label: l10n.deactivateAction,
-                  onPressed: onDeactivate,
+    final price = MoneyFormatter.format(product.priceInCents);
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.local_cafe_outlined),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: AppText(
+                    product.name,
+                    variant: AppTextVariant.titleMedium,
+                  ),
                 ),
-              AppTileAction(
-                icon: Icons.edit_outlined,
-                label: l10n.editAction,
-                onPressed: onEdit,
+                AppTileActions(
+                  compact: true,
+                  actions: [
+                    AppTileAction(
+                      icon: Icons.edit_outlined,
+                      label: l10n.editAction,
+                      onPressed: onEdit,
+                    ),
+                    if (product.isActive)
+                      AppTileAction(
+                        color: Theme.of(context).colorScheme.error,
+                        icon: Icons.toggle_off_outlined,
+                        label: l10n.deactivateAction,
+                        onPressed: onDeactivate,
+                      ),
+                  ],
+                ),
+              ],
+            ),
+            const Divider(height: 18),
+            AppText(
+              _subtitle(l10n),
+              variant: AppTextVariant.label,
+            ),
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerRight,
+              child: AppText(
+                price,
+                variant: AppTextVariant.label,
               ),
-            ],
-          ),
-        );
-      },
+            ),
+          ],
+        ),
+      ),
     );
   }
 

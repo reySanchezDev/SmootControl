@@ -145,7 +145,7 @@
   "editAction": "Editar",
   "confirmAction": "Confirmar",
   "cancelAction": "Cancelar",
-  "okAction": "OK",
+  "okAction": "Aceptar",
   "saveAction": "Guardar",
   "reloadAction": "Recargar",
   "backAction": "Volver",
@@ -647,5 +647,11 @@
   "inventoryAdjustmentNoChanges": "Digita al menos un conteo diferente al stock actual.",
   "inventoryAdjustmentSave": "Guardar ajuste",
   "productSavedMessage": "Producto guardado correctamente.",
-  "recipeSavedMessage": "Receta guardada correctamente."
+  "recipeSavedMessage": "Receta guardada correctamente.",
+  "unsavedChangesTitle": "Cambios sin guardar",
+  "unsavedChangesMessage": "Realizaste cambios que todavía no se han guardado. ¿Deseás descartarlos?",
+  "discardChangesAction": "Descartar cambios",
+  "continueEditingAction": "Seguir editando",
+  "confirmChangesTitle": "Confirmar cambios",
+  "confirmChangesMessage": "¿Deseás guardar los cambios realizados?"
 }

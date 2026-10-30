@@ -145,7 +145,7 @@
   "editAction": "Edit",
   "confirmAction": "Confirm",
   "cancelAction": "Cancel",
-  "okAction": "OK",
+  "okAction": "Accept",
   "saveAction": "Save",
   "reloadAction": "Reload",
   "backAction": "Back",
@@ -647,5 +647,11 @@
   "inventoryAdjustmentNoChanges": "Enter at least one count different from current stock.",
   "inventoryAdjustmentSave": "Save adjustment",
   "productSavedMessage": "Product saved successfully.",
-  "recipeSavedMessage": "Recipe saved successfully."
+  "recipeSavedMessage": "Recipe saved successfully.",
+  "unsavedChangesTitle": "Unsaved changes",
+  "unsavedChangesMessage": "You have unsaved changes. Do you want to discard them?",
+  "discardChangesAction": "Discard changes",
+  "continueEditingAction": "Keep editing",
+  "confirmChangesTitle": "Confirm changes",
+  "confirmChangesMessage": "Do you want to save your changes?"
 }

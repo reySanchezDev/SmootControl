@@ -4,8 +4,8 @@ import 'package:smoo_control/core/design_system/app_empty_state.dart';
 import 'package:smoo_control/core/design_system/app_input.dart';
 import 'package:smoo_control/core/design_system/app_loading_page.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
-import 'package:smoo_control/core/design_system/app_searchable_list_section.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
+import 'package:smoo_control/core/design_system/backoffice_collection_view.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/core/result/app_result.dart';
 import 'package:smoo_control/features/inventory/data/services/supabase_inventory_admin_read_service.dart';
@@ -21,6 +21,7 @@ part 'inventory_batch_product_dialog_part.dart';
 part 'inventory_batch_rows_part.dart';
 part 'inventory_batch_widgets_part.dart';
 part 'inventory_stock_tabs_part.dart';
+part 'inventory_stock_tables_part.dart';
 
 /// Inventory stock management page.
 class InventoryPage extends StatefulWidget {

@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smoo_control/core/design_system/app_empty_state.dart';
 import 'package:smoo_control/core/design_system/app_loading_page.dart';
+import 'package:smoo_control/core/design_system/app_message_dialog.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
 import 'package:smoo_control/core/design_system/app_searchable_list_section.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
 import 'package:smoo_control/core/design_system/app_tile_actions.dart';
+import 'package:smoo_control/core/design_system/backoffice_data_table.dart';
 import 'package:smoo_control/core/design_system/confirm_deactivate_dialog.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/core/formatters/money_formatter.dart';
@@ -22,6 +24,8 @@ import 'package:smoo_control/features/products/presentation/widgets/create_produ
 import 'package:smoo_control/l10n/app_localizations.dart';
 
 part 'product_tile.dart';
+part 'backoffice_products_table.dart';
+part 'backoffice_products_table_controls.dart';
 
 /// Product management page.
 class ProductsPage extends StatelessWidget {
@@ -37,6 +41,7 @@ class ProductsPage extends StatelessWidget {
           serviceLocator<ProductsBloc>()..add(const ProductsLoadRequested()),
       child: Builder(
         builder: (context) => AppPageScaffold(
+          showAppBar: MediaQuery.sizeOf(context).width < 1024,
           actions: [
             IconButton(
               icon: const Icon(Icons.add),
@@ -46,10 +51,12 @@ class ProductsPage extends StatelessWidget {
           ],
           title: l10n.moduleProducts,
           body: BlocConsumer<ProductsBloc, ProductsState>(
-            listener: (context, state) {
+            listener: (context, state) async {
               if (state case ProductsLoaded(successMessage: final message?)) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(_successText(context, message))),
+                await showAppMessageDialog(
+                  context: context,
+                  title: l10n.moduleProducts,
+                  message: _successText(context, message),
                 );
               }
             },
@@ -63,16 +70,27 @@ class ProductsPage extends StatelessWidget {
                   title: l10n.moduleProducts,
                 ),
                 ProductsLoaded(:final products) when products.isEmpty =>
-                  AppEmptyState(
-                    icon: Icons.local_cafe_outlined,
-                    message: l10n.emptyProductsMessage,
-                    title: l10n.emptyProductsTitle,
+                  _emptyProductsPanel(
+                    context,
+                    l10n,
+                    () => _openCreateDialog(context),
                   ),
                 ProductsLoaded(:final products) => FutureBuilder(
                   future: _loadCategories(),
                   builder: (context, snapshot) {
                     final categories = snapshot.data ?? <ProductCategory>[];
 
+                    if (MediaQuery.sizeOf(context).width >= 1024) {
+                      return _BackofficeProductsTable(
+                        products: products,
+                        onCreate: () => _openCreateDialog(context),
+                        categories: categories,
+                        categoryPathFor: _categoryPathFor,
+                        onEdit: (product) => _openEditDialog(context, product),
+                        onDeactivate: (product) =>
+                            _deactivateProduct(context, product),
+                      );
+                    }
                     return AppSearchableListSection<Product>(
                       emptyMessage: l10n.emptySearchMessage,
                       emptyTitle: l10n.emptySearchTitle,

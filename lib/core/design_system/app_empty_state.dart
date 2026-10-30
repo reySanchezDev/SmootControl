@@ -38,16 +38,12 @@ class AppEmptyState extends StatelessWidget {
             const SizedBox(height: 8),
             AppText(
               title,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
               variant: AppTextVariant.titleMedium,
             ),
             const SizedBox(height: 8),
             AppText(
               message,
-              maxLines: 3,
-              overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
             ),
           ],

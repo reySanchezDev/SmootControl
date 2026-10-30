@@ -3,9 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smoo_control/core/design_system/app_empty_state.dart';
 import 'package:smoo_control/core/design_system/app_loading_page.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
-import 'package:smoo_control/core/design_system/app_searchable_list_section.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
 import 'package:smoo_control/core/design_system/app_tile_actions.dart';
+import 'package:smoo_control/core/design_system/backoffice_collection_view.dart';
+import 'package:smoo_control/core/design_system/backoffice_new_action.dart';
 import 'package:smoo_control/core/design_system/confirm_deactivate_dialog.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/features/tables/domain/entities/restaurant_table.dart';
@@ -30,10 +31,8 @@ class TablesPage extends StatelessWidget {
       child: Builder(
         builder: (context) => AppPageScaffold(
           actions: [
-            IconButton(
-              icon: const Icon(Icons.add),
+            BackofficeNewAction(
               onPressed: () => _openCreateDialog(context),
-              tooltip: l10n.createAction,
             ),
           ],
           title: l10n.moduleTables,
@@ -53,20 +52,59 @@ class TablesPage extends StatelessWidget {
                     title: l10n.emptyTablesTitle,
                   ),
                 TablesLoaded(:final tables) =>
-                  AppSearchableListSection<RestaurantTable>(
-                    emptyMessage: l10n.emptySearchMessage,
-                    emptyTitle: l10n.emptySearchTitle,
+                  BackofficeCollectionView<RestaurantTable>(
                     items: tables,
-                    searchLabel: l10n.searchField,
-                    searchTextForItem: (table) => [
-                      table.name,
-                      _statusLabel(l10n, table),
-                    ].join(' '),
-                    itemBuilder: (context, table) => _TableTile(
+                    searchLabel: 'Buscar mesa o estado',
+                    searchTextFor: (table) =>
+                        '${table.name} ${_statusLabel(l10n, table)}',
+                    emptyTitle: l10n.emptySearchTitle,
+                    emptyMessage: l10n.emptySearchMessage,
+                    compactBuilder: (context, table) => _TableTile(
                       table: table,
                       onDeactivate: () => _deactivateTable(context, table),
                       onEdit: () => _openEditDialog(context, table),
                     ),
+                    columns: [
+                      BackofficeListColumn(
+                        label: 'Mesa',
+                        width: 420,
+                        compare: (a, b) => a.name.compareTo(b.name),
+                        cell: (_, table) => Text(table.name, softWrap: true),
+                      ),
+                      BackofficeListColumn(
+                        label: 'Estado',
+                        width: 240,
+                        alignment: Alignment.center,
+                        compare: (a, b) => _statusLabel(l10n, a)
+                            .compareTo(_statusLabel(l10n, b)),
+                        cell: (_, table) => Text(_statusLabel(l10n, table)),
+                      ),
+                      BackofficeListColumn(
+                        label: 'Acciones',
+                        width: 260,
+                        alignment: Alignment.center,
+                        cell: (_, table) => Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            TextButton.icon(
+                              onPressed: () => _openEditDialog(context, table),
+                              icon: const Icon(Icons.edit_outlined, size: 18),
+                              label: Text(l10n.editAction),
+                            ),
+                            if (table.isActive)
+                              TextButton.icon(
+                                onPressed: () =>
+                                    _deactivateTable(context, table),
+                                icon: const Icon(
+                                  Icons.toggle_off_outlined,
+                                  size: 18,
+                                ),
+                                label: Text(l10n.deactivateAction),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
               };
             },
@@ -159,14 +197,10 @@ class _TableTile extends StatelessWidget {
           leading: const Icon(Icons.table_restaurant_outlined),
           subtitle: AppText(
             _statusLabel(l10n, table),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
             variant: AppTextVariant.label,
           ),
           title: AppText(
             table.name,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
           ),
           trailing: AppTileActions(
             compact: compact,

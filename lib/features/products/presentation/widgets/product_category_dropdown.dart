@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:smoo_control/core/design_system/app_text.dart';
 import 'package:smoo_control/features/catalog/domain/entities/product_category.dart';
 import 'package:smoo_control/l10n/app_localizations.dart';
 
@@ -10,6 +9,7 @@ class ProductCategoryDropdown extends StatelessWidget {
     required this.categories,
     required this.onChanged,
     required this.selectedCategoryId,
+    this.focusNode,
     super.key,
   });
 
@@ -19,28 +19,45 @@ class ProductCategoryDropdown extends StatelessWidget {
   /// Currently selected category id.
   final String? selectedCategoryId;
 
+  /// Used to direct focus to a missing required category.
+  final FocusNode? focusNode;
+
   /// Callback invoked when the selection changes.
   final ValueChanged<String?> onChanged;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return DropdownButtonFormField<String>(
-      decoration: InputDecoration(labelText: l10n.parentCategoryField),
-      initialValue: selectedCategoryId,
-      isExpanded: true,
-      items: [
-        for (final category in _activeCategories)
-          DropdownMenuItem(
-            value: category.id,
-            child: AppText(
-              _categoryLabel(category),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
+    return LayoutBuilder(
+      builder: (context, constraints) => DropdownMenu<String>(
+        key: ValueKey(selectedCategoryId),
+        width: constraints.maxWidth,
+        label: Text.rich(
+          TextSpan(
+            children: [
+              TextSpan(text: l10n.parentCategoryField),
+              TextSpan(
+                text: ' *',
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.error,
+                ),
+              ),
+            ],
           ),
-      ],
-      onChanged: onChanged,
+        ),
+        initialSelection: selectedCategoryId,
+        enableFilter: true,
+        requestFocusOnTap: true,
+        focusNode: focusNode,
+        dropdownMenuEntries: [
+          for (final category in _activeCategories)
+            DropdownMenuEntry(
+              value: category.id,
+              label: _categoryLabel(category),
+            ),
+        ],
+        onSelected: onChanged,
+      ),
     );
   }
 

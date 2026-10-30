@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smoo_control/core/design_system/app_empty_state.dart';
 import 'package:smoo_control/core/design_system/app_loading_page.dart';
+import 'package:smoo_control/core/design_system/app_message_dialog.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
-import 'package:smoo_control/core/design_system/app_searchable_list_section.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
 import 'package:smoo_control/core/design_system/app_tile_actions.dart';
+import 'package:smoo_control/core/design_system/backoffice_new_action.dart';
 import 'package:smoo_control/core/design_system/confirm_deactivate_dialog.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/features/payment_methods/domain/entities/payment_method.dart';
@@ -14,6 +15,7 @@ import 'package:smoo_control/features/payment_methods/presentation/bloc/payment_
 import 'package:smoo_control/features/payment_methods/presentation/bloc/payment_methods_event.dart';
 import 'package:smoo_control/features/payment_methods/presentation/bloc/payment_methods_state.dart';
 import 'package:smoo_control/features/payment_methods/presentation/widgets/create_payment_method_dialog.dart';
+import 'package:smoo_control/features/payment_methods/presentation/widgets/payment_methods_backoffice_table.dart';
 import 'package:smoo_control/l10n/app_localizations.dart';
 
 part 'payment_method_tile.dart';
@@ -34,10 +36,8 @@ class PaymentMethodsPage extends StatelessWidget {
       child: Builder(
         builder: (context) => AppPageScaffold(
           actions: [
-            IconButton(
-              icon: const Icon(Icons.add),
+            BackofficeNewAction(
               onPressed: () => _openCreateDialog(context),
-              tooltip: l10n.createAction,
             ),
           ],
           title: l10n.modulePaymentMethods,
@@ -58,16 +58,19 @@ class PaymentMethodsPage extends StatelessWidget {
                     title: l10n.emptyPaymentMethodsTitle,
                   ),
                 PaymentMethodsLoaded(:final methods) =>
-                  AppSearchableListSection<PaymentMethod>(
-                    emptyMessage: l10n.emptySearchMessage,
-                    emptyTitle: l10n.emptySearchTitle,
-                    items: _orderedMethods(methods),
-                    searchLabel: l10n.searchField,
-                    searchTextForItem: _searchText,
-                    itemBuilder: (context, method) => _PaymentMethodTile(
+                  PaymentMethodsBackofficeTable(
+                    methods: _orderedMethods(methods),
+                    canRemove: (method) => _canRemoveMethod(method, methods),
+                    onEdit: (method) => _openEditDialog(context, method),
+                    onDeactivate: (method) =>
+                        _deactivateMethod(context, method),
+                    onRemove: (method) =>
+                        _confirmRemoveLevel(context, method),
+                    compactBuilder: (context, method) => _PaymentMethodTile(
                       depth: _depthFor(method, methods),
                       method: method,
-                      onDeactivate: () => _deactivateMethod(context, method),
+                      onDeactivate: () =>
+                          _deactivateMethod(context, method),
                       onEdit: () => _openEditDialog(context, method),
                       onRemove: _canRemoveMethod(method, methods)
                           ? () => _confirmRemoveLevel(context, method)
@@ -116,17 +119,6 @@ class PaymentMethodsPage extends StatelessWidget {
       PaymentMethodsLoaded(:final methods) => methods,
       _ => const [],
     };
-  }
-
-  String _searchText(PaymentMethod method) {
-    return [
-      method.name,
-      method.groupName,
-      method.currencyCode ?? '',
-      if (method.isPaymentTarget) 'final',
-      if (method.requiresReference) 'referencia',
-      if (method.affectsCashRegister) 'efectivo',
-    ].join(' ');
   }
 
   List<PaymentMethod> _orderedMethods(List<PaymentMethod> methods) {
@@ -179,46 +171,24 @@ class PaymentMethodsPage extends StatelessWidget {
   ) async {
     final l10n = AppLocalizations.of(context);
     final isRootLeaf = method.parentId == null;
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(
-          isRootLeaf ? 'Eliminar metodo de pago' : l10n.removePaymentLevelTitle,
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              isRootLeaf
-                  ? 'Se eliminara el metodo "${method.name}".'
-                  : l10n.removePaymentLevelMessage(method.name),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              isRootLeaf
-                  ? 'Si ya fue usado en ventas, Supabase puede bloquear la '
-                        'eliminacion; en ese caso debes inactivarlo.'
-                  : l10n.removePaymentLevelWithChildrenMessage,
-            ),
-          ],
-        ),
-        actions: [
-          OutlinedButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(l10n.cancelAction),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(
-              isRootLeaf ? l10n.deleteAction : l10n.removePaymentLevelConfirm,
-            ),
-          ),
-        ],
-      ),
+    final confirmed = await showAppConfirmationDialog(
+      context,
+      title: isRootLeaf
+          ? 'Eliminar método de pago'
+          : l10n.removePaymentLevelTitle,
+      message: isRootLeaf
+          ? 'Se eliminará el método «${method.name}». '
+              'Si ya tiene ventas vinculadas, la eliminación puede rechazarse.'
+          : '${l10n.removePaymentLevelMessage(method.name)}\n\n'
+              '${l10n.removePaymentLevelWithChildrenMessage}',
+      confirmLabel: isRootLeaf
+          ? l10n.deleteAction
+          : l10n.removePaymentLevelConfirm,
+      cancelLabel: l10n.cancelAction,
+      destructive: true,
     );
 
-    if ((confirmed ?? false) && context.mounted) {
+    if (confirmed && context.mounted) {
       context.read<PaymentMethodsBloc>().add(PaymentMethodRemoved(method));
     }
   }
