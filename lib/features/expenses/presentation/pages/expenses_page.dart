@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smoo_control/core/design_system/app_empty_state.dart';
 import 'package:smoo_control/core/design_system/app_loading_page.dart';
-import 'package:smoo_control/core/design_system/backoffice_new_action.dart';
 import 'package:smoo_control/core/design_system/app_message_dialog.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
+import 'package:smoo_control/core/design_system/backoffice_new_action.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/features/expenses/domain/entities/expense_category.dart';
 import 'package:smoo_control/features/expenses/presentation/bloc/expenses_bloc.dart';
@@ -117,7 +117,7 @@ class ExpensesPage extends StatelessWidget {
       cancelLabel: l10n.cancelAction,
       destructive: true,
     );
-    if (confirmed != true || !context.mounted) {
+    if (!confirmed || !context.mounted) {
       return;
     }
 
