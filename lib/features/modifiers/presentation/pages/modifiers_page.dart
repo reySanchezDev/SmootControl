@@ -127,24 +127,15 @@ class ModifiersPage extends StatelessWidget {
     ModifierGroup group,
   ) async {
     final l10n = AppLocalizations.of(context);
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(l10n.deactivateModifierGroupTitle),
-        content: Text(l10n.deactivateModifierGroupMessage(group.name)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(l10n.cancelAction),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(l10n.deactivateAction),
-          ),
-        ],
-      ),
+    final confirmed = await showAppConfirmationDialog(
+      context,
+      title: l10n.deactivateModifierGroupTitle,
+      message: l10n.deactivateModifierGroupMessage(group.name),
+      confirmLabel: l10n.deactivateAction,
+      cancelLabel: l10n.cancelAction,
+      destructive: true,
     );
-    if ((confirmed ?? false) && context.mounted) {
+    if (confirmed && context.mounted) {
       context.read<ModifiersBloc>().add(
         ModifierGroupSaved(
           ModifierGroup(
@@ -164,24 +155,15 @@ class ModifiersPage extends StatelessWidget {
     ModifierOption option,
   ) async {
     final l10n = AppLocalizations.of(context);
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(l10n.deactivateModifierOptionTitle),
-        content: Text(l10n.deactivateModifierOptionMessage(option.name)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(l10n.cancelAction),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(l10n.deactivateAction),
-          ),
-        ],
-      ),
+    final confirmed = await showAppConfirmationDialog(
+      context,
+      title: l10n.deactivateModifierOptionTitle,
+      message: l10n.deactivateModifierOptionMessage(option.name),
+      confirmLabel: l10n.deactivateAction,
+      cancelLabel: l10n.cancelAction,
+      destructive: true,
     );
-    if ((confirmed ?? false) && context.mounted) {
+    if (confirmed && context.mounted) {
       context.read<ModifiersBloc>().add(
         ModifierOptionSaved(
           ModifierOption(
