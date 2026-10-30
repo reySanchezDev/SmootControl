@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:smoo_control/core/design_system/navigation/backoffice_sidebar.dart';
+import 'package:smoo_control/core/design_system/navigation/backoffice_workspace_drawer.dart';
 
 /// Marks pages hosted inside a tabbed Backoffice workspace.
 class BackofficeWorkspaceScope extends InheritedWidget {
@@ -162,21 +163,13 @@ class _BackofficeWorkspaceState extends State<BackofficeWorkspace> {
     return Scaffold(
       drawer: compact
           ? Drawer(
-              child: SafeArea(
-                child: ListView(
-                  children: [
-                    for (final item in widget.items)
-                      ListTile(
-                        leading: Icon(item.icon),
-                        title: Text(item.label),
-                        selected: item.id == _activeId,
-                        onTap: () {
-                          Navigator.of(context).pop();
-                          _open(item.id);
-                        },
-                      ),
-                  ],
-                ),
+              child: BackofficeWorkspaceDrawer(
+                items: widget.items,
+                activeId: _activeId,
+                onSelected: (id) {
+                  Navigator.of(context).pop();
+                  _open(id);
+                },
               ),
             )
           : null,
