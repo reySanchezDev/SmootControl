@@ -24,6 +24,7 @@ import 'package:smoo_control/l10n/app_localizations.dart';
 
 part 'product_tile.dart';
 part 'backoffice_products_table.dart';
+part 'backoffice_products_table_controls.dart';
 
 /// Product management page.
 class ProductsPage extends StatelessWidget {
