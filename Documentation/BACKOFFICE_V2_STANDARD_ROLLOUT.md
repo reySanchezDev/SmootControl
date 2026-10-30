@@ -59,13 +59,21 @@ tarjetas móviles; sin duplicar tablas por módulo.
 - Movimientos: tabla con documentos, fecha, tipo, líneas y neto.
 - Empaques: estructura superior adaptada al scaffold; **sus tres listas
   internas aún requieren migración a tablas**.
+- Roles: tabla de nombre, descripción, cantidad de permisos, estado y
+  operaciones existentes, conservando protección de roles del sistema.
+- Usuarios: tabla de usuario, correo, rol, estado y acciones, sin mostrar
+  secretos en el listado.
+- Marcadas: botón primario compartido y mensajes/confirmación destructiva
+  personalizados; el listado detallado sigue pendiente de una revisión.
+- Vacaciones: botón primario reutilizable; formularios, acciones de estado
+  y tabla especializada pendientes de auditoría funcional.
 - Todos los módulos que usan `AppPageScaffold`: acciones superiores ahora
   admiten múltiples líneas para impedir overflow.
 
-**No certificar cumplimiento total:** Ventas, Caja, Personal, Marcadas,
-Vacaciones, Planilla, Reportes y Administración (roles, usuarios, ajustes,
-auditoría), así como formularios internos y diálogos del resto de módulos,
-todavía necesitan auditoría visual y adaptación individual al estándar.
+**No certificar cumplimiento total:** Ventas, Caja, Personal, Planilla,
+Reportes, Ajustes y Auditoría; además quedan adaptaciones funcionales de
+Marcadas, Vacaciones, Empaques y formularios internos de otros módulos.
+La adopción de una tabla no acredita automáticamente las 37 reglas.
 
 La comprobación UX-034 y los tests no sustituyen QA visual; las capturas
 anteriores corresponden a una compilación local **anterior** a esta pasada.
