@@ -5,7 +5,6 @@ import 'package:smoo_control/core/design_system/app_loading_page.dart';
 import 'package:smoo_control/core/design_system/backoffice_new_action.dart';
 import 'package:smoo_control/core/design_system/app_message_dialog.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
-import 'package:smoo_control/core/design_system/app_searchable_list_section.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
 import 'package:smoo_control/core/design_system/app_tile_actions.dart';
 import 'package:smoo_control/core/design_system/confirm_deactivate_dialog.dart';
@@ -16,6 +15,7 @@ import 'package:smoo_control/features/payment_methods/presentation/bloc/payment_
 import 'package:smoo_control/features/payment_methods/presentation/bloc/payment_methods_event.dart';
 import 'package:smoo_control/features/payment_methods/presentation/bloc/payment_methods_state.dart';
 import 'package:smoo_control/features/payment_methods/presentation/widgets/create_payment_method_dialog.dart';
+import 'package:smoo_control/features/payment_methods/presentation/widgets/payment_methods_backoffice_table.dart';
 import 'package:smoo_control/l10n/app_localizations.dart';
 
 part 'payment_method_tile.dart';
@@ -58,16 +58,19 @@ class PaymentMethodsPage extends StatelessWidget {
                     title: l10n.emptyPaymentMethodsTitle,
                   ),
                 PaymentMethodsLoaded(:final methods) =>
-                  AppSearchableListSection<PaymentMethod>(
-                    emptyMessage: l10n.emptySearchMessage,
-                    emptyTitle: l10n.emptySearchTitle,
-                    items: _orderedMethods(methods),
-                    searchLabel: l10n.searchField,
-                    searchTextForItem: _searchText,
-                    itemBuilder: (context, method) => _PaymentMethodTile(
+                  PaymentMethodsBackofficeTable(
+                    methods: _orderedMethods(methods),
+                    canRemove: (method) => _canRemoveMethod(method, methods),
+                    onEdit: (method) => _openEditDialog(context, method),
+                    onDeactivate: (method) =>
+                        _deactivateMethod(context, method),
+                    onRemove: (method) =>
+                        _confirmRemoveLevel(context, method),
+                    compactBuilder: (context, method) => _PaymentMethodTile(
                       depth: _depthFor(method, methods),
                       method: method,
-                      onDeactivate: () => _deactivateMethod(context, method),
+                      onDeactivate: () =>
+                          _deactivateMethod(context, method),
                       onEdit: () => _openEditDialog(context, method),
                       onRemove: _canRemoveMethod(method, methods)
                           ? () => _confirmRemoveLevel(context, method)
