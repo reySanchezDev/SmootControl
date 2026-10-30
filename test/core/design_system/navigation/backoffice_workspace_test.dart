@@ -9,7 +9,6 @@ void main() {
       label: 'Inicio',
       route: '/',
       icon: Icons.home_outlined,
-      closable: false,
     ),
     BackofficeWorkspaceItem(
       id: 'products',
@@ -41,6 +40,27 @@ void main() {
     await tester.tap(find.byTooltip('Cerrar Productos'));
     await tester.pumpAndSettle();
     expect(find.text('Página products'), findsNothing);
+    expect(find.text('Página home'), findsOneWidget);
+  });
+
+
+  testWidgets('Inicio can close and reopen without a pinned tab', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: BackofficeWorkspace(
+          items: destinations,
+          pageBuilder: (_, item) => Center(child: Text('Página ${item.id}')),
+        ),
+      ),
+    );
+    expect(find.byTooltip('Cerrar Inicio'), findsOneWidget);
+    await tester.tap(find.byTooltip('Cerrar Inicio'));
+    await tester.pumpAndSettle();
+    expect(find.text('Seleccioná un módulo'), findsOneWidget);
+    await tester.tap(find.text('Inicio').first);
+    await tester.pumpAndSettle();
     expect(find.text('Página home'), findsOneWidget);
   });
 
