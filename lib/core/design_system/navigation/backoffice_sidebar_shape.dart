@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 /// Shared curved background, separated to keep widgets focused.
 class BackofficeSidebarShapePainter extends CustomPainter {
+  /// Creates the curved sidebar background painter.
   const BackofficeSidebarShapePainter({
     required this.baseWidth,
     required this.protrusion,
@@ -9,9 +10,13 @@ class BackofficeSidebarShapePainter extends CustomPainter {
     required this.edge,
   });
 
+  /// Sidebar width without the centered handle.
   final double baseWidth;
+  /// Horizontal handle protrusion.
   final double protrusion;
+  /// Surface fill color.
   final Color fill;
+  /// Surface outline color.
   final Color edge;
 
   @override
