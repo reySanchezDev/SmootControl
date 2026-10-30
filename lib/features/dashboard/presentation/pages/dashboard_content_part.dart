@@ -39,9 +39,10 @@ class _DashboardContent extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    AppButton(
-                      icon: Icons.logout,
-                      label: l10n.signOutAction,
+                    if (!BackofficeWorkspaceScope.contains(context))
+                      AppButton(
+                        icon: Icons.logout,
+                        label: l10n.signOutAction,
                       onPressed: () {
                         context.read<AuthBloc>().add(
                           const AuthSignOutRequested(),
