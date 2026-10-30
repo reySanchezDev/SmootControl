@@ -81,11 +81,6 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
     final page = _page.clamp(0, pageCount - 1);
     final start = page * _pageSize;
     final visible = filtered.skip(start).take(_pageSize).toList();
-    final hasFilters =
-        _query.isNotEmpty ||
-        _status != 'all' ||
-        _kind != 'all' ||
-        _category != null;
     final categories = widget.categories.toList()
       ..sort((a, b) => a.name.compareTo(b.name));
 
