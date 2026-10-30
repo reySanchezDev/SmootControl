@@ -109,22 +109,13 @@ class ExpensesPage extends StatelessWidget {
     ExpenseCategory category,
   ) async {
     final l10n = AppLocalizations.of(context);
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(l10n.deleteExpenseCategoryTitle),
-        content: Text(l10n.deleteExpenseCategoryMessage(category.name)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(l10n.cancelAction),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(l10n.deleteAction),
-          ),
-        ],
-      ),
+    final confirmed = await showAppConfirmationDialog(
+      context,
+      title: l10n.deleteExpenseCategoryTitle,
+      message: l10n.deleteExpenseCategoryMessage(category.name),
+      confirmLabel: l10n.deleteAction,
+      cancelLabel: l10n.cancelAction,
+      destructive: true,
     );
     if (confirmed != true || !context.mounted) {
       return;
