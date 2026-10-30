@@ -50,6 +50,10 @@ class CreateProductDialog extends StatefulWidget {
 
 class _CreateProductDialogState extends State<CreateProductDialog> {
   final _nameController = TextEditingController();
+  final _nameFocus = FocusNode();
+  final _categoryFocus = FocusNode();
+  final _priceFocus = FocusNode();
+  final _costFocus = FocusNode();
   final _priceController = TextEditingController();
   final _costController = TextEditingController(text: '0');
   final _purchaseFactorController = TextEditingController(text: '1');
@@ -99,6 +103,10 @@ class _CreateProductDialogState extends State<CreateProductDialog> {
   @override
   void dispose() {
     _nameController.dispose();
+    _nameFocus.dispose();
+    _categoryFocus.dispose();
+    _priceFocus.dispose();
+    _costFocus.dispose();
     _priceController.dispose();
     _costController.dispose();
     _purchaseFactorController.dispose();
@@ -178,16 +186,19 @@ class _CreateProductDialogState extends State<CreateProductDialog> {
         _showValidation = true;
         _error = l10n.fieldRequiredError;
       });
+      (name.isEmpty ? _nameFocus : _categoryFocus).requestFocus();
       return;
     }
 
     if (price == null || cost == null) {
       setState(() => _error = l10n.numericFieldError);
+      (price == null ? _priceFocus : _costFocus).requestFocus();
       return;
     }
 
     if (!_isRawMaterial && price <= 0) {
       setState(() => _error = l10n.sellableProductPriceRequiredError);
+      _priceFocus.requestFocus();
       return;
     }
 
