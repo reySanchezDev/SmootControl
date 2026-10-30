@@ -64,6 +64,28 @@ void main() {
     expect(find.text('Página home'), findsOneWidget);
   });
 
+  testWidgets('compact workspace navigates from responsive drawer', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pumpWidget(
+      MaterialApp(
+        home: BackofficeWorkspace(
+          items: destinations,
+          pageBuilder: (_, item) => Center(child: Text('Página ${item.id}')),
+        ),
+      ),
+    );
+    expect(find.byTooltip('Abrir menú'), findsOneWidget);
+    await tester.tap(find.byTooltip('Abrir menú'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Productos'));
+    await tester.pumpAndSettle();
+    expect(find.text('Página products'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('veto preserves a tab when there are unsaved changes', (
     tester,
   ) async {
