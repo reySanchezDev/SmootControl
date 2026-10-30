@@ -36,6 +36,42 @@
 - Aviso de guardado tras el éxito del BLoC, usando diálogo compartido; textos clave localizados ES/EN.
 - Archivos Dart manuales afectados divididos para quedar por debajo de 300 líneas.
 
+## Segunda pasada — propagación por módulos (30/10/2026)
+
+La primera pasada sólo había renovado Productos. La inspección visual detectó
+que Categorías y Recetas seguían usando listas antiguas. En esta segunda
+pasada se agregó `BackofficeCollectionView<T>`, con búsquedas, ordenación
+semántica por columna, paginación uniforme, encabezados fijos, alineación y
+tarjetas móviles; sin duplicar tablas por módulo.
+
+**Módulos adaptados en código**:
+- Categorías: tabla con nombre, tipo, padre, posición, estado y acciones;
+  conserva árbol jerárquico en móvil.
+- Recetas: tabla con búsqueda, paginación y edición, sin inventar alta directa.
+- Unidades: búsqueda, factor, costo no aplicable, estado, edición y
+  confirmación de inactivación.
+- Mesas: tabla con estados y operaciones claras.
+- Métodos de pago: tabla con moneda, grupo y operaciones; conserva reglas de
+  negocio y vista jerárquica compacta.
+- Modificadores: grupos y opciones editables; vista expandible móvil.
+- Gastos: tabla de categorías, cobertura, jerarquía y acciones.
+- Inventario: existencias de productos y empaques con unidades, costos y fecha.
+- Movimientos: tabla con documentos, fecha, tipo, líneas y neto.
+- Empaques: estructura superior adaptada al scaffold; **sus tres listas
+  internas aún requieren migración a tablas**.
+- Todos los módulos que usan `AppPageScaffold`: acciones superiores ahora
+  admiten múltiples líneas para impedir overflow.
+
+**No certificar cumplimiento total:** Ventas, Caja, Personal, Marcadas,
+Vacaciones, Planilla, Reportes y Administración (roles, usuarios, ajustes,
+auditoría), así como formularios internos y diálogos del resto de módulos,
+todavía necesitan auditoría visual y adaptación individual al estándar.
+
+La comprobación UX-034 y los tests no sustituyen QA visual; las capturas
+anteriores corresponden a una compilación local **anterior** a esta pasada.
+No actualizar servidores locales mediante el repositorio remoto de manera
+automática; sincronizar y reconstruir después de CI exitoso y aprobación QA.
+
 ## Verificación automatizada preparada
 
 - `tool/verify_backoffice_v2_ux.ps1` comprueba límite de 300 líneas en Dart modificado, regenera l10n, ejecuta `flutter analyze`, pruebas de diseño y `flutter build web --release`.
