@@ -9,6 +9,7 @@ class BackofficeDataTable extends StatelessWidget {
     required this.columns,
     required this.rows,
     this.columnWidths,
+    this.columnAlignments,
     this.sortColumnIndex,
     this.sortAscending = true,
     this.onSort,
@@ -23,6 +24,9 @@ class BackofficeDataTable extends StatelessWidget {
 
   /// Optional fixed width for each column.
   final List<double>? columnWidths;
+
+  /// Alignment for each column, including its heading and every cell.
+  final List<Alignment>? columnAlignments;
 
   /// Currently sorted column, if any.
   final int? sortColumnIndex;
@@ -39,15 +43,20 @@ class BackofficeDataTable extends StatelessWidget {
     final widths = columnWidths ?? List<double>.filled(columns.length, 160);
     assert(widths.length == columns.length, 'Every column needs a width.');
     assert(
+      columnAlignments == null || columnAlignments!.length == columns.length,
+      'Every column needs an alignment.',
+    );
+    assert(
       rows.every((row) => row.length == columns.length),
       'Every row must contain one cell per column.',
     );
     final totalWidth = widths.fold<double>(0, (sum, width) => sum + width);
 
-    Widget cell(Widget child, {bool heading = false}) => Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+    Widget cell(Widget child, int column, {bool heading = false}) => Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       child: Align(
-        alignment: Alignment.centerLeft,
+        alignment: columnAlignments?[column] ?? Alignment.centerLeft,
+        heightFactor: 1,
         child: DefaultTextStyle.merge(
           style: TextStyle(
             fontSize: heading ? 12 : 13,
@@ -85,8 +94,8 @@ class BackofficeDataTable extends StatelessWidget {
                         TableRow(
                           children: [
                             for (var i = 0; i < columns.length; i++)
-                              SizedBox(
-                                height: 38,
+                              ConstrainedBox(
+                                constraints: const BoxConstraints(minHeight: 42),
                                 child: InkWell(
                                   onTap:
                                       onSort == null || i == columns.length - 1
@@ -99,7 +108,7 @@ class BackofficeDataTable extends StatelessWidget {
                                         Flexible(
                                           child: Text(
                                             columns[i],
-                                            overflow: TextOverflow.ellipsis,
+                                            softWrap: true,
                                           ),
                                         ),
                                         if (onSort != null &&
@@ -117,6 +126,7 @@ class BackofficeDataTable extends StatelessWidget {
                                         ],
                                       ],
                                     ),
+                                    i,
                                     heading: true,
                                   ),
                                 ),
@@ -145,10 +155,12 @@ class BackofficeDataTable extends StatelessWidget {
                           children: [
                             TableRow(
                               children: [
-                                for (final value in rows[index])
-                                  SizedBox(
-                                    height: 42,
-                                    child: cell(value),
+                                for (var i = 0; i < columns.length; i++)
+                                  ConstrainedBox(
+                                    constraints: const BoxConstraints(
+                                      minHeight: 44,
+                                    ),
+                                    child: cell(rows[index][i], i),
                                   ),
                               ],
                             ),
