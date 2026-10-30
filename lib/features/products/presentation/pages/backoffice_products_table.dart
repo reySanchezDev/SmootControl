@@ -61,19 +61,18 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
         product.name,
         widget.categoryPathFor(product.categoryId, widget.categories),
         MoneyFormatter.format(product.priceInCents),
-        product.isRawMaterial ? 'materia prima' : 'producto terminado',
-        product.isActive ? 'activo' : 'inactivo',
-        product.isAvailableInPos ? 'pos sí' : 'pos no',
-        product.tracksInventory ? 'inventario sí' : 'inventario no',
+        if (product.isRawMaterial) 'materia prima' else 'producto terminado',
+        if (product.isActive) 'activo' else 'inactivo',
+        if (product.isAvailableInPos) 'pos sí' else 'pos no',
+        if (product.tracksInventory) 'inventario sí' else 'inventario no',
       ].join(' ').toLowerCase().contains(_query.trim().toLowerCase());
-    }).toList();
-
-    filtered.sort((a, b) {
-      final comparison = _compareProducts(
-        a, b, _sortColumn, widget.categoryPathFor, widget.categories,
-      );
-      return _sortAscending ? comparison : -comparison;
-    });
+    }).toList()
+      ..sort((a, b) {
+        final comparison = _compareProducts(
+          a, b, _sortColumn, widget.categoryPathFor, widget.categories,
+        );
+        return _sortAscending ? comparison : -comparison;
+      });
 
     final pageCount = filtered.isEmpty
         ? 1
