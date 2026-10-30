@@ -4,6 +4,7 @@ import 'package:smoo_control/core/design_system/backoffice_collection_view.dart'
 import 'package:smoo_control/core/design_system/app_message_dialog.dart';
 import 'package:smoo_control/core/design_system/app_empty_state.dart';
 import 'package:smoo_control/core/design_system/app_loading_page.dart';
+import 'package:smoo_control/core/design_system/backoffice_new_action.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
@@ -38,9 +39,7 @@ class _MeasurementUnitsPageState extends State<MeasurementUnitsPage> {
     return AppPageScaffold(
       title: 'Unidades',
       actions: [
-        FilledButton.icon(
-          icon: const Icon(Icons.add_rounded),
-          label: const Text('Nuevo'),
+        BackofficeNewAction(
           onPressed: _openNewDialog,
         ),
       ],
