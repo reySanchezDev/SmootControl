@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smoo_control/core/design_system/app_empty_state.dart';
 import 'package:smoo_control/core/design_system/app_loading_page.dart';
+import 'package:smoo_control/core/design_system/app_message_dialog.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
 import 'package:smoo_control/core/design_system/app_search_field.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
@@ -10,6 +11,7 @@ import 'package:smoo_control/features/catalog/presentation/bloc/catalog_bloc.dar
 import 'package:smoo_control/features/catalog/presentation/bloc/catalog_event.dart';
 import 'package:smoo_control/features/catalog/presentation/bloc/catalog_state.dart';
 import 'package:smoo_control/features/catalog/presentation/widgets/catalog_tree_list.dart';
+import 'package:smoo_control/features/catalog/presentation/widgets/catalog_backoffice_table.dart';
 import 'package:smoo_control/features/catalog/presentation/widgets/create_category_dialog.dart';
 import 'package:smoo_control/l10n/app_localizations.dart';
 
@@ -28,10 +30,10 @@ class CatalogPage extends StatelessWidget {
       child: Builder(
         builder: (context) => AppPageScaffold(
           actions: [
-            IconButton(
-              icon: const Icon(Icons.add),
+            FilledButton.icon(
+              icon: const Icon(Icons.add_rounded),
+              label: const Text('Nuevo'),
               onPressed: () => _openCreateDialog(context),
-              tooltip: l10n.createAction,
             ),
           ],
           title: l10n.moduleCatalog,
@@ -63,17 +65,27 @@ class CatalogPage extends StatelessWidget {
                     message: l10n.emptyCatalogMessage,
                     title: l10n.emptyCatalogTitle,
                   ),
-                CatalogLoaded(:final categories) => _CatalogSearchableTree(
-                  categories: categories,
-                  onEdit: (category) => _openEditDialog(
-                    context,
-                    category,
-                    categories,
-                  ),
-                  onRemove: (category) => _confirmRemoveLevel(
-                    context,
-                    category,
-                  ),
+                CatalogLoaded(:final categories) => LayoutBuilder(
+                  builder: (context, constraints) {
+                    void edit(ProductCategory category) => _openEditDialog(
+                      context,
+                      category,
+                      categories,
+                    );
+                    void remove(ProductCategory category) =>
+                        _confirmRemoveLevel(context, category);
+                    return constraints.maxWidth >= 850
+                        ? CatalogBackofficeTable(
+                            categories: categories,
+                            onEdit: edit,
+                            onRemove: remove,
+                          )
+                        : _CatalogSearchableTree(
+                            categories: categories,
+                            onEdit: edit,
+                            onRemove: remove,
+                          );
+                  },
                 ),
               };
             },
@@ -121,33 +133,17 @@ class CatalogPage extends StatelessWidget {
     ProductCategory category,
   ) async {
     final l10n = AppLocalizations.of(context);
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(l10n.removeCategoryLevelTitle),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(l10n.removeCategoryLevelMessage(category.name)),
-            const SizedBox(height: 12),
-            Text(l10n.removeCategoryLevelWithChildrenMessage),
-          ],
-        ),
-        actions: [
-          OutlinedButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(l10n.cancelAction),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(l10n.removeCategoryLevelConfirm),
-          ),
-        ],
-      ),
+    final confirmed = await showAppConfirmationDialog(
+      context,
+      title: l10n.removeCategoryLevelTitle,
+      message: '${l10n.removeCategoryLevelMessage(category.name)}\n\n'
+          '${l10n.removeCategoryLevelWithChildrenMessage}',
+      confirmLabel: l10n.removeCategoryLevelConfirm,
+      cancelLabel: l10n.cancelAction,
+      destructive: true,
     );
 
-    if ((confirmed ?? false) && context.mounted) {
+    if (confirmed && context.mounted) {
       context.read<CatalogBloc>().add(CatalogCategoryRemoved(category));
     }
   }
