@@ -33,6 +33,8 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
   String? _category;
   int _page = 0;
   int _pageSize = 15;
+  int _sortColumn = 0;
+  bool _sortAscending = true;
 
   @override
   bool get wantKeepAlive => true;
@@ -62,15 +64,36 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
       ].join(' ').toLowerCase().contains(_query.trim().toLowerCase());
     }).toList();
 
+    int compareProducts(Product a, Product b) {
+      switch (_sortColumn) {
+        case 1:
+          return widget.categoryPathFor(a.categoryId, widget.categories)
+              .compareTo(widget.categoryPathFor(b.categoryId, widget.categories));
+        case 2:
+          return a.priceInCents.compareTo(b.priceInCents);
+        case 3:
+          return (a.isActive ? 1 : 0).compareTo(b.isActive ? 1 : 0);
+        case 4:
+          return (a.isAvailableInPos ? 1 : 0)
+              .compareTo(b.isAvailableInPos ? 1 : 0);
+        case 5:
+          return (a.tracksInventory ? 1 : 0)
+              .compareTo(b.tracksInventory ? 1 : 0);
+        default:
+          return a.name.toLowerCase().compareTo(b.name.toLowerCase());
+      }
+    }
+    filtered.sort((a, b) {
+      final comparison = compareProducts(a, b);
+      return _sortAscending ? comparison : -comparison;
+    });
+
     final pageCount = filtered.isEmpty
         ? 1
         : (filtered.length + _pageSize - 1) ~/ _pageSize;
     final page = _page.clamp(0, pageCount - 1);
     final start = page * _pageSize;
     final visible = filtered.skip(start).take(_pageSize).toList();
-    final active = widget.products.where((p) => p.isActive).length;
-    final available = widget.products.where((p) => p.isAvailableInPos).length;
-    final tracked = widget.products.where((p) => p.tracksInventory).length;
     final hasFilters =
         _query.isNotEmpty ||
         _status != 'all' ||
@@ -102,25 +125,14 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
               ),
             ],
           ),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 10,
-            runSpacing: 10,
-            children: [
-              _metric(context, 'Total', widget.products.length),
-              _metric(context, 'Activos', active),
-              _metric(context, 'En POS', available),
-              _metric(context, 'Con inventario', tracked),
-            ],
-          ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           Wrap(
             crossAxisAlignment: WrapCrossAlignment.center,
             spacing: 10,
             runSpacing: 8,
             children: [
               SizedBox(
-                width: 260,
+                width: 380,
                 child: TextField(
                   controller: _search,
                   onChanged: (value) => setState(() => _query = value),
@@ -200,12 +212,7 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
                 ),
             ],
           ),
-          const SizedBox(height: 6),
-          Text(
-            '${filtered.length} de ${widget.products.length} productos',
-            style: theme.textTheme.bodySmall,
-          ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 10),
           Expanded(
             child: filtered.isEmpty
                 ? Center(child: Text(l10n.emptySearchMessage))
@@ -220,6 +227,20 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
                       'Acciones',
                     ],
                     columnWidths: const [280, 230, 120, 110, 95, 125, 112],
+                    sortColumnIndex: _sortColumn,
+                    sortAscending: _sortAscending,
+                    onSort: (index) {
+                      if (index == 6) return;
+                      setState(() {
+                        if (_sortColumn == index) {
+                          _sortAscending = !_sortAscending;
+                        } else {
+                          _sortColumn = index;
+                          _sortAscending = true;
+                        }
+                        _page = 0;
+                      });
+                    },
                     rows: [
                       for (final product in visible)
                         [
@@ -328,29 +349,6 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
                 icon: const Icon(Icons.chevron_right),
               ),
             ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _metric(BuildContext context, String label, int value) {
-    final textTheme = Theme.of(context).textTheme;
-    return Container(
-      constraints: const BoxConstraints(minWidth: 112),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label, style: textTheme.labelSmall),
-          Text(
-            '$value',
-            style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
           ),
         ],
       ),
