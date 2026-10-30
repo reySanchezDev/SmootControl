@@ -136,7 +136,7 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
                       'Inventario',
                       'Acciones',
                     ],
-                    columnWidths: const [280, 230, 120, 110, 95, 125, 112],
+                    columnWidths: const [280, 230, 120, 110, 95, 125, 242],
                     columnAlignments: const [
                       Alignment.centerLeft,
                       Alignment.centerLeft,
@@ -202,19 +202,21 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              IconButton(
-                                tooltip: l10n.editAction,
+                              TextButton.icon(
                                 onPressed: () => widget.onEdit(product),
-                                icon: const Icon(Icons.edit_outlined, size: 19),
+                                icon: const Icon(Icons.edit_outlined, size: 16),
+                                label: Text(l10n.editAction),
                               ),
                               if (product.isActive)
-                                IconButton(
-                                  tooltip: l10n.deactivateAction,
+                                TextButton.icon(
                                   onPressed: () => widget.onDeactivate(product),
-                                  icon: Icon(
-                                    Icons.block_outlined,
-                                    size: 19,
-                                    color: theme.colorScheme.error,
+                                  icon: const Icon(
+                                    Icons.toggle_off_outlined,
+                                    size: 16,
+                                  ),
+                                  label: Text(l10n.deactivateAction),
+                                  style: TextButton.styleFrom(
+                                    foregroundColor: theme.colorScheme.error,
                                   ),
                                 ),
                             ],
