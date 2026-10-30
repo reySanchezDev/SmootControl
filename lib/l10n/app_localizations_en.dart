@@ -466,7 +466,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cancelAction => 'Cancel';
 
   @override
-  String get okAction => 'OK';
+  String get okAction => 'Accept';
 
   @override
   String get saveAction => 'Save';
