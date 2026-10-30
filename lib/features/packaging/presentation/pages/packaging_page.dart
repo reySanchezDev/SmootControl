@@ -3,6 +3,7 @@ import 'package:smoo_control/core/design_system/app_button.dart';
 import 'package:smoo_control/core/design_system/app_empty_state.dart';
 import 'package:smoo_control/core/design_system/app_input.dart';
 import 'package:smoo_control/core/design_system/app_loading_page.dart';
+import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/core/formatters/money_formatter.dart';
@@ -79,55 +80,52 @@ class _PackagingPageState extends State<PackagingPage> {
   Widget build(BuildContext context) {
     return DefaultTabController(
       length: 3,
-      child: Scaffold(
-        appBar: AppBar(
-          title: const AppText(
-            'Empaques',
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            variant: AppTextVariant.titleMedium,
-          ),
-          bottom: const TabBar(
-            tabs: [
-              Tab(text: 'Tipos de venta'),
-              Tab(text: 'Empaques'),
-              Tab(text: 'Reglas'),
-            ],
-          ),
-        ),
-        body: SafeArea(
-          child: FutureBuilder<AppResult<_PackagingSnapshot>>(
-            future: _future,
-            builder: (context, snapshot) {
-              if (!snapshot.hasData) return const AppLoadingPage();
-              return switch (snapshot.data!) {
-                AppFailureResult(:final error) => AppEmptyState(
-                  icon: Icons.error_outline,
-                  title: 'Empaques',
-                  message: error.message,
-                ),
-                AppSuccess(:final value) => TabBarView(
-                  children: [
-                    _SalesTypesTab(
-                      salesTypes: value.salesTypes,
-                      onSave: _saveSalesType,
+      child: AppPageScaffold(
+        title: 'Empaques',
+        body: Column(
+          children: [
+            const TabBar(
+              tabs: [
+                Tab(text: 'Tipos de venta'),
+                Tab(text: 'Empaques'),
+                Tab(text: 'Reglas'),
+              ],
+            ),
+            Expanded(
+              child: FutureBuilder<AppResult<_PackagingSnapshot>>(
+                future: _future,
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) return const AppLoadingPage();
+                  return switch (snapshot.data!) {
+                    AppFailureResult(:final error) => AppEmptyState(
+                      icon: Icons.error_outline,
+                      title: 'Empaques',
+                      message: error.message,
                     ),
-                    _PackagingItemsTab(
-                      items: value.packagingItems,
-                      onSave: _savePackagingItem,
+                    AppSuccess(:final value) => TabBarView(
+                      children: [
+                        _SalesTypesTab(
+                          salesTypes: value.salesTypes,
+                          onSave: _saveSalesType,
+                        ),
+                        _PackagingItemsTab(
+                          items: value.packagingItems,
+                          onSave: _savePackagingItem,
+                        ),
+                        _RulesTab(
+                          packagingItems: value.packagingItems,
+                          products: value.products,
+                          rules: value.rules,
+                          salesTypes: value.salesTypes,
+                          onSave: _saveRule,
+                        ),
+                      ],
                     ),
-                    _RulesTab(
-                      packagingItems: value.packagingItems,
-                      products: value.products,
-                      rules: value.rules,
-                      salesTypes: value.salesTypes,
-                      onSave: _saveRule,
-                    ),
-                  ],
-                ),
-              };
-            },
-          ),
+                  };
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );
