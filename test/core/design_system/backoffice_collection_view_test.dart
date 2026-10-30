@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:smoo_control/core/design_system/backoffice_collection_view.dart';
+import 'package:smoo_control/core/design_system/backoffice_data_table.dart';
 
 void main() {
   testWidgets('shared catalog collection searches and sorts real data', (
@@ -45,7 +46,14 @@ void main() {
     expect(find.text('Zumo'), findsOneWidget);
     await tester.enterText(find.byType(TextFormField).first, 'Zumo');
     await tester.pumpAndSettle();
-    expect(find.text('Zumo'), findsOneWidget);
+    // Search input and rendered row contain the same word; verify the row.
+    expect(
+      find.descendant(
+        of: find.byType(BackofficeDataTable),
+        matching: find.text('Zumo'),
+      ),
+      findsOneWidget,
+    );
     expect(find.text('Agua'), findsNothing);
     expect(find.text('1–1 de 1'), findsOneWidget);
     expect(tester.takeException(), isNull);
