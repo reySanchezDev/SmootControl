@@ -1,10 +1,11 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:smoo_control/core/design_system/app_empty_state.dart';
 import 'package:smoo_control/core/design_system/app_loading_page.dart';
+import 'package:smoo_control/core/design_system/app_message_dialog.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
+import 'package:smoo_control/core/design_system/backoffice_new_action.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/core/result/app_result.dart';
 import 'package:smoo_control/features/attendance/domain/entities/attendance_entry.dart';
@@ -51,10 +52,8 @@ class _AttendanceAdminPageState extends State<AttendanceAdminPage> {
     return AppPageScaffold(
       actions: [
         if (!widget.readOnly)
-          IconButton(
-            icon: const Icon(Icons.add),
+          BackofficeNewAction(
             onPressed: _employees.isEmpty ? null : _openEditor,
-            tooltip: 'Crear marcada',
           ),
       ],
       title: widget.readOnly ? 'Reporte de marcadas' : 'Marcadas',
@@ -152,50 +151,47 @@ class _AttendanceAdminPageState extends State<AttendanceAdminPage> {
     if (!mounted) return;
     switch (result) {
       case AppSuccess():
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Marcada guardada.')),
+        await showAppMessageDialog(
+          context: context,
+          title: 'Marcada guardada',
+          message: 'La marcada se guardó correctamente.',
         );
         await _load();
       case AppFailureResult(:final error):
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(error.message)),
+        await showAppMessageDialog(
+          context: context,
+          title: 'No se pudo completar',
+          message: error.message,
         );
     }
   }
 
   Future<void> _voidEntry(AttendanceEntry entry) async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Eliminar marcada'),
-        content: Text(
-          'Se eliminara permanentemente la marcada de '
+    final confirm = await showAppConfirmationDialog(
+      context,
+      title: 'Eliminar marcada',
+      message: 'Se eliminará permanentemente la marcada de '
           '${entry.employeeName}.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancelar'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Eliminar'),
-          ),
-        ],
-      ),
+      confirmLabel: 'Eliminar',
+      cancelLabel: 'Cancelar',
+      destructive: true,
     );
-    if (confirm != true || !mounted) return;
+    if (!confirm || !mounted) return;
     final result = await _attendanceRepository.voidRemoteEntry(entry.id);
     if (!mounted) return;
     switch (result) {
       case AppSuccess():
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Marcada eliminada.')),
+        await showAppMessageDialog(
+          context: context,
+          title: 'Marcada eliminada',
+          message: 'El registro fue eliminado correctamente.',
         );
         await _load();
       case AppFailureResult(:final error):
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(error.message)),
+        await showAppMessageDialog(
+          context: context,
+          title: 'No se pudo completar',
+          message: error.message,
         );
     }
   }
