@@ -179,46 +179,24 @@ class PaymentMethodsPage extends StatelessWidget {
   ) async {
     final l10n = AppLocalizations.of(context);
     final isRootLeaf = method.parentId == null;
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(
-          isRootLeaf ? 'Eliminar metodo de pago' : l10n.removePaymentLevelTitle,
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              isRootLeaf
-                  ? 'Se eliminara el metodo "${method.name}".'
-                  : l10n.removePaymentLevelMessage(method.name),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              isRootLeaf
-                  ? 'Si ya fue usado en ventas, Supabase puede bloquear la '
-                        'eliminacion; en ese caso debes inactivarlo.'
-                  : l10n.removePaymentLevelWithChildrenMessage,
-            ),
-          ],
-        ),
-        actions: [
-          OutlinedButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(l10n.cancelAction),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(
-              isRootLeaf ? l10n.deleteAction : l10n.removePaymentLevelConfirm,
-            ),
-          ),
-        ],
-      ),
+    final confirmed = await showAppConfirmationDialog(
+      context,
+      title: isRootLeaf
+          ? 'Eliminar método de pago'
+          : l10n.removePaymentLevelTitle,
+      message: isRootLeaf
+          ? 'Se eliminará el método «${method.name}». '
+              'Si ya tiene ventas vinculadas, la eliminación puede rechazarse.'
+          : '${l10n.removePaymentLevelMessage(method.name)}\n\n'
+              '${l10n.removePaymentLevelWithChildrenMessage}',
+      confirmLabel: isRootLeaf
+          ? l10n.deleteAction
+          : l10n.removePaymentLevelConfirm,
+      cancelLabel: l10n.cancelAction,
+      destructive: true,
     );
 
-    if ((confirmed ?? false) && context.mounted) {
+    if (confirmed && context.mounted) {
       context.read<PaymentMethodsBloc>().add(PaymentMethodRemoved(method));
     }
   }
