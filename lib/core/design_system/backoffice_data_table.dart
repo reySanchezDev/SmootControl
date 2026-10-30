@@ -9,6 +9,9 @@ class BackofficeDataTable extends StatelessWidget {
     required this.columns,
     required this.rows,
     this.columnWidths,
+    this.sortColumnIndex,
+    this.sortAscending = true,
+    this.onSort,
     super.key,
   });
 
@@ -20,6 +23,15 @@ class BackofficeDataTable extends StatelessWidget {
 
   /// Optional fixed width for each column.
   final List<double>? columnWidths;
+
+  /// Currently sorted column, if any.
+  final int? sortColumnIndex;
+
+  /// Sort direction.
+  final bool sortAscending;
+
+  /// Invoked when a sortable header is selected.
+  final ValueChanged<int>? onSort;
 
   @override
   Widget build(BuildContext context) {
@@ -47,32 +59,50 @@ class BackofficeDataTable extends StatelessWidget {
       ),
     );
 
-    final tableWidths = <int, TableColumnWidth>{
-      for (var i = 0; i < widths.length; i++) i: FixedColumnWidth(widths[i]),
-    };
     return Card(
       margin: EdgeInsets.zero,
       clipBehavior: Clip.antiAlias,
       child: LayoutBuilder(
-        builder: (context, constraints) => SingleChildScrollView(
+        builder: (context, constraints) {
+          final scale = constraints.maxWidth > totalWidth
+              ? constraints.maxWidth / totalWidth
+              : 1.0;
+          final effectiveWidths = <int, TableColumnWidth>{
+            for (var i = 0; i < widths.length; i++)
+              i: FixedColumnWidth(widths[i] * scale),
+          };
+          return SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: SizedBox(
-            width: totalWidth < constraints.maxWidth
-                ? constraints.maxWidth
-                : totalWidth,
+            width: totalWidth * scale,
             child: Column(
               children: [
                 ColoredBox(
                   color: scheme.surfaceContainerLow,
                   child: Table(
-                    columnWidths: tableWidths,
+                    columnWidths: effectiveWidths,
                     children: [
                       TableRow(
                         children: [
-                          for (final title in columns)
+                          for (var i = 0; i < columns.length; i++)
                             SizedBox(
                               height: 38,
-                              child: cell(Text(title), heading: true),
+                              child: InkWell(
+                                onTap: onSort == null ? null : () => onSort!(i),
+                                child: cell(Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Flexible(child: Text(columns[i], overflow: TextOverflow.ellipsis)),
+                                    if (onSort != null) ...[
+                                      const SizedBox(width: 4),
+                                      Icon(sortColumnIndex == i
+                                        ? (sortAscending ? Icons.arrow_upward : Icons.arrow_downward)
+                                        : Icons.unfold_more,
+                                        size: 13, color: scheme.onSurfaceVariant),
+                                    ],
+                                  ],
+                                ), heading: true),
+                              ),
                             ),
                         ],
                       ),
@@ -94,7 +124,7 @@ class BackofficeDataTable extends StatelessWidget {
                         ),
                       ),
                       child: Table(
-                        columnWidths: tableWidths,
+                        columnWidths: effectiveWidths,
                         children: [
                           TableRow(
                             children: [
@@ -114,6 +144,8 @@ class BackofficeDataTable extends StatelessWidget {
             ),
           ),
         ),
+      );
+        },
       ),
     );
   }
