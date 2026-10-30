@@ -160,14 +160,14 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
                 'all': 'Todos',
                 'raw': 'Materia prima',
                 'finished': 'Producto terminado',
-              }, (value) => setState(() { _kind = value; _page = 0; })),
+              }, (value) => setState(() { _kind = value; _page = 0; }), width: 200),
               _selector('Estado', _status, const {
                 'all': 'Todos',
                 'active': 'Activos',
                 'inactive': 'Inactivos',
               }, (value) => setState(() { _status = value; _page = 0; })),
               SizedBox(
-                width: 180,
+                width: 230,
                 child: DropdownButtonFormField<String?>(
                   key: ValueKey(_category),
                   initialValue: _category,
@@ -368,10 +368,11 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
     String label,
     String current,
     Map<String, String> choices,
-    ValueChanged<String> changed,
-  ) {
+    ValueChanged<String> changed, {
+    double width = 148,
+  }) {
     return SizedBox(
-      width: 148,
+      width: width,
       child: DropdownButtonFormField<String>(
         initialValue: current,
         isExpanded: true,
