@@ -88,12 +88,13 @@ class BackofficeDataTable extends StatelessWidget {
                             SizedBox(
                               height: 38,
                               child: InkWell(
-                                onTap: onSort == null ? null : () => onSort!(i),
+                                onTap: onSort == null || i == columns.length - 1
+                                    ? null : () => onSort!(i),
                                 child: cell(Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Flexible(child: Text(columns[i], overflow: TextOverflow.ellipsis)),
-                                    if (onSort != null) ...[
+                                    if (onSort != null && i != columns.length - 1) ...[
                                       const SizedBox(width: 4),
                                       Icon(sortColumnIndex == i
                                         ? (sortAscending ? Icons.arrow_upward : Icons.arrow_downward)
