@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smoo_control/core/design_system/app_empty_state.dart';
+import 'package:smoo_control/core/design_system/backoffice_collection_view.dart';
+import 'package:smoo_control/core/design_system/backoffice_new_action.dart';
 import 'package:smoo_control/core/design_system/app_loading_page.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
-import 'package:smoo_control/core/design_system/app_searchable_list_section.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
 import 'package:smoo_control/core/design_system/app_tile_actions.dart';
 import 'package:smoo_control/core/design_system/confirm_deactivate_dialog.dart';
@@ -30,10 +31,8 @@ class RolesPage extends StatelessWidget {
       child: Builder(
         builder: (context) => AppPageScaffold(
           actions: [
-            IconButton(
-              icon: const Icon(Icons.add),
+            BackofficeNewAction(
               onPressed: () => _openCreateDialog(context),
-              tooltip: l10n.createAction,
             ),
           ],
           title: l10n.moduleRoles,
@@ -91,23 +90,77 @@ class _RolesList extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
 
-    return AppSearchableListSection<AccessRole>(
-      emptyMessage: l10n.emptySearchMessage,
-      emptyTitle: l10n.emptySearchTitle,
+    return BackofficeCollectionView<AccessRole>(
       items: state.roles,
-      searchLabel: l10n.searchField,
-      searchTextForItem: (role) => [
-        role.name,
-        role.description ?? '',
-        if (role.isActive) l10n.activeStatus else l10n.inactiveStatus,
-        '${state.permissionCodesByRole[role.id]?.length ?? 0}',
-      ].join(' '),
-      itemBuilder: (context, role) => _RoleTile(
+      searchLabel: 'Buscar rol o permiso',
+      searchTextFor: (role) =>
+          '${role.name} ${role.description ?? ''} '
+          '${role.isActive ? l10n.activeStatus : l10n.inactiveStatus}',
+      emptyTitle: l10n.emptySearchTitle,
+      emptyMessage: l10n.emptySearchMessage,
+      compactBuilder: (context, role) => _RoleTile(
         role: role,
         permissionCount: state.permissionCodesByRole[role.id]?.length ?? 0,
         onDeactivate: () => _deactivateRole(context, role),
         onEdit: () => _openEditDialog(context, role),
       ),
+      columns: [
+        BackofficeListColumn(
+          label: 'Rol',
+          width: 265,
+          compare: (a, b) => a.name.compareTo(b.name),
+          cell: (_, role) => Text(role.name, softWrap: true),
+        ),
+        BackofficeListColumn(
+          label: 'Descripción',
+          width: 350,
+          compare: (a, b) =>
+              (a.description ?? '').compareTo(b.description ?? ''),
+          cell: (_, role) => Text(role.description ?? '—'),
+        ),
+        BackofficeListColumn(
+          label: 'Permisos',
+          width: 135,
+          alignment: Alignment.centerRight,
+          compare: (a, b) =>
+              (state.permissionCodesByRole[a.id]?.length ?? 0).compareTo(
+                state.permissionCodesByRole[b.id]?.length ?? 0,
+              ),
+          cell: (_, role) => Text(
+            '${state.permissionCodesByRole[role.id]?.length ?? 0}',
+          ),
+        ),
+        BackofficeListColumn(
+          label: 'Estado',
+          width: 145,
+          alignment: Alignment.center,
+          compare: (a, b) =>
+              (a.isActive ? 1 : 0).compareTo(b.isActive ? 1 : 0),
+          cell: (_, role) =>
+              Text(role.isActive ? l10n.activeStatus : l10n.inactiveStatus),
+        ),
+        BackofficeListColumn(
+          label: 'Acciones',
+          width: 270,
+          alignment: Alignment.center,
+          cell: (_, role) => Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextButton.icon(
+                onPressed: () => _openEditDialog(context, role),
+                icon: const Icon(Icons.edit_outlined, size: 17),
+                label: Text(l10n.editAction),
+              ),
+              if (role.isActive && !role.isSystem)
+                TextButton.icon(
+                  onPressed: () => _deactivateRole(context, role),
+                  icon: const Icon(Icons.toggle_off_outlined, size: 17),
+                  label: Text(l10n.deactivateAction),
+                ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -187,14 +240,10 @@ class _RoleTile extends StatelessWidget {
           leading: const Icon(Icons.admin_panel_settings_outlined),
           subtitle: AppText(
             '$status · $permissionCount ${l10n.permissionsSection}',
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
             variant: AppTextVariant.label,
           ),
           title: AppText(
             role.name,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
           ),
           trailing: AppTileActions(
             compact: compact,
