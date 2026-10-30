@@ -62,3 +62,12 @@ Ejecutar `dart format` de todos los archivos Dart modificados, `flutter analyze`
 - Paginación local funcional de 10, 15, 25 o 50 registros por página, con anterior/siguiente y rango visible. Sin nuevas operaciones de servidor.
 - Se conservan datos reales y flujos previos de Product BLoC y diálogos; no añadir imágenes ni funcionalidades inventadas.
 - **Pendiente:** sincronización, dart format, flutter analyze, pruebas y build en el equipo de Codex; revisión visual del usuario antes de aplicar patrón a otras pantallas.
+
+## Corrección de UX de Productos — observaciones de captura 29/10/2026
+- Retirados cuatro contadores superiores del módulo Productos para aprovechar el área operativa. No duplicar información que figura en filtros o paginador.
+- Eliminado «N de N productos» sobre tabla; paginador inferior conserva rango y total.
+- Buscador ampliado a 380 px; encabezados ordenables sobre datos filtrados (nombre, categoría, precio, estado, disponibilidad POS e inventario; acciones no ordenables), con ascendente/descendente y paginación reiniciada al ordenar.
+- Tablas: corregida la diferencia entre ancho del contenedor y ancho de columnas escalando todas las columnas en igual proporción. Header y cuerpo comparten anchuras efectivas exactas y el header queda anclado.
+- Filtro de categoría sincroniza su valor al limpiar.
+- No se añadieron fotos, selección múltiple, acciones masivas ni funcionalidades ficticias. No ampliar a otras pantallas antes de aprobación visual.
+- Pendiente exclusivamente de Codex: dart format, flutter analyze, flutter test y compilación/revisión real en 8081. No se declara validación ejecutada desde GitHub.
