@@ -107,10 +107,12 @@ class _ExpensesOverviewListState extends State<ExpensesOverviewList> {
         category.name,
         _parentName(category),
         if (category.isActive) l10n.activeStatus else l10n.inactiveStatus,
-        if (category.parentId != null)
-          category.includeInGrossProfitCoverage
-              ? l10n.expenseCategoryCoverageIncluded
-              : l10n.expenseCategoryCoverageExcluded,
+        if (category.parentId != null &&
+            category.includeInGrossProfitCoverage)
+          l10n.expenseCategoryCoverageIncluded,
+        if (category.parentId != null &&
+            !category.includeInGrossProfitCoverage)
+          l10n.expenseCategoryCoverageExcluded,
       ].join(' ');
       return containsNormalizedSearch(text, _query);
     }).toList()..sort(_sortCategories);
