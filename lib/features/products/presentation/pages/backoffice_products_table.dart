@@ -28,8 +28,7 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
   final _search = TextEditingController();
   String _query = '';
   String _status = 'all';
-  String _pos = 'all';
-  String _inventory = 'all';
+  String _kind = 'all';
   String? _category;
   int _page = 0;
   int _pageSize = 15;
@@ -53,11 +52,9 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
     final filtered = widget.products.where((product) {
       if (_status == 'active' && !product.isActive) return false;
       if (_status == 'inactive' && product.isActive) return false;
-      if (_pos == 'yes' && !product.isAvailableInPos) return false;
-      if (_pos == 'no' && product.isAvailableInPos) return false;
-      if (_inventory == 'yes' && !product.tracksInventory) return false;
-      if (_inventory == 'no' && product.tracksInventory) return false;
-      if (_category != null && product.categoryId != _category) return false;
+      if (_kind == 'raw' && !product.isRawMaterial) return false;
+      if (_kind == 'finished' && product.isRawMaterial) return false;
+      if (_category != null && !_isInCategory(product.categoryId, _category!)) return false;
       return [
         product.name,
         widget.categoryPathFor(product.categoryId, widget.categories),
@@ -103,8 +100,7 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
     final hasFilters =
         _query.isNotEmpty ||
         _status != 'all' ||
-        _pos != 'all' ||
-        _inventory != 'all' ||
+        _kind != 'all' ||
         _category != null;
     final categories = widget.categories.toList()
       ..sort((a, b) => a.name.compareTo(b.name));
@@ -141,7 +137,7 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
                 width: 380,
                 child: TextField(
                   controller: _search,
-                  onChanged: (value) => setState(() => _query = value),
+                  onChanged: (value) => setState(() { _query = value; _page = 0; }),
                   decoration: InputDecoration(
                     hintText: 'Buscar producto',
                     prefixIcon: const Icon(Icons.search),
@@ -152,6 +148,7 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
                             onPressed: () => setState(() {
                               _search.clear();
                               _query = '';
+                              _page = 0;
                             }),
                             icon: const Icon(Icons.close, size: 18),
                           ),
@@ -159,11 +156,16 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
                   ),
                 ),
               ),
+              _selector('Tipo', _kind, const {
+                'all': 'Todos',
+                'raw': 'Materia prima',
+                'finished': 'Producto terminado',
+              }, (value) => setState(() { _kind = value; _page = 0; })),
               _selector('Estado', _status, const {
                 'all': 'Todos',
                 'active': 'Activos',
                 'inactive': 'Inactivos',
-              }, (value) => setState(() => _status = value)),
+              }, (value) => setState(() { _status = value; _page = 0; })),
               SizedBox(
                 width: 180,
                 child: DropdownButtonFormField<String?>(
@@ -181,28 +183,15 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
                       DropdownMenuItem<String?>(
                         value: category.id,
                         child: Text(
-                          category.name,
+                          category.parentId == null
+                              ? category.name
+                              : widget.categoryPathFor(category.id, widget.categories),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
                   ],
-                  onChanged: (value) => setState(() => _category = value),
+                  onChanged: (value) => setState(() { _category = value; _page = 0; }),
                 ),
-              ),
-              _selector('POS', _pos, const {
-                'all': 'Todos',
-                'yes': 'Disponible',
-                'no': 'No disponible',
-              }, (value) => setState(() => _pos = value)),
-              _selector(
-                'Inventario',
-                _inventory,
-                const {
-                  'all': 'Todos',
-                  'yes': 'Controla',
-                  'no': 'No controla',
-                },
-                (value) => setState(() => _inventory = value),
               ),
               if (hasFilters)
                 TextButton.icon(
@@ -210,8 +199,8 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
                     _search.clear();
                     _query = '';
                     _status = 'all';
-                    _pos = 'all';
-                    _inventory = 'all';
+                    _kind = 'all';
+                    _page = 0;
                     _category = null;
                   }),
                   icon: const Icon(Icons.filter_alt_off_outlined, size: 18),
@@ -360,6 +349,19 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
         ],
       ),
     );
+  }
+
+  bool _isInCategory(String productCategoryId, String selectedId) {
+    final categoriesById = <String, ProductCategory>{
+      for (final category in widget.categories) category.id: category,
+    };
+    String? current = productCategoryId;
+    final visited = <String>{};
+    while (current != null && visited.add(current)) {
+      if (current == selectedId) return true;
+      current = categoriesById[current]?.parentId;
+    }
+    return false;
   }
 
   Widget _selector(
