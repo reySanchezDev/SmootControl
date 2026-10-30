@@ -73,7 +73,7 @@ extension _CreateProductDialogLayout on _CreateProductDialogState {
                         selectedCategoryId: _selectedCategoryId,
                         focusNode: _categoryFocus,
                         onChanged: (value) {
-                          setState(() {
+                          _updateForm(() {
                             _selectedCategoryId = value;
                             _error = null;
                           });
@@ -106,10 +106,10 @@ extension _CreateProductDialogLayout on _CreateProductDialogState {
                         isRawMaterial: _isRawMaterial,
                         usesRecipe: _usesRecipe,
                         tracksInventory: _tracksInventory,
-                        onActiveChanged: (v) => setState(() => _isActive = v),
+                        onActiveChanged: (v) => _updateForm(() => _isActive = v),
                         onAvailableInPosChanged: (v) =>
-                            setState(() => _isAvailableInPos = v),
-                        onRawMaterialChanged: (v) => setState(() {
+                            _updateForm(() => _isAvailableInPos = v),
+                        onRawMaterialChanged: (v) => _updateForm(() {
                           _isRawMaterial = v;
                           if (v) {
                             _isAvailableInPos = false;
@@ -117,9 +117,9 @@ extension _CreateProductDialogLayout on _CreateProductDialogState {
                           }
                         }),
                         onUsesRecipeChanged: (v) =>
-                            setState(() => _usesRecipe = v),
+                            _updateForm(() => _usesRecipe = v),
                         onTracksInventoryChanged: (v) =>
-                            setState(() => _tracksInventory = v),
+                            _updateForm(() => _tracksInventory = v),
                       ),
                       if (_tracksInventory) ...[
                         const SizedBox(height: 12),
@@ -136,7 +136,7 @@ extension _CreateProductDialogLayout on _CreateProductDialogState {
                         groups: _activeModifierGroups,
                         selectedIds: _selectedModifierGroupIds,
                         onChanged: (id, {required selected}) {
-                          setState(() {
+                          _updateForm(() {
                             if (selected) {
                               _selectedModifierGroupIds.add(id);
                             } else {
