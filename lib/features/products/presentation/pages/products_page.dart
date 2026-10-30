@@ -6,6 +6,7 @@ import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
 import 'package:smoo_control/core/design_system/app_searchable_list_section.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
 import 'package:smoo_control/core/design_system/app_tile_actions.dart';
+import 'package:smoo_control/core/design_system/app_message_dialog.dart';
 import 'package:smoo_control/core/design_system/backoffice_data_table.dart';
 import 'package:smoo_control/core/design_system/confirm_deactivate_dialog.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
@@ -50,10 +51,12 @@ class ProductsPage extends StatelessWidget {
           ],
           title: l10n.moduleProducts,
           body: BlocConsumer<ProductsBloc, ProductsState>(
-            listener: (context, state) {
+            listener: (context, state) async {
               if (state case ProductsLoaded(successMessage: final message?)) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(_successText(context, message))),
+                await showAppMessageDialog(
+                  context: context,
+                  title: l10n.moduleProducts,
+                  message: _successText(context, message),
                 );
               }
             },
