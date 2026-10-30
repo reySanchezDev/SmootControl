@@ -71,24 +71,24 @@ class _ProductsFilterBar extends StatelessWidget {
             'inactive': 'Inactivos'},
           onStatusChanged,
         ),
-        DropdownMenu<String?>(
+        DropdownMenu<String>(
           key: ValueKey(category),
           width: 320,
           label: const Text('Categoría'),
           enableFilter: true,
           enableSearch: true,
           requestFocusOnTap: true,
-          initialSelection: category,
+          initialSelection: category ?? '',
           dropdownMenuEntries: [
-            const DropdownMenuEntry<String?>(value: null, label: 'Todas'),
+            const DropdownMenuEntry<String>(value: '', label: 'Todas'),
             for (final entry in categories)
-              DropdownMenuEntry<String?>(
+              DropdownMenuEntry<String>(
                 value: entry.id,
                 label: entry.parentId == null ? entry.name :
                     categoryPathFor(entry.id, categories),
               ),
           ],
-          onSelected: onCategoryChanged,
+          onSelected: (id) => onCategoryChanged(id == '' ? null : id),
         ),
         if (active)
           TextButton.icon(
