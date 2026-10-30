@@ -10,6 +10,7 @@ class BackofficeDataTable extends StatelessWidget {
     required this.rows,
     this.columnWidths,
     this.columnAlignments,
+    this.sortableColumns,
     this.sortColumnIndex,
     this.sortAscending = true,
     this.onSort,
@@ -28,6 +29,9 @@ class BackofficeDataTable extends StatelessWidget {
   /// Alignment for each column, including its heading and every cell.
   final List<Alignment>? columnAlignments;
 
+  /// Whether each column supports sort; defaults to excluding the last.
+  final List<bool>? sortableColumns;
+
   /// Currently sorted column, if any.
   final int? sortColumnIndex;
 
@@ -45,6 +49,10 @@ class BackofficeDataTable extends StatelessWidget {
     assert(
       columnAlignments == null || columnAlignments!.length == columns.length,
       'Every column needs an alignment.',
+    );
+    assert(
+      sortableColumns == null || sortableColumns!.length == columns.length,
+      'Every column needs a sortability value.',
     );
     assert(
       rows.every((row) => row.length == columns.length),
@@ -99,8 +107,9 @@ class BackofficeDataTable extends StatelessWidget {
                                   minHeight: 42,
                                 ),
                                 child: InkWell(
-                                  onTap:
-                                      onSort == null || i == columns.length - 1
+                                  onTap: onSort == null ||
+                                          !(sortableColumns?[i] ??
+                                              i != columns.length - 1)
                                       ? null
                                       : () => onSort!(i),
                                   child: cell(
@@ -114,7 +123,8 @@ class BackofficeDataTable extends StatelessWidget {
                                           ),
                                         ),
                                         if (onSort != null &&
-                                            i != columns.length - 1) ...[
+                                            (sortableColumns?[i] ??
+                                                i != columns.length - 1)) ...[
                                           const SizedBox(width: 4),
                                           Icon(
                                             sortColumnIndex == i
