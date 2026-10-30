@@ -144,11 +144,32 @@ class _BackofficeWorkspaceState extends State<BackofficeWorkspace> {
     ];
     final index = visible.indexWhere((item) => item.id == _activeId);
 
+    final compact = MediaQuery.sizeOf(context).width < 720;
     return Scaffold(
+      drawer: compact
+          ? Drawer(
+              child: SafeArea(
+                child: ListView(
+                  children: [
+                    for (final item in widget.items)
+                      ListTile(
+                        leading: Icon(item.icon),
+                        title: Text(item.label),
+                        selected: item.id == _activeId,
+                        onTap: () {
+                          Navigator.of(context).pop();
+                          _open(item.id);
+                        },
+                      ),
+                  ],
+                ),
+              ),
+            )
+          : null,
       body: SafeArea(
         child: Row(
           children: [
-            BackofficeSidebar(
+            if (!compact) BackofficeSidebar(
               items: [
                 for (final item in widget.items)
                   BackofficeNavItem(
@@ -166,33 +187,23 @@ class _BackofficeWorkspaceState extends State<BackofficeWorkspace> {
             Expanded(
               child: Column(
                 children: [
-                  Container(
+                  SizedBox(
                     height: 48,
-                    color: scheme.surfaceContainerLow,
-                    alignment: Alignment.centerLeft,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Row(
                       children: [
+                        if (compact)
+                          Builder(
+                            builder: (innerContext) => IconButton(
+                              tooltip: 'Abrir menú',
+                              onPressed: () =>
+                                  Scaffold.of(innerContext).openDrawer(),
+                              icon: const Icon(Icons.menu_rounded),
+                            ),
+                          ),
                         Expanded(
-                          child: Text(
-                            'SmooControl · Backoffice',
-                            style: Theme.of(context).textTheme.titleSmall,
-                          ),
-                        ),
-                        if (widget.onSignOut != null)
-                          IconButton(
-                            tooltip: 'Cerrar sesión',
-                            onPressed: widget.onSignOut,
-                            icon: const Icon(Icons.logout_rounded),
-                          ),
-                      ],
-                    ),
-                  ),
-                  SizedBox(
-                    height: 44,
-                    child: ListView(
-                      scrollDirection: Axis.horizontal,
-                      children: [
+                          child: ListView(
+                            scrollDirection: Axis.horizontal,
+                            children: [
                         for (final item in visible)
                           Semantics(
                             selected: item.id == _activeId,
@@ -222,6 +233,16 @@ class _BackofficeWorkspaceState extends State<BackofficeWorkspace> {
                                 const SizedBox(width: 8),
                               ],
                             ),
+                          ),
+                            ],
+                          ),
+                        ),
+                        if (widget.onSignOut != null)
+                          IconButton(
+                            tooltip: 'Cerrar sesión',
+                            onPressed: widget.onSignOut,
+                            icon: const Icon(Icons.logout_rounded),
+                            color: scheme.error,
                           ),
                       ],
                     ),
