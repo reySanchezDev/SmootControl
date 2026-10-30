@@ -47,7 +47,6 @@ class ProductCategoryDropdown extends StatelessWidget {
         ),
         initialSelection: selectedCategoryId,
         enableFilter: true,
-        enableSearch: true,
         requestFocusOnTap: true,
         focusNode: focusNode,
         dropdownMenuEntries: [
