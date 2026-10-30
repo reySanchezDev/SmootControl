@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:smoo_control/core/design_system/app_button.dart';
+import 'package:smoo_control/core/design_system/backoffice_collection_view.dart';
 import 'package:smoo_control/core/design_system/app_empty_state.dart';
 import 'package:smoo_control/core/design_system/app_input.dart';
 import 'package:smoo_control/core/design_system/app_loading_page.dart';
@@ -21,6 +22,7 @@ part 'inventory_batch_product_dialog_part.dart';
 part 'inventory_batch_rows_part.dart';
 part 'inventory_batch_widgets_part.dart';
 part 'inventory_stock_tabs_part.dart';
+part 'inventory_stock_tables_part.dart';
 
 /// Inventory stock management page.
 class InventoryPage extends StatefulWidget {
