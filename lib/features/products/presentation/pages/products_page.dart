@@ -70,10 +70,10 @@ class ProductsPage extends StatelessWidget {
                   title: l10n.moduleProducts,
                 ),
                 ProductsLoaded(:final products) when products.isEmpty =>
-                  AppEmptyState(
-                    icon: Icons.local_cafe_outlined,
-                    message: l10n.emptyProductsMessage,
-                    title: l10n.emptyProductsTitle,
+                  _emptyProductsPanel(
+                    context,
+                    l10n,
+                    () => _openCreateDialog(context),
                   ),
                 ProductsLoaded(:final products) => FutureBuilder(
                   future: _loadCategories(),
