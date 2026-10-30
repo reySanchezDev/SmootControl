@@ -106,7 +106,8 @@ extension _CreateProductDialogLayout on _CreateProductDialogState {
                         isRawMaterial: _isRawMaterial,
                         usesRecipe: _usesRecipe,
                         tracksInventory: _tracksInventory,
-                        onActiveChanged: (v) => _updateForm(() => _isActive = v),
+                        onActiveChanged: (v) =>
+                            _updateForm(() => _isActive = v),
                         onAvailableInPosChanged: (v) =>
                             _updateForm(() => _isAvailableInPos = v),
                         onRawMaterialChanged: (v) => _updateForm(() {
