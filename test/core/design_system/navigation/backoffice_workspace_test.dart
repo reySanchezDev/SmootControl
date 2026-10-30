@@ -43,7 +43,6 @@ void main() {
     expect(find.text('Página home'), findsOneWidget);
   });
 
-
   testWidgets('Inicio can close and reopen without a pinned tab', (
     tester,
   ) async {
@@ -67,8 +66,16 @@ void main() {
   testWidgets('compact workspace navigates from responsive drawer', (
     tester,
   ) async {
-    await tester.binding.setSurfaceSize(const Size(390, 844));
-    addTearDown(() => tester.binding.setSurfaceSize(null));
+    // Flutter tests use a logical viewport derived from physical pixels / DPR.
+    // Fix both explicitly so this test actually exercises the 390 px layout.
+    tester.view
+      ..devicePixelRatio = 1
+      ..physicalSize = const Size(390, 844);
+    addTearDown(() {
+      tester.view
+        ..resetPhysicalSize()
+        ..resetDevicePixelRatio();
+    });
     await tester.pumpWidget(
       MaterialApp(
         home: BackofficeWorkspace(
@@ -77,10 +84,19 @@ void main() {
         ),
       ),
     );
+    expect(
+      tester.getSize(find.byType(BackofficeWorkspace)).width,
+      390,
+    );
     expect(find.byTooltip('Abrir menú'), findsOneWidget);
     await tester.tap(find.byTooltip('Abrir menú'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Productos'));
+    final drawerProducts = find.descendant(
+      of: find.byType(Drawer),
+      matching: find.text('Productos'),
+    );
+    expect(drawerProducts, findsOneWidget);
+    await tester.tap(drawerProducts);
     await tester.pumpAndSettle();
     expect(find.text('Página products'), findsOneWidget);
     expect(tester.takeException(), isNull);
