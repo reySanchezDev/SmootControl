@@ -1,6 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:smoo_control/core/design_system/navigation/backoffice_sidebar.dart';
 
+/// Marks pages hosted inside a tabbed Backoffice workspace.
+class BackofficeWorkspaceScope extends InheritedWidget {
+  /// Creates a stable marker for nested pages.
+  const BackofficeWorkspaceScope({required super.child, super.key});
+
+  /// Whether this context is hosted inside the Backoffice.
+  static bool contains(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<BackofficeWorkspaceScope>() !=
+      null;
+
+  @override
+  bool updateShouldNotify(BackofficeWorkspaceScope oldWidget) => false;
+}
+
 /// Identifies a work tab without conflating separate records of one module.
 @immutable
 class BackofficeWorkspaceItem {
@@ -260,9 +274,11 @@ class _BackofficeWorkspaceState extends State<BackofficeWorkspace> {
                             index: index,
                             children: [
                               for (final item in visible)
-                                KeyedSubtree(
-                                  key: ValueKey(item.id),
-                                  child: widget.pageBuilder(context, item),
+                                BackofficeWorkspaceScope(
+                                  child: KeyedSubtree(
+                                    key: ValueKey(item.id),
+                                    child: widget.pageBuilder(context, item),
+                                  ),
                                 ),
                             ],
                           ),
