@@ -54,7 +54,9 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
       if (_status == 'inactive' && product.isActive) return false;
       if (_kind == 'raw' && !product.isRawMaterial) return false;
       if (_kind == 'finished' && product.isRawMaterial) return false;
-      if (_category != null && !_isInCategory(product.categoryId, _category!)) return false;
+      if (_category != null && !_isInCategory(product.categoryId, _category!)) {
+        return false;
+      }
       return [
         product.name,
         widget.categoryPathFor(product.categoryId, widget.categories),
@@ -137,7 +139,10 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
                 width: 380,
                 child: TextField(
                   controller: _search,
-                  onChanged: (value) => setState(() { _query = value; _page = 0; }),
+                  onChanged: (value) => setState(() {
+                    _query = value;
+                    _page = 0;
+                  }),
                   decoration: InputDecoration(
                     hintText: 'Buscar producto',
                     prefixIcon: const Icon(Icons.search),
@@ -156,16 +161,33 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
                   ),
                 ),
               ),
-              _selector('Tipo', _kind, const {
-                'all': 'Todos',
-                'raw': 'Materia prima',
-                'finished': 'Producto terminado',
-              }, (value) => setState(() { _kind = value; _page = 0; }), width: 200),
-              _selector('Estado', _status, const {
-                'all': 'Todos',
-                'active': 'Activos',
-                'inactive': 'Inactivos',
-              }, (value) => setState(() { _status = value; _page = 0; })),
+              _selector(
+                'Tipo',
+                _kind,
+                const {
+                  'all': 'Todos',
+                  'raw': 'Materia prima',
+                  'finished': 'Producto terminado',
+                },
+                (value) => setState(() {
+                  _kind = value;
+                  _page = 0;
+                }),
+                width: 200,
+              ),
+              _selector(
+                'Estado',
+                _status,
+                const {
+                  'all': 'Todos',
+                  'active': 'Activos',
+                  'inactive': 'Inactivos',
+                },
+                (value) => setState(() {
+                  _status = value;
+                  _page = 0;
+                }),
+              ),
               SizedBox(
                 width: 230,
                 child: DropdownButtonFormField<String?>(
@@ -185,12 +207,18 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
                         child: Text(
                           category.parentId == null
                               ? category.name
-                              : widget.categoryPathFor(category.id, widget.categories),
+                              : widget.categoryPathFor(
+                                  category.id,
+                                  widget.categories,
+                                ),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
                   ],
-                  onChanged: (value) => setState(() { _category = value; _page = 0; }),
+                  onChanged: (value) => setState(() {
+                    _category = value;
+                    _page = 0;
+                  }),
                 ),
               ),
               if (hasFilters)
