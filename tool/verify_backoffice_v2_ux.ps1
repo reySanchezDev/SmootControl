@@ -8,7 +8,18 @@ $root = Resolve-Path (Join-Path $PSScriptRoot '..')
 Push-Location $root
 try {
     Write-Host '[1/5] Reglas de 300 líneas para Dart modificado'
-    $paths = @(git diff --name-only 'main...HEAD' -- '*.dart')
+    # A pull-request checkout may not create a local main branch.
+    git rev-parse --verify 'refs/remotes/origin/main' *> $null
+    $base = if ($LASTEXITCODE -eq 0) {
+        'origin/main'
+    } else {
+        git rev-parse --verify 'refs/heads/main' *> $null
+        if ($LASTEXITCODE -ne 0) {
+            throw 'No se encontró origin/main ni main para comparar.'
+        }
+        'main'
+    }
+    $paths = @(git diff --name-only "$base...HEAD" -- '*.dart')
     if ($LASTEXITCODE -ne 0) { throw 'No se pudo obtener la lista de cambios.' }
     $overLimit = @()
     foreach ($path in $paths) {
