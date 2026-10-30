@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smoo_control/core/design_system/app_empty_state.dart';
 import 'package:smoo_control/core/design_system/app_loading_page.dart';
+import 'package:smoo_control/core/design_system/backoffice_new_action.dart';
+import 'package:smoo_control/core/design_system/app_message_dialog.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/features/expenses/domain/entities/expense_category.dart';
@@ -30,8 +32,7 @@ class ExpensesPage extends StatelessWidget {
       child: Builder(
         builder: (context) => AppPageScaffold(
           actions: [
-            IconButton(
-              icon: const Icon(Icons.add),
+            BackofficeNewAction(
               onPressed: () {
                 final state = context.read<ExpensesBloc>().state;
                 final categories = state is ExpensesOverviewLoaded
@@ -41,7 +42,6 @@ class ExpensesPage extends StatelessWidget {
                   _openCategoryDialog(context, categories: categories),
                 );
               },
-              tooltip: l10n.createExpenseCategoryTitle,
             ),
           ],
           title: l10n.moduleExpenses,
