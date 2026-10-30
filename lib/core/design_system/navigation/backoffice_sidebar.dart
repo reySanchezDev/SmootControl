@@ -184,7 +184,9 @@ class BackofficeSidebar extends StatelessWidget {
                                       borderRadius: BorderRadius.circular(8),
                                       onTap: () => onSelected(item.id),
                                       child: ConstrainedBox(
-                                        constraints: const BoxConstraints(minHeight: 42),
+                                        constraints: const BoxConstraints(
+                                          minHeight: 42,
+                                        ),
                                         child: Row(
                                           mainAxisAlignment: collapsed
                                               ? MainAxisAlignment.center
@@ -276,4 +278,3 @@ class BackofficeSidebar extends StatelessWidget {
     );
   }
 }
-
