@@ -132,6 +132,8 @@ class _CreateProductDialogState extends State<CreateProductDialog> {
     if (mounted) setState(() {});
   }
 
+  void _updateForm(VoidCallback change) => setState(change);
+
   String get _snapshot {
     final groups = _selectedModifierGroupIds.toList()..sort();
     return [
