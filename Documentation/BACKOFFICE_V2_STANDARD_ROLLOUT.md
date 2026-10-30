@@ -42,7 +42,7 @@
 - Workflow de GitHub Actions `.github/workflows/backoffice-v2-ux-quality.yml`, disparado en PR contra `main` o manualmente.
 - Pruebas añadidas para confirmaciones, campos requeridos, Inicio cerrable y Drawer móvil.
 
-**Importante:** ninguna de estas verificaciones se considera aprobada hasta disponer de salida real de Flutter/CI. El entorno que realizó los cambios no tiene el SDK Dart/Flutter y no ejecutó pruebas ni navegador.
+**Importante:** la comprobación real se ejecuta mediante GitHub Actions. Los avisos introducidos por estos cambios deben corregirse. El validador conserva una lista explícita de cuatro hallazgos preexistentes fuera del alcance UX (autenticación, gastos, ventas, mantenimiento); estos no equivalen a una aprobación de análisis global con cero avisos. Los errores de compilación y nuevos avisos sí bloquean CI. El navegador y QA manual requieren validación aparte.
 
 ## Brechas aún abiertas — NO CERTIFICADAS
 
