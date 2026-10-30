@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smoo_control/core/design_system/app_empty_state.dart';
+import 'package:smoo_control/core/design_system/backoffice_collection_view.dart';
+import 'package:smoo_control/core/design_system/backoffice_new_action.dart';
 import 'package:smoo_control/core/design_system/app_loading_page.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
-import 'package:smoo_control/core/design_system/app_searchable_list_section.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
 import 'package:smoo_control/core/design_system/app_tile_actions.dart';
 import 'package:smoo_control/core/design_system/confirm_deactivate_dialog.dart';
@@ -30,10 +31,8 @@ class UsersPage extends StatelessWidget {
       child: Builder(
         builder: (context) => AppPageScaffold(
           actions: [
-            IconButton(
-              icon: const Icon(Icons.add),
+            BackofficeNewAction(
               onPressed: () => _openCreateDialog(context),
-              tooltip: l10n.createAction,
             ),
           ],
           title: l10n.moduleUsers,
@@ -85,23 +84,70 @@ class _UsersList extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
 
-    return AppSearchableListSection<AppUserProfile>(
-      emptyMessage: l10n.emptySearchMessage,
-      emptyTitle: l10n.emptySearchTitle,
+    return BackofficeCollectionView<AppUserProfile>(
       items: state.users,
-      searchLabel: l10n.searchField,
-      searchTextForItem: (user) => [
-        user.displayName,
-        user.email,
-        _roleName(user.roleId),
-        if (user.isActive) l10n.activeStatus else l10n.inactiveStatus,
-      ].join(' '),
-      itemBuilder: (context, user) => _UserTile(
+      searchLabel: 'Buscar usuario, correo o rol',
+      searchTextFor: (user) =>
+          '${user.displayName} ${user.email} ${_roleName(user.roleId)}',
+      emptyTitle: l10n.emptySearchTitle,
+      emptyMessage: l10n.emptySearchMessage,
+      compactBuilder: (context, user) => _UserTile(
         roleName: _roleName(user.roleId),
         user: user,
         onDeactivate: () => _deactivateUser(context, user),
         onEdit: () => _openEditDialog(context, user),
       ),
+      columns: [
+        BackofficeListColumn(
+          label: 'Usuario',
+          width: 290,
+          compare: (a, b) => a.displayName.compareTo(b.displayName),
+          cell: (_, user) => Text(user.displayName, softWrap: true),
+        ),
+        BackofficeListColumn(
+          label: 'Correo',
+          width: 350,
+          compare: (a, b) => a.email.compareTo(b.email),
+          cell: (_, user) => Text(user.email, softWrap: true),
+        ),
+        BackofficeListColumn(
+          label: 'Rol',
+          width: 235,
+          compare: (a, b) =>
+              _roleName(a.roleId).compareTo(_roleName(b.roleId)),
+          cell: (_, user) => Text(_roleName(user.roleId)),
+        ),
+        BackofficeListColumn(
+          label: 'Estado',
+          width: 125,
+          alignment: Alignment.center,
+          compare: (a, b) =>
+              (a.isActive ? 1 : 0).compareTo(b.isActive ? 1 : 0),
+          cell: (_, user) =>
+              Text(user.isActive ? l10n.activeStatus : l10n.inactiveStatus),
+        ),
+        BackofficeListColumn(
+          label: 'Acciones',
+          width: 255,
+          alignment: Alignment.center,
+          cell: (_, user) => Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextButton.icon(
+                onPressed: () => _openEditDialog(context, user),
+                icon: const Icon(Icons.edit_outlined, size: 17),
+                label: Text(l10n.editAction),
+              ),
+              if (user.isActive)
+                TextButton.icon(
+                  onPressed: () => _deactivateUser(context, user),
+                  icon: const Icon(Icons.toggle_off_outlined, size: 17),
+                  label: Text(l10n.deactivateAction),
+                ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -169,14 +215,10 @@ class _UserTile extends StatelessWidget {
           leading: const Icon(Icons.person_outline),
           subtitle: AppText(
             '$roleName · $status',
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
             variant: AppTextVariant.label,
           ),
           title: AppText(
             user.displayName,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
           ),
           trailing: AppTileActions(
             compact: compact,
