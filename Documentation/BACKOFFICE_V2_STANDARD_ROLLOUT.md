@@ -102,6 +102,25 @@ Esta actualización **no se verá en el puerto 8081** hasta que Codex actualice
 el código local y reconstruya el servidor. El CI verifica compilación/tests,
 no sustituye el QA visual ni la validación de cada regla por pantalla.
 
+## UX-038 — Congruencia espacial de controles — 31/10/2026
+
+Adoptada de Quantix Engineering Standards **v0.1.2**, tanto en
+`AGENTS.md` como en `Documentation/Standards/`.
+
+- Pie de paginación único: `BackofficePaginationFooter`. Ubica **«Registros
+  por página» a la izquierda** y **rango, total y navegación a la derecha**
+  en todas las páginas administrativas que utilizan
+  `BackofficeCollectionView<T>`.
+- `_BackofficeProductsTable` utiliza el mismo componente compartido.
+  Su acción principal `Nuevo` queda alineada a la derecha, como en módulos
+  equivalentes.
+- En móvil, el pie conserva ambos grupos y los apila sin ocultar cifras.
+- Pruebas de escritorio/móvil en
+  `test/core/design_system/backoffice_pagination_footer_test.dart`.
+- **Pendiente**: auditar y adaptar listados especiales que todavía no usen la
+  colección compartida. No se declara cumplimiento universal sin QA.
+- Ningún cambio sobre `main`, producción, datos reales ni lógica del POS.
+
 ## Verificación automatizada preparada
 
 - `tool/verify_backoffice_v2_ux.ps1` comprueba límite de 300 líneas en Dart modificado, regenera l10n, ejecuta `flutter analyze`, pruebas de diseño y `flutter build web --release`.
