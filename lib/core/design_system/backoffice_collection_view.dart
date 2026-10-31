@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:smoo_control/core/design_system/app_empty_state.dart';
 import 'package:smoo_control/core/design_system/app_search_field.dart';
 import 'package:smoo_control/core/design_system/backoffice_data_table.dart';
+import 'package:smoo_control/core/design_system/backoffice_pagination_footer.dart';
 
 /// Column contract shared across administrative catalog screens.
 class BackofficeListColumn<T> {
@@ -186,52 +187,23 @@ class _BackofficeCollectionViewState<T>
                           ],
                         ),
             ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-              child: Wrap(
-                alignment: WrapAlignment.end,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                spacing: 8,
-                children: [
-                  const Text('Registros por página'),
-                  DropdownButton<int>(
-                    value: _pageSize,
-                    items: const [
-                      DropdownMenuItem(value: 10, child: Text('10')),
-                      DropdownMenuItem(value: 15, child: Text('15')),
-                      DropdownMenuItem(value: 25, child: Text('25')),
-                      DropdownMenuItem(value: 50, child: Text('50')),
-                    ],
-                    onChanged: (value) {
-                      if (value != null) {
-                        setState(() {
-                          _pageSize = value;
-                          _page = 0;
-                        });
-                      }
-                    },
-                  ),
-                  Text(
-                    '${filtered.isEmpty ? 0 : start + 1}–'
-                    '${start + shown.length} de ${filtered.length}',
-                  ),
-                  IconButton(
-                    tooltip: 'Página anterior',
-                    onPressed: current == 0
-                        ? null
-                        : () => setState(() => _page = current - 1),
-                    icon: const Icon(Icons.chevron_left),
-                  ),
-                  Text('${current + 1} / $totalPages'),
-                  IconButton(
-                    tooltip: 'Página siguiente',
-                    onPressed: current + 1 >= totalPages
-                        ? null
-                        : () => setState(() => _page = current + 1),
-                    icon: const Icon(Icons.chevron_right),
-                  ),
-                ],
-              ),
+            BackofficePaginationFooter(
+              rowsPerPage: _pageSize,
+              onRowsPerPageChanged: (value) => setState(() {
+                _pageSize = value;
+                _page = 0;
+              }),
+              firstIndex: start,
+              visibleCount: shown.length,
+              totalCount: filtered.length,
+              pageIndex: current,
+              pageCount: totalPages,
+              onPrevious: current == 0
+                  ? null
+                  : () => setState(() => _page = current - 1),
+              onNext: current + 1 >= totalPages
+                  ? null
+                  : () => setState(() => _page = current + 1),
             ),
           ],
         );
