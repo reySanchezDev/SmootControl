@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:smoo_control/core/design_system/navigation/backoffice_preview_page.dart';
 import 'package:smoo_control/core/navigation/admin_online_guard.dart';
 import 'package:smoo_control/core/navigation/app_routes.dart';
-import 'package:smoo_control/core/navigation/backoffice_preview_guard.dart';
 import 'package:smoo_control/core/navigation/route_access.dart';
 import 'package:smoo_control/features/attendance/presentation/pages/attendance_admin_page.dart';
 import 'package:smoo_control/features/attendance/presentation/pages/overtime_approvals_page.dart';
@@ -10,6 +8,7 @@ import 'package:smoo_control/features/attendance/presentation/pages/vacation_req
 import 'package:smoo_control/features/audit/presentation/pages/audit_log_page.dart';
 import 'package:smoo_control/features/cash_register/presentation/pages/cash_register_admin_page.dart';
 import 'package:smoo_control/features/catalog/presentation/pages/catalog_page.dart';
+import 'package:smoo_control/features/auth/presentation/pages/auth_gate.dart';
 import 'package:smoo_control/features/dashboard/presentation/pages/dashboard_page.dart';
 import 'package:smoo_control/features/exchange_rates/presentation/pages/exchange_rates_page.dart';
 import 'package:smoo_control/features/expenses/presentation/pages/expenses_page.dart';
@@ -40,6 +39,13 @@ import 'package:smoo_control/features/users/presentation/pages/users_page.dart';
 
 /// Builds application routes from route names.
 Route<void> onGenerateAppRoute(RouteSettings settings) {
+  // Old bookmarks must never open an illustration-only Backoffice.
+  if (settings.name == '/backoffice-v2-preview') {
+    return MaterialPageRoute<void>(
+      builder: (_) => const AuthGate(),
+      settings: const RouteSettings(name: AppRoutes.dashboard),
+    );
+  }
   return MaterialPageRoute<void>(
     builder: (_) => _guardedPage(settings.name),
     settings: settings,
@@ -50,9 +56,6 @@ Widget _guardedPage(String? routeName) {
   final page = switch (routeName) {
     AppRoutes.dashboard || null => const DashboardPage(),
     AppRoutes.pos => const PosPage(),
-    AppRoutes.backofficePreview => const BackofficePreviewGuard(
-      child: BackofficePreviewPage(),
-    ),
     AppRoutes.reports => const ReportsPage(),
     AppRoutes.reportSummary => const ReportSummaryPage(),
     AppRoutes.cashClosingReport => const CashClosingReportPage(),
@@ -103,8 +106,6 @@ Widget _guardedPage(String? routeName) {
     AppRoutes.systemMaintenance => const PilotOperationResetPage(),
     _ => const DashboardPage(),
   };
-
-  if (routeName == AppRoutes.backofficePreview) return page;
 
   return RouteAccessGuard(
     anyPermissions: RouteAccess.anyPermissionsFor(routeName),
