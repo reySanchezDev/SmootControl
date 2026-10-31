@@ -6,9 +6,9 @@ import 'package:smoo_control/features/attendance/presentation/pages/attendance_a
 import 'package:smoo_control/features/attendance/presentation/pages/overtime_approvals_page.dart';
 import 'package:smoo_control/features/attendance/presentation/pages/vacation_requests_page.dart';
 import 'package:smoo_control/features/audit/presentation/pages/audit_log_page.dart';
+import 'package:smoo_control/features/auth/presentation/pages/auth_gate.dart';
 import 'package:smoo_control/features/cash_register/presentation/pages/cash_register_admin_page.dart';
 import 'package:smoo_control/features/catalog/presentation/pages/catalog_page.dart';
-import 'package:smoo_control/features/auth/presentation/pages/auth_gate.dart';
 import 'package:smoo_control/features/dashboard/presentation/pages/dashboard_page.dart';
 import 'package:smoo_control/features/exchange_rates/presentation/pages/exchange_rates_page.dart';
 import 'package:smoo_control/features/expenses/presentation/pages/expenses_page.dart';
