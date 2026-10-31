@@ -1,6 +1,6 @@
 # UX/UI — Estándar universal Quantix
 
-**Versión:** 0.1.0. **Estado:** reglas recopiladas del propietario, con interpretaciones puntuales pendientes de ratificación.
+**Versión:** 0.1.2. **Estado:** reglas recopiladas del propietario, con interpretaciones puntuales pendientes de ratificación.
 **Principio:** software comprensible para usuarios no técnicos, productividad, coherencia visual y funcional, sin duplicar información.
 
 ## A. Vistas de registros
@@ -64,6 +64,7 @@
 | UX-035 | Responsividad funcional y legible en móvil, tableta, escritorio y escalado de texto; sin overflow ni controles inaccesibles. |
 | UX-036 | Contraseñas, PIN y secretos enmascarados inicialmente, con revelado controlado; tampoco exponerlos en registros, URLs o mensajes. |
 | UX-037 | Misma acción, mismo patrón visual y funcional mediante tokens/componentes compartidos; evitar duplicaciones. |
+| UX-038 | **Congruencia espacial entre páginas equivalentes:** títulos, acciones principales, búsquedas/filtros, tablas y pies de página se ubican en zonas y alineaciones homogéneas de la misma plantilla. En todas las listas paginadas, el selector «Registros por página» se presenta a la **izquierda** y el rango/total y controles de navegación a la **derecha**, con el mismo orden, espaciado, iconos, formatos y comportamiento. Responsividad: al apilarse conservan agrupación, secuencia y accesibilidad. Las diferencias exigen una necesidad funcional documentada; reutilizar un único componente de paginación/estructura en vez de duplicarlo. |
 
 ## Criterios pendientes de precisar
 - **UX-015:** distinguir confirmación previa obligatoria de aviso tras éxito; no agregar ventanas extra sin ratificación.
