@@ -11,6 +11,7 @@
 | SMO-005 | Métricas reales y acceso efectivo por rol; permisos también en servicios/repositorios, no sólo en la interfaz. |
 | SMO-006 | V2 en `develop/backoffice-v2` hasta aprobación explícita; no modificar `main` ni datos de producción por cambios de UX. |
 | SMO-007 | Executive Ivory mediante componentes/tokens compartidos, sin alterar el tema del POS. |
+| SMO-008 | Los cambios de interfaz del Backoffice se realizan **directamente sobre las pantallas operativas autenticadas y sus componentes reutilizables**. No introducir rutas de demostración, pantallas aisladas con registros ilustrativos ni prototipos alternativos salvo solicitud explícita del propietario. El QA debe distinguir datos reales de prueba de datos ficticios y mantener permisos y persistencia existentes. |
 
 ## Medición de SMO-001
 - Para archivos nuevos o modificados de código mantenido a mano, el límite provisional se mide por **líneas físicas completas**.
