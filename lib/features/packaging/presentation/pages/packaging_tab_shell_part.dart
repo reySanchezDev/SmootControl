@@ -49,3 +49,31 @@ class _PackagingTabShell<T> extends StatelessWidget {
     );
   }
 }
+
+Widget _packagingCompactItem({
+  required String title,
+  required String description,
+  required VoidCallback onEdit,
+}) {
+  return Card(
+    child: Padding(
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(title, softWrap: true),
+          const SizedBox(height: 6),
+          Text(description, softWrap: true),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton.icon(
+              onPressed: onEdit,
+              icon: const Icon(Icons.edit_outlined, size: 18),
+              label: const Text('Editar'),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
