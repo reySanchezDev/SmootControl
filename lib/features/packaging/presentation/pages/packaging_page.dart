@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:smoo_control/core/design_system/app_button.dart';
+import 'package:smoo_control/core/design_system/app_message_dialog.dart';
+import 'package:smoo_control/core/design_system/backoffice_collection_view.dart';
+import 'package:smoo_control/core/design_system/backoffice_new_action.dart';
 import 'package:smoo_control/core/design_system/app_empty_state.dart';
 import 'package:smoo_control/core/design_system/app_input.dart';
 import 'package:smoo_control/core/design_system/app_loading_page.dart';
@@ -18,6 +21,7 @@ import 'package:uuid/uuid.dart';
 part 'packaging_dialogs_part.dart';
 part 'packaging_models_part.dart';
 part 'packaging_responsive_dialog_part.dart';
+part 'packaging_tab_shell_part.dart';
 part 'packaging_tabs_part.dart';
 
 /// Manages sales types, packaging items and product packaging rules.
@@ -182,13 +186,17 @@ class _PackagingPageState extends State<PackagingPage> {
     if (!mounted) return;
     switch (result) {
       case AppSuccess():
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(successMessage)),
-        );
         setState(_reload);
+        await showAppMessageDialog(
+          context: context,
+          title: 'Registro guardado',
+          message: successMessage,
+        );
       case AppFailureResult(:final error):
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(error.message)),
+        await showAppMessageDialog(
+          context: context,
+          title: 'No se pudo guardar',
+          message: error.message,
         );
     }
   }
