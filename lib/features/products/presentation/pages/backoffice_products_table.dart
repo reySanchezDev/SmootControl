@@ -88,15 +88,13 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Row(
-            children: [
-
-              FilledButton.icon(
-                onPressed: widget.onCreate,
-                icon: const Icon(Icons.add_rounded),
-                label: const Text('Nuevo'),
-              ),
-            ],
+          Align(
+            alignment: Alignment.centerRight,
+            child: FilledButton.icon(
+              onPressed: widget.onCreate,
+              icon: const Icon(Icons.add_rounded),
+              label: const Text('Nuevo'),
+            ),
           ),
           const SizedBox(height: 12),
           _ProductsFilterBar(
@@ -225,48 +223,23 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
                   ),
           ),
           const SizedBox(height: 8),
-          Row(
-            children: [
-              const Text('Registros por página'),
-              const SizedBox(width: 8),
-              DropdownButton<int>(
-                value: _pageSize,
-                items: const [
-                  DropdownMenuItem(value: 10, child: Text('10')),
-                  DropdownMenuItem(value: 15, child: Text('15')),
-                  DropdownMenuItem(value: 25, child: Text('25')),
-                  DropdownMenuItem(value: 50, child: Text('50')),
-                ],
-                onChanged: (value) {
-                  if (value != null) {
-                    setState(() {
-                      _pageSize = value;
-                      _page = 0;
-                    });
-                  }
-                },
-              ),
-              const Spacer(),
-              Text(
-                '${filtered.isEmpty ? 0 : start + 1}–'
-                '${start + visible.length} de ${filtered.length}',
-              ),
-              IconButton(
-                tooltip: 'Página anterior',
-                onPressed: page > 0
-                    ? () => setState(() => _page = page - 1)
-                    : null,
-                icon: const Icon(Icons.chevron_left),
-              ),
-              Text('${page + 1} / $pageCount'),
-              IconButton(
-                tooltip: 'Página siguiente',
-                onPressed: page + 1 < pageCount
-                    ? () => setState(() => _page = page + 1)
-                    : null,
-                icon: const Icon(Icons.chevron_right),
-              ),
-            ],
+          BackofficePaginationFooter(
+            rowsPerPage: _pageSize,
+            onRowsPerPageChanged: (value) => setState(() {
+              _pageSize = value;
+              _page = 0;
+            }),
+            firstIndex: start,
+            visibleCount: visible.length,
+            totalCount: filtered.length,
+            pageIndex: page,
+            pageCount: pageCount,
+            onPrevious: page == 0
+                ? null
+                : () => setState(() => _page = page - 1),
+            onNext: page + 1 >= pageCount
+                ? null
+                : () => setState(() => _page = page + 1),
           ),
         ],
       ),
