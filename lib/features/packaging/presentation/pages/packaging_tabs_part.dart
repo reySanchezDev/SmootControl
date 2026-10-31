@@ -188,7 +188,8 @@ class _RulesTab extends StatelessWidget {
           '${_typeName(item.salesTypeId)} '
           '${_packagingName(item.packagingItemId)}',
       emptyTitle: 'Sin reglas de empaque',
-      emptyMessage: 'Definí qué empaque consume cada producto por tipo de venta.',
+      emptyMessage:
+          'Definí qué empaque consume cada producto por tipo de venta.',
       onCreate: products.isEmpty || packagingItems.isEmpty || salesTypes.isEmpty
           ? null
           : () => onSave(null),
