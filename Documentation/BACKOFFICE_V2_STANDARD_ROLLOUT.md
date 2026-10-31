@@ -57,8 +57,8 @@ tarjetas móviles; sin duplicar tablas por módulo.
 - Gastos: tabla de categorías, cobertura, jerarquía y acciones.
 - Inventario: existencias de productos y empaques con unidades, costos y fecha.
 - Movimientos: tabla con documentos, fecha, tipo, líneas y neto.
-- Empaques: estructura superior adaptada al scaffold; **sus tres listas
-  internas aún requieren migración a tablas**.
+- Empaques: las tres pestañas usan tablas estándar, manteniendo formularios
+  y operaciones reales. Las interacciones requieren QA visual y funcional.
 - Roles: tabla de nombre, descripción, cantidad de permisos, estado y
   operaciones existentes, conservando protección de roles del sistema.
 - Usuarios: tabla de usuario, correo, rol, estado y acciones, sin mostrar
@@ -72,13 +72,35 @@ tarjetas móviles; sin duplicar tablas por módulo.
 
 **No certificar cumplimiento total:** Ventas, Caja, Personal, Planilla,
 Reportes, Ajustes y Auditoría; además quedan adaptaciones funcionales de
-Marcadas, Vacaciones, Empaques y formularios internos de otros módulos.
+Marcadas, Vacaciones y formularios internos de otros módulos.
 La adopción de una tabla no acredita automáticamente las 37 reglas.
 
 La comprobación UX-034 y los tests no sustituyen QA visual; las capturas
 anteriores corresponden a una compilación local **anterior** a esta pasada.
 No actualizar servidores locales mediante el repositorio remoto de manera
 automática; sincronizar y reconstruir después de CI exitoso y aprobación QA.
+
+## Retiro definitivo del prototipo ilustrativo — 31/10/2026
+
+Por decisión explícita del propietario, **no se crearán prototipos visuales
+aislados ni pantallas con datos ficticios para validar Backoffice V2**.
+Las mejoras se hacen directamente sobre los módulos operativos y sus
+componentes compartidos, respetando la autenticación y permisos.
+
+- Eliminados `BackofficePreviewPage` y `BackofficePreviewGuard`.
+- Retirada de `AppRoutes` la ruta pública de preview.
+- Para conservar marcadores del navegador, la dirección histórica
+  `/#/backoffice-v2-preview` abre el `AuthGate` real, nunca datos de ejemplo.
+- La entrada principal sigue siendo `http://127.0.0.1:8081/` tras
+  actualizar y reconstruir el servidor local; no es un entorno de demostración.
+- Empaques: las tres pestañas operativas (Tipos de venta, Empaques y Reglas)
+  usan `BackofficeCollectionView`, con búsqueda, ordenación, paginación y
+  etiquetas completas, sin tocar los repositorios de datos.
+- Comprobaciones automáticas nuevas de rutas heredadas y navegación real.
+
+Esta actualización **no se verá en el puerto 8081** hasta que Codex actualice
+el código local y reconstruya el servidor. El CI verifica compilación/tests,
+no sustituye el QA visual ni la validación de cada regla por pantalla.
 
 ## Verificación automatizada preparada
 
