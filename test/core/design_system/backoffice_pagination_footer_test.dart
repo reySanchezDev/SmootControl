@@ -19,7 +19,7 @@ void main() {
     ),
   );
 
-  testWidgets('UX-038 desktop footer keeps page size left and navigation right', (
+  testWidgets('UX-038 desktop footer aligns left/right groups', (
     tester,
   ) async {
     tester.view
@@ -41,7 +41,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('UX-038 mobile footer stacks consistent groups without overflow', (
+  testWidgets('UX-038 mobile footer stacks groups without overflow', (
     tester,
   ) async {
     tester.view
