@@ -60,9 +60,9 @@ class _DashboardContent extends StatelessWidget {
                         icon: Icons.point_of_sale,
                         label: l10n.primaryAction,
                         onPressed: () {
-                          unawaited(
-                            Navigator.of(context).pushNamed(AppRoutes.pos),
-                          );
+                          Navigator.of(
+                            context,
+                          ).pushNamed(AppRoutes.pos).ignore();
                         },
                       ),
                     if (access.canOpen(AppRoutes.reports))
@@ -70,9 +70,9 @@ class _DashboardContent extends StatelessWidget {
                         icon: Icons.bar_chart,
                         label: l10n.secondaryAction,
                         onPressed: () {
-                          unawaited(
-                            Navigator.of(context).pushNamed(AppRoutes.reports),
-                          );
+                          Navigator.of(
+                            context,
+                          ).pushNamed(AppRoutes.reports).ignore();
                         },
                         primary: false,
                       ),
