@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:smoo_control/core/design_system/backoffice_collection_view.dart';
+import 'package:smoo_control/core/design_system/backoffice_row_actions.dart';
 import 'package:smoo_control/features/catalog/domain/entities/product_category.dart';
 
 /// Full-width desktop catalog table; hierarchy remains available on mobile.
@@ -31,7 +32,6 @@ class CatalogBackofficeTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     return BackofficeCollectionView<ProductCategory>(
       items: categories,
       searchLabel: 'Buscar categoría, subcategoría o categoría superior',
@@ -90,20 +90,19 @@ class CatalogBackofficeTable extends StatelessWidget {
           label: 'Acciones',
           width: 258,
           alignment: Alignment.center,
-          cell: (_, item) => Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextButton.icon(
+          cell: (_, item) => BackofficeRowActions(
+            actions: [
+              BackofficeRowAction(
+                label: 'Editar',
+                icon: Icons.edit_outlined,
                 onPressed: () => onEdit(item),
-                icon: const Icon(Icons.edit_outlined, size: 17),
-                label: const Text('Editar'),
               ),
               if (item.parentId != null)
-                TextButton.icon(
+                BackofficeRowAction(
+                  label: 'Quitar nivel',
+                  icon: Icons.remove_circle_outline,
+                  destructive: true,
                   onPressed: () => onRemove(item),
-                  icon: const Icon(Icons.remove_circle_outline, size: 17),
-                  label: const Text('Quitar nivel'),
-                  style: TextButton.styleFrom(foregroundColor: colors.error),
                 ),
             ],
           ),
