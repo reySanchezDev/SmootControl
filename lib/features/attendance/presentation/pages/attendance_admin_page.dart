@@ -6,6 +6,7 @@ import 'package:smoo_control/core/design_system/app_message_dialog.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
 import 'package:smoo_control/core/design_system/backoffice_new_action.dart';
+import 'package:smoo_control/core/design_system/backoffice_collection_view.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/core/result/app_result.dart';
 import 'package:smoo_control/features/attendance/domain/entities/attendance_entry.dart';
@@ -14,6 +15,7 @@ import 'package:smoo_control/features/staff/domain/entities/employee.dart';
 import 'package:smoo_control/features/staff/domain/repositories/i_staff_repository.dart';
 
 part 'attendance_admin_widgets_part.dart';
+part 'attendance_admin_table_part.dart';
 
 /// Admin page for attendance marks.
 final class AttendanceAdminPage extends StatefulWidget {
@@ -57,40 +59,39 @@ class _AttendanceAdminPageState extends State<AttendanceAdminPage> {
           ),
       ],
       title: widget.readOnly ? 'Reporte de marcadas' : 'Marcadas',
-      body: ListView(
-        padding: const EdgeInsets.all(16),
+      body: Column(
         children: [
-          _AttendanceFilters(
-            from: _from,
-            onFrom: () => _pickDate(isFrom: true),
-            onReload: _load,
-            onStatus: (value) => setState(() => _status = value),
-            status: _status,
-            to: _to,
-            onTo: () => _pickDate(isFrom: false),
-          ),
-          const SizedBox(height: 12),
-          if (_error != null)
-            AppEmptyState(
-              icon: Icons.error_outline,
-              message: _error!,
-              title: 'Marcadas',
-            )
-          else if (_entries == null)
-            const AppLoadingPage()
-          else if (_entries!.isEmpty)
-            const AppEmptyState(
-              icon: Icons.schedule_outlined,
-              message: 'No hay marcadas para el filtro seleccionado.',
-              title: 'Sin marcadas',
-            )
-          else
-            for (final entry in _entries!)
-              _AttendanceEntryCard(
-                entry: entry,
-                onEdit: widget.readOnly ? null : () async => _openEditor(entry),
-                onVoid: widget.readOnly ? null : () => _voidEntry(entry),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: _AttendanceFilters(
+                from: _from,
+                to: _to,
+                onFrom: () => _pickDate(isFrom: true),
+                onTo: () => _pickDate(isFrom: false),
+                onStatus: (value) => setState(() => _status = value),
+                status: _status,
+                onReload: _load,
               ),
+            ),
+          ),
+          Expanded(
+            child: _error != null
+                ? AppEmptyState(
+                    icon: Icons.error_outline,
+                    message: _error!,
+                    title: 'Marcadas',
+                  )
+                : _entries == null
+                    ? const AppLoadingPage()
+                    : _AttendanceEntriesTable(
+                        items: _entries!,
+                        readOnly: widget.readOnly,
+                        onEdit: (entry) => unawaited(_openEditor(entry)),
+                        onVoid: (entry) => unawaited(_voidEntry(entry)),
+                      ),
+          ),
         ],
       ),
     );
