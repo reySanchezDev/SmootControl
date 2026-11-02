@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:smoo_control/core/design_system/backoffice_collection_view.dart';
+import 'package:smoo_control/core/design_system/backoffice_selection_toolbar.dart';
 import 'package:smoo_control/features/expenses/domain/entities/expense_category.dart';
 import 'package:smoo_control/l10n/app_localizations.dart';
 
@@ -10,6 +11,7 @@ class ExpensesBackofficeTable extends StatelessWidget {
     required this.categories,
     required this.onEdit,
     required this.onDelete,
+    required this.onCreate,
     super.key,
   });
 
@@ -21,6 +23,9 @@ class ExpensesBackofficeTable extends StatelessWidget {
 
   /// Requests deletion via the existing confirmation path.
   final ValueChanged<ExpenseCategory> onDelete;
+
+  /// Create a new expense category.
+  final VoidCallback onCreate;
 
   String _parent(ExpenseCategory item) {
     for (final candidate in categories) {
@@ -34,6 +39,38 @@ class ExpensesBackofficeTable extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     return BackofficeCollectionView<ExpenseCategory>(
       items: categories,
+      onCreate: onCreate,
+      rowKey: (item) => item.id,
+      rowLabel: (item) => item.name,
+      selectionActions: [
+        BackofficeSelectionAction(
+          label: l10n.editAction,
+          icon: Icons.edit_outlined,
+          onPressed: onEdit,
+        ),
+        BackofficeSelectionAction(
+          label: l10n.deleteAction,
+          icon: Icons.delete_outline,
+          destructive: true,
+          onPressed: onDelete,
+        ),
+      ],
+      compactBuilder: (_, item) => Card(
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(item.name, softWrap: true),
+              Text(
+                '${item.parentId == null ? 'Categoría' : 'Subcategoría'} · '
+                '${_parent(item)}',
+                softWrap: true,
+              ),
+            ],
+          ),
+        ),
+      ),
       searchLabel: 'Buscar categoría, subcategoría o estado',
       searchTextFor: (item) =>
           '${item.name} ${_parent(item)} '
@@ -85,26 +122,6 @@ class ExpensesBackofficeTable extends StatelessWidget {
               (a.isActive ? 1 : 0).compareTo(b.isActive ? 1 : 0),
           cell: (_, item) =>
               Text(item.isActive ? l10n.activeStatus : l10n.inactiveStatus),
-        ),
-        BackofficeListColumn(
-          label: 'Acciones',
-          width: 240,
-          alignment: Alignment.center,
-          cell: (_, item) => Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextButton.icon(
-                onPressed: () => onEdit(item),
-                icon: const Icon(Icons.edit_outlined, size: 18),
-                label: Text(l10n.editAction),
-              ),
-              TextButton.icon(
-                onPressed: () => onDelete(item),
-                icon: const Icon(Icons.delete_outline, size: 18),
-                label: Text(l10n.deleteAction),
-              ),
-            ],
-          ),
         ),
       ],
     );
