@@ -4,7 +4,7 @@ import 'package:smoo_control/core/design_system/app_empty_state.dart';
 import 'package:smoo_control/core/design_system/app_loading_page.dart';
 import 'package:smoo_control/core/design_system/app_message_dialog.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
-import 'package:smoo_control/core/design_system/app_searchable_list_section.dart';
+import 'package:smoo_control/core/design_system/backoffice_collection_view.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
 import 'package:smoo_control/core/design_system/app_tile_actions.dart';
 import 'package:smoo_control/core/design_system/backoffice_data_table.dart';
@@ -27,6 +27,7 @@ import 'package:smoo_control/l10n/app_localizations.dart';
 
 part 'product_tile.dart';
 part 'backoffice_products_table.dart';
+part 'backoffice_products_compact_part.dart';
 part 'backoffice_products_table_controls.dart';
 
 /// Product management page.
@@ -44,13 +45,6 @@ class ProductsPage extends StatelessWidget {
       child: Builder(
         builder: (context) => AppPageScaffold(
           showAppBar: MediaQuery.sizeOf(context).width < 1024,
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.add),
-              onPressed: () => _openCreateDialog(context),
-              tooltip: l10n.createAction,
-            ),
-          ],
           title: l10n.moduleProducts,
           body: BlocConsumer<ProductsBloc, ProductsState>(
             listener: (context, state) async {
@@ -93,40 +87,14 @@ class ProductsPage extends StatelessWidget {
                             _deactivateProduct(context, product),
                       );
                     }
-                    return AppSearchableListSection<Product>(
-                      emptyMessage: l10n.emptySearchMessage,
-                      emptyTitle: l10n.emptySearchTitle,
-                      items: products,
-                      searchLabel: l10n.searchField,
-                      searchTextForItem: (product) => [
-                        product.name,
-                        _categoryPathFor(product.categoryId, categories),
-                        if (product.isActive)
-                          l10n.activeStatus
-                        else
-                          l10n.inactiveStatus,
-                        if (product.isAvailableInPos)
-                          l10n.availableInPosStatus
-                        else
-                          l10n.unavailableInPosStatus,
-                        if (product.isRawMaterial)
-                          l10n.rawMaterialStatus
-                        else
-                          l10n.sellableProductStatus,
-                        if (product.tracksInventory) l10n.tracksInventoryField,
-                      ].join(' '),
-                      itemBuilder: (context, product) => _ProductTile(
-                        categoryPath: _categoryPathFor(
-                          product.categoryId,
-                          categories,
-                        ),
-                        product: product,
-                        onDeactivate: () => _deactivateProduct(
-                          context,
-                          product,
-                        ),
-                        onEdit: () => _openEditDialog(context, product),
-                      ),
+                    return _BackofficeProductsCompactList(
+                      products: products,
+                      categories: categories,
+                      categoryPathFor: _categoryPathFor,
+                      onCreate: () => _openCreateDialog(context),
+                      onEdit: (product) => _openEditDialog(context, product),
+                      onDeactivate: (product) =>
+                          _deactivateProduct(context, product),
                     );
                   },
                 ),
