@@ -185,8 +185,7 @@ Widget _emptyProductsPanel(
 ) {
   return Column(
     children: [
-      if (MediaQuery.sizeOf(context).width >= 1024)
-        Padding(
+      Padding(
           padding: const EdgeInsets.all(16),
           child: Align(
             alignment: Alignment.centerRight,
