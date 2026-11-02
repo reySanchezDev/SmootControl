@@ -57,6 +57,7 @@ class BackofficeSelectionToolbar<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final item = selected;
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
       child: Column(
@@ -76,15 +77,15 @@ class BackofficeSelectionToolbar<T> extends StatelessWidget {
                 ),
               for (final action in actions)
                 OutlinedButton.icon(
-                  onPressed: selected != null &&
-                          (action.enabledWhen?.call(selected as T) ?? true)
-                      ? () => action.onPressed(selected as T)
+                  onPressed: item != null &&
+                          (action.enabledWhen?.call(item) ?? true)
+                      ? () => action.onPressed(item)
                       : null,
                   icon: Icon(action.icon, size: 18),
                   label: Text(
-                    selected == null
+                    item == null
                         ? action.label
-                        : action.labelFor?.call(selected as T) ?? action.label,
+                        : action.labelFor?.call(item) ?? action.label,
                     softWrap: true,
                   ),
                   style: action.destructive
