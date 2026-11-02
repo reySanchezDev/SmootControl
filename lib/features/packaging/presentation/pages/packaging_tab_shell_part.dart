@@ -11,6 +11,9 @@ class _PackagingTabShell<T> extends StatelessWidget {
     required this.emptyMessage,
     required this.onCreate,
     required this.compactBuilder,
+    required this.rowKey,
+    required this.rowLabel,
+    required this.selectionActions,
   });
 
   final List<T> items;
@@ -21,31 +24,25 @@ class _PackagingTabShell<T> extends StatelessWidget {
   final String emptyMessage;
   final VoidCallback? onCreate;
   final Widget Function(BuildContext, T) compactBuilder;
+  final String Function(T) rowKey;
+  final String Function(T) rowLabel;
+  final List<BackofficeSelectionAction<T>> selectionActions;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-          child: Align(
-            alignment: Alignment.centerRight,
-            child: BackofficeNewAction(onPressed: onCreate),
-          ),
-        ),
-        Expanded(
-          child: BackofficeCollectionView<T>(
-            key: ValueKey(searchLabel),
-            items: items,
-            columns: columns,
-            searchTextFor: searchTextFor,
-            searchLabel: searchLabel,
-            emptyTitle: emptyTitle,
-            emptyMessage: emptyMessage,
-            compactBuilder: compactBuilder,
-          ),
-        ),
-      ],
+    return BackofficeCollectionView<T>(
+      key: ValueKey(searchLabel),
+      items: items,
+      columns: columns,
+      onCreate: onCreate,
+      rowKey: rowKey,
+      rowLabel: rowLabel,
+      selectionActions: selectionActions,
+      searchTextFor: searchTextFor,
+      searchLabel: searchLabel,
+      emptyTitle: emptyTitle,
+      emptyMessage: emptyMessage,
+      compactBuilder: compactBuilder,
     );
   }
 }
@@ -53,7 +50,6 @@ class _PackagingTabShell<T> extends StatelessWidget {
 Widget _packagingCompactItem({
   required String title,
   required String description,
-  required VoidCallback onEdit,
 }) {
   return Card(
     child: Padding(
@@ -64,14 +60,6 @@ Widget _packagingCompactItem({
           Text(title, softWrap: true),
           const SizedBox(height: 6),
           Text(description, softWrap: true),
-          Align(
-            alignment: Alignment.centerRight,
-            child: TextButton.icon(
-              onPressed: onEdit,
-              icon: const Icon(Icons.edit_outlined, size: 18),
-              label: const Text('Editar'),
-            ),
-          ),
         ],
       ),
     ),
