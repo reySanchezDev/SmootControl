@@ -66,7 +66,6 @@ class BackofficeRowActions extends StatelessWidget {
     return Align(
       alignment: Alignment.centerLeft,
       child: Wrap(
-        alignment: WrapAlignment.start,
         crossAxisAlignment: WrapCrossAlignment.center,
         spacing: 6,
         runSpacing: 6,
