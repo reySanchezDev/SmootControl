@@ -2,13 +2,13 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:smoo_control/core/design_system/app_button.dart';
 import 'package:smoo_control/core/design_system/app_empty_state.dart';
 import 'package:smoo_control/core/design_system/app_input.dart';
 import 'package:smoo_control/core/design_system/app_loading_page.dart';
 import 'package:smoo_control/core/design_system/app_message_dialog.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
+import 'package:smoo_control/core/design_system/backoffice_save_action.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/features/settings/domain/entities/business_settings.dart';
 import 'package:smoo_control/features/settings/presentation/bloc/business_settings_bloc.dart';
@@ -227,6 +227,11 @@ class _SettingsForm extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              Align(
+                alignment: Alignment.centerRight,
+                child: BackofficeSaveAction(onPressed: onSave),
+              ),
+              const SizedBox(height: 12),
               AppText(
                 l10n.businessSettingsTitle,
                 variant: AppTextVariant.titleMedium,
@@ -235,6 +240,7 @@ class _SettingsForm extends StatelessWidget {
               AppInput(
                 controller: businessNameController,
                 label: l10n.businessNameField,
+                requiredField: true,
               ),
               const SizedBox(height: 12),
               AppInput(
@@ -270,26 +276,19 @@ class _SettingsForm extends StatelessWidget {
               AppInput(
                 controller: invoicePrefixController,
                 label: l10n.invoicePrefixField,
+                requiredField: true,
               ),
               const SizedBox(height: 12),
               AppInput(
                 controller: initialNumberController,
                 keyboardType: TextInputType.number,
                 label: l10n.initialInvoiceNumberField,
+                requiredField: true,
               ),
               if (error != null) ...[
                 const SizedBox(height: 12),
-                AppText(error!, maxLines: 2),
+                AppText(error!),
               ],
-              const SizedBox(height: 20),
-              Align(
-                alignment: Alignment.centerRight,
-                child: AppButton(
-                  icon: Icons.save_outlined,
-                  label: l10n.saveAction,
-                  onPressed: onSave,
-                ),
-              ),
             ],
           ),
         ),
