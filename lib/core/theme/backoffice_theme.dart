@@ -5,8 +5,8 @@ import 'package:smoo_control/core/theme/app_theme.dart';
 ///
 /// POS keeps its existing application theme.
 abstract final class BackofficeDesignTokens {
-  /// Brand and interactive primary color.
-  static const primary = Color(0xFFB68C52);
+  /// Accessible administrative primary (white text contrast >= 4.5:1).
+  static const primary = Color(0xFF885D37);
 
   /// Primary text, optimized for reading dense administrative screens.
   static const ink = Color(0xFF302B27);
@@ -42,6 +42,7 @@ abstract final class BackofficeTheme {
       primary: BackofficeDesignTokens.primary,
       onPrimary: Colors.white,
       primaryContainer: const Color(0xFFF0E3D1),
+      secondary: BackofficeDesignTokens.primary,
       onPrimaryContainer: BackofficeDesignTokens.ink,
       surface: BackofficeDesignTokens.surface,
       surfaceContainerLow: BackofficeDesignTokens.navigation,
