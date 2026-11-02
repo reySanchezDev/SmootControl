@@ -7,12 +7,14 @@ class _EmployeeList extends StatelessWidget {
     required this.positions,
     required this.shifts,
     required this.onEdit,
+    required this.onCreate,
   });
 
   final List<Employee> employees;
   final List<EmployeePosition> positions;
   final List<EmployeeWorkShift> shifts;
   final ValueChanged<Employee> onEdit;
+  final VoidCallback onCreate;
 
   String _positionName(String? id) {
     if (id == null) return '—';
@@ -34,6 +36,16 @@ class _EmployeeList extends StatelessWidget {
   Widget build(BuildContext context) {
     return BackofficeCollectionView<Employee>(
       items: employees,
+      onCreate: onCreate,
+      rowKey: (employee) => employee.id,
+      rowLabel: (employee) => employee.fullName,
+      selectionActions: [
+        BackofficeSelectionAction(
+          label: 'Editar',
+          icon: Icons.edit_outlined,
+          onPressed: onEdit,
+        ),
+      ],
       searchLabel: 'Buscar empleado, código, puesto o turno',
       searchTextFor: (employee) => [
         employee.fullName,
@@ -58,11 +70,6 @@ class _EmployeeList extends StatelessWidget {
             if (employee.code != null) 'No. ${employee.code}',
             if (employee.isActive) 'Activo' else 'Inactivo',
           ].join(' · '), softWrap: true),
-          trailing: IconButton(
-            tooltip: 'Editar empleado',
-            onPressed: () => onEdit(employee),
-            icon: const Icon(Icons.edit_outlined),
-          ),
         ),
       ),
       columns: [
@@ -111,16 +118,6 @@ class _EmployeeList extends StatelessWidget {
               .compareTo(b.isActive ? 1 : 0),
           cell: (_, employee) =>
               Text(employee.isActive ? 'Activo' : 'Inactivo'),
-        ),
-        BackofficeListColumn(
-          label: 'Acciones',
-          width: 160,
-          alignment: Alignment.center,
-          cell: (_, employee) => TextButton.icon(
-            onPressed: () => onEdit(employee),
-            icon: const Icon(Icons.edit_outlined, size: 18),
-            label: const Text('Editar'),
-          ),
         ),
       ],
     );
