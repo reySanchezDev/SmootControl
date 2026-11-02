@@ -186,16 +186,16 @@ Widget _emptyProductsPanel(
   return Column(
     children: [
       Padding(
-          padding: const EdgeInsets.all(16),
-          child: Align(
-            alignment: Alignment.centerRight,
-            child: FilledButton.icon(
-              onPressed: onCreate,
-              icon: const Icon(Icons.add_rounded),
-              label: Text(l10n.createAction),
-            ),
+        padding: const EdgeInsets.all(16),
+        child: Align(
+          alignment: Alignment.centerRight,
+          child: FilledButton.icon(
+            onPressed: onCreate,
+            icon: const Icon(Icons.add_rounded),
+            label: Text(l10n.createAction),
           ),
         ),
+      ),
       Expanded(
         child: Center(
           child: AppEmptyState(
