@@ -219,6 +219,9 @@ class _CatalogSearchableTreeState extends State<_CatalogSearchableTree> {
             onSelect: (category) => setState(() {
               _selectedId = category.id;
             }),
+            onHierarchyChanged: () => setState(() {
+              _selectedId = null;
+            }),
           ),
         ),
       ],
