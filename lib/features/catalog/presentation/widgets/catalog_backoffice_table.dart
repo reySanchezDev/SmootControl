@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:smoo_control/core/design_system/backoffice_collection_view.dart';
-import 'package:smoo_control/core/design_system/backoffice_row_actions.dart';
+import 'package:smoo_control/core/design_system/backoffice_selection_toolbar.dart';
 import 'package:smoo_control/features/catalog/domain/entities/product_category.dart';
 
 /// Full-width desktop catalog table; hierarchy remains available on mobile.
@@ -10,6 +10,7 @@ class CatalogBackofficeTable extends StatelessWidget {
     required this.categories,
     required this.onEdit,
     required this.onRemove,
+    required this.onCreate,
     super.key,
   });
 
@@ -21,6 +22,9 @@ class CatalogBackofficeTable extends StatelessWidget {
 
   /// Handler for removing subordinate levels.
   final ValueChanged<ProductCategory> onRemove;
+
+  /// New category action at the same fixed position.
+  final VoidCallback onCreate;
 
   String _parentName(ProductCategory item) {
     if (item.parentId == null) return '—';
@@ -35,6 +39,23 @@ class CatalogBackofficeTable extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     return BackofficeCollectionView<ProductCategory>(
       items: categories,
+      onCreate: onCreate,
+      rowKey: (category) => category.id,
+      rowLabel: (category) => category.name,
+      selectionActions: [
+        BackofficeSelectionAction(
+          label: 'Editar',
+          icon: Icons.edit_outlined,
+          onPressed: onEdit,
+        ),
+        BackofficeSelectionAction(
+          label: 'Quitar nivel',
+          icon: Icons.remove_circle_outline,
+          enabledWhen: (category) => category.parentId != null,
+          destructive: true,
+          onPressed: onRemove,
+        ),
+      ],
       searchLabel: 'Buscar categoría, subcategoría o categoría superior',
       searchTextFor: (item) =>
           '${item.name} ${_parentName(item)} '
@@ -85,27 +106,6 @@ class CatalogBackofficeTable extends StatelessWidget {
               color: item.isActive ? colors.primary : colors.error,
               fontWeight: FontWeight.w600,
             ),
-          ),
-        ),
-        BackofficeListColumn(
-          label: 'Acciones',
-          width: 258,
-          alignment: Alignment.center,
-          cell: (_, item) => BackofficeRowActions(
-            actions: [
-              BackofficeRowAction(
-                label: 'Editar',
-                icon: Icons.edit_outlined,
-                onPressed: () => onEdit(item),
-              ),
-              if (item.parentId != null)
-                BackofficeRowAction(
-                  label: 'Quitar nivel',
-                  icon: Icons.remove_circle_outline,
-                  destructive: true,
-                  onPressed: () => onRemove(item),
-                ),
-            ],
           ),
         ),
       ],
