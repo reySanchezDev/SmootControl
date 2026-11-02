@@ -13,6 +13,8 @@ class CatalogTreeList extends StatefulWidget {
     required this.categories,
     required this.onEdit,
     required this.onRemove,
+    this.onSelect,
+    this.selectedId,
     this.searchQuery = '',
     super.key,
   });
@@ -25,6 +27,10 @@ class CatalogTreeList extends StatefulWidget {
 
   /// Remove level callback. Only subcategories can be removed.
   final ValueChanged<ProductCategory> onRemove;
+
+  /// Optional row-selection callback in Backoffice.
+  final ValueChanged<ProductCategory>? onSelect;
+  final String? selectedId;
 
   /// Current search query.
   final String searchQuery;
@@ -70,6 +76,10 @@ class _CatalogTreeListState extends State<CatalogTreeList> {
         for (final entry in entries)
           CatalogCategoryTile(
             category: entry.category,
+            selected: widget.selectedId == entry.category.id,
+            onSelect: widget.onSelect == null
+                ? null
+                : () => widget.onSelect!(entry.category),
             depth: entry.depth,
             hasChildren: _hasChildren(entry.category.id),
             isCollapsed: _expandedRootId != entry.category.id,
