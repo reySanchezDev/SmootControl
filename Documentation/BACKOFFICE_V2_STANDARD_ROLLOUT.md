@@ -160,6 +160,28 @@ Adoptada de Quantix Engineering Standards **v0.1.2**, tanto en
 especializados, flujos de pago/Planilla y las pantallas de informes. Un
 componente compartido no certifica automáticamente todas las reglas UX.
 
+## UX-040 — Acciones identificadas sin menús ambiguos — 02/11/2026
+
+Adoptada de Quantix Engineering Standards **v0.1.4** en `AGENTS.md` y
+`Documentation/Standards/`. Ninguna operación debe esconderse detrás de
+«Más», puntos suspensivos, «Opciones» u otro icono/comando genérico.
+
+- Componente `BackofficeRowActions`: operaciones con **nombre visible**,
+  icono de apoyo, estilo destructivo explícito y ajuste de línea responsive.
+  Rechaza nombres vacíos o genéricos.
+- Aplicado a **Métodos de pago, Categorías, Modificadores, Roles y Usuarios**.
+  «Opción» fue reemplazado por **«Agregar opción»** en Modificadores.
+- No se implementó aún una barra de herramientas dependiente de selección:
+  cambiar el modelo de interacción requiere aprobación del propietario.
+- Prueba de la regla: `test/core/design_system/backoffice_row_actions_test.dart`,
+  con casos de tres acciones en ancho estrecho, prohibición de «Más» y
+  alineación inicial cuando varía el número de operaciones.
+- **Alcance:** únicamente vistas administrativas del Backoffice. No tocar
+  apariencia ni acciones del modo App/POS o del modo Tableta.
+- **Pendiente:** adopción gradual del mismo componente en las demás tablas
+  que todavía declaran botones directamente; validar con QA visual antes
+  de certificar cumplimiento universal.
+
 ## Verificación automatizada preparada
 
 - `tool/verify_backoffice_v2_ux.ps1` comprueba límite de 300 líneas en Dart modificado, regenera l10n, ejecuta `flutter analyze`, pruebas de diseño y `flutter build web --release`.
