@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:smoo_control/core/design_system/backoffice_collection_view.dart';
-import 'package:smoo_control/core/design_system/backoffice_row_actions.dart';
+import 'package:smoo_control/core/design_system/backoffice_selection_toolbar.dart';
 import 'package:smoo_control/features/payment_methods/domain/entities/payment_method.dart';
 import 'package:smoo_control/l10n/app_localizations.dart';
 
@@ -12,6 +12,7 @@ class PaymentMethodsBackofficeTable extends StatelessWidget {
     required this.onEdit,
     required this.onDeactivate,
     required this.onRemove,
+    required this.onCreate,
     required this.canRemove,
     required this.compactBuilder,
     super.key,
@@ -29,6 +30,9 @@ class PaymentMethodsBackofficeTable extends StatelessWidget {
   /// Remove permitted levels.
   final ValueChanged<PaymentMethod> onRemove;
 
+  /// New payment method action.
+  final VoidCallback onCreate;
+
   /// Existing business rule for removing a level.
   final bool Function(PaymentMethod) canRemove;
 
@@ -40,6 +44,29 @@ class PaymentMethodsBackofficeTable extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     return BackofficeCollectionView<PaymentMethod>(
       items: methods,
+      onCreate: onCreate,
+      rowKey: (method) => method.id,
+      rowLabel: (method) => method.name,
+      selectionActions: [
+        BackofficeSelectionAction(
+          label: l10n.editAction,
+          icon: Icons.edit_outlined,
+          onPressed: onEdit,
+        ),
+        BackofficeSelectionAction(
+          label: l10n.deactivateAction,
+          icon: Icons.toggle_off_outlined,
+          enabledWhen: (method) => method.isActive,
+          onPressed: onDeactivate,
+        ),
+        BackofficeSelectionAction(
+          label: l10n.removePaymentLevelConfirm,
+          icon: Icons.remove_circle_outline,
+          enabledWhen: canRemove,
+          destructive: true,
+          onPressed: onRemove,
+        ),
+      ],
       searchLabel: 'Buscar método de pago, grupo o moneda',
       searchTextFor: (method) => [
         method.name,
@@ -80,33 +107,6 @@ class PaymentMethodsBackofficeTable extends StatelessWidget {
               (a.isActive ? 1 : 0).compareTo(b.isActive ? 1 : 0),
           cell: (_, method) =>
               Text(method.isActive ? 'Activo' : 'Inactivo'),
-        ),
-        BackofficeListColumn(
-          label: 'Acciones',
-          width: 365,
-          alignment: Alignment.center,
-          cell: (_, method) => BackofficeRowActions(
-            actions: [
-              BackofficeRowAction(
-                label: l10n.editAction,
-                icon: Icons.edit_outlined,
-                onPressed: () => onEdit(method),
-              ),
-              if (method.isActive)
-                BackofficeRowAction(
-                  label: l10n.deactivateAction,
-                  icon: Icons.toggle_off_outlined,
-                  onPressed: () => onDeactivate(method),
-                ),
-              if (canRemove(method))
-                BackofficeRowAction(
-                  label: l10n.removePaymentLevelConfirm,
-                  icon: Icons.remove_circle_outline,
-                  destructive: true,
-                  onPressed: () => onRemove(method),
-                ),
-            ],
-          ),
         ),
       ],
     );
