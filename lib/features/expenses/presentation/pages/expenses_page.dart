@@ -6,7 +6,6 @@ import 'package:smoo_control/core/design_system/app_empty_state.dart';
 import 'package:smoo_control/core/design_system/app_loading_page.dart';
 import 'package:smoo_control/core/design_system/app_message_dialog.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
-import 'package:smoo_control/core/design_system/backoffice_new_action.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/features/expenses/domain/entities/expense_category.dart';
 import 'package:smoo_control/features/expenses/presentation/bloc/expenses_bloc.dart';
@@ -31,19 +30,6 @@ class ExpensesPage extends StatelessWidget {
             ..add(const ExpenseCategoriesLoadRequested()),
       child: Builder(
         builder: (context) => AppPageScaffold(
-          actions: [
-            BackofficeNewAction(
-              onPressed: () {
-                final state = context.read<ExpensesBloc>().state;
-                final categories = state is ExpensesOverviewLoaded
-                    ? state.categories
-                    : const <ExpenseCategory>[];
-                unawaited(
-                  _openCategoryDialog(context, categories: categories),
-                );
-              },
-            ),
-          ],
           title: l10n.moduleExpenses,
           body: BlocBuilder<ExpensesBloc, ExpensesState>(
             builder: (context, state) {
@@ -55,16 +41,12 @@ class ExpensesPage extends StatelessWidget {
                   message: failure.message,
                   title: l10n.moduleExpenses,
                 ),
-                ExpensesOverviewLoaded(:final categories)
-                    when categories.isEmpty =>
-                  AppEmptyState(
-                    icon: Icons.request_quote_outlined,
-                    message: l10n.emptyExpensesMessage,
-                    title: l10n.emptyExpensesTitle,
-                  ),
                 ExpensesOverviewLoaded(:final categories) =>
                   ExpensesOverviewList(
                     categories: categories,
+                    onCreate: () => unawaited(
+                      _openCategoryDialog(context, categories: categories),
+                    ),
                     onCategoryDelete: (category) {
                       unawaited(_deleteCategory(context, category));
                     },
