@@ -1,8 +1,8 @@
 # Agentes — SmooControl / Quantix Engineering Standards
 
-Este repositorio adopta la revisión **0.1.3** del repositorio privado
+Este repositorio adopta la revisión **0.1.4** del repositorio privado
 `reySanchezDev/QuantixEngineeringStandar`, commit
-`63d3a6bfc8f3a0db61979f97a2201e75e5c6985c`.
+`1b35000430b14ac5067de293f51160d621beda6f`.
 
 ## Antes de modificar código o UI
 
@@ -26,6 +26,9 @@ políticas universales sin ratificar el cambio en el repositorio central.
   posiciones coherentes mediante componentes compartidos para todos los módulos.
 - UX-039: asegurar legibilidad y contraste WCAG AA frente al fondo efectivo,
   incluidos temas estacionales, overlays y gradientes; verificar en todos los estados.
+- UX-040: las operaciones se presentan con texto preciso y visible; no ocultar
+  acciones bajo «Más», «…», «Opciones» ni iconos sin etiqueta. Mantener
+  legibilidad responsive y permisos; no introducir agrupaciones ambiguas.
 - Respetar separación Admin Supabase remoto / POS Drift local.
 - Trabajar en `develop/backoffice-v2` hasta aprobación de integración.
 - No alterar `main`, producción, migraciones o funciones del POS durante
