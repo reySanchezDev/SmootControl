@@ -30,9 +30,11 @@ Estos contratos describen comportamientos exigidos sin imponer un framework ni d
 ## Diseño
 - Tokens centrales: colores, fuentes, tamaños, espacios, densidad, iconos y estados.
 - Consistencia y responsividad verificable sin overflow.
+- **UX-039 — Contraste efectivo:** definir pares semánticos `foreground/background` por tema; no usar colores de texto fijos independientes del fondo ni opacidad decorativa sobre información esencial. En imágenes, transparencias y gradientes medir el contraste donde el texto realmente se dibuja (la zona más desfavorable). Cumplir WCAG 2.2 AA: 4.5:1 texto normal, 3:1 texto grande y, según aplique, 3:1 para límites/indicadores de controles y gráficos significativos. Estados hover, focus, selected, disabled (tratamiento y excepciones WCAG), light/dark y temas temporales deben verificarse sin perder legibilidad.
 
 ## Pruebas
 - 0, 1 y muchas filas; cabecera fija, ordenación, paginación y filtros combinados.
 - **UX-038:** comparar Productos y Categorías con igual viewport y comprobar misma alineación del pie, encabezado, acción principal y filtros; validar apilamiento sin desbordes en móvil.
 - Formularios modificados, cierre, fallo de guardado y alternancia entre pestañas.
 - Teclado, lectura asistida, distintas resoluciones y escalado de texto.
+- **UX-039:** comprobar todas las cadenas visibles en ES/EN, CTA, hero, subtítulos, botones y pies en resoluciones y temas diferentes. Usar una medición de contraste reproducible sobre colores CSS reales (también con overlays), además de revisión visual y regresión tras cambios de paleta.
