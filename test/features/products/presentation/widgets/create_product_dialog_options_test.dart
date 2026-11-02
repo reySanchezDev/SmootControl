@@ -71,13 +71,13 @@ void main() {
 Future<void> _fillBaseProduct(WidgetTester tester) async {
   await tester.tap(find.text('Open dialog'));
   await tester.pumpAndSettle();
-  await tester.enterText(find.byType(TextField).at(0), 'Carne asada');
+  await tester.enterText(find.byType(TextFormField).at(0), 'Carne asada');
   await tester.tap(_dropdownFinder());
   await tester.pumpAndSettle();
   await tester.tap(find.text('Almuerzos').last);
   await tester.pumpAndSettle();
-  await tester.enterText(find.byType(TextField).at(1), '180');
-  await tester.enterText(find.byType(TextField).at(2), '90');
+  await tester.enterText(find.byType(TextFormField).at(1), '180');
+  await tester.enterText(find.byType(TextFormField).at(2), '90');
 }
 
 Future<void> _selectModifierGroup(WidgetTester tester, String name) async {
@@ -87,9 +87,7 @@ Future<void> _selectModifierGroup(WidgetTester tester, String name) async {
 }
 
 Finder _dropdownFinder() {
-  return find.byWidgetPredicate(
-    (widget) => widget.runtimeType.toString().startsWith('DropdownButtonForm'),
-  );
+  return find.byType(DropdownMenu<String>);
 }
 
 Future<void> _pumpDialog(

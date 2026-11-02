@@ -41,13 +41,13 @@ class _DashboardContent extends StatelessWidget {
                       AppButton(
                         icon: Icons.logout,
                         label: l10n.signOutAction,
-                      onPressed: () {
-                        context.read<AuthBloc>().add(
-                          const AuthSignOutRequested(),
-                        );
-                      },
-                      primary: false,
-                    ),
+                        onPressed: () {
+                          context.read<AuthBloc>().add(
+                            const AuthSignOutRequested(),
+                          );
+                        },
+                        primary: false,
+                      ),
                   ],
                 ),
                 const SizedBox(height: 24),
@@ -60,7 +60,9 @@ class _DashboardContent extends StatelessWidget {
                         icon: Icons.point_of_sale,
                         label: l10n.primaryAction,
                         onPressed: () {
-                          Navigator.of(context).pushNamed(AppRoutes.pos);
+                          unawaited(
+                            Navigator.of(context).pushNamed(AppRoutes.pos),
+                          );
                         },
                       ),
                     if (access.canOpen(AppRoutes.reports))
@@ -68,7 +70,9 @@ class _DashboardContent extends StatelessWidget {
                         icon: Icons.bar_chart,
                         label: l10n.secondaryAction,
                         onPressed: () {
-                          Navigator.of(context).pushNamed(AppRoutes.reports);
+                          unawaited(
+                            Navigator.of(context).pushNamed(AppRoutes.reports),
+                          );
                         },
                         primary: false,
                       ),

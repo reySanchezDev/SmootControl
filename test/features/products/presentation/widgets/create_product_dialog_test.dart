@@ -41,7 +41,7 @@ void main() {
     await tester.tap(_dropdownFinder());
     await tester.pumpAndSettle();
 
-    expect(find.text('CAFE CALIENTE / CAPUCCINO / 8 OZ'), findsOneWidget);
+    expect(find.text('CAFE CALIENTE / CAPUCCINO / 8 OZ').last, findsOneWidget);
   });
 
   testWidgets('edits product keeping the same system id', (tester) async {
@@ -76,10 +76,12 @@ void main() {
     expect(find.text('Product ID'), findsNothing);
     expect(find.text('Available in POS'), findsOneWidget);
 
-    await tester.enterText(find.byType(TextField).at(0), 'Espresso doble');
-    await tester.enterText(find.byType(TextField).at(1), '45');
-    await tester.enterText(find.byType(TextField).at(2), '15');
+    await tester.enterText(find.byType(TextFormField).at(0), 'Espresso doble');
+    await tester.enterText(find.byType(TextFormField).at(1), '45');
+    await tester.enterText(find.byType(TextFormField).at(2), '15');
     await tester.tap(find.text('Save'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Confirm'));
     await tester.pumpAndSettle();
 
     expect(savedProduct?.id, 'product-1');
@@ -133,6 +135,8 @@ void main() {
     await tester.tap(find.text('Guarnicion'));
     await tester.tap(find.text('Save'));
     await tester.pumpAndSettle();
+    await tester.tap(find.text('Confirm'));
+    await tester.pumpAndSettle();
 
     expect(savedProduct?.modifierGroupIds, [
       'modifier-bastimento',
@@ -157,13 +161,13 @@ void main() {
 
     await tester.tap(find.text('Open dialog'));
     await tester.pumpAndSettle();
-    await tester.enterText(find.byType(TextField).at(0), 'Azucar');
+    await tester.enterText(find.byType(TextFormField).at(0), 'Azucar');
     await tester.tap(_dropdownFinder());
     await tester.pumpAndSettle();
     await tester.tap(find.text('Materia prima').last);
     await tester.pumpAndSettle();
-    await tester.enterText(find.byType(TextField).at(1), '0');
-    await tester.enterText(find.byType(TextField).at(2), '12');
+    await tester.enterText(find.byType(TextFormField).at(1), '0');
+    await tester.enterText(find.byType(TextFormField).at(2), '12');
     await tester.tap(find.text('Raw material'));
     await tester.tap(find.text('Save'));
     await tester.pumpAndSettle();
@@ -191,12 +195,12 @@ void main() {
 
     await tester.tap(find.text('Open dialog'));
     await tester.pumpAndSettle();
-    await tester.enterText(find.byType(TextField).at(0), 'Harina');
+    await tester.enterText(find.byType(TextFormField).at(0), 'Harina');
     await tester.tap(_dropdownFinder());
     await tester.pumpAndSettle();
     await tester.tap(find.text('Materia prima').last);
     await tester.pumpAndSettle();
-    await tester.enterText(find.byType(TextField).at(2), '16');
+    await tester.enterText(find.byType(TextFormField).at(2), '16');
     await tester.tap(find.text('Raw material'));
     await tester.tap(find.text('Save'));
     await tester.pumpAndSettle();
@@ -223,13 +227,13 @@ void main() {
 
     await tester.tap(find.text('Open dialog'));
     await tester.pumpAndSettle();
-    await tester.enterText(find.byType(TextField).at(0), 'Pepsi');
+    await tester.enterText(find.byType(TextFormField).at(0), 'Pepsi');
     await tester.tap(_dropdownFinder());
     await tester.pumpAndSettle();
     await tester.tap(find.text('Bebidas').last);
     await tester.pumpAndSettle();
-    await tester.enterText(find.byType(TextField).at(1), '0');
-    await tester.enterText(find.byType(TextField).at(2), '10');
+    await tester.enterText(find.byType(TextFormField).at(1), '0');
+    await tester.enterText(find.byType(TextFormField).at(2), '10');
     await tester.tap(find.text('Save'));
     await tester.pumpAndSettle();
 
@@ -242,9 +246,7 @@ void main() {
 }
 
 Finder _dropdownFinder() {
-  return find.byWidgetPredicate(
-    (widget) => widget.runtimeType.toString().startsWith('DropdownButtonForm'),
-  );
+  return find.byType(DropdownMenu<String>);
 }
 
 Future<void> _pumpDialog(
