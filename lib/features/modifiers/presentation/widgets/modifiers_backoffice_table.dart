@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:smoo_control/core/design_system/backoffice_collection_view.dart';
-import 'package:smoo_control/core/design_system/backoffice_row_actions.dart';
+import 'package:smoo_control/core/design_system/backoffice_selection_toolbar.dart';
 import 'package:smoo_control/features/modifiers/domain/entities/modifier_group.dart';
 import 'package:smoo_control/features/modifiers/domain/entities/modifier_option.dart';
 import 'package:smoo_control/l10n/app_localizations.dart';
@@ -12,6 +12,7 @@ class ModifiersBackofficeTable extends StatelessWidget {
     required this.groups,
     required this.optionsFor,
     required this.onAddOption,
+    required this.onCreate,
     required this.onEditGroup,
     required this.onEditOption,
     required this.onDeactivateGroup,
@@ -27,6 +28,9 @@ class ModifiersBackofficeTable extends StatelessWidget {
 
   /// Add a modifier option.
   final ValueChanged<ModifierGroup> onAddOption;
+
+  /// Create a modifier group.
+  final VoidCallback onCreate;
 
   /// Edit a group.
   final ValueChanged<ModifierGroup> onEditGroup;
@@ -45,6 +49,27 @@ class ModifiersBackofficeTable extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     return BackofficeCollectionView<ModifierGroup>(
       items: groups,
+      onCreate: onCreate,
+      rowKey: (group) => group.id,
+      rowLabel: (group) => group.name,
+      selectionActions: [
+        BackofficeSelectionAction(
+          label: l10n.editAction,
+          icon: Icons.edit_outlined,
+          onPressed: onEditGroup,
+        ),
+        BackofficeSelectionAction(
+          label: 'Agregar opción',
+          icon: Icons.add_rounded,
+          onPressed: onAddOption,
+        ),
+        BackofficeSelectionAction(
+          label: l10n.deactivateAction,
+          icon: Icons.toggle_off_outlined,
+          enabledWhen: (group) => group.isActive,
+          onPressed: onDeactivateGroup,
+        ),
+      ],
       searchLabel: 'Buscar grupo u opción modificadora',
       searchTextFor: (group) => [
         group.name,
@@ -98,31 +123,6 @@ class ModifiersBackofficeTable extends StatelessWidget {
               (a.isActive ? 1 : 0).compareTo(b.isActive ? 1 : 0),
           cell: (_, group) =>
               Text(group.isActive ? 'Activo' : 'Inactivo'),
-        ),
-        BackofficeListColumn(
-          label: 'Acciones',
-          width: 355,
-          alignment: Alignment.center,
-          cell: (_, group) => BackofficeRowActions(
-            actions: [
-              BackofficeRowAction(
-                label: l10n.editAction,
-                icon: Icons.edit_outlined,
-                onPressed: () => onEditGroup(group),
-              ),
-              BackofficeRowAction(
-                label: 'Agregar opción',
-                icon: Icons.add_rounded,
-                onPressed: () => onAddOption(group),
-              ),
-              if (group.isActive)
-                BackofficeRowAction(
-                  label: l10n.deactivateAction,
-                  icon: Icons.toggle_off_outlined,
-                  onPressed: () => onDeactivateGroup(group),
-                ),
-            ],
-          ),
         ),
       ],
     );
