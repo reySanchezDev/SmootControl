@@ -32,6 +32,7 @@ class CatalogBackofficeTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     return BackofficeCollectionView<ProductCategory>(
       items: categories,
       searchLabel: 'Buscar categoría, subcategoría o categoría superior',
