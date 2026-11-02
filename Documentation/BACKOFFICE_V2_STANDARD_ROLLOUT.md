@@ -146,6 +146,9 @@ Adoptada de Quantix Engineering Standards **v0.1.2**, tanto en
   móviles; archivo separado para respetar 300 líneas.
 - Vacaciones: tabla paginada y filtrable, conserva aprobación/rechazo y
   confirma eliminación antes de enviar la operación al repositorio.
+- Marcadas: tabla administrativa con búsqueda, fechas, turno, estado y acciones;
+  los reportes de marcadas usan la misma tabla pero sin operaciones de edición
+  ni eliminación. Modo de marcación independiente intacto.
 - Configuración: acción Guardar arriba, campos obligatorios señalados.
 - `BackofficeTheme`: color principal con contraste AA sobre blanco, texto
   secundario y variantes reutilizables de diálogos, pestañas y botones.
