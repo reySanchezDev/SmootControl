@@ -115,5 +115,6 @@ String auditActionLabel(AppLocalizations l10n, String action) {
     'roles.save' => l10n.auditActionRoleSaved,
     'users.save' => l10n.auditActionUserSaved,
     _ => action,
-};
-  }
+  };
+}
+
