@@ -3,6 +3,7 @@ import 'package:smoo_control/core/design_system/app_empty_state.dart';
 import 'package:smoo_control/core/design_system/app_search_field.dart';
 import 'package:smoo_control/core/design_system/backoffice_data_table.dart';
 import 'package:smoo_control/core/design_system/backoffice_pagination_footer.dart';
+import 'package:smoo_control/core/design_system/backoffice_selection_toolbar.dart';
 
 /// Column contract shared across administrative catalog screens.
 class BackofficeListColumn<T> {
@@ -42,6 +43,10 @@ class BackofficeCollectionView<T> extends StatefulWidget {
     required this.emptyMessage,
     required this.emptyTitle,
     this.compactBuilder,
+    this.onCreate,
+    this.rowKey,
+    this.rowLabel,
+    this.selectionActions,
     super.key,
   });
 
@@ -66,6 +71,18 @@ class BackofficeCollectionView<T> extends StatefulWidget {
   /// Optional mobile card renderer.
   final Widget Function(BuildContext context, T item)? compactBuilder;
 
+  /// Optional primary create action in the same fixed command bar.
+  final VoidCallback? onCreate;
+
+  /// Stable identity used only in selection-based catalog lists.
+  final String Function(T item)? rowKey;
+
+  /// Record name shown alongside the selection state.
+  final String Function(T item)? rowLabel;
+
+  /// Explicit commands; never hidden behind a generic menu.
+  final List<BackofficeSelectionAction<T>>? selectionActions;
+
   @override
   State<BackofficeCollectionView<T>> createState() =>
       _BackofficeCollectionViewState<T>();
@@ -79,6 +96,7 @@ class _BackofficeCollectionViewState<T>
   int _pageSize = 15;
   int _sortColumn = 0;
   bool _ascending = true;
+  String? _selectedKey;
 
   @override
   void dispose() {
@@ -109,6 +127,17 @@ class _BackofficeCollectionViewState<T>
     final current = _page.clamp(0, totalPages - 1);
     final start = current * _pageSize;
     final shown = filtered.skip(start).take(_pageSize).toList();
+    T? selected;
+    int? selectedIndex;
+    if (widget.rowKey != null && widget.selectionActions != null) {
+      for (var i = 0; i < shown.length; i++) {
+        if (widget.rowKey!(shown[i]) == _selectedKey) {
+          selected = shown[i];
+          selectedIndex = i;
+          break;
+        }
+      }
+    }
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -116,6 +145,15 @@ class _BackofficeCollectionViewState<T>
             constraints.maxWidth < 720 && widget.compactBuilder != null;
         return Column(
           children: [
+            if (widget.selectionActions != null)
+              BackofficeSelectionToolbar<T>(
+                actions: widget.selectionActions!,
+                selected: selected,
+                selectedLabel: selected == null
+                    ? null
+                    : widget.rowLabel?.call(selected),
+                onCreate: widget.onCreate,
+              ),
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
               child: AppSearchField(
@@ -124,11 +162,13 @@ class _BackofficeCollectionViewState<T>
                 onChanged: (value) => setState(() {
                   _query = value;
                   _page = 0;
+                  _selectedKey = null;
                 }),
                 onClear: () => setState(() {
                   _searchController.clear();
                   _query = '';
                   _page = 0;
+                  _selectedKey = null;
                 }),
               ),
             ),
@@ -144,8 +184,24 @@ class _BackofficeCollectionViewState<T>
                       ? ListView.separated(
                           padding: const EdgeInsets.symmetric(horizontal: 16),
                           itemCount: shown.length,
-                          itemBuilder: (context, index) =>
-                              widget.compactBuilder!(context, shown[index]),
+                          itemBuilder: (context, index) => InkWell(
+                            onTap: widget.selectionActions == null
+                                ? null
+                                : () => setState(() {
+                                    _selectedKey = widget.rowKey!(shown[index]);
+                                  }),
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                color: selectedIndex == index
+                                    ? Theme.of(context).colorScheme.primaryContainer
+                                    : Colors.transparent,
+                              ),
+                              child: widget.compactBuilder!(
+                                context,
+                                shown[index],
+                              ),
+                            ),
+                          ),
                           separatorBuilder: (_, _) =>
                               const SizedBox(height: 8),
                         )
@@ -178,6 +234,12 @@ class _BackofficeCollectionViewState<T>
                               _page = 0;
                             });
                           },
+                          selectedRowIndex: selectedIndex,
+                          onRowSelected: widget.selectionActions == null
+                              ? null
+                              : (index) => setState(() {
+                                  _selectedKey = widget.rowKey!(shown[index]);
+                                }),
                           rows: [
                             for (final item in shown)
                               [
@@ -192,6 +254,7 @@ class _BackofficeCollectionViewState<T>
               onRowsPerPageChanged: (value) => setState(() {
                 _pageSize = value;
                 _page = 0;
+                _selectedKey = null;
               }),
               firstIndex: start,
               visibleCount: shown.length,
@@ -200,10 +263,16 @@ class _BackofficeCollectionViewState<T>
               pageCount: totalPages,
               onPrevious: current == 0
                   ? null
-                  : () => setState(() => _page = current - 1),
+                  : () => setState(() {
+                      _page = current - 1;
+                      _selectedKey = null;
+                    }),
               onNext: current + 1 >= totalPages
                   ? null
-                  : () => setState(() => _page = current + 1),
+                  : () => setState(() {
+                      _page = current + 1;
+                      _selectedKey = null;
+                    }),
             ),
           ],
         );
