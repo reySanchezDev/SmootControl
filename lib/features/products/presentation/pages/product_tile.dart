@@ -6,12 +6,14 @@ class _ProductTile extends StatelessWidget {
     required this.onDeactivate,
     required this.onEdit,
     required this.product,
+    this.selectionMode = false,
   });
 
   final String categoryPath;
   final VoidCallback onDeactivate;
   final VoidCallback onEdit;
   final Product product;
+  final bool selectionMode;
 
   @override
   Widget build(BuildContext context) {
@@ -33,8 +35,9 @@ class _ProductTile extends StatelessWidget {
                     variant: AppTextVariant.titleMedium,
                   ),
                 ),
-                AppTileActions(
-                  compact: true,
+                if (!selectionMode)
+                  AppTileActions(
+                    compact: true,
                   actions: [
                     AppTileAction(
                       icon: Icons.edit_outlined,
