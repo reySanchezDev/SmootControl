@@ -32,11 +32,7 @@ class ModifiersPage extends StatelessWidget {
           serviceLocator<ModifiersBloc>()..add(const ModifiersLoadRequested()),
       child: Builder(
         builder: (context) => AppPageScaffold(
-          actions: [
-            BackofficeNewAction(
-              onPressed: () => _openGroupDialog(context),
-            ),
-          ],
+
           title: l10n.moduleModifiers,
           body: BlocBuilder<ModifiersBloc, ModifiersState>(
             builder: (context, state) {
@@ -48,15 +44,10 @@ class ModifiersPage extends StatelessWidget {
                   message: failure.message,
                   title: l10n.moduleModifiers,
                 ),
-                ModifiersLoaded(:final catalog) when catalog.groups.isEmpty =>
-                  AppEmptyState(
-                    icon: Icons.tune_outlined,
-                    message: l10n.emptyModifiersMessage,
-                    title: l10n.emptyModifiersTitle,
-                  ),
                 ModifiersLoaded(:final catalog) =>
                   ModifiersBackofficeTable(
                     groups: catalog.groups,
+                    onCreate: () => _openGroupDialog(context),
                     optionsFor: catalog.optionsFor,
                     onAddOption: (group) => _openOptionDialog(context, group),
                     onEditGroup: (group) =>
