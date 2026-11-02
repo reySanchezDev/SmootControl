@@ -47,6 +47,7 @@ abstract final class BackofficeTheme {
       surface: BackofficeDesignTokens.surface,
       surfaceContainerLow: BackofficeDesignTokens.navigation,
       onSurface: BackofficeDesignTokens.ink,
+      onSurfaceVariant: const Color(0xFF60554C),
       outline: BackofficeDesignTokens.border,
       outlineVariant: BackofficeDesignTokens.border,
     );
@@ -74,6 +75,22 @@ abstract final class BackofficeTheme {
           minimumSize: const Size(0, BackofficeDesignTokens.controlHeight),
           shape: shape,
         ),
+      ),
+      dialogTheme: base.dialogTheme.copyWith(
+        backgroundColor: BackofficeDesignTokens.surface,
+        surfaceTintColor: Colors.transparent,
+        shape: shape,
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: colors.primary,
+          minimumSize: const Size(0, BackofficeDesignTokens.controlHeight),
+        ),
+      ),
+      tabBarTheme: TabBarThemeData(
+        labelColor: colors.primary,
+        unselectedLabelColor: colors.onSurfaceVariant,
+        indicatorColor: colors.primary,
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
