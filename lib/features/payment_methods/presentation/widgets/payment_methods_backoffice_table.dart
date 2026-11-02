@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:smoo_control/core/design_system/backoffice_collection_view.dart';
+import 'package:smoo_control/core/design_system/backoffice_row_actions.dart';
 import 'package:smoo_control/features/payment_methods/domain/entities/payment_method.dart';
 import 'package:smoo_control/l10n/app_localizations.dart';
 
@@ -84,26 +85,25 @@ class PaymentMethodsBackofficeTable extends StatelessWidget {
           label: 'Acciones',
           width: 365,
           alignment: Alignment.center,
-          cell: (_, method) => Wrap(
-            spacing: 2,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              TextButton.icon(
+          cell: (_, method) => BackofficeRowActions(
+            actions: [
+              BackofficeRowAction(
+                label: l10n.editAction,
+                icon: Icons.edit_outlined,
                 onPressed: () => onEdit(method),
-                icon: const Icon(Icons.edit_outlined, size: 18),
-                label: Text(l10n.editAction),
               ),
               if (method.isActive)
-                TextButton.icon(
+                BackofficeRowAction(
+                  label: l10n.deactivateAction,
+                  icon: Icons.toggle_off_outlined,
                   onPressed: () => onDeactivate(method),
-                  icon: const Icon(Icons.toggle_off_outlined, size: 18),
-                  label: Text(l10n.deactivateAction),
                 ),
               if (canRemove(method))
-                TextButton.icon(
+                BackofficeRowAction(
+                  label: l10n.removePaymentLevelConfirm,
+                  icon: Icons.remove_circle_outline,
+                  destructive: true,
                   onPressed: () => onRemove(method),
-                  icon: const Icon(Icons.remove_circle_outline, size: 18),
-                  label: Text(l10n.removePaymentLevelConfirm),
                 ),
             ],
           ),
