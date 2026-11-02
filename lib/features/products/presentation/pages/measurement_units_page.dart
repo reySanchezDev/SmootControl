@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:smoo_control/core/design_system/app_button.dart';
-import 'package:smoo_control/core/design_system/app_empty_state.dart';
 import 'package:smoo_control/core/design_system/app_loading_page.dart';
 import 'package:smoo_control/core/design_system/app_message_dialog.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
