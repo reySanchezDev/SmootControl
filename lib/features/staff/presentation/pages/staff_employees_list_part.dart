@@ -40,7 +40,7 @@ class _EmployeeList extends StatelessWidget {
         employee.code ?? '',
         _positionName(employee.positionName),
         _shiftName(employee.workShiftId),
-        employee.isActive ? 'activo' : 'inactivo',
+        if (employee.isActive) 'activo' else 'inactivo',
       ].join(' '),
       emptyTitle: 'Sin resultados',
       emptyMessage: 'No hay empleados que coincidan con la búsqueda.',
@@ -56,7 +56,7 @@ class _EmployeeList extends StatelessWidget {
             _positionName(employee.positionName),
             _shiftName(employee.workShiftId),
             if (employee.code != null) 'No. ${employee.code}',
-            employee.isActive ? 'Activo' : 'Inactivo',
+            if (employee.isActive) 'Activo' else 'Inactivo',
           ].join(' · '), softWrap: true),
           trailing: IconButton(
             tooltip: 'Editar empleado',
