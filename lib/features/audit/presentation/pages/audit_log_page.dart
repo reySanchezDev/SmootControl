@@ -121,15 +121,28 @@ class _AuditLogContent extends StatelessWidget {
                           Text(entry.entityName, softWrap: true),
                     ),
                     BackofficeListColumn(
-                      label: 'Detalles registrados',
-                      width: 420,
-                      cell: (_, entry) => Text(
-                        entry.details.entries
-                            .map((detail) => '${detail.key}: ${detail.value}')
-                            .join(' · '),
-                        softWrap: true,
+                      label: 'Detalle',
+                      width: 190,
+                      alignment: Alignment.center,
+                      cell: (_, entry) => TextButton.icon(
+                        onPressed: () => showDialog<void>(
+                          context: context,
+                          builder: (dialogContext) => AlertDialog(
+                            title: const Text('Detalle de auditoría'),
+                            content: AuditLogTile(entry: entry),
+                            actions: [
+                              TextButton(
+                                onPressed: () =>
+                                    Navigator.of(dialogContext).pop(),
+                                child: const Text('Cerrar'),
+                              ),
+                            ],
+                          ),
+                        ),
+                        icon: const Icon(Icons.visibility_outlined),
+                        label: const Text('Ver detalle'),
                       ),
-                    ),
+                    ),                    ),
                   ],
                 ),
         ),
