@@ -31,6 +31,7 @@ class CatalogTreeList extends StatefulWidget {
 
   /// Optional row-selection callback in Backoffice.
   final ValueChanged<ProductCategory>? onSelect;
+  /// Stable identifier of the currently selected category, if any.
   final String? selectedId;
 
   /// Clears a selection when its branch is collapsed or switched.
