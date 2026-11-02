@@ -190,15 +190,22 @@ class _BackofficeCollectionViewState<T>
                                 : () => setState(() {
                                     _selectedKey = widget.rowKey!(shown[index]);
                                   }),
-                            child: DecoratedBox(
-                              decoration: BoxDecoration(
-                                color: selectedIndex == index
-                                    ? Theme.of(context).colorScheme.primaryContainer
-                                    : Colors.transparent,
-                              ),
-                              child: widget.compactBuilder!(
-                                context,
-                                shown[index],
+                            child: Semantics(
+                              selected: selectedIndex == index,
+                              child: DecoratedBox(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: selectedIndex == index
+                                        ? Theme.of(context).colorScheme.primary
+                                        : Colors.transparent,
+                                    width: 2,
+                                  ),
+                                ),
+                                child: widget.compactBuilder!(
+                                  context,
+                                  shown[index],
+                                ),
                               ),
                             ),
                           ),
