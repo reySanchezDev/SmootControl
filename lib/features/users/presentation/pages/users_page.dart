@@ -6,8 +6,7 @@ import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
 import 'package:smoo_control/core/design_system/app_tile_actions.dart';
 import 'package:smoo_control/core/design_system/backoffice_collection_view.dart';
-import 'package:smoo_control/core/design_system/backoffice_new_action.dart';
-import 'package:smoo_control/core/design_system/backoffice_row_actions.dart';
+import 'package:smoo_control/core/design_system/backoffice_selection_toolbar.dart';
 import 'package:smoo_control/core/design_system/confirm_deactivate_dialog.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/features/users/domain/entities/app_user_profile.dart';
@@ -31,11 +30,6 @@ class UsersPage extends StatelessWidget {
           serviceLocator<UsersBloc>()..add(const UsersLoadRequested()),
       child: Builder(
         builder: (context) => AppPageScaffold(
-          actions: [
-            BackofficeNewAction(
-              onPressed: () => _openCreateDialog(context),
-            ),
-          ],
           title: l10n.moduleUsers,
           body: BlocBuilder<UsersBloc, UsersState>(
             builder: (context, state) {
@@ -46,12 +40,10 @@ class UsersPage extends StatelessWidget {
                   message: failure.message,
                   title: l10n.moduleUsers,
                 ),
-                UsersLoaded(:final users) when users.isEmpty => AppEmptyState(
-                  icon: Icons.people_outline,
-                  message: l10n.emptyUsersMessage,
-                  title: l10n.emptyUsersTitle,
+                UsersLoaded() => _UsersList(
+                  state: state,
+                  onCreate: () => _openCreateDialog(context),
                 ),
-                UsersLoaded() => _UsersList(state: state),
               };
             },
           ),
@@ -77,9 +69,10 @@ class UsersPage extends StatelessWidget {
 }
 
 class _UsersList extends StatelessWidget {
-  const _UsersList({required this.state});
+  const _UsersList({required this.state, required this.onCreate});
 
   final UsersLoaded state;
+  final VoidCallback onCreate;
 
   @override
   Widget build(BuildContext context) {
@@ -87,6 +80,22 @@ class _UsersList extends StatelessWidget {
 
     return BackofficeCollectionView<AppUserProfile>(
       items: state.users,
+      onCreate: onCreate,
+      rowKey: (user) => user.id,
+      rowLabel: (user) => user.displayName,
+      selectionActions: [
+        BackofficeSelectionAction(
+          label: l10n.editAction,
+          icon: Icons.edit_outlined,
+          onPressed: (user) => _openEditDialog(context, user),
+        ),
+        BackofficeSelectionAction(
+          label: l10n.deactivateAction,
+          icon: Icons.toggle_off_outlined,
+          enabledWhen: (user) => user.isActive,
+          onPressed: (user) => _deactivateUser(context, user),
+        ),
+      ],
       searchLabel: 'Buscar usuario, correo o rol',
       searchTextFor: (user) =>
           '${user.displayName} ${user.email} ${_roleName(user.roleId)}',
@@ -126,26 +135,6 @@ class _UsersList extends StatelessWidget {
               (a.isActive ? 1 : 0).compareTo(b.isActive ? 1 : 0),
           cell: (_, user) =>
               Text(user.isActive ? l10n.activeStatus : l10n.inactiveStatus),
-        ),
-        BackofficeListColumn(
-          label: 'Acciones',
-          width: 255,
-          alignment: Alignment.center,
-          cell: (_, user) => BackofficeRowActions(
-            actions: [
-              BackofficeRowAction(
-                label: l10n.editAction,
-                icon: Icons.edit_outlined,
-                onPressed: () => _openEditDialog(context, user),
-              ),
-              if (user.isActive)
-                BackofficeRowAction(
-                  label: l10n.deactivateAction,
-                  icon: Icons.toggle_off_outlined,
-                  onPressed: () => _deactivateUser(context, user),
-                ),
-            ],
-          ),
         ),
       ],
     );
