@@ -5,6 +5,7 @@ import 'package:smoo_control/core/design_system/app_message_dialog.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
 import 'package:smoo_control/core/design_system/backoffice_collection_view.dart';
+import 'package:smoo_control/core/design_system/backoffice_selection_toolbar.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/core/result/app_result.dart';
 import 'package:smoo_control/features/admin_remote/data/repositories/supabase_admin_repository.dart';
@@ -140,6 +141,15 @@ class _RecipesList extends StatelessWidget {
   Widget build(BuildContext context) {
     return BackofficeCollectionView<Product>(
       items: data.recipeProducts,
+      rowKey: (product) => product.id,
+      rowLabel: (product) => product.name,
+      selectionActions: [
+        BackofficeSelectionAction(
+          label: 'Editar receta',
+          icon: Icons.edit_outlined,
+          onPressed: (product) => onEdit(data, product),
+        ),
+      ],
       searchLabel: 'Buscar producto con receta',
       searchTextFor: (product) => product.name,
       emptyTitle: 'Sin productos con receta',
@@ -161,16 +171,6 @@ class _RecipesList extends StatelessWidget {
               a.name.toLowerCase().compareTo(b.name.toLowerCase()),
           cell: (_, _) => const Text('Producto vendible con receta'),
         ),
-        BackofficeListColumn(
-          label: 'Acciones',
-          width: 210,
-          alignment: Alignment.center,
-          cell: (_, product) => TextButton.icon(
-            onPressed: () => onEdit(data, product),
-            icon: const Icon(Icons.edit_outlined, size: 18),
-            label: const Text('Editar receta'),
-          ),
-        ),
       ],
       compactBuilder: (_, product) => Card(
         child: Padding(
@@ -186,14 +186,7 @@ class _RecipesList extends StatelessWidget {
                 'Producto vendible con receta',
                 variant: AppTextVariant.label,
               ),
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton.icon(
-                  onPressed: () => onEdit(data, product),
-                  icon: const Icon(Icons.edit_outlined, size: 18),
-                  label: const Text('Editar receta'),
-                ),
-              ),
+
             ],
           ),
         ),
