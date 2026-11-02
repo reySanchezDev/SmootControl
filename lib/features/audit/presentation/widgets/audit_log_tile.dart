@@ -117,4 +117,3 @@ String auditActionLabel(AppLocalizations l10n, String action) {
     _ => action,
   };
 }
-
