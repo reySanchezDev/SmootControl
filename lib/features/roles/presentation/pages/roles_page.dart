@@ -6,8 +6,7 @@ import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
 import 'package:smoo_control/core/design_system/app_tile_actions.dart';
 import 'package:smoo_control/core/design_system/backoffice_collection_view.dart';
-import 'package:smoo_control/core/design_system/backoffice_new_action.dart';
-import 'package:smoo_control/core/design_system/backoffice_row_actions.dart';
+import 'package:smoo_control/core/design_system/backoffice_selection_toolbar.dart';
 import 'package:smoo_control/core/design_system/confirm_deactivate_dialog.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/features/roles/domain/entities/access_role.dart';
@@ -31,11 +30,6 @@ class RolesPage extends StatelessWidget {
           serviceLocator<RolesBloc>()..add(const RolesLoadRequested()),
       child: Builder(
         builder: (context) => AppPageScaffold(
-          actions: [
-            BackofficeNewAction(
-              onPressed: () => _openCreateDialog(context),
-            ),
-          ],
           title: l10n.moduleRoles,
           body: BlocBuilder<RolesBloc, RolesState>(
             builder: (context, state) {
@@ -46,12 +40,10 @@ class RolesPage extends StatelessWidget {
                   message: failure.message,
                   title: l10n.moduleRoles,
                 ),
-                RolesLoaded(:final roles) when roles.isEmpty => AppEmptyState(
-                  icon: Icons.admin_panel_settings_outlined,
-                  message: l10n.emptyRolesMessage,
-                  title: l10n.emptyRolesTitle,
+                RolesLoaded() => _RolesList(
+                  state: state,
+                  onCreate: () => _openCreateDialog(context),
                 ),
-                RolesLoaded() => _RolesList(state: state),
               };
             },
           ),
@@ -83,9 +75,10 @@ class RolesPage extends StatelessWidget {
 }
 
 class _RolesList extends StatelessWidget {
-  const _RolesList({required this.state});
+  const _RolesList({required this.state, required this.onCreate});
 
   final RolesLoaded state;
+  final VoidCallback onCreate;
 
   @override
   Widget build(BuildContext context) {
@@ -93,6 +86,22 @@ class _RolesList extends StatelessWidget {
 
     return BackofficeCollectionView<AccessRole>(
       items: state.roles,
+      onCreate: onCreate,
+      rowKey: (role) => role.id,
+      rowLabel: (role) => role.name,
+      selectionActions: [
+        BackofficeSelectionAction(
+          label: l10n.editAction,
+          icon: Icons.edit_outlined,
+          onPressed: (role) => _openEditDialog(context, role),
+        ),
+        BackofficeSelectionAction(
+          label: l10n.deactivateAction,
+          icon: Icons.toggle_off_outlined,
+          enabledWhen: (role) => role.isActive && !role.isSystem,
+          onPressed: (role) => _deactivateRole(context, role),
+        ),
+      ],
       searchLabel: 'Buscar rol o permiso',
       searchTextFor: (role) =>
           '${role.name} ${role.description ?? ''} '
@@ -139,26 +148,6 @@ class _RolesList extends StatelessWidget {
               (a.isActive ? 1 : 0).compareTo(b.isActive ? 1 : 0),
           cell: (_, role) =>
               Text(role.isActive ? l10n.activeStatus : l10n.inactiveStatus),
-        ),
-        BackofficeListColumn(
-          label: 'Acciones',
-          width: 270,
-          alignment: Alignment.center,
-          cell: (_, role) => BackofficeRowActions(
-            actions: [
-              BackofficeRowAction(
-                label: l10n.editAction,
-                icon: Icons.edit_outlined,
-                onPressed: () => _openEditDialog(context, role),
-              ),
-              if (role.isActive && !role.isSystem)
-                BackofficeRowAction(
-                  label: l10n.deactivateAction,
-                  icon: Icons.toggle_off_outlined,
-                  onPressed: () => _deactivateRole(context, role),
-                ),
-            ],
-          ),
         ),
       ],
     );
