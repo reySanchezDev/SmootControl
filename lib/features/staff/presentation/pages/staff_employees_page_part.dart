@@ -63,11 +63,6 @@ class _StaffPageState extends State<StaffPage> {
   Widget build(BuildContext context) {
     return AppPageScaffold(
       title: 'Personal',
-      actions: [
-        BackofficeNewAction(
-          onPressed: () => unawaited(_editEmployee()),
-        ),
-      ],
       body:
           FutureBuilder<
             ({
@@ -92,6 +87,7 @@ class _StaffPageState extends State<StaffPage> {
                 positions: data.positions,
                 shifts: data.shifts,
                 onEdit: (employee) => unawaited(_editEmployee(employee)),
+                onCreate: () => unawaited(_editEmployee()),
               );
             },
           ),
