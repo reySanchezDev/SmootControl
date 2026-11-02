@@ -64,8 +64,7 @@ class _StaffPageState extends State<StaffPage> {
     return AppPageScaffold(
       title: 'Personal',
       actions: [
-        IconButton(
-          icon: const Icon(Icons.add),
+        BackofficeNewAction(
           onPressed: () => unawaited(_editEmployee()),
         ),
       ],
@@ -116,86 +115,15 @@ class _StaffPageState extends State<StaffPage> {
     if (!mounted) return;
     switch (saved) {
       case AppSuccess():
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Empleado guardado.')),
+        await showAppMessageDialog(
+          context: context,
+          title: 'Empleado guardado',
+          message: 'Los datos se guardaron correctamente.',
         );
         setState(_reload);
       case AppFailureResult(:final error):
         await showAppMessageDialog(context: context, message: error.message);
     }
-  }
-}
-
-class _EmployeeList extends StatelessWidget {
-  const _EmployeeList({
-    required this.employees,
-    required this.positions,
-    required this.shifts,
-    required this.onEdit,
-  });
-
-  final List<Employee> employees;
-  final List<EmployeePosition> positions;
-  final List<EmployeeWorkShift> shifts;
-  final ValueChanged<Employee> onEdit;
-
-  @override
-  Widget build(BuildContext context) {
-    if (employees.isEmpty) {
-      return const AppEmptyState(
-        icon: Icons.people_outline,
-        title: 'Sin personal',
-        message: 'Los empleados registrados apareceran aqui.',
-      );
-    }
-    return ListView.separated(
-      itemCount: employees.length,
-      separatorBuilder: (context, index) => const Divider(height: 1),
-      itemBuilder: (context, index) {
-        final employee = employees[index];
-        final position = _positionName(employee.positionName, positions);
-        final shift = _shiftName(employee.workShiftId, shifts);
-        return ListTile(
-          leading: Icon(
-            employee.isActive ? Icons.badge_outlined : Icons.block_outlined,
-          ),
-          title: Text(employee.fullName),
-          subtitle: Text(
-            [
-              ?position,
-              if (shift != null) 'Turno: $shift',
-              if (employee.code != null) 'No. ${employee.code}',
-              'Salario: ${_money(employee.baseSalaryInCents)}',
-              if (employee.showInTimeClock) 'Marca asistencia',
-              if (!employee.showInTimeClock) 'No marca',
-              if (employee.isActive) 'Activo',
-              if (!employee.isActive) 'Inactivo',
-            ].join(' - '),
-          ),
-          trailing: const Icon(Icons.edit_outlined),
-          onTap: () => onEdit(employee),
-        );
-      },
-    );
-  }
-
-  String? _positionName(
-    String? positionId,
-    List<EmployeePosition> positions,
-  ) {
-    if (positionId == null) return null;
-    for (final position in positions) {
-      if (position.id == positionId) return position.name;
-    }
-    return positionId;
-  }
-
-  String? _shiftName(String? shiftId, List<EmployeeWorkShift> shifts) {
-    if (shiftId == null) return null;
-    for (final shift in shifts) {
-      if (shift.id == shiftId) return shift.name;
-    }
-    return shiftId;
   }
 }
 
@@ -250,10 +178,11 @@ class _EmployeeDialogState extends State<_EmployeeDialog> {
           children: [
             TextField(
               controller: _name,
-              decoration: const InputDecoration(labelText: 'Nombre'),
+              decoration: const InputDecoration(labelText: 'Nombre *'),
             ),
             DropdownButtonFormField<String>(
               initialValue: _positionId,
+              isExpanded: true,
               decoration: const InputDecoration(labelText: 'Puesto'),
               items: [
                 for (final position in widget.positions.where(
@@ -268,6 +197,7 @@ class _EmployeeDialogState extends State<_EmployeeDialog> {
             ),
             DropdownButtonFormField<String>(
               initialValue: _shiftId,
+              isExpanded: true,
               decoration: const InputDecoration(labelText: 'Turno'),
               items: [
                 const DropdownMenuItem(child: Text('Sin turno')),
@@ -285,7 +215,7 @@ class _EmployeeDialogState extends State<_EmployeeDialog> {
             ),
             TextField(
               controller: _salary,
-              decoration: const InputDecoration(labelText: 'Salario quincenal'),
+              decoration: const InputDecoration(labelText: 'Salario quincenal *'),
               keyboardType: TextInputType.number,
             ),
             TextField(
