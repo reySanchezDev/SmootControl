@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
@@ -138,7 +140,7 @@ class _AuditLogContent extends StatelessWidget {
   }
 
   void _showEntryDetail(BuildContext context, AuditLogEntry entry) {
-    showDialog<void>(
+    unawaited(showDialog<void>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: const Text('Detalle de auditoría'),
@@ -153,7 +155,7 @@ class _AuditLogContent extends StatelessWidget {
           ),
         ],
       ),
-    );
+    ));
   }
 
   String _searchText(AuditLogEntry entry) {
