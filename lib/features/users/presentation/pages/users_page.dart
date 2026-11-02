@@ -6,6 +6,7 @@ import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
 import 'package:smoo_control/core/design_system/app_tile_actions.dart';
 import 'package:smoo_control/core/design_system/backoffice_collection_view.dart';
+import 'package:smoo_control/core/design_system/backoffice_row_actions.dart';
 import 'package:smoo_control/core/design_system/backoffice_new_action.dart';
 import 'package:smoo_control/core/design_system/confirm_deactivate_dialog.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
@@ -130,19 +131,18 @@ class _UsersList extends StatelessWidget {
           label: 'Acciones',
           width: 255,
           alignment: Alignment.center,
-          cell: (_, user) => Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextButton.icon(
+          cell: (_, user) => BackofficeRowActions(
+            actions: [
+              BackofficeRowAction(
+                label: l10n.editAction,
+                icon: Icons.edit_outlined,
                 onPressed: () => _openEditDialog(context, user),
-                icon: const Icon(Icons.edit_outlined, size: 17),
-                label: Text(l10n.editAction),
               ),
               if (user.isActive)
-                TextButton.icon(
+                BackofficeRowAction(
+                  label: l10n.deactivateAction,
+                  icon: Icons.toggle_off_outlined,
                   onPressed: () => _deactivateUser(context, user),
-                  icon: const Icon(Icons.toggle_off_outlined, size: 17),
-                  label: Text(l10n.deactivateAction),
                 ),
             ],
           ),
