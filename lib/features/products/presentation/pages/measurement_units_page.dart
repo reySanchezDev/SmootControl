@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:smoo_control/core/design_system/app_button.dart';
-import 'package:smoo_control/core/design_system/app_empty_state.dart';
 import 'package:smoo_control/core/design_system/app_loading_page.dart';
+import 'package:smoo_control/core/design_system/app_message_dialog.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
+import 'package:smoo_control/core/design_system/backoffice_collection_view.dart';
+import 'package:smoo_control/core/design_system/backoffice_selection_toolbar.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/core/result/app_result.dart';
 import 'package:smoo_control/features/admin_remote/data/repositories/supabase_admin_repository.dart';
@@ -35,12 +37,6 @@ class _MeasurementUnitsPageState extends State<MeasurementUnitsPage> {
   Widget build(BuildContext context) {
     return AppPageScaffold(
       title: 'Unidades',
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.add),
-          onPressed: _openNewDialog,
-        ),
-      ],
       body: FutureBuilder<List<MeasurementUnit>>(
         future: _future,
         builder: (context, snapshot) {
@@ -48,22 +44,71 @@ class _MeasurementUnitsPageState extends State<MeasurementUnitsPage> {
             return const AppLoadingPage();
           }
           final units = snapshot.data ?? const <MeasurementUnit>[];
-          if (units.isEmpty) {
-            return const AppEmptyState(
-              icon: Icons.straighten_outlined,
-              title: 'Sin unidades',
-              message: 'Las unidades de medida apareceran aqui.',
-            );
-          }
-          return ListView.separated(
-            padding: const EdgeInsets.all(16),
-            itemCount: units.length,
-            separatorBuilder: (_, _) => const Divider(height: 1),
-            itemBuilder: (_, index) => _UnitTile(
-              onEdit: () => _openDialog(unit: units[index]),
-              onToggle: () => _toggle(units[index]),
-              unit: units[index],
+          return BackofficeCollectionView<MeasurementUnit>(
+            items: units,
+            onCreate: _openNewDialog,
+            rowKey: (unit) => unit.id,
+            rowLabel: (unit) => unit.name,
+            selectionActions: [
+              BackofficeSelectionAction(
+                label: 'Editar',
+                icon: Icons.edit_outlined,
+                onPressed: (unit) => _openDialog(unit: unit),
+              ),
+              BackofficeSelectionAction(
+                label: 'Inactivar',
+                icon: Icons.toggle_off_outlined,
+                labelFor: (unit) => unit.isActive ? 'Inactivar' : 'Activar',
+                onPressed: _toggle,
+              ),
+            ],
+            searchLabel: 'Buscar unidad, código o grupo',
+            searchTextFor: (unit) =>
+                '${unit.name} ${unit.code} ${_groupName(unit.unitGroup)}',
+            emptyTitle: 'Sin resultados',
+            emptyMessage: 'No hay unidades que coincidan con la búsqueda.',
+            compactBuilder: (_, unit) => Card(
+              child: _UnitTile(
+                onEdit: () => _openDialog(unit: unit),
+                onToggle: () => _toggle(unit),
+                unit: unit,
+              ),
             ),
+            columns: [
+              BackofficeListColumn(
+                label: 'Unidad',
+                width: 310,
+                compare: (a, b) => a.name.compareTo(b.name),
+                cell: (_, unit) => Text(unit.name, softWrap: true),
+              ),
+              BackofficeListColumn(
+                label: 'Código',
+                width: 140,
+                compare: (a, b) => a.code.compareTo(b.code),
+                cell: (_, unit) => Text(unit.code),
+              ),
+              BackofficeListColumn(
+                label: 'Grupo',
+                width: 170,
+                compare: (a, b) => a.unitGroup.compareTo(b.unitGroup),
+                cell: (_, unit) => Text(_groupName(unit.unitGroup)),
+              ),
+              BackofficeListColumn(
+                label: 'Factor',
+                width: 130,
+                alignment: Alignment.centerRight,
+                compare: (a, b) => a.baseFactor.compareTo(b.baseFactor),
+                cell: (_, unit) => Text('${unit.baseFactor}'),
+              ),
+              BackofficeListColumn(
+                label: 'Estado',
+                width: 140,
+                alignment: Alignment.center,
+                compare: (a, b) =>
+                    (a.isActive ? 1 : 0).compareTo(b.isActive ? 1 : 0),
+                cell: (_, unit) => Text(unit.isActive ? 'Activo' : 'Inactivo'),
+              ),
+            ],
           );
         },
       ),
@@ -126,6 +171,17 @@ class _MeasurementUnitsPageState extends State<MeasurementUnitsPage> {
   }
 
   Future<void> _toggle(MeasurementUnit unit) async {
+    if (unit.isActive) {
+      final confirmed = await showAppConfirmationDialog(
+        context,
+        title: 'Inactivar unidad',
+        message: '¿Deseás inactivar «${unit.name}»?',
+        confirmLabel: 'Inactivar',
+        cancelLabel: 'Cancelar',
+        destructive: true,
+      );
+      if (!confirmed || !mounted) return;
+    }
     final result = await _repository.setMeasurementUnitActive(
       id: unit.id,
       isActive: !unit.isActive,
@@ -135,8 +191,10 @@ class _MeasurementUnitsPageState extends State<MeasurementUnitsPage> {
       case AppSuccess():
         setState(() => _future = _load());
       case AppFailureResult(:final error):
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(error.message)),
+        await showAppMessageDialog(
+          context: context,
+          message: error.message,
+          title: 'No se pudo actualizar la unidad',
         );
     }
   }
@@ -160,7 +218,7 @@ class _UnitTile extends StatelessWidget {
         Icons.straighten_outlined,
         color: unit.isActive ? null : Theme.of(context).disabledColor,
       ),
-      title: AppText('${unit.name} (${unit.code})', maxLines: 1),
+      title: AppText('${unit.name} (${unit.code})'),
       subtitle: AppText(
         '${_groupName(unit.unitGroup)} - Factor ${unit.baseFactor}',
         variant: AppTextVariant.label,

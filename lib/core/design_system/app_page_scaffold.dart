@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
+import 'package:smoo_control/core/design_system/navigation/backoffice_workspace.dart';
 
 /// Shared scaffold for application pages.
 class AppPageScaffold extends StatelessWidget {
@@ -26,19 +27,40 @@ class AppPageScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final insideWorkspace = BackofficeWorkspaceScope.contains(context);
     return Scaffold(
-      appBar: showAppBar
+      appBar: showAppBar && !insideWorkspace
           ? AppBar(
               actions: actions,
+              toolbarHeight: 72,
               title: AppText(
                 title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
                 variant: AppTextVariant.titleMedium,
               ),
             )
           : null,
-      body: SafeArea(child: body),
+      body: SafeArea(
+        child: insideWorkspace && showAppBar && actions != null &&
+                actions!.isNotEmpty
+            ? Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: Wrap(
+                        alignment: WrapAlignment.end,
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: actions!,
+                      ),
+                    ),
+                  ),
+                  Expanded(child: body),
+                ],
+              )
+            : body,
+      ),
     );
   }
 }

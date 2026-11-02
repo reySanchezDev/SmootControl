@@ -107,8 +107,6 @@ class _MovementHeaderTile extends StatelessWidget {
       ),
       title: AppText(
         document.title,
-        maxLines: 2,
-        overflow: TextOverflow.ellipsis,
       ),
       trailing: const Icon(Icons.chevron_right),
     );
@@ -192,8 +190,6 @@ class _MovementLineTile extends StatelessWidget {
       contentPadding: EdgeInsets.zero,
       title: AppText(
         line.productName,
-        maxLines: 2,
-        overflow: TextOverflow.ellipsis,
       ),
       subtitle: AppText(
         [

@@ -6,6 +6,7 @@ import 'package:smoo_control/features/attendance/presentation/pages/attendance_a
 import 'package:smoo_control/features/attendance/presentation/pages/overtime_approvals_page.dart';
 import 'package:smoo_control/features/attendance/presentation/pages/vacation_requests_page.dart';
 import 'package:smoo_control/features/audit/presentation/pages/audit_log_page.dart';
+import 'package:smoo_control/features/auth/presentation/pages/auth_gate.dart';
 import 'package:smoo_control/features/cash_register/presentation/pages/cash_register_admin_page.dart';
 import 'package:smoo_control/features/catalog/presentation/pages/catalog_page.dart';
 import 'package:smoo_control/features/dashboard/presentation/pages/dashboard_page.dart';
@@ -38,6 +39,13 @@ import 'package:smoo_control/features/users/presentation/pages/users_page.dart';
 
 /// Builds application routes from route names.
 Route<void> onGenerateAppRoute(RouteSettings settings) {
+  // Old bookmarks must never open an illustration-only Backoffice.
+  if (settings.name == '/backoffice-v2-preview') {
+    return MaterialPageRoute<void>(
+      builder: (_) => const AuthGate(),
+      settings: const RouteSettings(name: AppRoutes.dashboard),
+    );
+  }
   return MaterialPageRoute<void>(
     builder: (_) => _guardedPage(settings.name),
     settings: settings,
@@ -106,6 +114,11 @@ Widget _guardedPage(String? routeName) {
         : page,
   );
 }
+
+/// Builds an operational page with its original permission and online guards.
+///
+/// Used only inside the authenticated Backoffice workspace.
+Widget guardedBackofficePage(String routeName) => _guardedPage(routeName);
 
 bool _requiresOnlineAdmin(String? routeName) {
   return switch (routeName) {

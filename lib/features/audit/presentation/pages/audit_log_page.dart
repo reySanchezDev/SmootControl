@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:smoo_control/core/design_system/app_empty_state.dart';
 import 'package:smoo_control/core/design_system/app_loading_page.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
-import 'package:smoo_control/core/design_system/app_searchable_list_section.dart';
+import 'package:smoo_control/core/design_system/backoffice_collection_view.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/features/audit/domain/entities/audit_log_entry.dart';
 import 'package:smoo_control/features/audit/presentation/bloc/audit_log_bloc.dart';
@@ -84,13 +84,66 @@ class _AuditLogContent extends StatelessWidget {
                     title: l10n.emptyAuditTitle,
                   ),
                 )
-              : AppSearchableListSection<AuditLogEntry>(
-                  emptyMessage: l10n.emptySearchMessage,
-                  emptyTitle: l10n.emptySearchTitle,
+              : BackofficeCollectionView<AuditLogEntry>(
                   items: entries,
-                  searchLabel: l10n.searchField,
-                  searchTextForItem: _searchText,
-                  itemBuilder: (context, entry) => AuditLogTile(entry: entry),
+                  searchLabel: 'Buscar acción, entidad o detalle',
+                  searchTextFor: _searchText,
+                  emptyTitle: l10n.emptySearchTitle,
+                  emptyMessage: l10n.emptySearchMessage,
+                  compactBuilder: (_, entry) => AuditLogTile(entry: entry),
+                  columns: [
+                    BackofficeListColumn(
+                      label: 'Fecha y hora',
+                      width: 190,
+                      alignment: Alignment.center,
+                      compare: (a, b) => a.occurredAt.compareTo(b.occurredAt),
+                      cell: (_, entry) => Text(
+                        DateFormat('dd/MM/yyyy HH:mm', 'es')
+                            .format(entry.occurredAt.toLocal()),
+                      ),
+                    ),
+                    BackofficeListColumn(
+                      label: 'Acción',
+                      width: 310,
+                      compare: (a, b) => auditActionLabel(l10n, a.action)
+                          .compareTo(auditActionLabel(l10n, b.action)),
+                      cell: (_, entry) => Text(
+                        auditActionLabel(l10n, entry.action),
+                        softWrap: true,
+                      ),
+                    ),
+                    BackofficeListColumn(
+                      label: 'Entidad',
+                      width: 235,
+                      compare: (a, b) =>
+                          a.entityName.compareTo(b.entityName),
+                      cell: (_, entry) =>
+                          Text(entry.entityName, softWrap: true),
+                    ),
+                    BackofficeListColumn(
+                      label: 'Detalle',
+                      width: 190,
+                      alignment: Alignment.center,
+                      cell: (_, entry) => TextButton.icon(
+                        onPressed: () => showDialog<void>(
+                          context: context,
+                          builder: (dialogContext) => AlertDialog(
+                            title: const Text('Detalle de auditoría'),
+                            content: AuditLogTile(entry: entry),
+                            actions: [
+                              TextButton(
+                                onPressed: () =>
+                                    Navigator.of(dialogContext).pop(),
+                                child: const Text('Cerrar'),
+                              ),
+                            ],
+                          ),
+                        ),
+                        icon: const Icon(Icons.visibility_outlined),
+                        label: const Text('Ver detalle'),
+                      ),
+                    ),
+                  ],
                 ),
         ),
       ],

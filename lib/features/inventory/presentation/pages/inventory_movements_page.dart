@@ -6,6 +6,7 @@ import 'package:smoo_control/core/design_system/app_empty_state.dart';
 import 'package:smoo_control/core/design_system/app_loading_page.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
+import 'package:smoo_control/core/design_system/backoffice_collection_view.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/core/formatters/money_formatter.dart';
 import 'package:smoo_control/core/result/app_result.dart';
@@ -87,17 +88,65 @@ class _InventoryMovementsPageState extends State<InventoryMovementsPage> {
         title: 'Sin movimientos',
       );
     }
-    return ListView.separated(
-      padding: const EdgeInsets.all(16),
-      itemBuilder: (context, index) {
-        final document = documents[index];
-        return _MovementHeaderTile(
-          document: document,
-          onTap: () => unawaited(_openDetail(document)),
-        );
-      },
-      itemCount: documents.length,
-      separatorBuilder: (_, _) => const SizedBox(height: 8),
+    return BackofficeCollectionView<InventoryMovementDocument>(
+      items: documents,
+      searchLabel: 'Buscar documento, tipo o movimiento',
+      searchTextFor: (doc) =>
+          '${doc.title} ${_typeLabel(doc.type)} '
+          '${_dateTimeText(doc.createdAt)}',
+      emptyTitle: 'Sin resultados',
+      emptyMessage: 'No hay movimientos que coincidan con la búsqueda.',
+      compactBuilder: (_, doc) => _MovementHeaderTile(
+        document: doc,
+        onTap: () => unawaited(_openDetail(doc)),
+      ),
+      columns: [
+        BackofficeListColumn(
+          label: 'Documento',
+          width: 390,
+          compare: (a, b) => a.title.compareTo(b.title),
+          cell: (_, doc) => Text(doc.title, softWrap: true),
+        ),
+        BackofficeListColumn(
+          label: 'Tipo',
+          width: 215,
+          compare: (a, b) =>
+              _typeLabel(a.type).compareTo(_typeLabel(b.type)),
+          cell: (_, doc) => Text(_typeLabel(doc.type)),
+        ),
+        BackofficeListColumn(
+          label: 'Fecha',
+          width: 170,
+          alignment: Alignment.center,
+          compare: (a, b) => a.createdAt.compareTo(b.createdAt),
+          cell: (_, doc) => Text(_dateTimeText(doc.createdAt)),
+        ),
+        BackofficeListColumn(
+          label: 'Líneas',
+          width: 120,
+          alignment: Alignment.centerRight,
+          compare: (a, b) => a.lineCount.compareTo(b.lineCount),
+          cell: (_, doc) => Text('${doc.lineCount}'),
+        ),
+        BackofficeListColumn(
+          label: 'Neto',
+          width: 150,
+          alignment: Alignment.centerRight,
+          compare: (a, b) =>
+              a.quantityDelta.compareTo(b.quantityDelta),
+          cell: (_, doc) => Text(_quantityText(doc.quantityDelta)),
+        ),
+        BackofficeListColumn(
+          label: 'Acciones',
+          width: 170,
+          alignment: Alignment.center,
+          cell: (_, doc) => TextButton.icon(
+            onPressed: () => unawaited(_openDetail(doc)),
+            icon: const Icon(Icons.visibility_outlined, size: 18),
+            label: const Text('Ver detalle'),
+          ),
+        ),
+      ],
     );
   }
 

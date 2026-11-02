@@ -3,9 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smoo_control/core/design_system/app_empty_state.dart';
 import 'package:smoo_control/core/design_system/app_loading_page.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
-import 'package:smoo_control/core/design_system/app_searchable_list_section.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
 import 'package:smoo_control/core/design_system/app_tile_actions.dart';
+import 'package:smoo_control/core/design_system/backoffice_collection_view.dart';
+import 'package:smoo_control/core/design_system/backoffice_selection_toolbar.dart';
 import 'package:smoo_control/core/design_system/confirm_deactivate_dialog.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/features/roles/domain/entities/access_role.dart';
@@ -29,13 +30,6 @@ class RolesPage extends StatelessWidget {
           serviceLocator<RolesBloc>()..add(const RolesLoadRequested()),
       child: Builder(
         builder: (context) => AppPageScaffold(
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.add),
-              onPressed: () => _openCreateDialog(context),
-              tooltip: l10n.createAction,
-            ),
-          ],
           title: l10n.moduleRoles,
           body: BlocBuilder<RolesBloc, RolesState>(
             builder: (context, state) {
@@ -46,12 +40,10 @@ class RolesPage extends StatelessWidget {
                   message: failure.message,
                   title: l10n.moduleRoles,
                 ),
-                RolesLoaded(:final roles) when roles.isEmpty => AppEmptyState(
-                  icon: Icons.admin_panel_settings_outlined,
-                  message: l10n.emptyRolesMessage,
-                  title: l10n.emptyRolesTitle,
+                RolesLoaded() => _RolesList(
+                  state: state,
+                  onCreate: () => _openCreateDialog(context),
                 ),
-                RolesLoaded() => _RolesList(state: state),
               };
             },
           ),
@@ -83,31 +75,81 @@ class RolesPage extends StatelessWidget {
 }
 
 class _RolesList extends StatelessWidget {
-  const _RolesList({required this.state});
+  const _RolesList({required this.state, required this.onCreate});
 
   final RolesLoaded state;
+  final VoidCallback onCreate;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
 
-    return AppSearchableListSection<AccessRole>(
-      emptyMessage: l10n.emptySearchMessage,
-      emptyTitle: l10n.emptySearchTitle,
+    return BackofficeCollectionView<AccessRole>(
       items: state.roles,
-      searchLabel: l10n.searchField,
-      searchTextForItem: (role) => [
-        role.name,
-        role.description ?? '',
-        if (role.isActive) l10n.activeStatus else l10n.inactiveStatus,
-        '${state.permissionCodesByRole[role.id]?.length ?? 0}',
-      ].join(' '),
-      itemBuilder: (context, role) => _RoleTile(
+      onCreate: onCreate,
+      rowKey: (role) => role.id,
+      rowLabel: (role) => role.name,
+      selectionActions: [
+        BackofficeSelectionAction(
+          label: l10n.editAction,
+          icon: Icons.edit_outlined,
+          onPressed: (role) => _openEditDialog(context, role),
+        ),
+        BackofficeSelectionAction(
+          label: l10n.deactivateAction,
+          icon: Icons.toggle_off_outlined,
+          enabledWhen: (role) => role.isActive && !role.isSystem,
+          onPressed: (role) => _deactivateRole(context, role),
+        ),
+      ],
+      searchLabel: 'Buscar rol o permiso',
+      searchTextFor: (role) =>
+          '${role.name} ${role.description ?? ''} '
+          '${role.isActive ? l10n.activeStatus : l10n.inactiveStatus}',
+      emptyTitle: l10n.emptySearchTitle,
+      emptyMessage: l10n.emptySearchMessage,
+      compactBuilder: (context, role) => _RoleTile(
         role: role,
         permissionCount: state.permissionCodesByRole[role.id]?.length ?? 0,
         onDeactivate: () => _deactivateRole(context, role),
         onEdit: () => _openEditDialog(context, role),
       ),
+      columns: [
+        BackofficeListColumn(
+          label: 'Rol',
+          width: 265,
+          compare: (a, b) => a.name.compareTo(b.name),
+          cell: (_, role) => Text(role.name, softWrap: true),
+        ),
+        BackofficeListColumn(
+          label: 'Descripción',
+          width: 350,
+          compare: (a, b) =>
+              (a.description ?? '').compareTo(b.description ?? ''),
+          cell: (_, role) => Text(role.description ?? '—'),
+        ),
+        BackofficeListColumn(
+          label: 'Permisos',
+          width: 135,
+          alignment: Alignment.centerRight,
+          compare: (a, b) =>
+              (state.permissionCodesByRole[a.id]?.length ?? 0).compareTo(
+                state.permissionCodesByRole[b.id]?.length ?? 0,
+              ),
+          cell: (_, role) => Text(
+            '${state.permissionCodesByRole[role.id]?.length ?? 0}',
+          ),
+        ),
+        BackofficeListColumn(
+          label: 'Estado',
+          width: 145,
+          alignment: Alignment.center,
+          compare: (a, b) =>
+              (a.isActive ? 1 : 0).compareTo(b.isActive ? 1 : 0),
+          cell: (_, role) =>
+              Text(role.isActive ? l10n.activeStatus : l10n.inactiveStatus),
+        ),
+      ],
     );
   }
 
@@ -187,14 +229,10 @@ class _RoleTile extends StatelessWidget {
           leading: const Icon(Icons.admin_panel_settings_outlined),
           subtitle: AppText(
             '$status · $permissionCount ${l10n.permissionsSection}',
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
             variant: AppTextVariant.label,
           ),
           title: AppText(
             role.name,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
           ),
           trailing: AppTileActions(
             compact: compact,

@@ -3049,6 +3049,42 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Receta guardada correctamente.'**
   String get recipeSavedMessage;
+
+  /// Localized unsavedChangesTitle message.
+  ///
+  /// In en, this message translates to:
+  /// **'Unsaved changes'**
+  String get unsavedChangesTitle;
+
+  /// Localized unsavedChangesMessage message.
+  ///
+  /// In en, this message translates to:
+  /// **'You have unsaved changes. Do you want to discard them?'**
+  String get unsavedChangesMessage;
+
+  /// Localized discardChangesAction message.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard changes'**
+  String get discardChangesAction;
+
+  /// Localized continueEditingAction message.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep editing'**
+  String get continueEditingAction;
+
+  /// Localized confirmChangesTitle message.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm changes'**
+  String get confirmChangesTitle;
+
+  /// Localized confirmChangesMessage message.
+  ///
+  /// In en, this message translates to:
+  /// **'Do you want to save your changes?'**
+  String get confirmChangesMessage;
 }
 
 class _AppLocalizationsDelegate

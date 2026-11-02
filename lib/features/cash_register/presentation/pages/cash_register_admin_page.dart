@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:smoo_control/core/design_system/app_button.dart';
 import 'package:smoo_control/core/design_system/app_empty_state.dart';
 import 'package:smoo_control/core/design_system/app_input.dart';
+import 'package:smoo_control/core/design_system/app_message_dialog.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
@@ -12,6 +13,7 @@ import 'package:smoo_control/core/formatters/money_formatter.dart';
 import 'package:smoo_control/core/result/app_result.dart';
 import 'package:smoo_control/features/cash_register/data/services/supabase_cash_register_admin_service.dart';
 import 'package:smoo_control/features/cash_register/domain/entities/cash_register_admin_record.dart';
+import 'package:smoo_control/features/cash_register/presentation/widgets/cash_register_backoffice_table.dart';
 import 'package:smoo_control/l10n/app_localizations.dart';
 
 part 'cash_register_admin_tile.dart';
@@ -52,40 +54,42 @@ class _CashRegisterAdminPageState extends State<CashRegisterAdminPage> {
           icon: const Icon(Icons.refresh),
         ),
       ],
-      body: ListView(
-        padding: const EdgeInsets.all(16),
+      body: Column(
         children: [
-          _DateFilter(
-            from: _from,
-            to: _to,
-            onFrom: () => _pickDate(isFrom: true),
-            onTo: () => _pickDate(isFrom: false),
-          ),
-          const SizedBox(height: 16),
-          if (_loading)
-            const Center(child: CircularProgressIndicator())
-          else if (_error != null)
-            AppEmptyState(
-              icon: Icons.error_outline,
-              message: _error!,
-              title: l10n.cashRegisterAdminTitle,
-            )
-          else if (_records.isEmpty)
-            AppEmptyState(
-              icon: Icons.point_of_sale_outlined,
-              message: l10n.cashRegisterAdminEmpty,
-              title: l10n.moduleCashRegister,
-            )
-          else
-            for (final record in _records) ...[
-              _CashRegisterAdminTile(
-                dateFormat: _dateFormat,
-                onDelete: () => _delete(record),
-                onEdit: () => _edit(record),
-                record: record,
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: _DateFilter(
+                from: _from,
+                to: _to,
+                onFrom: () => _pickDate(isFrom: true),
+                onTo: () => _pickDate(isFrom: false),
               ),
-              const SizedBox(height: 10),
-            ],
+            ),
+          ),
+          Expanded(
+            child: _loading
+                ? const Center(child: CircularProgressIndicator())
+                : _error != null
+                    ? AppEmptyState(
+                        icon: Icons.error_outline,
+                        message: _error!,
+                        title: l10n.cashRegisterAdminTitle,
+                      )
+                    : CashRegisterBackofficeTable(
+                        records: _records,
+                        onEdit: (record) => unawaited(_edit(record)),
+                        onDelete: (record) => unawaited(_delete(record)),
+                        compactBuilder: (context, record) =>
+                            _CashRegisterAdminTile(
+                              dateFormat: _dateFormat,
+                              onDelete: () => unawaited(_delete(record)),
+                              onEdit: () => unawaited(_edit(record)),
+                              record: record,
+                            ),
+                      ),
+          ),
         ],
       ),
     );
@@ -147,25 +151,15 @@ class _CashRegisterAdminPageState extends State<CashRegisterAdminPage> {
 
   Future<void> _delete(CashRegisterAdminRecord record) async {
     final l10n = AppLocalizations.of(context);
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: AppText(l10n.cashRegisterAdminDelete),
-        content: AppText(l10n.cashRegisterAdminDeleteConfirm, maxLines: 5),
-        actions: [
-          AppButton(
-            label: l10n.cancelAction,
-            onPressed: () => Navigator.of(context).pop(false),
-            primary: false,
-          ),
-          AppButton(
-            label: l10n.deleteAction,
-            onPressed: () => Navigator.of(context).pop(true),
-          ),
-        ],
-      ),
+    final confirmed = await showAppConfirmationDialog(
+      context,
+      title: l10n.cashRegisterAdminDelete,
+      message: l10n.cashRegisterAdminDeleteConfirm,
+      confirmLabel: l10n.deleteAction,
+      cancelLabel: l10n.cancelAction,
+      destructive: true,
     );
-    if (confirmed != true || !mounted) return;
+    if (!confirmed || !mounted) return;
     final result = await _service.delete(record.id);
     if (!mounted) return;
     await _handleMutationResult(result, l10n.cashRegisterAdminDeleted);
@@ -175,27 +169,19 @@ class _CashRegisterAdminPageState extends State<CashRegisterAdminPage> {
     AppResult<T> result,
     String successMessage,
   ) async {
-    final textColor = Theme.of(context).colorScheme.onInverseSurface;
     switch (result) {
       case AppSuccess():
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            behavior: SnackBarBehavior.floating,
-            content: Text(successMessage, style: TextStyle(color: textColor)),
-          ),
+        await showAppMessageDialog(
+          context: context,
+          title: 'Caja actualizada',
+          message: successMessage,
         );
-        await _load();
+        if (mounted) await _load();
       case AppFailureResult(:final error):
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            behavior: SnackBarBehavior.floating,
-            content: Text(
-              error.message,
-              maxLines: 4,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(color: textColor),
-            ),
-          ),
+        await showAppMessageDialog(
+          context: context,
+          title: 'No se pudo completar',
+          message: error.message,
         );
     }
   }

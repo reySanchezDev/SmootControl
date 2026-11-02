@@ -3,9 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smoo_control/core/design_system/app_empty_state.dart';
 import 'package:smoo_control/core/design_system/app_loading_page.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
-import 'package:smoo_control/core/design_system/app_searchable_list_section.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
 import 'package:smoo_control/core/design_system/app_tile_actions.dart';
+import 'package:smoo_control/core/design_system/backoffice_collection_view.dart';
+import 'package:smoo_control/core/design_system/backoffice_selection_toolbar.dart';
 import 'package:smoo_control/core/design_system/confirm_deactivate_dialog.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/features/tables/domain/entities/restaurant_table.dart';
@@ -29,13 +30,6 @@ class TablesPage extends StatelessWidget {
           serviceLocator<TablesBloc>()..add(const TablesLoadRequested()),
       child: Builder(
         builder: (context) => AppPageScaffold(
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.add),
-              onPressed: () => _openCreateDialog(context),
-              tooltip: l10n.createAction,
-            ),
-          ],
           title: l10n.moduleTables,
           body: BlocBuilder<TablesBloc, TablesState>(
             builder: (context, state) {
@@ -46,27 +40,53 @@ class TablesPage extends StatelessWidget {
                   message: failure.message,
                   title: l10n.moduleTables,
                 ),
-                TablesLoaded(:final tables) when tables.isEmpty =>
-                  AppEmptyState(
-                    icon: Icons.table_restaurant_outlined,
-                    message: l10n.emptyTablesMessage,
-                    title: l10n.emptyTablesTitle,
-                  ),
                 TablesLoaded(:final tables) =>
-                  AppSearchableListSection<RestaurantTable>(
-                    emptyMessage: l10n.emptySearchMessage,
-                    emptyTitle: l10n.emptySearchTitle,
+                  BackofficeCollectionView<RestaurantTable>(
                     items: tables,
-                    searchLabel: l10n.searchField,
-                    searchTextForItem: (table) => [
-                      table.name,
-                      _statusLabel(l10n, table),
-                    ].join(' '),
-                    itemBuilder: (context, table) => _TableTile(
+                    onCreate: () => _openCreateDialog(context),
+                    rowKey: (table) => table.id,
+                    rowLabel: (table) => table.name,
+                    selectionActions: [
+                      BackofficeSelectionAction(
+                        label: l10n.editAction,
+                        icon: Icons.edit_outlined,
+                        onPressed: (table) =>
+                            _openEditDialog(context, table),
+                      ),
+                      BackofficeSelectionAction(
+                        label: l10n.deactivateAction,
+                        icon: Icons.toggle_off_outlined,
+                        enabledWhen: (table) => table.isActive,
+                        onPressed: (table) =>
+                            _deactivateTable(context, table),
+                      ),
+                    ],
+                    searchLabel: 'Buscar mesa o estado',
+                    searchTextFor: (table) =>
+                        '${table.name} ${_statusLabel(l10n, table)}',
+                    emptyTitle: l10n.emptySearchTitle,
+                    emptyMessage: l10n.emptySearchMessage,
+                    compactBuilder: (context, table) => _TableTile(
                       table: table,
                       onDeactivate: () => _deactivateTable(context, table),
                       onEdit: () => _openEditDialog(context, table),
                     ),
+                    columns: [
+                      BackofficeListColumn(
+                        label: 'Mesa',
+                        width: 420,
+                        compare: (a, b) => a.name.compareTo(b.name),
+                        cell: (_, table) => Text(table.name, softWrap: true),
+                      ),
+                      BackofficeListColumn(
+                        label: 'Estado',
+                        width: 240,
+                        alignment: Alignment.center,
+                        compare: (a, b) => _statusLabel(l10n, a)
+                            .compareTo(_statusLabel(l10n, b)),
+                        cell: (_, table) => Text(_statusLabel(l10n, table)),
+                      ),
+                    ],
                   ),
               };
             },
@@ -159,14 +179,10 @@ class _TableTile extends StatelessWidget {
           leading: const Icon(Icons.table_restaurant_outlined),
           subtitle: AppText(
             _statusLabel(l10n, table),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
             variant: AppTextVariant.label,
           ),
           title: AppText(
             table.name,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
           ),
           trailing: AppTileActions(
             compact: compact,

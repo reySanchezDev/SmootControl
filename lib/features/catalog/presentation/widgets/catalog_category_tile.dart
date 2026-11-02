@@ -16,6 +16,8 @@ class CatalogCategoryTile extends StatelessWidget {
     required this.onRemove,
     required this.onToggleRoot,
     required this.parentPath,
+    this.onSelect,
+    this.selected = false,
     super.key,
   });
 
@@ -43,6 +45,11 @@ class CatalogCategoryTile extends StatelessWidget {
   /// Parent path for subcategory labels.
   final String? parentPath;
 
+  /// Optional catalog selection mode (no duplicate row actions).
+  final VoidCallback? onSelect;
+  /// Whether this row is selected in the Backoffice catalog.
+  final bool selected;
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -57,37 +64,37 @@ class CatalogCategoryTile extends StatelessWidget {
       builder: (context, constraints) {
         final compact = constraints.maxWidth < 560;
         return ListTile(
+          selected: selected,
+          selectedTileColor: Theme.of(context).colorScheme.primaryContainer,
           contentPadding: EdgeInsets.only(left: 8 + (depth * 24), right: 16),
           leading: _leadingIcon(context, l10n),
-          onTap: onToggleRoot,
+          onTap: onSelect ?? onToggleRoot,
           subtitle: AppText(
             _subtitle(l10n, typeLabel, statusLabel),
-            maxLines: compact ? 3 : 2,
-            overflow: TextOverflow.ellipsis,
             variant: AppTextVariant.label,
           ),
           title: AppText(
             category.name,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
           ),
-          trailing: AppTileActions(
-            compact: compact,
-            actions: [
-              if (onRemove != null)
-                AppTileAction(
-                  color: Theme.of(context).colorScheme.error,
-                  icon: Icons.delete_outline,
-                  label: l10n.removeAction,
-                  onPressed: onRemove!,
+          trailing: onSelect != null
+              ? null
+              : AppTileActions(
+                  compact: compact,
+                  actions: [
+                    if (onRemove != null)
+                      AppTileAction(
+                        color: Theme.of(context).colorScheme.error,
+                        icon: Icons.delete_outline,
+                        label: l10n.removeAction,
+                        onPressed: onRemove!,
+                      ),
+                    AppTileAction(
+                      icon: Icons.edit_outlined,
+                      label: l10n.editAction,
+                      onPressed: onEdit,
+                    ),
+                  ],
                 ),
-              AppTileAction(
-                icon: Icons.edit_outlined,
-                label: l10n.editAction,
-                onPressed: onEdit,
-              ),
-            ],
-          ),
         );
       },
     );

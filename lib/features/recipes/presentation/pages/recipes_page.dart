@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:smoo_control/core/design_system/app_empty_state.dart';
 import 'package:smoo_control/core/design_system/app_loading_page.dart';
+import 'package:smoo_control/core/design_system/app_message_dialog.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
-import 'package:smoo_control/core/design_system/app_search_field.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
+import 'package:smoo_control/core/design_system/backoffice_collection_view.dart';
+import 'package:smoo_control/core/design_system/backoffice_selection_toolbar.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/core/result/app_result.dart';
 import 'package:smoo_control/features/admin_remote/data/repositories/supabase_admin_repository.dart';
@@ -23,20 +25,12 @@ class RecipesPage extends StatefulWidget {
 }
 
 class _RecipesPageState extends State<RecipesPage> {
-  final _searchController = TextEditingController();
   late Future<_RecipesData> _future;
-  String _query = '';
 
   @override
   void initState() {
     super.initState();
     _future = _loadData();
-  }
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
   }
 
   @override
@@ -59,9 +53,6 @@ class _RecipesPageState extends State<RecipesPage> {
           return _RecipesList(
             data: snapshot.data ?? const _RecipesData.empty(),
             onEdit: _openRecipeDialog,
-            onQueryChanged: (value) => setState(() => _query = value),
-            query: _query,
-            searchController: _searchController,
           );
         },
       ),
@@ -104,12 +95,12 @@ class _RecipesPageState extends State<RecipesPage> {
       ),
     );
     if ((saved ?? false) && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(AppLocalizations.of(context).recipeSavedMessage),
-        ),
+      await showAppMessageDialog(
+        context: context,
+        title: 'Recetas',
+        message: AppLocalizations.of(context).recipeSavedMessage,
       );
-      setState(() => _future = _loadData());
+      if (mounted) setState(() => _future = _loadData());
     }
   }
 }
@@ -141,72 +132,65 @@ class _RecipesList extends StatelessWidget {
   const _RecipesList({
     required this.data,
     required this.onEdit,
-    required this.onQueryChanged,
-    required this.query,
-    required this.searchController,
   });
 
   final _RecipesData data;
   final Future<void> Function(_RecipesData data, Product product) onEdit;
-  final ValueChanged<String> onQueryChanged;
-  final String query;
-  final TextEditingController searchController;
 
   @override
   Widget build(BuildContext context) {
-    final products = _filteredProducts;
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        AppSearchField(
-          controller: searchController,
-          label: 'Buscar producto con receta',
-          onClear: () {
-            searchController.clear();
-            onQueryChanged('');
-          },
-          onChanged: onQueryChanged,
+    return BackofficeCollectionView<Product>(
+      items: data.recipeProducts,
+      rowKey: (product) => product.id,
+      rowLabel: (product) => product.name,
+      selectionActions: [
+        BackofficeSelectionAction(
+          label: 'Editar receta',
+          icon: Icons.edit_outlined,
+          onPressed: (product) => onEdit(data, product),
         ),
-        const SizedBox(height: 12),
-        if (data.recipeProducts.isEmpty)
-          const AppEmptyState(
-            icon: Icons.restaurant_menu_outlined,
-            message: 'Marca productos vendibles con "Usa receta" en Productos.',
-            title: 'Sin productos tipo receta',
-          )
-        else if (products.isEmpty)
-          const AppEmptyState(
-            icon: Icons.search_off_outlined,
-            message: 'No hay productos que coincidan con la busqueda.',
-            title: 'Sin resultados',
-          )
-        else
-          for (final product in products)
-            Card(
-              child: ListTile(
-                leading: const Icon(Icons.restaurant_menu_outlined),
-                title: AppText(product.name, maxLines: 2),
-                subtitle: const AppText(
-                  'Producto vendible con receta',
-                  variant: AppTextVariant.label,
-                ),
-                trailing: IconButton(
-                  icon: const Icon(Icons.edit_outlined),
-                  onPressed: () => onEdit(data, product),
-                  tooltip: 'Editar receta',
-                ),
-                onTap: () => onEdit(data, product),
-              ),
-            ),
       ],
-    );
-  }
+      searchLabel: 'Buscar producto con receta',
+      searchTextFor: (product) => product.name,
+      emptyTitle: 'Sin productos con receta',
+      emptyMessage: 'Activa «Usa receta» en un producto vendible.',
+      columns: [
+        BackofficeListColumn(
+          label: 'Producto',
+          width: 470,
+          compare: (a, b) =>
+              a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+          cell: (_, product) => AppText(
+            product.name,
+          ),
+        ),
+        BackofficeListColumn(
+          label: 'Tipo',
+          width: 230,
+          compare: (a, b) =>
+              a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+          cell: (_, _) => const Text('Producto vendible con receta'),
+        ),
+      ],
+      compactBuilder: (_, product) => Card(
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              AppText(
+                product.name,
+                variant: AppTextVariant.titleMedium,
+              ),
+              const AppText(
+                'Producto vendible con receta',
+                variant: AppTextVariant.label,
+              ),
 
-  List<Product> get _filteredProducts {
-    final normalized = query.trim().toLowerCase();
-    if (normalized.isEmpty) return data.recipeProducts;
-    return data.recipeProducts.where((product) {
-      return product.name.toLowerCase().contains(normalized);
-    }).toList();
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

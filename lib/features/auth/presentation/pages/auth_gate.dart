@@ -10,7 +10,7 @@ import 'package:smoo_control/features/auth/presentation/bloc/auth_state.dart';
 import 'package:smoo_control/features/auth/presentation/pages/device_initialization_page.dart';
 import 'package:smoo_control/features/auth/presentation/pages/login_page.dart';
 import 'package:smoo_control/features/auth/presentation/pages/remote_initial_admin_setup_page.dart';
-import 'package:smoo_control/features/dashboard/presentation/pages/dashboard_page.dart';
+import 'package:smoo_control/features/dashboard/presentation/pages/backoffice_home_page.dart';
 import 'package:smoo_control/features/pos/presentation/pages/pos_page.dart';
 
 /// Chooses the public login flow or the authenticated start page.
@@ -49,7 +49,7 @@ class AuthGate extends StatelessWidget {
       );
     }
 
-    return const DashboardPage();
+    return BackofficeHomePage(session: session);
   }
 }
 

@@ -2,13 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smoo_control/core/design_system/app_empty_state.dart';
 import 'package:smoo_control/core/design_system/app_loading_page.dart';
+import 'package:smoo_control/core/design_system/app_message_dialog.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
 import 'package:smoo_control/core/design_system/app_search_field.dart';
+import 'package:smoo_control/core/design_system/backoffice_selection_toolbar.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/features/catalog/domain/entities/product_category.dart';
 import 'package:smoo_control/features/catalog/presentation/bloc/catalog_bloc.dart';
 import 'package:smoo_control/features/catalog/presentation/bloc/catalog_event.dart';
 import 'package:smoo_control/features/catalog/presentation/bloc/catalog_state.dart';
+import 'package:smoo_control/features/catalog/presentation/widgets/catalog_backoffice_table.dart';
 import 'package:smoo_control/features/catalog/presentation/widgets/catalog_tree_list.dart';
 import 'package:smoo_control/features/catalog/presentation/widgets/create_category_dialog.dart';
 import 'package:smoo_control/l10n/app_localizations.dart';
@@ -27,13 +30,6 @@ class CatalogPage extends StatelessWidget {
           serviceLocator<CatalogBloc>()..add(const CatalogLoadRequested()),
       child: Builder(
         builder: (context) => AppPageScaffold(
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.add),
-              onPressed: () => _openCreateDialog(context),
-              tooltip: l10n.createAction,
-            ),
-          ],
           title: l10n.moduleCatalog,
           body: BlocConsumer<CatalogBloc, CatalogState>(
             listener: (context, state) {
@@ -57,23 +53,29 @@ class CatalogPage extends StatelessWidget {
                   message: failure.message,
                   title: l10n.moduleCatalog,
                 ),
-                CatalogLoaded(:final categories) when categories.isEmpty =>
-                  AppEmptyState(
-                    icon: Icons.category_outlined,
-                    message: l10n.emptyCatalogMessage,
-                    title: l10n.emptyCatalogTitle,
-                  ),
-                CatalogLoaded(:final categories) => _CatalogSearchableTree(
-                  categories: categories,
-                  onEdit: (category) => _openEditDialog(
-                    context,
-                    category,
-                    categories,
-                  ),
-                  onRemove: (category) => _confirmRemoveLevel(
-                    context,
-                    category,
-                  ),
+                CatalogLoaded(:final categories) => LayoutBuilder(
+                  builder: (context, constraints) {
+                    void edit(ProductCategory category) => _openEditDialog(
+                      context,
+                      category,
+                      categories,
+                    );
+                    void remove(ProductCategory category) =>
+                        _confirmRemoveLevel(context, category);
+                    return constraints.maxWidth >= 850
+                        ? CatalogBackofficeTable(
+                            categories: categories,
+                            onCreate: () => _openCreateDialog(context),
+                            onEdit: edit,
+                            onRemove: remove,
+                          )
+                        : _CatalogSearchableTree(
+                            categories: categories,
+                            onCreate: () => _openCreateDialog(context),
+                            onEdit: edit,
+                            onRemove: remove,
+                          );
+                  },
                 ),
               };
             },
@@ -121,33 +123,17 @@ class CatalogPage extends StatelessWidget {
     ProductCategory category,
   ) async {
     final l10n = AppLocalizations.of(context);
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(l10n.removeCategoryLevelTitle),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(l10n.removeCategoryLevelMessage(category.name)),
-            const SizedBox(height: 12),
-            Text(l10n.removeCategoryLevelWithChildrenMessage),
-          ],
-        ),
-        actions: [
-          OutlinedButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(l10n.cancelAction),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(l10n.removeCategoryLevelConfirm),
-          ),
-        ],
-      ),
+    final confirmed = await showAppConfirmationDialog(
+      context,
+      title: l10n.removeCategoryLevelTitle,
+      message: '${l10n.removeCategoryLevelMessage(category.name)}\n\n'
+          '${l10n.removeCategoryLevelWithChildrenMessage}',
+      confirmLabel: l10n.removeCategoryLevelConfirm,
+      cancelLabel: l10n.cancelAction,
+      destructive: true,
     );
 
-    if ((confirmed ?? false) && context.mounted) {
+    if (confirmed && context.mounted) {
       context.read<CatalogBloc>().add(CatalogCategoryRemoved(category));
     }
   }
@@ -158,11 +144,13 @@ class _CatalogSearchableTree extends StatefulWidget {
     required this.categories,
     required this.onEdit,
     required this.onRemove,
+    required this.onCreate,
   });
 
   final List<ProductCategory> categories;
   final ValueChanged<ProductCategory> onEdit;
   final ValueChanged<ProductCategory> onRemove;
+  final VoidCallback onCreate;
 
   @override
   State<_CatalogSearchableTree> createState() => _CatalogSearchableTreeState();
@@ -171,6 +159,7 @@ class _CatalogSearchableTree extends StatefulWidget {
 class _CatalogSearchableTreeState extends State<_CatalogSearchableTree> {
   final _controller = TextEditingController();
   String _query = '';
+  String? _selectedId;
 
   @override
   void dispose() {
@@ -181,15 +170,41 @@ class _CatalogSearchableTreeState extends State<_CatalogSearchableTree> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    ProductCategory? selected;
+    for (final category in widget.categories) {
+      if (category.id == _selectedId) selected = category;
+    }
 
     return Column(
       children: [
+        BackofficeSelectionToolbar<ProductCategory>(
+          selected: selected,
+          selectedLabel: selected?.name,
+          onCreate: widget.onCreate,
+          actions: [
+            BackofficeSelectionAction(
+              label: l10n.editAction,
+              icon: Icons.edit_outlined,
+              onPressed: widget.onEdit,
+            ),
+            BackofficeSelectionAction(
+              label: l10n.removeCategoryLevelConfirm,
+              icon: Icons.remove_circle_outline,
+              destructive: true,
+              enabledWhen: (category) => category.parentId != null,
+              onPressed: widget.onRemove,
+            ),
+          ],
+        ),
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
           child: AppSearchField(
             controller: _controller,
             label: l10n.searchField,
-            onChanged: (value) => setState(() => _query = value),
+            onChanged: (value) => setState(() {
+              _query = value;
+              _selectedId = null;
+            }),
             onClear: _clearSearch,
           ),
         ),
@@ -200,6 +215,13 @@ class _CatalogSearchableTreeState extends State<_CatalogSearchableTree> {
             searchQuery: _query,
             onEdit: widget.onEdit,
             onRemove: widget.onRemove,
+            selectedId: _selectedId,
+            onSelect: (category) => setState(() {
+              _selectedId = category.id;
+            }),
+            onHierarchyChanged: () => setState(() {
+              _selectedId = null;
+            }),
           ),
         ),
       ],
@@ -208,6 +230,9 @@ class _CatalogSearchableTreeState extends State<_CatalogSearchableTree> {
 
   void _clearSearch() {
     _controller.clear();
-    setState(() => _query = '');
+    setState(() {
+      _query = '';
+      _selectedId = null;
+    });
   }
 }

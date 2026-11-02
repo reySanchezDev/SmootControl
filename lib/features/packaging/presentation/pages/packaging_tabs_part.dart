@@ -1,90 +1,139 @@
 part of 'packaging_page.dart';
 
 class _SalesTypesTab extends StatelessWidget {
-  const _SalesTypesTab({
-    required this.salesTypes,
-    required this.onSave,
-  });
+  const _SalesTypesTab({required this.salesTypes, required this.onSave});
 
   final List<SalesType> salesTypes;
   final ValueChanged<SalesType?> onSave;
 
   @override
   Widget build(BuildContext context) {
-    return _CatalogList(
-      emptyIcon: Icons.room_service_outlined,
-      emptyMessage: 'Crea al menos Comer aqui y Para llevar.',
+    return _PackagingTabShell<SalesType>(
+      items: salesTypes,
+      rowKey: (item) => item.id,
+      rowLabel: (item) => item.name,
+      selectionActions: [
+        BackofficeSelectionAction(
+          label: 'Editar',
+          icon: Icons.edit_outlined,
+          onPressed: onSave,
+        ),
+      ],
+      searchLabel: 'Buscar tipo de venta o código',
+      searchTextFor: (item) => '${item.name} ${item.code} ${item.displayOrder}',
       emptyTitle: 'Sin tipos de venta',
+      emptyMessage: 'Creá los tipos de venta que utiliza el restaurante.',
       onCreate: () => onSave(null),
-      children: [
-        for (final type in salesTypes)
-          ListTile(
-            leading: Icon(
-              type.isDefault ? Icons.star_outlined : Icons.room_service,
-            ),
-            title: AppText(
-              type.name,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-            subtitle: AppText(
-              '${type.code} - Orden ${type.displayOrder} - '
-              '${type.isActive ? 'Activo' : 'Inactivo'}'
-              '${type.isDefault ? ' - Por defecto' : ''}',
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              variant: AppTextVariant.label,
-            ),
-            trailing: IconButton(
-              icon: const Icon(Icons.edit_outlined),
-              onPressed: () => onSave(type),
-              tooltip: 'Editar',
-            ),
-          ),
+      compactBuilder: (_, item) => _packagingCompactItem(
+        title: item.name,
+        description: '${item.code} · Orden ${item.displayOrder} · '
+            '${item.isActive ? 'Activo' : 'Inactivo'}'
+            '${item.isDefault ? ' · Predeterminado' : ''}',
+      ),
+      columns: [
+        BackofficeListColumn(
+          label: 'Tipo de venta',
+          width: 290,
+          compare: (a, b) => a.name.compareTo(b.name),
+          cell: (_, item) => Text(item.name, softWrap: true),
+        ),
+        BackofficeListColumn(
+          label: 'Código',
+          width: 205,
+          compare: (a, b) => a.code.compareTo(b.code),
+          cell: (_, item) => Text(item.code, softWrap: true),
+        ),
+        BackofficeListColumn(
+          label: 'Orden',
+          width: 115,
+          alignment: Alignment.centerRight,
+          compare: (a, b) => a.displayOrder.compareTo(b.displayOrder),
+          cell: (_, item) => Text('${item.displayOrder}'),
+        ),
+        BackofficeListColumn(
+          label: 'Por defecto',
+          width: 145,
+          alignment: Alignment.center,
+          compare: (a, b) => (a.isDefault ? 1 : 0)
+              .compareTo(b.isDefault ? 1 : 0),
+          cell: (_, item) => Text(item.isDefault ? 'Sí' : 'No'),
+        ),
+        BackofficeListColumn(
+          label: 'Estado',
+          width: 135,
+          alignment: Alignment.center,
+          compare: (a, b) => (a.isActive ? 1 : 0)
+              .compareTo(b.isActive ? 1 : 0),
+          cell: (_, item) => Text(item.isActive ? 'Activo' : 'Inactivo'),
+        ),
       ],
     );
   }
 }
 
 class _PackagingItemsTab extends StatelessWidget {
-  const _PackagingItemsTab({
-    required this.items,
-    required this.onSave,
-  });
+  const _PackagingItemsTab({required this.items, required this.onSave});
 
   final List<PackagingItem> items;
   final ValueChanged<PackagingItem?> onSave;
 
   @override
   Widget build(BuildContext context) {
-    return _CatalogList(
-      emptyIcon: Icons.takeout_dining_outlined,
-      emptyMessage: 'Crea bandejas, bolsas, vasos u otros empaques.',
+    return _PackagingTabShell<PackagingItem>(
+      items: items,
+      rowKey: (item) => item.id,
+      rowLabel: (item) => item.name,
+      selectionActions: [
+        BackofficeSelectionAction(
+          label: 'Editar',
+          icon: Icons.edit_outlined,
+          onPressed: onSave,
+        ),
+      ],
+      searchLabel: 'Buscar empaque, costo o estado',
+      searchTextFor: (item) => '${item.name} '
+          '${MoneyFormatter.format(item.costInCents)} '
+          '${item.tracksStock ? 'controla inventario' : 'sin inventario'} '
+          '${item.isActive ? 'activo' : 'inactivo'}',
       emptyTitle: 'Sin empaques',
+      emptyMessage: 'Registrá los empaques que utiliza el restaurante.',
       onCreate: () => onSave(null),
-      children: [
-        for (final item in items)
-          ListTile(
-            leading: const Icon(Icons.takeout_dining_outlined),
-            title: AppText(
-              item.name,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-            subtitle: AppText(
-              '${MoneyFormatter.format(item.costInCents)} - '
-              '${item.tracksStock ? 'Controla stock' : 'No controla stock'} - '
-              '${item.isActive ? 'Activo' : 'Inactivo'}',
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              variant: AppTextVariant.label,
-            ),
-            trailing: IconButton(
-              icon: const Icon(Icons.edit_outlined),
-              onPressed: () => onSave(item),
-              tooltip: 'Editar',
-            ),
-          ),
+      compactBuilder: (_, item) => _packagingCompactItem(
+        title: item.name,
+        description: '${MoneyFormatter.format(item.costInCents)} · '
+            '${item.tracksStock ? 'Controla inventario' : 'Sin inventario'} · '
+            '${item.isActive ? 'Activo' : 'Inactivo'}',
+      ),
+      columns: [
+        BackofficeListColumn(
+          label: 'Empaque',
+          width: 340,
+          compare: (a, b) => a.name.compareTo(b.name),
+          cell: (_, item) => Text(item.name, softWrap: true),
+        ),
+        BackofficeListColumn(
+          label: 'Costo',
+          width: 155,
+          alignment: Alignment.centerRight,
+          compare: (a, b) => a.costInCents.compareTo(b.costInCents),
+          cell: (_, item) => Text(MoneyFormatter.format(item.costInCents)),
+        ),
+        BackofficeListColumn(
+          label: 'Inventario',
+          width: 195,
+          alignment: Alignment.center,
+          compare: (a, b) => (a.tracksStock ? 1 : 0)
+              .compareTo(b.tracksStock ? 1 : 0),
+          cell: (_, item) => Text(item.tracksStock ? 'Sí' : 'No'),
+        ),
+        BackofficeListColumn(
+          label: 'Estado',
+          width: 150,
+          alignment: Alignment.center,
+          compare: (a, b) => (a.isActive ? 1 : 0)
+              .compareTo(b.isActive ? 1 : 0),
+          cell: (_, item) => Text(item.isActive ? 'Activo' : 'Inactivo'),
+        ),
       ],
     );
   }
@@ -105,54 +154,16 @@ class _RulesTab extends StatelessWidget {
   final List<SalesType> salesTypes;
   final ValueChanged<ProductPackagingRule?> onSave;
 
-  @override
-  Widget build(BuildContext context) {
-    return _CatalogList(
-      emptyIcon: Icons.rule_folder_outlined,
-      emptyMessage:
-          'Define que empaque consume cada producto por tipo de venta.',
-      emptyTitle: 'Sin reglas de empaque',
-      onCreate: products.isEmpty || packagingItems.isEmpty || salesTypes.isEmpty
-          ? null
-          : () => onSave(null),
-      children: [
-        for (final rule in rules)
-          ListTile(
-            leading: const Icon(Icons.rule_outlined),
-            title: AppText(
-              _productName(rule.productId),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-            subtitle: AppText(
-              '${_salesTypeName(rule.salesTypeId)} -> '
-              '${_packagingName(rule.packagingItemId)} x '
-              '${rule.quantityPerUnit} por unidad - '
-              '${rule.isActive ? 'Activa' : 'Inactiva'}',
-              maxLines: 3,
-              overflow: TextOverflow.ellipsis,
-              variant: AppTextVariant.label,
-            ),
-            trailing: IconButton(
-              icon: const Icon(Icons.edit_outlined),
-              onPressed: () => onSave(rule),
-              tooltip: 'Editar',
-            ),
-          ),
-      ],
-    );
-  }
-
   String _productName(String id) {
-    for (final product in products) {
-      if (product.id == id) return product.name;
+    for (final item in products) {
+      if (item.id == id) return item.name;
     }
     return 'Producto no encontrado';
   }
 
-  String _salesTypeName(String id) {
-    for (final type in salesTypes) {
-      if (type.id == id) return type.name;
+  String _typeName(String id) {
+    for (final item in salesTypes) {
+      if (item.id == id) return item.name;
     }
     return 'Tipo no encontrado';
   }
@@ -163,52 +174,74 @@ class _RulesTab extends StatelessWidget {
     }
     return 'Empaque no encontrado';
   }
-}
-
-class _CatalogList extends StatelessWidget {
-  const _CatalogList({
-    required this.children,
-    required this.emptyIcon,
-    required this.emptyMessage,
-    required this.emptyTitle,
-    required this.onCreate,
-  });
-
-  final List<Widget> children;
-  final IconData emptyIcon;
-  final String emptyMessage;
-  final String emptyTitle;
-  final VoidCallback? onCreate;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-          child: Align(
-            alignment: Alignment.centerRight,
-            child: AppButton(
-              icon: Icons.add,
-              label: 'Nuevo',
-              onPressed: onCreate,
-            ),
-          ),
+    return _PackagingTabShell<ProductPackagingRule>(
+      items: rules,
+      rowKey: (item) => item.id,
+      rowLabel: (item) => _productName(item.productId),
+      selectionActions: [
+        BackofficeSelectionAction(
+          label: 'Editar',
+          icon: Icons.edit_outlined,
+          onPressed: onSave,
         ),
-        Expanded(
-          child: children.isEmpty
-              ? Center(
-                  child: AppEmptyState(
-                    icon: emptyIcon,
-                    message: emptyMessage,
-                    title: emptyTitle,
-                  ),
-                )
-              : ListView.separated(
-                  itemCount: children.length,
-                  separatorBuilder: (_, _) => const Divider(height: 1),
-                  itemBuilder: (_, index) => children[index],
-                ),
+      ],
+      searchLabel: 'Buscar reglas por producto, venta o empaque',
+      searchTextFor: (item) => '${_productName(item.productId)} '
+          '${_typeName(item.salesTypeId)} '
+          '${_packagingName(item.packagingItemId)}',
+      emptyTitle: 'Sin reglas de empaque',
+      emptyMessage:
+          'Definí qué empaque consume cada producto por tipo de venta.',
+      onCreate: products.isEmpty || packagingItems.isEmpty || salesTypes.isEmpty
+          ? null
+          : () => onSave(null),
+      compactBuilder: (_, item) => _packagingCompactItem(
+        title: _productName(item.productId),
+        description: '${_typeName(item.salesTypeId)} · '
+            '${_packagingName(item.packagingItemId)} · '
+            '${item.quantityPerUnit} por unidad · '
+            '${item.isActive ? 'Activa' : 'Inactiva'}',
+      ),
+      columns: [
+        BackofficeListColumn(
+          label: 'Producto',
+          width: 310,
+          compare: (a, b) => _productName(a.productId)
+              .compareTo(_productName(b.productId)),
+          cell: (_, item) => Text(_productName(item.productId), softWrap: true),
+        ),
+        BackofficeListColumn(
+          label: 'Tipo de venta',
+          width: 260,
+          compare: (a, b) => _typeName(a.salesTypeId)
+              .compareTo(_typeName(b.salesTypeId)),
+          cell: (_, item) => Text(_typeName(item.salesTypeId), softWrap: true),
+        ),
+        BackofficeListColumn(
+          label: 'Empaque',
+          width: 265,
+          compare: (a, b) => _packagingName(a.packagingItemId)
+              .compareTo(_packagingName(b.packagingItemId)),
+          cell: (_, item) =>
+              Text(_packagingName(item.packagingItemId), softWrap: true),
+        ),
+        BackofficeListColumn(
+          label: 'Cantidad',
+          width: 145,
+          alignment: Alignment.centerRight,
+          compare: (a, b) => a.quantityPerUnit.compareTo(b.quantityPerUnit),
+          cell: (_, item) => Text('${item.quantityPerUnit}'),
+        ),
+        BackofficeListColumn(
+          label: 'Estado',
+          width: 135,
+          alignment: Alignment.center,
+          compare: (a, b) => (a.isActive ? 1 : 0)
+              .compareTo(b.isActive ? 1 : 0),
+          cell: (_, item) => Text(item.isActive ? 'Activa' : 'Inactiva'),
         ),
       ],
     );
