@@ -171,14 +171,28 @@ Adoptada de Quantix Engineering Standards **v0.1.4** en `AGENTS.md` y
   Rechaza nombres vacíos o genéricos.
 - Aplicado a **Métodos de pago, Categorías, Modificadores, Roles y Usuarios**.
   «Opción» fue reemplazado por **«Agregar opción»** en Modificadores.
-- No se implementó aún una barra de herramientas dependiente de selección:
-  cambiar el modelo de interacción requiere aprobación del propietario.
+- **Aprobado e implementado** el patrón de selección individual:
+  `BackofficeSelectionToolbar<T>` agrupa comandos visibles arriba; el
+  `BackofficeDataTable` resalta la fila seleccionada (teclado, ratón y tacto).
+  Los botones solo se habilitan cuando la selección, estado y permisos lo permiten.
+  Se conserva «Nuevo» en la misma barra para los catálogos con creación directa.
+- Catálogos migrados sin columna `Acciones`: Productos (tabla de escritorio),
+  Categorías (tabla de escritorio), Métodos de pago, Modificadores, Roles,
+  Usuarios, Mesas, Unidades, Recetas, Gastos, Personal y las tres pestañas
+  de Empaques (Tipos de venta, Empaques, Reglas).
+- La selección se identifica por ID estable, se invalida al filtrar, cambiar
+  de página o perder visibilidad; los registros compactos muestran un contorno
+  de selección. Se conserva la lógica de confirmación antes de acciones destructivas.
+- **Límite pendiente:** Productos y Categorías conservan rutas de listado
+  compacto legadas fuera de sus tablas de escritorio. Deben verificarse
+  visualmente y homogeneizarse antes de afirmar cobertura responsive total.
+  Los módulos transaccionales no se convierten automáticamente en catálogos.
 - Prueba de la regla: `test/core/design_system/backoffice_row_actions_test.dart`,
   con casos de tres acciones en ancho estrecho, prohibición de «Más» y
   alineación inicial cuando varía el número de operaciones.
 - **Alcance:** únicamente vistas administrativas del Backoffice. No tocar
   apariencia ni acciones del modo App/POS o del modo Tableta.
-- **Pendiente:** adopción gradual del mismo componente en las demás tablas
+- **Pendiente:** revisar módulos transaccionales y listados especiales que todavía conservan acciones por fila, y completar QA visual/funcional.
   que todavía declaran botones directamente; validar con QA visual antes
   de certificar cumplimiento universal.
 
