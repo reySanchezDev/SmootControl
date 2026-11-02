@@ -4,6 +4,7 @@ import 'package:smoo_control/core/design_system/app_empty_state.dart';
 import 'package:smoo_control/core/design_system/app_loading_page.dart';
 import 'package:smoo_control/core/design_system/app_message_dialog.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
+import 'package:smoo_control/core/design_system/backoffice_collection_view.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
 import 'package:smoo_control/core/design_system/backoffice_new_action.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
@@ -15,6 +16,7 @@ import 'package:smoo_control/features/staff/domain/repositories/i_staff_reposito
 import 'package:uuid/uuid.dart';
 
 part 'vacation_requests_widgets_part.dart';
+part 'vacation_requests_table_part.dart';
 part 'vacation_requests_form_part.dart';
 
 /// Backoffice inbox and registry for employee vacation days.
@@ -56,39 +58,37 @@ class _VacationRequestsPageState extends State<VacationRequestsPage> {
           onPressed: _employees.isEmpty ? null : () => unawaited(_create()),
         ),
       ],
-      body: ListView(
-        padding: const EdgeInsets.all(16),
+      body: Column(
         children: [
-          _VacationFilters(
-            from: _from,
-            to: _to,
-            employees: _employees,
-            employeeId: _employeeId,
-            status: _status,
-            onFrom: () => _pickDate(isFrom: true),
-            onTo: () => _pickDate(isFrom: false),
-            onEmployee: (value) => setState(() => _employeeId = value),
-            onStatus: (value) => setState(() => _status = value),
-            onReload: _load,
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+            child: _VacationFilters(
+              from: _from,
+              to: _to,
+              employees: _employees,
+              employeeId: _employeeId,
+              status: _status,
+              onFrom: () => _pickDate(isFrom: true),
+              onTo: () => _pickDate(isFrom: false),
+              onEmployee: (value) => setState(() => _employeeId = value),
+              onStatus: (value) => setState(() => _status = value),
+              onReload: _load,
+            ),
           ),
-          const SizedBox(height: 12),
-          if (_error != null)
-            AppEmptyState(
-              icon: Icons.error_outline,
-              title: 'Vacaciones',
-              message: _error!,
-            )
-          else if (_items == null)
-            const AppLoadingPage()
-          else if (_items!.isEmpty)
-            const AppEmptyState(
-              icon: Icons.beach_access_outlined,
-              title: 'Sin registros',
-              message: 'No hay vacaciones en el rango seleccionado.',
-            )
-          else
-            for (final item in _items!)
-              _VacationCard(item: item, onAction: _act),
+          Expanded(
+            child: _error != null
+                ? AppEmptyState(
+                    icon: Icons.error_outline,
+                    title: 'Vacaciones',
+                    message: _error!,
+                  )
+                : _items == null
+                    ? const AppLoadingPage()
+                    : _VacationRequestsTable(
+                        items: _items!,
+                        onAction: _act,
+                      ),
+          ),
         ],
       ),
     );
@@ -169,6 +169,17 @@ class _VacationRequestsPageState extends State<VacationRequestsPage> {
   }
 
   Future<void> _act(VacationRequest item, String action) async {
+    if (action == 'delete') {
+      final allowed = await showAppConfirmationDialog(
+        context,
+        title: 'Eliminar vacaciones',
+        message: '¿Eliminar el registro de ${item.employeeName}?',
+        confirmLabel: 'Eliminar',
+        cancelLabel: 'Cancelar',
+        destructive: true,
+      );
+      if (!allowed || !mounted) return;
+    }
     final result = switch (action) {
       'approved' || 'rejected' => await _attendance.setVacationStatus(
         item.id,
@@ -183,7 +194,7 @@ class _VacationRequestsPageState extends State<VacationRequestsPage> {
         await showAppMessageDialog(
           context: context,
           title: 'Vacaciones actualizadas',
-          message: 'La accion se aplico correctamente.',
+          message: 'La acción se aplicó correctamente.',
         );
         await _load();
       case AppFailureResult(:final error):
