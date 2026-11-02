@@ -215,7 +215,9 @@ class _EmployeeDialogState extends State<_EmployeeDialog> {
             ),
             TextField(
               controller: _salary,
-              decoration: const InputDecoration(labelText: 'Salario quincenal *'),
+              decoration: const InputDecoration(
+                labelText: 'Salario quincenal *',
+              ),
               keyboardType: TextInputType.number,
             ),
             TextField(
