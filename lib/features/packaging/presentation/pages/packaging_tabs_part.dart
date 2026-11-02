@@ -10,6 +10,15 @@ class _SalesTypesTab extends StatelessWidget {
   Widget build(BuildContext context) {
     return _PackagingTabShell<SalesType>(
       items: salesTypes,
+      rowKey: (item) => item.id,
+      rowLabel: (item) => item.name,
+      selectionActions: [
+        BackofficeSelectionAction(
+          label: 'Editar',
+          icon: Icons.edit_outlined,
+          onPressed: onSave,
+        ),
+      ],
       searchLabel: 'Buscar tipo de venta o código',
       searchTextFor: (item) => '${item.name} ${item.code} ${item.displayOrder}',
       emptyTitle: 'Sin tipos de venta',
@@ -20,7 +29,6 @@ class _SalesTypesTab extends StatelessWidget {
         description: '${item.code} · Orden ${item.displayOrder} · '
             '${item.isActive ? 'Activo' : 'Inactivo'}'
             '${item.isDefault ? ' · Predeterminado' : ''}',
-        onEdit: () => onSave(item),
       ),
       columns: [
         BackofficeListColumn(
@@ -58,16 +66,6 @@ class _SalesTypesTab extends StatelessWidget {
               .compareTo(b.isActive ? 1 : 0),
           cell: (_, item) => Text(item.isActive ? 'Activo' : 'Inactivo'),
         ),
-        BackofficeListColumn(
-          label: 'Acciones',
-          width: 155,
-          alignment: Alignment.center,
-          cell: (_, item) => TextButton.icon(
-            onPressed: () => onSave(item),
-            icon: const Icon(Icons.edit_outlined, size: 18),
-            label: const Text('Editar'),
-          ),
-        ),
       ],
     );
   }
@@ -83,6 +81,15 @@ class _PackagingItemsTab extends StatelessWidget {
   Widget build(BuildContext context) {
     return _PackagingTabShell<PackagingItem>(
       items: items,
+      rowKey: (item) => item.id,
+      rowLabel: (item) => item.name,
+      selectionActions: [
+        BackofficeSelectionAction(
+          label: 'Editar',
+          icon: Icons.edit_outlined,
+          onPressed: onSave,
+        ),
+      ],
       searchLabel: 'Buscar empaque, costo o estado',
       searchTextFor: (item) => '${item.name} '
           '${MoneyFormatter.format(item.costInCents)} '
@@ -96,7 +103,6 @@ class _PackagingItemsTab extends StatelessWidget {
         description: '${MoneyFormatter.format(item.costInCents)} · '
             '${item.tracksStock ? 'Controla inventario' : 'Sin inventario'} · '
             '${item.isActive ? 'Activo' : 'Inactivo'}',
-        onEdit: () => onSave(item),
       ),
       columns: [
         BackofficeListColumn(
@@ -127,16 +133,6 @@ class _PackagingItemsTab extends StatelessWidget {
           compare: (a, b) => (a.isActive ? 1 : 0)
               .compareTo(b.isActive ? 1 : 0),
           cell: (_, item) => Text(item.isActive ? 'Activo' : 'Inactivo'),
-        ),
-        BackofficeListColumn(
-          label: 'Acciones',
-          width: 160,
-          alignment: Alignment.center,
-          cell: (_, item) => TextButton.icon(
-            onPressed: () => onSave(item),
-            icon: const Icon(Icons.edit_outlined, size: 18),
-            label: const Text('Editar'),
-          ),
         ),
       ],
     );
@@ -183,6 +179,15 @@ class _RulesTab extends StatelessWidget {
   Widget build(BuildContext context) {
     return _PackagingTabShell<ProductPackagingRule>(
       items: rules,
+      rowKey: (item) => item.id,
+      rowLabel: (item) => _productName(item.productId),
+      selectionActions: [
+        BackofficeSelectionAction(
+          label: 'Editar',
+          icon: Icons.edit_outlined,
+          onPressed: onSave,
+        ),
+      ],
       searchLabel: 'Buscar reglas por producto, venta o empaque',
       searchTextFor: (item) => '${_productName(item.productId)} '
           '${_typeName(item.salesTypeId)} '
@@ -199,7 +204,6 @@ class _RulesTab extends StatelessWidget {
             '${_packagingName(item.packagingItemId)} · '
             '${item.quantityPerUnit} por unidad · '
             '${item.isActive ? 'Activa' : 'Inactiva'}',
-        onEdit: () => onSave(item),
       ),
       columns: [
         BackofficeListColumn(
@@ -238,16 +242,6 @@ class _RulesTab extends StatelessWidget {
           compare: (a, b) => (a.isActive ? 1 : 0)
               .compareTo(b.isActive ? 1 : 0),
           cell: (_, item) => Text(item.isActive ? 'Activa' : 'Inactiva'),
-        ),
-        BackofficeListColumn(
-          label: 'Acciones',
-          width: 155,
-          alignment: Alignment.center,
-          cell: (_, item) => TextButton.icon(
-            onPressed: () => onSave(item),
-            icon: const Icon(Icons.edit_outlined, size: 18),
-            label: const Text('Editar'),
-          ),
         ),
       ],
     );
