@@ -98,22 +98,22 @@ class AuditLogTile extends StatelessWidget {
   }
 }
 
+/// Localizes audit events without displaying internal action codes.
 String auditActionLabel(AppLocalizations l10n, String action) {
-    return switch (action) {
-      'catalog.category.save' => l10n.auditActionCategorySaved,
-      'products.save' => l10n.auditActionProductSaved,
-      'payment_methods.save' => l10n.auditActionPaymentMethodSaved,
-      'tables.save' => l10n.auditActionTableSaved,
-      'sales.void' => l10n.auditActionSaleVoided,
-      'cash.open' => l10n.auditActionCashOpened,
-      'cash.close' => l10n.auditActionCashClosed,
-      'expenses.category.save' => l10n.auditActionExpenseCategorySaved,
-      'expenses.category.delete' => l10n.auditActionExpenseCategoryDeleted,
-      'expenses.save' => l10n.auditActionExpenseSaved,
-      'settings.save' => l10n.auditActionSettingsSaved,
-      'roles.save' => l10n.auditActionRoleSaved,
-      'users.save' => l10n.auditActionUserSaved,
-      _ => entry.action,
-    };
+  return switch (action) {
+    'catalog.category.save' => l10n.auditActionCategorySaved,
+    'products.save' => l10n.auditActionProductSaved,
+    'payment_methods.save' => l10n.auditActionPaymentMethodSaved,
+    'tables.save' => l10n.auditActionTableSaved,
+    'sales.void' => l10n.auditActionSaleVoided,
+    'cash.open' => l10n.auditActionCashOpened,
+    'cash.close' => l10n.auditActionCashClosed,
+    'expenses.category.save' => l10n.auditActionExpenseCategorySaved,
+    'expenses.category.delete' => l10n.auditActionExpenseCategoryDeleted,
+    'expenses.save' => l10n.auditActionExpenseSaved,
+    'settings.save' => l10n.auditActionSettingsSaved,
+    'roles.save' => l10n.auditActionRoleSaved,
+    'users.save' => l10n.auditActionUserSaved,
+    _ => action,
+};
   }
-
