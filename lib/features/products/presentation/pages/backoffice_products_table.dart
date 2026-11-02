@@ -34,6 +34,7 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
   int _pageSize = 15;
   int _sortColumn = 0;
   bool _sortAscending = true;
+  String? _selectedId;
 
   @override
   bool get wantKeepAlive => true;
@@ -47,7 +48,6 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
     final filtered = widget.products.where((product) {
       if (_status == 'active' && !product.isActive) return false;
@@ -80,6 +80,15 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
     final page = _page.clamp(0, pageCount - 1);
     final start = page * _pageSize;
     final visible = filtered.skip(start).take(_pageSize).toList();
+    Product? selected;
+    int? selectedIndex;
+    for (var i = 0; i < visible.length; i++) {
+      if (visible[i].id == _selectedId) {
+        selected = visible[i];
+        selectedIndex = i;
+        break;
+      }
+    }
     final categories = widget.categories.toList()
       ..sort((a, b) => a.name.compareTo(b.name));
 
@@ -88,13 +97,24 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Align(
-            alignment: Alignment.centerRight,
-            child: FilledButton.icon(
-              onPressed: widget.onCreate,
-              icon: const Icon(Icons.add_rounded),
-              label: const Text('Nuevo'),
-            ),
+          BackofficeSelectionToolbar<Product>(
+            selected: selected,
+            selectedLabel: selected?.name,
+            onCreate: widget.onCreate,
+            actions: [
+              BackofficeSelectionAction(
+                label: l10n.editAction,
+                icon: Icons.edit_outlined,
+                onPressed: widget.onEdit,
+              ),
+              BackofficeSelectionAction(
+                label: l10n.deactivateAction,
+                icon: Icons.toggle_off_outlined,
+                enabledWhen: (product) => product.isActive,
+                onPressed: widget.onDeactivate,
+                destructive: true,
+              ),
+            ],
           ),
           const SizedBox(height: 12),
           _ProductsFilterBar(
@@ -105,11 +125,26 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
             category: _category,
             categories: categories,
             categoryPathFor: widget.categoryPathFor,
-            onQueryChanged: (v) => setState(() { _query = v; _page = 0; }),
-            onKindChanged: (v) => setState(() { _kind = v; _page = 0; }),
-            onStatusChanged: (v) => setState(() { _status = v; _page = 0; }),
-            onCategoryChanged: (v) =>
-                setState(() { _category = v; _page = 0; }),
+            onQueryChanged: (v) => setState(() {
+              _query = v;
+              _page = 0;
+              _selectedId = null;
+            }),
+            onKindChanged: (v) => setState(() {
+              _kind = v;
+              _page = 0;
+              _selectedId = null;
+            }),
+            onStatusChanged: (v) => setState(() {
+              _status = v;
+              _page = 0;
+              _selectedId = null;
+            }),
+            onCategoryChanged: (v) => setState(() {
+              _category = v;
+              _page = 0;
+              _selectedId = null;
+            }),
             onClear: () => setState(() {
               _search.clear();
               _query = '';
@@ -117,6 +152,7 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
               _kind = 'all';
               _category = null;
               _page = 0;
+              _selectedId = null;
             }),
           ),
           const SizedBox(height: 10),
@@ -131,9 +167,8 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
                       'Estado',
                       'POS',
                       'Inventario',
-                      'Acciones',
                     ],
-                    columnWidths: const [280, 230, 120, 110, 95, 125, 242],
+                    columnWidths: const [280, 230, 120, 110, 95, 125],
                     columnAlignments: const [
                       Alignment.centerLeft,
                       Alignment.centerLeft,
@@ -141,12 +176,10 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
                       Alignment.center,
                       Alignment.center,
                       Alignment.center,
-                      Alignment.center,
                     ],
                     sortColumnIndex: _sortColumn,
                     sortAscending: _sortAscending,
                     onSort: (index) {
-                      if (index == 6) return;
                       setState(() {
                         if (_sortColumn == index) {
                           _sortAscending = !_sortAscending;
@@ -155,8 +188,13 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
                           _sortAscending = true;
                         }
                         _page = 0;
+                        _selectedId = null;
                       });
                     },
+                    selectedRowIndex: selectedIndex,
+                    onRowSelected: (index) => setState(() {
+                      _selectedId = visible[index].id;
+                    }),
                     rows: [
                       for (final product in visible)
                         [
@@ -196,28 +234,6 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
                             product.tracksInventory ? 'Sí' : 'No',
                             product.tracksInventory,
                           ),
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              TextButton.icon(
-                                onPressed: () => widget.onEdit(product),
-                                icon: const Icon(Icons.edit_outlined, size: 16),
-                                label: Text(l10n.editAction),
-                              ),
-                              if (product.isActive)
-                                TextButton.icon(
-                                  onPressed: () => widget.onDeactivate(product),
-                                  icon: const Icon(
-                                    Icons.toggle_off_outlined,
-                                    size: 16,
-                                  ),
-                                  label: Text(l10n.deactivateAction),
-                                  style: TextButton.styleFrom(
-                                    foregroundColor: theme.colorScheme.error,
-                                  ),
-                                ),
-                            ],
-                          ),
                         ],
                     ],
                   ),
@@ -228,6 +244,7 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
             onRowsPerPageChanged: (value) => setState(() {
               _pageSize = value;
               _page = 0;
+              _selectedId = null;
             }),
             firstIndex: start,
             visibleCount: visible.length,
@@ -236,10 +253,16 @@ class _BackofficeProductsTableState extends State<_BackofficeProductsTable>
             pageCount: pageCount,
             onPrevious: page == 0
                 ? null
-                : () => setState(() => _page = page - 1),
+                : () => setState(() {
+                    _page = page - 1;
+                    _selectedId = null;
+                  }),
             onNext: page + 1 >= pageCount
                 ? null
-                : () => setState(() => _page = page + 1),
+                : () => setState(() {
+                    _page = page + 1;
+                    _selectedId = null;
+                  }),
           ),
         ],
       ),
