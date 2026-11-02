@@ -6,7 +6,7 @@ import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
 import 'package:smoo_control/core/design_system/app_tile_actions.dart';
 import 'package:smoo_control/core/design_system/backoffice_collection_view.dart';
-import 'package:smoo_control/core/design_system/backoffice_new_action.dart';
+import 'package:smoo_control/core/design_system/backoffice_selection_toolbar.dart';
 import 'package:smoo_control/core/design_system/confirm_deactivate_dialog.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/features/tables/domain/entities/restaurant_table.dart';
@@ -30,11 +30,6 @@ class TablesPage extends StatelessWidget {
           serviceLocator<TablesBloc>()..add(const TablesLoadRequested()),
       child: Builder(
         builder: (context) => AppPageScaffold(
-          actions: [
-            BackofficeNewAction(
-              onPressed: () => _openCreateDialog(context),
-            ),
-          ],
           title: l10n.moduleTables,
           body: BlocBuilder<TablesBloc, TablesState>(
             builder: (context, state) {
@@ -45,15 +40,27 @@ class TablesPage extends StatelessWidget {
                   message: failure.message,
                   title: l10n.moduleTables,
                 ),
-                TablesLoaded(:final tables) when tables.isEmpty =>
-                  AppEmptyState(
-                    icon: Icons.table_restaurant_outlined,
-                    message: l10n.emptyTablesMessage,
-                    title: l10n.emptyTablesTitle,
-                  ),
                 TablesLoaded(:final tables) =>
                   BackofficeCollectionView<RestaurantTable>(
                     items: tables,
+                    onCreate: () => _openCreateDialog(context),
+                    rowKey: (table) => table.id,
+                    rowLabel: (table) => table.name,
+                    selectionActions: [
+                      BackofficeSelectionAction(
+                        label: l10n.editAction,
+                        icon: Icons.edit_outlined,
+                        onPressed: (table) =>
+                            _openEditDialog(context, table),
+                      ),
+                      BackofficeSelectionAction(
+                        label: l10n.deactivateAction,
+                        icon: Icons.toggle_off_outlined,
+                        enabledWhen: (table) => table.isActive,
+                        onPressed: (table) =>
+                            _deactivateTable(context, table),
+                      ),
+                    ],
                     searchLabel: 'Buscar mesa o estado',
                     searchTextFor: (table) =>
                         '${table.name} ${_statusLabel(l10n, table)}',
@@ -78,31 +85,6 @@ class TablesPage extends StatelessWidget {
                         compare: (a, b) => _statusLabel(l10n, a)
                             .compareTo(_statusLabel(l10n, b)),
                         cell: (_, table) => Text(_statusLabel(l10n, table)),
-                      ),
-                      BackofficeListColumn(
-                        label: 'Acciones',
-                        width: 260,
-                        alignment: Alignment.center,
-                        cell: (_, table) => Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            TextButton.icon(
-                              onPressed: () => _openEditDialog(context, table),
-                              icon: const Icon(Icons.edit_outlined, size: 18),
-                              label: Text(l10n.editAction),
-                            ),
-                            if (table.isActive)
-                              TextButton.icon(
-                                onPressed: () =>
-                                    _deactivateTable(context, table),
-                                icon: const Icon(
-                                  Icons.toggle_off_outlined,
-                                  size: 18,
-                                ),
-                                label: Text(l10n.deactivateAction),
-                              ),
-                          ],
-                        ),
                       ),
                     ],
                   ),
