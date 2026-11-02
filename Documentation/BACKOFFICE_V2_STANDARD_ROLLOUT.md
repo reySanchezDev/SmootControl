@@ -1,8 +1,7 @@
 # Backoffice V2 — Adopción de Quantix Engineering Standards
 
 **Rama:** `develop/backoffice-v2`  
-**Norma de referencia:** `reySanchezDev/QuantixEngineeringStandar`, v0.1.0, revisión
-`a026ededa9f3c98f3ab493cc76b695af71e23df3`.  
+**Norma de referencia:** `reySanchezDev/QuantixEngineeringStandar`, v0.1.3, revisión fijada en `AGENTS.md`.  
 **Estado:** implementación transversal parcial; pendiente de validación ejecutada con Flutter y QA visual de todos los módulos. No equivale a certificación UX completa.
 
 ## Trabajo integrado en la rama
@@ -121,6 +120,43 @@ Adoptada de Quantix Engineering Standards **v0.1.2**, tanto en
   colección compartida. No se declara cumplimiento universal sin QA.
 - Ningún cambio sobre `main`, producción, datos reales ni lógica del POS.
 
+## Alcance estricto: solamente Backoffice administrativo — 02/11/2026
+
+**Límite arquitectónico vinculante**:
+- La capa de apariencia `BackofficeTheme.executiveIvory` se instala
+  exclusivamente en `BackofficeHomePage` dentro de la sesión administrativa.
+- El tema global `AppTheme.light` sigue siendo exclusivo de la aplicación
+  común y los flujos App/POS y Tableta. No se ha modificado `AppTheme.light`,
+  `AppPalette`, `features/pos/`, rutas de POS ni `TimeClockGate`.
+- Las mejoras que dependen de `BackofficeWorkspaceScope` se activan
+  únicamente al renderizar la vista dentro del workspace Backoffice.
+- Un viewport de anchura tablet **dentro del Backoffice web** puede adoptar
+  el diseño responsive; esto no cambia el **modo Tableta** del POS.
+- No modificar permisos, servicios, repositorios, esquemas ni persistencia
+  para conseguir cambios de presentación.
+
+**Cambios funcionalmente conservadores de esta pasada**:
+- Ventas: `SalesSearchableList` usa `BackofficeCollectionView` solo cuando
+  pertenece al workspace Backoffice; mantiene el listado anterior fuera de él.
+- Caja: fechas, importes, estado, cajero, dispositivo, edición y eliminación
+  mediante tabla administrativa; confirmación destructiva y respuesta uniforme.
+- Auditoría: búsqueda, ordenación y paginación; detalle mediante la
+  visualización formateada existente, sin volcar metadatos técnicos en celdas.
+- Personal: tabla administrativa, búsqueda, acciones con texto y tarjetas
+  móviles; archivo separado para respetar 300 líneas.
+- Vacaciones: tabla paginada y filtrable, conserva aprobación/rechazo y
+  confirma eliminación antes de enviar la operación al repositorio.
+- Configuración: acción Guardar arriba, campos obligatorios señalados.
+- `BackofficeTheme`: color principal con contraste AA sobre blanco, texto
+  secundario y variantes reutilizables de diálogos, pestañas y botones.
+- Test: `backoffice_theme_isolation_test.dart` comprueba que la paleta de
+  Backoffice es independiente de App/POS y que sus acciones tienen contraste
+  WCAG AA.
+
+**No sustituye QA completo**: siguen requiriendo revisión los formularios
+especializados, flujos de pago/Planilla y las pantallas de informes. Un
+componente compartido no certifica automáticamente todas las reglas UX.
+
 ## Verificación automatizada preparada
 
 - `tool/verify_backoffice_v2_ux.ps1` comprueba límite de 300 líneas en Dart modificado, regenera l10n, ejecuta `flutter analyze`, pruebas de diseño y `flutter build web --release`.
@@ -131,7 +167,7 @@ Adoptada de Quantix Engineering Standards **v0.1.2**, tanto en
 
 ## Brechas aún abiertas — NO CERTIFICADAS
 
-1. Revisar individualmente los formularios de Categorías, Recetas, Inventario, Movimientos, Ventas, Caja, Gastos, Personal, Marcadas, Vacaciones, Planilla, Reportes y Administración. El uso del scaffold común no garantiza cumplimiento completo de UX-001..037.
+1. Revisar individualmente los formularios de Categorías, Recetas, Inventario, Movimientos, Ventas, Caja, Gastos, Personal, Marcadas, Vacaciones, Planilla, Reportes y Administración. El uso del scaffold común no garantiza cumplimiento completo de UX-001..039.
 2. Migrar mensajes críticos de los demás módulos al diálogo compartido y conectar detección de formularios modificados a sus cierres.
 3. Convertir la página Inicio en un resumen de métricas **reales** con fuentes y autorizaciones verificables; hoy es principalmente navegación a módulos. Nunca inventar cifras.
 4. Validar de punta a punta pantallas móviles y escritorio, escalado de texto, teclado, navegación, múltiples idiomas, accesibilidad, filtros, formularios y permisos.
