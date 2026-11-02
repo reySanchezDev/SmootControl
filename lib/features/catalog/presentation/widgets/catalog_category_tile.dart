@@ -47,6 +47,7 @@ class CatalogCategoryTile extends StatelessWidget {
 
   /// Optional catalog selection mode (no duplicate row actions).
   final VoidCallback? onSelect;
+  /// Whether this row is selected in the Backoffice catalog.
   final bool selected;
 
   @override
