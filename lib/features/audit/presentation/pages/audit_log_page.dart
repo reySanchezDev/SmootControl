@@ -142,7 +142,7 @@ class _AuditLogContent extends StatelessWidget {
                         icon: const Icon(Icons.visibility_outlined),
                         label: const Text('Ver detalle'),
                       ),
-                    ),                    ),
+                    ),
                   ],
                 ),
         ),
