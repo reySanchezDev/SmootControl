@@ -50,7 +50,7 @@ void main() {
     expect(find.text('Inactivar'), findsOneWidget);
     expect(find.text('Quitar nivel'), findsOneWidget);
     expect(find.text('Más'), findsNothing);
-    expect(find.byType(TextButton), findsNWidgets(3));
+    expect(find.bySubtype<TextButton>(), findsNWidgets(3));
     expect(tester.takeException(), isNull);
     await tester.tap(find.text('Editar'));
     expect(editCount, 1);
