@@ -7,6 +7,7 @@ import 'package:smoo_control/core/design_system/app_loading_page.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
 import 'package:smoo_control/core/design_system/backoffice_collection_view.dart';
+import 'package:smoo_control/core/design_system/backoffice_selection_toolbar.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/core/formatters/money_formatter.dart';
 import 'package:smoo_control/core/result/app_result.dart';
@@ -90,6 +91,15 @@ class _InventoryMovementsPageState extends State<InventoryMovementsPage> {
     }
     return BackofficeCollectionView<InventoryMovementDocument>(
       items: documents,
+      rowKey: (doc) => doc.id,
+      rowLabel: (doc) => doc.title,
+      selectionActions: [
+        BackofficeSelectionAction<InventoryMovementDocument>(
+          label: 'Ver detalle',
+          icon: Icons.visibility_outlined,
+          onPressed: (doc) => unawaited(_openDetail(doc)),
+        ),
+      ],
       searchLabel: 'Buscar documento, tipo o movimiento',
       searchTextFor: (doc) =>
           '${doc.title} ${_typeLabel(doc.type)} '
@@ -136,16 +146,6 @@ class _InventoryMovementsPageState extends State<InventoryMovementsPage> {
               a.quantityDelta.compareTo(b.quantityDelta),
           cell: (_, doc) => Text(_quantityText(doc.quantityDelta)),
         ),
-        BackofficeListColumn(
-          label: 'Acciones',
-          width: 170,
-          alignment: Alignment.center,
-          cell: (_, doc) => TextButton.icon(
-            onPressed: () => unawaited(_openDetail(doc)),
-            icon: const Icon(Icons.visibility_outlined, size: 18),
-            label: const Text('Ver detalle'),
-          ),
-        ),
       ],
     );
   }
@@ -164,6 +164,24 @@ class _InventoryMovementsPageState extends State<InventoryMovementsPage> {
   }
 
   Future<void> _openDetail(InventoryMovementDocument document) async {
+    final desktop = MediaQuery.sizeOf(context).width >= 900;
+    if (desktop) {
+      await showDialog<void>(
+        context: context,
+        builder: (_) => Dialog(
+          insetPadding: const EdgeInsets.all(32),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: 1000,
+              maxHeight: MediaQuery.sizeOf(context).height * 0.85,
+            ),
+            child: _MovementDetailSheet(document: document),
+          ),
+        ),
+      );
+      return;
+    }
+    if (!mounted) return;
     await showModalBottomSheet<void>(
       context: context,
       constraints: BoxConstraints(

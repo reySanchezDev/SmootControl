@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:smoo_control/core/design_system/app_searchable_list_section.dart';
 import 'package:smoo_control/core/design_system/backoffice_collection_view.dart';
+import 'package:smoo_control/core/design_system/backoffice_selection_toolbar.dart';
 import 'package:smoo_control/core/design_system/navigation/backoffice_workspace.dart';
 import 'package:smoo_control/core/formatters/money_formatter.dart';
 import 'package:smoo_control/features/sales/domain/entities/sale.dart';
@@ -40,6 +41,27 @@ class SalesSearchableList extends StatelessWidget {
     if (BackofficeWorkspaceScope.contains(context)) {
       return BackofficeCollectionView<Sale>(
         items: sales,
+        rowKey: (sale) => sale.id,
+        rowLabel: (sale) => sale.invoiceNumber,
+        selectionActions: [
+          BackofficeSelectionAction<Sale>(
+            label: 'Ver detalle',
+            icon: Icons.visibility_outlined,
+            onPressed: (sale) => onOpenDetails(context, sale),
+          ),
+          BackofficeSelectionAction<Sale>(
+            label: l10n.previewPdfAction,
+            icon: Icons.picture_as_pdf_outlined,
+            onPressed: (sale) => unawaited(onPreviewPdf(context, sale)),
+          ),
+          BackofficeSelectionAction<Sale>(
+            label: l10n.voidSaleAction,
+            icon: Icons.block_outlined,
+            destructive: true,
+            enabledWhen: (sale) => sale.status == SaleStatus.completed,
+            onPressed: (sale) => unawaited(onVoid(context, sale)),
+          ),
+        ],
         searchLabel: 'Buscar factura, referencia, importe o estado',
         searchTextFor: (sale) => [
           sale.invoiceNumber,
@@ -97,33 +119,6 @@ class SalesSearchableList extends StatelessWidget {
             alignment: Alignment.center,
             compare: (a, b) => a.status.index.compareTo(b.status.index),
             cell: (_, sale) => Text(_saleStatusLabel(l10n, sale.status)),
-          ),
-          BackofficeListColumn(
-            label: 'Acciones',
-            width: 390,
-            alignment: Alignment.center,
-            cell: (_, sale) => Wrap(
-              spacing: 4,
-              runSpacing: 4,
-              children: [
-                TextButton.icon(
-                  onPressed: () => onOpenDetails(context, sale),
-                  icon: const Icon(Icons.visibility_outlined, size: 17),
-                  label: const Text('Detalle'),
-                ),
-                TextButton.icon(
-                  onPressed: () => unawaited(onPreviewPdf(context, sale)),
-                  icon: const Icon(Icons.picture_as_pdf_outlined, size: 17),
-                  label: Text(l10n.previewPdfAction),
-                ),
-                if (sale.status == SaleStatus.completed)
-                  TextButton.icon(
-                    onPressed: () => unawaited(onVoid(context, sale)),
-                    icon: const Icon(Icons.block_outlined, size: 17),
-                    label: Text(l10n.voidSaleAction),
-                  ),
-              ],
-            ),
           ),
         ],
       );

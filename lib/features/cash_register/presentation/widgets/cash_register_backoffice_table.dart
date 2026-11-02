@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:smoo_control/core/design_system/backoffice_collection_view.dart';
+import 'package:smoo_control/core/design_system/backoffice_selection_toolbar.dart';
 import 'package:smoo_control/core/formatters/money_formatter.dart';
 import 'package:smoo_control/features/cash_register/domain/entities/cash_register_admin_record.dart';
 import 'package:smoo_control/l10n/app_localizations.dart';
@@ -37,6 +38,21 @@ class CashRegisterBackofficeTable extends StatelessWidget {
 
     return BackofficeCollectionView<CashRegisterAdminRecord>(
       items: records,
+      rowKey: (row) => row.id,
+      rowLabel: cashier,
+      selectionActions: [
+        BackofficeSelectionAction<CashRegisterAdminRecord>(
+          label: l10n.editAction,
+          icon: Icons.edit_outlined,
+          onPressed: onEdit,
+        ),
+        BackofficeSelectionAction<CashRegisterAdminRecord>(
+          label: l10n.deleteAction,
+          icon: Icons.delete_outline,
+          destructive: true,
+          onPressed: onDelete,
+        ),
+      ],
       searchLabel: 'Buscar cajero, fecha, estado o dispositivo',
       searchTextFor: (row) => [
         dateFormat.format(row.businessDate),
@@ -101,26 +117,6 @@ class CashRegisterBackofficeTable extends StatelessWidget {
             row.status == 'closed'
                 ? l10n.cashRegisterAdminClosed
                 : l10n.cashRegisterAdminOpened,
-          ),
-        ),
-        BackofficeListColumn(
-          label: 'Acciones',
-          width: 240,
-          alignment: Alignment.center,
-          cell: (_, row) => Wrap(
-            spacing: 4,
-            children: [
-              TextButton.icon(
-                onPressed: () => onEdit(row),
-                icon: const Icon(Icons.edit_outlined, size: 17),
-                label: Text(l10n.editAction),
-              ),
-              TextButton.icon(
-                onPressed: () => onDelete(row),
-                icon: const Icon(Icons.delete_outline, size: 17),
-                label: Text(l10n.deleteAction),
-              ),
-            ],
           ),
         ),
       ],
