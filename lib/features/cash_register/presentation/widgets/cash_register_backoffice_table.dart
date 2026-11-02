@@ -42,9 +42,10 @@ class CashRegisterBackofficeTable extends StatelessWidget {
         dateFormat.format(row.businessDate),
         cashier(row),
         row.deviceName ?? '',
-        row.status == 'closed'
-            ? l10n.cashRegisterAdminClosed
-            : l10n.cashRegisterAdminOpened,
+        if (row.status == 'closed')
+          l10n.cashRegisterAdminClosed
+        else
+          l10n.cashRegisterAdminOpened,
       ].join(' '),
       emptyTitle: l10n.emptySearchTitle,
       emptyMessage: l10n.emptySearchMessage,
