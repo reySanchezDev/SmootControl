@@ -31,9 +31,10 @@ class CatalogPage extends StatelessWidget {
       child: Builder(
         builder: (context) => AppPageScaffold(
           actions: [
-            BackofficeNewAction(
-              onPressed: () => _openCreateDialog(context),
-            ),
+            if (MediaQuery.sizeOf(context).width < 850)
+              BackofficeNewAction(
+                onPressed: () => _openCreateDialog(context),
+              ),
           ],
           title: l10n.moduleCatalog,
           body: BlocConsumer<CatalogBloc, CatalogState>(
@@ -58,12 +59,6 @@ class CatalogPage extends StatelessWidget {
                   message: failure.message,
                   title: l10n.moduleCatalog,
                 ),
-                CatalogLoaded(:final categories) when categories.isEmpty =>
-                  AppEmptyState(
-                    icon: Icons.category_outlined,
-                    message: l10n.emptyCatalogMessage,
-                    title: l10n.emptyCatalogTitle,
-                  ),
                 CatalogLoaded(:final categories) => LayoutBuilder(
                   builder: (context, constraints) {
                     void edit(ProductCategory category) => _openEditDialog(
@@ -76,6 +71,7 @@ class CatalogPage extends StatelessWidget {
                     return constraints.maxWidth >= 850
                         ? CatalogBackofficeTable(
                             categories: categories,
+                            onCreate: () => _openCreateDialog(context),
                             onEdit: edit,
                             onRemove: remove,
                           )
