@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:smoo_control/core/design_system/backoffice_collection_view.dart';
+import 'package:smoo_control/core/design_system/backoffice_row_actions.dart';
 import 'package:smoo_control/features/modifiers/domain/entities/modifier_group.dart';
 import 'package:smoo_control/features/modifiers/domain/entities/modifier_option.dart';
 import 'package:smoo_control/l10n/app_localizations.dart';
@@ -102,24 +103,23 @@ class ModifiersBackofficeTable extends StatelessWidget {
           label: 'Acciones',
           width: 355,
           alignment: Alignment.center,
-          cell: (_, group) => Wrap(
-            spacing: 3,
-            children: [
-              TextButton.icon(
+          cell: (_, group) => BackofficeRowActions(
+            actions: [
+              BackofficeRowAction(
+                label: l10n.editAction,
+                icon: Icons.edit_outlined,
                 onPressed: () => onEditGroup(group),
-                icon: const Icon(Icons.edit_outlined, size: 17),
-                label: Text(l10n.editAction),
               ),
-              TextButton.icon(
+              BackofficeRowAction(
+                label: 'Agregar opción',
+                icon: Icons.add_rounded,
                 onPressed: () => onAddOption(group),
-                icon: const Icon(Icons.add_rounded, size: 17),
-                label: const Text('Opción'),
               ),
               if (group.isActive)
-                TextButton.icon(
+                BackofficeRowAction(
+                  label: l10n.deactivateAction,
+                  icon: Icons.toggle_off_outlined,
                   onPressed: () => onDeactivateGroup(group),
-                  icon: const Icon(Icons.toggle_off_outlined, size: 17),
-                  label: Text(l10n.deactivateAction),
                 ),
             ],
           ),
