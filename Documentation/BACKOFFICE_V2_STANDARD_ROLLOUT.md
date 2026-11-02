@@ -183,10 +183,15 @@ Adoptada de Quantix Engineering Standards **v0.1.4** en `AGENTS.md` y
 - La selección se identifica por ID estable, se invalida al filtrar, cambiar
   de página o perder visibilidad; los registros compactos muestran un contorno
   de selección. Se conserva la lógica de confirmación antes de acciones destructivas.
-- **Límite pendiente:** Productos y Categorías conservan rutas de listado
-  compacto legadas fuera de sus tablas de escritorio. Deben verificarse
-  visualmente y homogeneizarse antes de afirmar cobertura responsive total.
-  Los módulos transaccionales no se convierten automáticamente en catálogos.
+- **Vistas compactas alineadas:** Productos usa las tarjetas y etiquetas
+  auténticas con el mismo toolbar y selección del módulo administrativo;
+  Categorías conserva su árbol jerárquico y la expansión de ramas, pero
+  traslada las operaciones a la botonera y limpia selecciones no visibles
+  al cambiar de rama. `Nuevo` permanece disponible incluso sin registros.
+- **QA aún pendiente:** comprobar navegación, contraste, scroll y
+  autorizaciones sobre el frontend local autenticado (390, 768, 1366 y
+  1920 px). Los módulos transaccionales conservan sus operaciones propias,
+  sin aplicar indiscriminadamente una barra de catálogos.
 - Prueba de la regla: `test/core/design_system/backoffice_row_actions_test.dart`,
   con casos de tres acciones en ancho estrecho, prohibición de «Más» y
   alineación inicial cuando varía el número de operaciones.
