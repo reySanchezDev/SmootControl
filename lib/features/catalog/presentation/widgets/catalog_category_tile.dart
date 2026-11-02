@@ -80,20 +80,20 @@ class CatalogCategoryTile extends StatelessWidget {
               : AppTileActions(
                   compact: compact,
                   actions: [
-              if (onRemove != null)
-                AppTileAction(
-                  color: Theme.of(context).colorScheme.error,
-                  icon: Icons.delete_outline,
-                  label: l10n.removeAction,
-                  onPressed: onRemove!,
+                    if (onRemove != null)
+                      AppTileAction(
+                        color: Theme.of(context).colorScheme.error,
+                        icon: Icons.delete_outline,
+                        label: l10n.removeAction,
+                        onPressed: onRemove!,
+                      ),
+                    AppTileAction(
+                      icon: Icons.edit_outlined,
+                      label: l10n.editAction,
+                      onPressed: onEdit,
+                    ),
+                  ],
                 ),
-              AppTileAction(
-                icon: Icons.edit_outlined,
-                label: l10n.editAction,
-                onPressed: onEdit,
-              ),
-            ],
-          ),
         );
       },
     );
