@@ -33,6 +33,9 @@ void main() {
 
   test('UX-039: administrative primary action text has AA contrast', () {
     final colors = BackofficeTheme.executiveIvory.colorScheme;
-    expect(_contrast(colors.primary, colors.onPrimary), greaterThanOrEqualTo(4.5));
+    expect(
+      _contrast(colors.primary, colors.onPrimary),
+      greaterThanOrEqualTo(4.5),
+    );
   });
 }
