@@ -15,6 +15,7 @@ class CatalogTreeList extends StatefulWidget {
     required this.onRemove,
     this.onSelect,
     this.selectedId,
+    this.onHierarchyChanged,
     this.searchQuery = '',
     super.key,
   });
@@ -31,6 +32,9 @@ class CatalogTreeList extends StatefulWidget {
   /// Optional row-selection callback in Backoffice.
   final ValueChanged<ProductCategory>? onSelect;
   final String? selectedId;
+
+  /// Clears a selection when its branch is collapsed or switched.
+  final VoidCallback? onHierarchyChanged;
 
   /// Current search query.
   final String searchQuery;
@@ -99,6 +103,7 @@ class _CatalogTreeListState extends State<CatalogTreeList> {
   }
 
   void _toggleRoot(String categoryId) {
+    widget.onHierarchyChanged?.call();
     setState(() {
       _expandedRootId = _expandedRootId == categoryId ? null : categoryId;
     });
