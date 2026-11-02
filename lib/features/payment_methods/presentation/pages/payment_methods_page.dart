@@ -35,11 +35,7 @@ class PaymentMethodsPage extends StatelessWidget {
             ..add(const PaymentMethodsLoadRequested()),
       child: Builder(
         builder: (context) => AppPageScaffold(
-          actions: [
-            BackofficeNewAction(
-              onPressed: () => _openCreateDialog(context),
-            ),
-          ],
+
           title: l10n.modulePaymentMethods,
           body: BlocBuilder<PaymentMethodsBloc, PaymentMethodsState>(
             builder: (context, state) {
@@ -51,15 +47,10 @@ class PaymentMethodsPage extends StatelessWidget {
                   message: failure.message,
                   title: l10n.modulePaymentMethods,
                 ),
-                PaymentMethodsLoaded(:final methods) when methods.isEmpty =>
-                  AppEmptyState(
-                    icon: Icons.payments_outlined,
-                    message: l10n.emptyPaymentMethodsMessage,
-                    title: l10n.emptyPaymentMethodsTitle,
-                  ),
                 PaymentMethodsLoaded(:final methods) =>
                   PaymentMethodsBackofficeTable(
                     methods: _orderedMethods(methods),
+                    onCreate: () => _openCreateDialog(context),
                     canRemove: (method) => _canRemoveMethod(method, methods),
                     onEdit: (method) => _openEditDialog(context, method),
                     onDeactivate: (method) =>
