@@ -14,6 +14,8 @@ class BackofficeDataTable extends StatelessWidget {
     this.sortColumnIndex,
     this.sortAscending = true,
     this.onSort,
+    this.selectedRowIndex,
+    this.onRowSelected,
     super.key,
   });
 
@@ -40,6 +42,12 @@ class BackofficeDataTable extends StatelessWidget {
 
   /// Invoked when a sortable header is selected.
   final ValueChanged<int>? onSort;
+
+  /// Currently selected row on the displayed page.
+  final int? selectedRowIndex;
+
+  /// Selection by mouse, touch or keyboard.
+  final ValueChanged<int>? onRowSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -153,30 +161,45 @@ class BackofficeDataTable extends StatelessWidget {
                     child: ListView.builder(
                       primary: false,
                       itemCount: rows.length,
-                      itemBuilder: (context, index) => DecoratedBox(
-                        decoration: BoxDecoration(
-                          color: index.isEven
-                              ? scheme.surface
-                              : scheme.surfaceContainerLowest,
-                          border: Border(
-                            bottom: BorderSide(color: scheme.outlineVariant),
-                          ),
-                        ),
-                        child: Table(
-                          columnWidths: effectiveWidths,
-                          children: [
-                            TableRow(
-                              children: [
-                                for (var i = 0; i < columns.length; i++)
-                                  ConstrainedBox(
-                                    constraints: const BoxConstraints(
-                                      minHeight: 44,
-                                    ),
-                                    child: cell(rows[index][i], i),
+                      itemBuilder: (context, index) => Material(
+                        color: selectedRowIndex == index
+                            ? scheme.primaryContainer
+                            : index.isEven
+                                ? scheme.surface
+                                : scheme.surfaceContainerLowest,
+                        child: Semantics(
+                          selected: selectedRowIndex == index,
+                          label: 'Registro ${index + 1}',
+                          child: InkWell(
+                            onTap: onRowSelected == null
+                                ? null
+                                : () => onRowSelected!(index),
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                border: Border(
+                                  bottom: BorderSide(
+                                    color: scheme.outlineVariant,
                                   ),
-                              ],
+                                ),
+                              ),
+                              child: Table(
+                                columnWidths: effectiveWidths,
+                                children: [
+                                  TableRow(
+                                    children: [
+                                      for (var i = 0; i < columns.length; i++)
+                                        ConstrainedBox(
+                                          constraints: const BoxConstraints(
+                                            minHeight: 44,
+                                          ),
+                                          child: cell(rows[index][i], i),
+                                        ),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
-                          ],
+                          ),
                         ),
                       ),
                     ),
