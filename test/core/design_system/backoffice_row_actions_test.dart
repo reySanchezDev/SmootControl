@@ -80,7 +80,7 @@ void main() {
   testWidgets('the first action stays aligned with differing action counts', (
     tester,
   ) async {
-    Widget layout(bool addExtra) => MaterialApp(
+    Widget layout({required bool addExtra}) => MaterialApp(
       home: Scaffold(
         body: SizedBox(
           width: 350,
@@ -103,9 +103,9 @@ void main() {
       ),
     );
 
-    await tester.pumpWidget(layout(false));
+    await tester.pumpWidget(layout(addExtra: false));
     final oneActionX = tester.getTopLeft(find.text('Editar')).dx;
-    await tester.pumpWidget(layout(true));
+    await tester.pumpWidget(layout(addExtra: true));
     final twoActionsX = tester.getTopLeft(find.text('Editar')).dx;
 
     expect(twoActionsX, oneActionX);
