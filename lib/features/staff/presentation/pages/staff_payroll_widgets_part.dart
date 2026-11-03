@@ -129,82 +129,87 @@ class _PayrollDraftList extends StatelessWidget {
   }
 
   void _showBreakdown(BuildContext context, _PayrollEntry entry) {
-    unawaited(showDialog<void>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(entry.employeeName),
-        content: SizedBox(
-          width: 560,
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(entry.periodLabel),
-                const SizedBox(height: 8),
-                const _PayrollSectionHeader('Nómina'),
-                _PayrollRow(label: 'Salario', value: entry.baseSalaryInCents),
-                _PayrollRow(
-                  label: 'Horas extras',
-                  value: entry.overtimeInCents,
-                ),
-                _PayrollRow(label: 'Consumo', value: entry.consumptionInCents),
-                if (entry.rawMaterialConsumptionInCents > 0) ...[
+    unawaited(
+      showDialog<void>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: Text(entry.employeeName),
+          content: SizedBox(
+            width: 560,
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(entry.periodLabel),
+                  const SizedBox(height: 8),
+                  const _PayrollSectionHeader('Nómina'),
+                  _PayrollRow(label: 'Salario', value: entry.baseSalaryInCents),
                   _PayrollRow(
-                    label: 'Consumo POS',
-                    value: entry.posConsumptionInCents,
+                    label: 'Horas extras',
+                    value: entry.overtimeInCents,
                   ),
                   _PayrollRow(
-                    label: 'Materia prima',
-                    value: entry.rawMaterialConsumptionInCents,
+                    label: 'Consumo',
+                    value: entry.consumptionInCents,
+                  ),
+                  if (entry.rawMaterialConsumptionInCents > 0) ...[
+                    _PayrollRow(
+                      label: 'Consumo POS',
+                      value: entry.posConsumptionInCents,
+                    ),
+                    _PayrollRow(
+                      label: 'Materia prima',
+                      value: entry.rawMaterialConsumptionInCents,
+                    ),
+                  ],
+                  _PayrollRow(
+                    label: entry.canEditAdvanceDeduction
+                        ? 'Neto antes de adelanto'
+                        : 'Neto planilla',
+                    value: entry.netPayInCents,
+                  ),
+                  if (entry.paidInCents > 0)
+                    _PayrollRow(label: 'Pagado', value: entry.paidInCents),
+                  const Divider(),
+                  const _PayrollSectionHeader('Adelantos del empleado'),
+                  _PayrollRow(
+                    label: entry.canEditAdvanceDeduction
+                        ? 'Adelanto pendiente'
+                        : 'Adelanto registrado',
+                    value: entry.advanceBalanceInCents,
+                  ),
+                  if (!entry.canEditAdvanceDeduction ||
+                      entry.advanceDeductionInCents > 0)
+                    _PayrollRow(
+                      label: 'Abono a adelanto',
+                      value: entry.advanceDeductionInCents,
+                    ),
+                  if (!entry.canEditAdvanceDeduction &&
+                      entry.advanceRemainingInCents > 0)
+                    _PayrollRow(
+                      label: 'Saldo adelanto',
+                      value: entry.advanceRemainingInCents,
+                    ),
+                  const Divider(),
+                  _PayrollRow(
+                    label: 'Por pagar de nómina',
+                    value: entry.balanceInCents,
+                    strong: true,
                   ),
                 ],
-                _PayrollRow(
-                  label: entry.canEditAdvanceDeduction
-                      ? 'Neto antes de adelanto'
-                      : 'Neto planilla',
-                  value: entry.netPayInCents,
-                ),
-                if (entry.paidInCents > 0)
-                  _PayrollRow(label: 'Pagado', value: entry.paidInCents),
-                const Divider(),
-                const _PayrollSectionHeader('Adelantos del empleado'),
-                _PayrollRow(
-                  label: entry.canEditAdvanceDeduction
-                      ? 'Adelanto pendiente'
-                      : 'Adelanto registrado',
-                  value: entry.advanceBalanceInCents,
-                ),
-                if (!entry.canEditAdvanceDeduction ||
-                    entry.advanceDeductionInCents > 0)
-                  _PayrollRow(
-                    label: 'Abono a adelanto',
-                    value: entry.advanceDeductionInCents,
-                  ),
-                if (!entry.canEditAdvanceDeduction &&
-                    entry.advanceRemainingInCents > 0)
-                  _PayrollRow(
-                    label: 'Saldo adelanto',
-                    value: entry.advanceRemainingInCents,
-                  ),
-                const Divider(),
-                _PayrollRow(
-                  label: 'Por pagar de nómina',
-                  value: entry.balanceInCents,
-                  strong: true,
-                ),
-              ],
+              ),
             ),
           ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('Cerrar'),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('Cerrar'),
-          ),
-        ],
       ),
-    ));
+    );
   }
 
   List<_PayrollEntry> _entries() {
