@@ -36,11 +36,13 @@ void main() {
     expect(find.text('210.00'), findsOneWidget);
 
     await _enterAmount(tester, '100');
-    await tester.tap(find.text(
-      AppLocalizations.of(
-        tester.element(find.byType(PosPaymentAmountDialog)),
-      ).okAction,
-    ));
+    await tester.tap(
+      find.text(
+        AppLocalizations.of(
+          tester.element(find.byType(PosPaymentAmountDialog)),
+        ).okAction,
+      ),
+    );
     await tester.pumpAndSettle();
 
     expect(
@@ -49,11 +51,13 @@ void main() {
     );
 
     await _enterAmount(tester, '250');
-    await tester.tap(find.text(
-      AppLocalizations.of(
-        tester.element(find.byType(PosPaymentAmountDialog)),
-      ).okAction,
-    ));
+    await tester.tap(
+      find.text(
+        AppLocalizations.of(
+          tester.element(find.byType(PosPaymentAmountDialog)),
+        ).okAction,
+      ),
+    );
     await tester.pumpAndSettle();
 
     expect(received, 25000);
@@ -93,11 +97,14 @@ void main() {
 
     expect(tester.takeException(), isNull);
     expect(find.text('Amount Cordoba'), findsOneWidget);
-    expect(find.text(
-      AppLocalizations.of(
-        tester.element(find.byType(PosPaymentAmountDialog)),
-      ).okAction,
-    ), findsOneWidget);
+    expect(
+      find.text(
+        AppLocalizations.of(
+          tester.element(find.byType(PosPaymentAmountDialog)),
+        ).okAction,
+      ),
+      findsOneWidget,
+    );
   });
 
   testWidgets('replaces suggested amount when typing immediately', (
@@ -136,11 +143,13 @@ void main() {
       await tester.tap(find.widgetWithText(OutlinedButton, digit));
       await tester.pumpAndSettle();
     }
-    await tester.tap(find.text(
-      AppLocalizations.of(
-        tester.element(find.byType(PosPaymentAmountDialog)),
-      ).okAction,
-    ));
+    await tester.tap(
+      find.text(
+        AppLocalizations.of(
+          tester.element(find.byType(PosPaymentAmountDialog)),
+        ).okAction,
+      ),
+    );
     await tester.pumpAndSettle();
 
     expect(received, 30000);
