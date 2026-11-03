@@ -7,6 +7,8 @@ import 'package:smoo_control/core/design_system/app_loading_page.dart';
 import 'package:smoo_control/core/design_system/app_message_dialog.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
+import 'package:smoo_control/core/design_system/backoffice_collection_view.dart';
+import 'package:smoo_control/core/design_system/backoffice_selection_toolbar.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/core/formatters/money_formatter.dart';
 import 'package:smoo_control/core/result/app_result.dart';
@@ -117,22 +119,107 @@ class _PayrollPaymentsReportPageState extends State<PayrollPaymentsReportPage> {
         title: 'Sin pagos',
       );
     }
-    return ListView.separated(
-      padding: const EdgeInsets.all(16),
-      itemBuilder: (context, index) {
-        if (index == 0) return _PayrollReceiptSummary(receipts: filtered);
-        final receipt = filtered[index - 1];
-        return _PayrollReceiptCard(
-          receipt: receipt,
-          onDelete: _canDelete
-              ? () => unawaited(_confirmDelete(receipt))
-              : null,
-          onPdf: () => unawaited(_shareEmployeeReceipt(receipt)),
-          onTap: () => _openDetail(receipt),
-        );
-      },
-      itemCount: filtered.length + 1,
-      separatorBuilder: (_, _) => const SizedBox(height: 10),
+    return Column(
+      children: [
+        _PayrollReceiptSummary(receipts: filtered),
+        Expanded(
+          child: BackofficeCollectionView<PayrollPaymentReceipt>(
+            items: filtered,
+            rowKey: (receipt) => receipt.id,
+            rowLabel: (receipt) => receipt.employeeName,
+            selectionActions: [
+              BackofficeSelectionAction<PayrollPaymentReceipt>(
+                label: 'Ver detalle',
+                icon: Icons.visibility_outlined,
+                onPressed: _openDetail,
+              ),
+              BackofficeSelectionAction<PayrollPaymentReceipt>(
+                label: 'PDF esquela',
+                icon: Icons.picture_as_pdf_outlined,
+                onPressed: (receipt) =>
+                    unawaited(_shareEmployeeReceipt(receipt)),
+              ),
+              if (_canDelete)
+                BackofficeSelectionAction<PayrollPaymentReceipt>(
+                  label: 'Eliminar pago',
+                  icon: Icons.delete_outline,
+                  destructive: true,
+                  onPressed: (receipt) => unawaited(_confirmDelete(receipt)),
+                ),
+            ],
+            searchLabel: 'Buscar empleado, código o puesto',
+            showSearch: false,
+            searchTextFor: (receipt) => [
+              receipt.employeeName,
+              receipt.employeeCode,
+              receipt.positionName,
+              receipt.periodLabel,
+              _date(receipt.paidAt),
+              MoneyFormatter.format(receipt.paymentAmountInCents),
+            ].join(' '),
+            emptyTitle: 'Sin pagos',
+            emptyMessage:
+                'No hay planillas pagadas para el filtro seleccionado.',
+            compactBuilder: (_, receipt) => _PayrollReceiptCard(
+              receipt: receipt,
+              onDelete: _canDelete
+                  ? () => unawaited(_confirmDelete(receipt))
+                  : null,
+              onPdf: () => unawaited(_shareEmployeeReceipt(receipt)),
+              onTap: () => _openDetail(receipt),
+            ),
+            columns: [
+              BackofficeListColumn<PayrollPaymentReceipt>(
+                label: 'Empleado',
+                width: 275,
+                compare: (a, b) =>
+                    a.employeeName.compareTo(b.employeeName),
+                cell: (_, receipt) => Text(receipt.employeeName),
+              ),
+              BackofficeListColumn<PayrollPaymentReceipt>(
+                label: 'Puesto',
+                width: 200,
+                compare: (a, b) =>
+                    a.positionName.compareTo(b.positionName),
+                cell: (_, receipt) => Text(receipt.positionName),
+              ),
+              BackofficeListColumn<PayrollPaymentReceipt>(
+                label: 'Período',
+                width: 215,
+                compare: (a, b) =>
+                    a.periodStart.compareTo(b.periodStart),
+                cell: (_, receipt) => Text(receipt.periodLabel),
+              ),
+              BackofficeListColumn<PayrollPaymentReceipt>(
+                label: 'Fecha de pago',
+                width: 160,
+                compare: (a, b) => a.paidAt.compareTo(b.paidAt),
+                cell: (_, receipt) => Text(_date(receipt.paidAt)),
+              ),
+              BackofficeListColumn<PayrollPaymentReceipt>(
+                label: 'Pagado',
+                width: 175,
+                alignment: Alignment.centerRight,
+                compare: (a, b) => a.paymentAmountInCents
+                    .compareTo(b.paymentAmountInCents),
+                cell: (_, receipt) => Text(
+                  MoneyFormatter.format(receipt.paymentAmountInCents),
+                ),
+              ),
+              BackofficeListColumn<PayrollPaymentReceipt>(
+                label: 'Saldo restante',
+                width: 180,
+                alignment: Alignment.centerRight,
+                compare: (a, b) =>
+                    a.balanceAfterInCents.compareTo(b.balanceAfterInCents),
+                cell: (_, receipt) => Text(
+                  MoneyFormatter.format(receipt.balanceAfterInCents),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
