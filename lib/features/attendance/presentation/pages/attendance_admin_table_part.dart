@@ -48,11 +48,7 @@ class _AttendanceEntriesTable extends StatelessWidget {
       ].join(' '),
       emptyTitle: 'Sin resultados',
       emptyMessage: 'No se encontraron marcadas con los criterios indicados.',
-      compactBuilder: (_, entry) => _AttendanceEntryCard(
-        entry: entry,
-        onEdit: readOnly ? null : () => onEdit(entry),
-        onVoid: readOnly ? null : () => onVoid(entry),
-      ),
+      compactBuilder: (_, entry) => _AttendanceEntryCard(entry: entry),
       columns: [
         BackofficeListColumn(
           label: 'Empleado',
