@@ -40,6 +40,14 @@
 - **Siguiente intervención Codex:** fast-forward seguro de worktree aislado al nuevo HEAD y repetir `flutter analyze` y test focalizado. No tocar `main` ni producción.
 - **Estado:** F2 EN_VALIDACIÓN, no publicada.
 
+## 2026-11-03 — Segundo control Codex aprobado y avance F3
+
+- **F2:** Codex confirmó worktree `develop/experience-isolation` al SHA `7c882630`, limpio, `main` intacta, `flutter analyze` sin issues y tests de rutas 3/3.
+- **Estado F2:** validación de código focalizado superada; queda cobertura de entrada real de Time Clock y smoke de navegación/roles previa a integrar, sin necesidad de repetir aprobación de diseño.
+- **F3:** comenzó revisión estática de PR #4 (7 archivos de presentación), verificando cambios de acciones contextuales en ventas, caja, inventario, auditoría y vacaciones, y adaptación de diálogos de planilla; PR no fusionada.
+- **Próximo avance:** consolidar cobertura UX de todos los módulos, preservar POS y generar validación local de integración de PR #4 + aislamiento F2 antes de solicitar revisión visual.
+- **Producción:** sin cambios, despliegue no autorizado.
+
 ## Plantilla para nuevos eventos
 
 ```text
