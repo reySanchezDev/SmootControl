@@ -101,3 +101,9 @@ Además de los submódulos de Personal, la PR #7 incluye nuevas vistas para tres
 **Importante:** no hay certificación visual de estas vistas ni garantía de que el nuevo lote compile hasta Codex. Falta revisar en un navegador real los estados seleccionados, el overflow de acciones, escalas y tableros a 1366×768, 1920×1080 y compacto.
 
 **Siguiente checkpoint agrupado:** una única actualización de PR #7 y ejecución de `dart format` (solo archivos tocados), `flutter analyze` (cero issues), pruebas compartidas y suites Backoffice/Staff/Reportes/POS, build web oficial, conservación de l10n local y comparación de diff con `main`. No merge ni despliegue.
+
+### Nota de implementación del contrato
+
+La comprobación de columna `Acciones` duplicada se realiza en el `build()` del componente, en modo `assert`, para no exigir evaluación constante a la construcción. La prueba ejecuta el widget en el tester y verifica la excepción. El requisito de `rowKey` estable conserva assert en constructor. Estas son protecciones de desarrollo, no sustituyen validaciones de permisos backend ni la comprobación de botones deshabilitados.
+
+**Último código no validado por Codex:** consultar HEAD actual de `develop/backoffice-stabilization-integration`; el punto de certificación sigue siendo `4781a5d1` hasta recibir una nueva ejecución.
