@@ -7,7 +7,6 @@ import 'package:smoo_control/core/design_system/app_message_dialog.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
 import 'package:smoo_control/core/design_system/backoffice_collection_view.dart';
-import 'package:smoo_control/core/design_system/backoffice_new_action.dart';
 import 'package:smoo_control/core/design_system/backoffice_selection_toolbar.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/core/result/app_result.dart';
@@ -55,11 +54,6 @@ class _VacationRequestsPageState extends State<VacationRequestsPage> {
   Widget build(BuildContext context) {
     return AppPageScaffold(
       title: 'Vacaciones',
-      actions: [
-        BackofficeNewAction(
-          onPressed: _employees.isEmpty ? null : () => unawaited(_create()),
-        ),
-      ],
       body: Column(
         children: [
           Padding(
@@ -89,6 +83,9 @@ class _VacationRequestsPageState extends State<VacationRequestsPage> {
                     : _VacationRequestsTable(
                         items: _items!,
                         onAction: _act,
+                        onCreate: _employees.isEmpty
+                            ? null
+                            : () => unawaited(_create()),
                       ),
           ),
         ],
