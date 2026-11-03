@@ -64,7 +64,7 @@ class ModifierGroupTile extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
           trailing: isCompact
-              ? const Icon(Icons.expand_more)
+              ? null
               : _GroupActions(
                   isActive: group.isActive,
                   onAddOption: onAddOption,
@@ -117,11 +117,12 @@ class ModifierGroupTile extends StatelessWidget {
                     ),
                 ],
               ),
-            TextButton.icon(
-              icon: const Icon(Icons.add),
-              label: AppText(l10n.addModifierOptionAction),
-              onPressed: onAddOption,
-            ),
+            if (!isCompact)
+              TextButton.icon(
+                icon: const Icon(Icons.add),
+                label: AppText(l10n.addModifierOptionAction),
+                onPressed: onAddOption,
+              ),
           ],
         );
       },
