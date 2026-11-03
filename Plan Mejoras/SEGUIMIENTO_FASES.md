@@ -242,3 +242,9 @@ Aprobación (si aplica):
 **No se declara finalizado** hasta que F0–F10 estén COMpletadas con evidencia, el Backoffice opere bajo el **dominio final aprobado** con HTTPS y controles de seguridad, POS Android móvil/tableta y Time Clock no presenten regresiones, se haya validado rollback y el propietario firme el cierre. Si una fase completada falla posteriormente se marca `REABIERTA` y el estado general vuelve a EN_CURSO.
 
 **Nota:** ningún porcentaje de avance reemplaza los gates de seguridad, dominio y producción.
+
+## Cambio de estrategia QA — 2026-11-03
+
+Se adoptó **QA proporcional al riesgo**; documentación operativa publicada en `Documentation/QA_POLICY_RISK_BASED.md` de la rama `develop/backoffice-stabilization-integration` (commit `2ad333f`). No se repetirán los 138 tests ni build Web por cada cambio de UI, formato o error aislado. Se harán pruebas focalizadas durante desarrollo, regresión de módulos relacionados cuando corresponda y **end-to-end completo al finalizar F3/release**.
+
+**Time Clock:** persiste 3/4; se requiere la excepción exacta de `initialization reload transitions to standalone marker` ejecutada de forma individual y detallada. No atribuir el defecto a producción sin evidencia. **Último lote general validado:** 138/138, `flutter analyze` y build Web correctos en `74f527d0`. Los cambios posteriores no están certificados.
