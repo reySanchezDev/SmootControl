@@ -1,11 +1,11 @@
 # Tablero de seguimiento — estabilización y publicación SmooControl
 
 **Estado del programa:** EN_CURSO  
-**Fase activa:** F3 (107/107 pruebas conciliadas; lote Consumos/Horas extra pendiente QA local)  
+**Fase activa:** F3 (lote grande de cuatro submódulos de Personal; pendiente única validación local)  
 **Fuente de alcance:** [Plan maestro](PLAN_MAESTRO_END_TO_END.md)  
 **Criterios finales:** [Matriz de aceptación](MATRIZ_ACEPTACION.md)  
 **Despliegue:** [Runbook dominio](PUBLICACION_DOMINIO_RUNBOOK.md)  
-**Última actualización:** 2026-11-03 (Codex confirmó 93/93 suite POS y 107/107 combinadas; formato commit c64a06ad. Nuevos cambios UX en consumos y aprobación de horas extra requieren análisis local).
+**Última actualización:** 2026-11-03 (Codex confirmó 107/107 combinadas. Lote ampliado: Horas extra manuales, Materia prima, Adelantos, Consumos de personal, con buscadores únicos; validación local pendiente).
 
 > **Fuente única de verdad:** este tablero controla qué fase está abierta y cuáles están cerradas. No se marca una tarea, fase o gate como terminada por un commit, una PR o un CI exitoso sin evidencia y verificación de sus criterios.
 
@@ -108,14 +108,14 @@ Estados admitidos para cada fase:
 
 - [ ] Auditar todas las pantallas administrativas y subpantallas; PR #4 revisada y nuevo lote de Consumos/Horas extra pendiente de validación.
 - [ ] Unificar componentes, colores, fuentes, densidad y textos UX.
-- [x] Extender selección y acciones explícitas a Marcadas y Puestos en PR #7; [ ] completar revisión de los demás módulos, filtros, scroll, encabezados y acciones etiquetadas.
+- [x] Extender selección y acciones explícitas a Marcadas, Puestos, Consumos de personal, Horas extras manuales, Materia prima y Adelantos en PR #7; [ ] revisar los demás módulos y validar visualmente el lote completo.
 - [ ] Eliminar patrones ambiguos de columna `Acciones` / `Más` según diseño aprobado.
 - [ ] Ajustar diálogos desktop frente a vistas compactas.
 - [ ] Verificar teclado, accesibilidad, zoom, estados vacíos y errores.
 - [x] Identificar los 7 archivos de presentación de PR #4 y verificar que no modifica lógica de dominio/BD; [ ] revisar la totalidad de la UX, las dependencias y realizar validación de integración antes de decidir merge.
 - [ ] Completar evidencias por pantalla en 390×844, 768×1024, 1366×768 y 1920×1080.
 
-**Cierre:** matriz de pantallas y regresión POS aprobadas; excepciones documentadas. **Checkpoint Codex:** consolidar y publicar exclusivamente los tres formatos locales de tests POS sin modificar semántica; verificar SHA/limpieza, analizar la diferencia 93 vs 102 tests usando los comandos exactos y completar la validación relevante. Mantener main, stashes, 8080/8081 y producción intactos; aún no es aprobación visual final.
+**Cierre:** matriz de pantallas y regresión POS aprobadas; excepciones documentadas. **Checkpoint Codex de lote grande:** actualizar worktree de PR #7 y ejecutar una sola pasada: `dart format` en los siete archivos modificados de Personal, `flutter analyze`, suites relevantes de Staff/Backoffice/POS, build web oficial, y preparar preview local sin tocar `main` ni producción. Registrar SHA/resultado; la revisión visual del propietario sigue pendiente.
 **Evidencia:** PENDIENTE · **Bloqueos:** ninguno registrado · **Siguiente acción:** pendiente de F2.
 
 ### F4 — Runtime, servicios y sincronización
