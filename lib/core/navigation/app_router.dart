@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:smoo_control/core/config/app_run_mode.dart';
+import 'package:smoo_control/core/navigation/app_route_experience.dart';
+import 'package:smoo_control/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:smoo_control/features/auth/presentation/bloc/auth_state.dart';
 import 'package:smoo_control/core/navigation/admin_online_guard.dart';
 import 'package:smoo_control/core/navigation/app_routes.dart';
 import 'package:smoo_control/core/navigation/route_access.dart';
@@ -47,8 +52,36 @@ Route<void> onGenerateAppRoute(RouteSettings settings) {
     );
   }
   return MaterialPageRoute<void>(
-    builder: (_) => _guardedPage(settings.name),
+    builder: (_) => _experienceGuardedPage(settings.name),
     settings: settings,
+  );
+}
+
+/// Rejects unknown or cross-experience routes before invoking the page builder.
+/// Server APIs must continue enforcing their own authorization and tenant rules.
+Widget _experienceGuardedPage(String? routeName) {
+  if (AppRouteExperience.forRoute(routeName) == null) {
+    return const Scaffold(
+      body: Center(child: Text('Página no encontrada')),
+    );
+  }
+  if (AppRunMode.isTimeClock) {
+    return const Scaffold(
+      body: Center(child: Text('Ruta no disponible en el marcador')),
+    );
+  }
+  return BlocBuilder<AuthBloc, AuthState>(
+    builder: (context, state) {
+      if (state case Authenticated(:final session)) {
+        if (AppRouteExperience.allows(session, routeName)) {
+          return _guardedPage(routeName);
+        }
+        return const Scaffold(
+          body: Center(child: Text('Acceso no autorizado')),
+        );
+      }
+      return const AuthGate();
+    },
   );
 }
 
@@ -118,7 +151,16 @@ Widget _guardedPage(String? routeName) {
 /// Builds an operational page with its original permission and online guards.
 ///
 /// Used only inside the authenticated Backoffice workspace.
-Widget guardedBackofficePage(String routeName) => _guardedPage(routeName);
+Widget guardedBackofficePage(String routeName) {
+  // Backoffice shell is already selected through AuthGate, but explicit route
+  // ownership prevents a POS route being embedded in the admin workspace.
+  if (AppRouteExperience.forRoute(routeName) != SmooExperience.backoffice) {
+    return const Scaffold(
+      body: Center(child: Text('Ruta no disponible en Backoffice')),
+    );
+  }
+  return _guardedPage(routeName);
+}
 
 bool _requiresOnlineAdmin(String? routeName) {
   return switch (routeName) {
