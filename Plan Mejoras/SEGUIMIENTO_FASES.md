@@ -5,7 +5,7 @@
 **Fuente de alcance:** [Plan maestro](PLAN_MAESTRO_END_TO_END.md)  
 **Criterios finales:** [Matriz de aceptación](MATRIZ_ACEPTACION.md)  
 **Despliegue:** [Runbook dominio](PUBLICACION_DOMINIO_RUNBOOK.md)  
-**Última actualización:** 2026-11-03 (analyze limpio pero 5/102 pruebas POS fallan por expectativa literal `OK` en tests ya existentes en main; corregidos únicamente tests en PR #7, pendientes de revalidación).
+**Última actualización:** 2026-11-03 (Codex reporta analyze limpio y 93/93 pruebas POS; discrepancia con los 102 casos previos pendiente de conciliar. Tres archivos locales solo formateados sin commit. F4/F5 auditados estáticamente).
 
 > **Fuente única de verdad:** este tablero controla qué fase está abierta y cuáles están cerradas. No se marca una tarea, fase o gate como terminada por un commit, una PR o un CI exitoso sin evidencia y verificación de sus criterios.
 
@@ -55,6 +55,8 @@ Estados admitidos para cada fase:
 - No marcar controles locales como verificados si Codex aún no ha presentado evidencia; registrar pendientes sin detener el resto del trabajo.
 
 **Punto de intervención Codex (F2):** únicamente validar PR #6 en worktree independiente; ejecutar `flutter analyze` y `flutter test test/core/navigation/app_route_experience_test.dart`, luego smoke de rutas y de entradas existentes. No fusionar, no realizar reset destructivo, no modificar producción. Si existen errores reportarlos con líneas y archivos, sin alterar la lógica de negocio.
+
+**Revisión F4/F5 paralela y no invasiva:** `AUDITORIA_RUNTIME_SEGURIDAD_F4_F5.md` documenta scheduler global y restaurante fijado por build; no autoriza cambios de negocio ni publicar como multiempresa sin pruebas de backend.
 
 ## 4. Seguimiento detallado por fase
 
@@ -113,7 +115,7 @@ Estados admitidos para cada fase:
 - [x] Identificar los 7 archivos de presentación de PR #4 y verificar que no modifica lógica de dominio/BD; [ ] revisar la totalidad de la UX, las dependencias y realizar validación de integración antes de decidir merge.
 - [ ] Completar evidencias por pantalla en 390×844, 768×1024, 1366×768 y 1920×1080.
 
-**Cierre:** matriz de pantallas y regresión POS aprobadas; excepciones documentadas. **Checkpoint Codex:** PR #7 HEAD actualizado tras reparar únicamente expectativas localizadas en tests: fast-forward en worktree independiente, `dart format` de los tres tests afectados (solo si formateo necesario), `flutter analyze`, tests focalizados y regresión POS completa. Mantener main, stashes, 8080/8081 y producción intactos; no es aprobación visual final.
+**Cierre:** matriz de pantallas y regresión POS aprobadas; excepciones documentadas. **Checkpoint Codex:** consolidar y publicar exclusivamente los tres formatos locales de tests POS sin modificar semántica; verificar SHA/limpieza, analizar la diferencia 93 vs 102 tests usando los comandos exactos y completar la validación relevante. Mantener main, stashes, 8080/8081 y producción intactos; aún no es aprobación visual final.
 **Evidencia:** PENDIENTE · **Bloqueos:** ninguno registrado · **Siguiente acción:** pendiente de F2.
 
 ### F4 — Runtime, servicios y sincronización
