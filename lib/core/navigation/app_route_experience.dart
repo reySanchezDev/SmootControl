@@ -14,7 +14,7 @@ enum SmooExperience {
 }
 
 /// Explicit route ownership. Authorization and backend permissions are
-/// checked separately; a visual route guard is not a security boundary for APIs.
+/// checked separately; UI guards do not secure API endpoints.
 abstract final class AppRouteExperience {
   static const _posRoutes = <String>{AppRoutes.pos};
 
