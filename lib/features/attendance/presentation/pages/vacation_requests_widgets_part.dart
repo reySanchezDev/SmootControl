@@ -27,47 +27,74 @@ class _VacationFilters extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    return Align(
+      alignment: Alignment.centerLeft,
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
         child: Wrap(
-          spacing: 8,
-          runSpacing: 8,
           crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: BackofficeFormStandards.filterGap,
+          runSpacing: BackofficeFormStandards.filterGap,
           children: [
-            ActionChip(
-              avatar: const Icon(Icons.calendar_month_outlined),
-              label: Text('Desde ${_fmt(from)}'),
-              onPressed: onFrom,
+            SizedBox(
+              width: BackofficeFormStandards.dateWidth,
+              child: OutlinedButton.icon(
+                icon: const Icon(Icons.calendar_month_outlined),
+                label: Text('Desde ${_fmt(from)}'),
+                onPressed: onFrom,
+              ),
             ),
-            ActionChip(
-              avatar: const Icon(Icons.calendar_month_outlined),
-              label: Text('Hasta ${_fmt(to)}'),
-              onPressed: onTo,
+            SizedBox(
+              width: BackofficeFormStandards.dateWidth,
+              child: OutlinedButton.icon(
+                icon: const Icon(Icons.calendar_month_outlined),
+                label: Text('Hasta ${_fmt(to)}'),
+                onPressed: onTo,
+              ),
             ),
-            DropdownButton<String?>(
-              value: employeeId,
-              hint: const Text('Empleado'),
-              items: [
-                const DropdownMenuItem(child: Text('Todos')),
-                for (final employee in employees)
-                  DropdownMenuItem(
-                    value: employee.id,
-                    child: Text(employee.fullName),
-                  ),
-              ],
-              onChanged: onEmployee,
+            SizedBox(
+              width: BackofficeFormStandards.filterWidth,
+              child: DropdownButtonFormField<String>(
+                isExpanded: true,
+                initialValue: employeeId,
+                decoration: const InputDecoration(
+                  labelText: 'Empleado',
+                  border: OutlineInputBorder(),
+                ),
+                items: [
+                  const DropdownMenuItem(value: '', child: Text('Todos')),
+                  for (final employee in employees)
+                    DropdownMenuItem(
+                      value: employee.id,
+                      child: Text(
+                        employee.fullName,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                ],
+                onChanged: (value) => onEmployee(
+                  value == null || value.isEmpty ? null : value,
+                ),
+              ),
             ),
-            DropdownButton<String?>(
-              value: status,
-              hint: const Text('Estado'),
-              items: const [
-                DropdownMenuItem(child: Text('Todos')),
-                DropdownMenuItem(value: 'pending', child: Text('Pendientes')),
-                DropdownMenuItem(value: 'approved', child: Text('Aprobadas')),
-                DropdownMenuItem(value: 'rejected', child: Text('Rechazadas')),
-              ],
-              onChanged: onStatus,
+            SizedBox(
+              width: BackofficeFormStandards.filterWidth,
+              child: DropdownButtonFormField<String>(
+                initialValue: status,
+                decoration: const InputDecoration(
+                  labelText: 'Estado',
+                  border: OutlineInputBorder(),
+                ),
+                items: const [
+                  DropdownMenuItem(value: '', child: Text('Todos')),
+                  DropdownMenuItem(value: 'pending', child: Text('Pendientes')),
+                  DropdownMenuItem(value: 'approved', child: Text('Aprobadas')),
+                  DropdownMenuItem(value: 'rejected', child: Text('Rechazadas')),
+                ],
+                onChanged: (value) => onStatus(
+                  value == null || value.isEmpty ? null : value,
+                ),
+              ),
             ),
             FilledButton.icon(
               icon: const Icon(Icons.refresh),
@@ -79,13 +106,13 @@ class _VacationFilters extends StatelessWidget {
       ),
     );
   }
+
 }
 
 class _VacationCard extends StatelessWidget {
-  const _VacationCard({required this.item, required this.onAction});
+  const _VacationCard({required this.item});
 
   final VacationRequest item;
-  final Future<void> Function(VacationRequest item, String action) onAction;
 
   @override
   Widget build(BuildContext context) {
@@ -112,20 +139,7 @@ class _VacationCard extends StatelessWidget {
                     variant: AppTextVariant.titleMedium,
                   ),
                 ),
-                if (item.isPending)
-                  IconButton(
-                    icon: const Icon(Icons.check_circle_outline),
-                    onPressed: () => unawaited(onAction(item, 'approved')),
-                  ),
-                if (item.isPending)
-                  IconButton(
-                    icon: const Icon(Icons.cancel_outlined),
-                    onPressed: () => unawaited(onAction(item, 'rejected')),
-                  ),
-                IconButton(
-                  icon: const Icon(Icons.delete_outline),
-                  onPressed: () => unawaited(onAction(item, 'delete')),
-                ),
+
               ],
             ),
             const SizedBox(height: 8),
