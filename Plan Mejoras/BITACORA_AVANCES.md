@@ -22,6 +22,16 @@
 - **Avance F0:** dos definiciones reconocidas como cumplidas; quedan pendientes verificaciones de versiones, repositorio/worktrees/stashes y rollback.
 - **Publicación:** no autorizada.
 
+## 2026-11-03 — Avance autónomo F1 y F2
+
+- **F1:** se generó `MATRIZ_EXPERIENCIAS.md` con las 47 rutas declaradas en `AppRoutes`, clasificación POS/Backoffice y permisos; `INVENTARIO_PRESENTACION.md` registra 222 archivos de presentación en 24 módulos para revisión de dependencias indirectas.
+- **F2:** PR #6 (borrador), rama `develop/experience-isolation`, HEAD `853f9091214afdaf9e0df284dcfcaa819bb4db74`. Se agregó contrato de experiencia, guard de rutas nombradas y pruebas unitarias focalizadas.
+- **Resultado:** revisión remota implementada, **no compilada ni validada localmente**.
+- **Interrupción requerida:** Codex debe sincronizar en worktree separado, ejecutar análisis/pruebas y smoke de rutas con sesión POS, admin y Time Clock. No modificar datos productivos ni fusionar.
+- **F0:** aprobación visual y estrategia QA local previamente confirmadas; comprobaciones de entorno local se recogen en la intervención de Codex, sin rehacer diseño.
+- **Próxima acción:** recibir resultados concretos de Codex y continuar F2/F3 automáticamente.
+- **Publicación:** no autorizada.
+
 ## Plantilla para nuevos eventos
 
 ```text
