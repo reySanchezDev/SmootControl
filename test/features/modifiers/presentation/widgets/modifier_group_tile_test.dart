@@ -6,7 +6,7 @@ import 'package:smoo_control/features/modifiers/presentation/widgets/modifier_gr
 import 'package:smoo_control/l10n/app_localizations.dart';
 
 void main() {
-  testWidgets('compact modifier commands are explicit and invoke original actions', (
+  testWidgets('compact modifier commands invoke original actions', (
     tester,
   ) async {
     tester.view
