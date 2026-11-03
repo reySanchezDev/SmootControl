@@ -102,7 +102,7 @@ class _PayrollDraftList extends StatelessWidget {
                 cell: (_, entry) => Text(_money(entry.baseSalaryInCents)),
               ),
               BackofficeListColumn<_PayrollEntry>(
-                label: 'Deducciones',
+                label: 'Consumos',
                 width: 160,
                 alignment: Alignment.centerRight,
                 cell: (_, entry) =>
