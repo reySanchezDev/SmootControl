@@ -134,7 +134,7 @@ class _PayrollDraftList extends StatelessWidget {
   void _showBreakdown(BuildContext context, _PayrollEntry entry) {
     showDialog<void>(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: Text(entry.employeeName),
         content: SizedBox(
           width: 560,
@@ -199,7 +199,7 @@ class _PayrollDraftList extends StatelessWidget {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
+            onPressed: () => Navigator.of(dialogContext).pop(),
             child: const Text('Cerrar'),
           ),
         ],
