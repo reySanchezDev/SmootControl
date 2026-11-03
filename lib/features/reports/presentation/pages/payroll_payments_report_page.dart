@@ -119,106 +119,12 @@ class _PayrollPaymentsReportPageState extends State<PayrollPaymentsReportPage> {
         title: 'Sin pagos',
       );
     }
-    return Column(
-      children: [
-        _PayrollReceiptSummary(receipts: filtered),
-        Expanded(
-          child: BackofficeCollectionView<PayrollPaymentReceipt>(
-            items: filtered,
-            rowKey: (receipt) => receipt.id,
-            rowLabel: (receipt) => receipt.employeeName,
-            selectionActions: [
-              BackofficeSelectionAction<PayrollPaymentReceipt>(
-                label: 'Ver detalle',
-                icon: Icons.visibility_outlined,
-                onPressed: _openDetail,
-              ),
-              BackofficeSelectionAction<PayrollPaymentReceipt>(
-                label: 'PDF esquela',
-                icon: Icons.picture_as_pdf_outlined,
-                onPressed: (receipt) =>
-                    unawaited(_shareEmployeeReceipt(receipt)),
-              ),
-              if (_canDelete)
-                BackofficeSelectionAction<PayrollPaymentReceipt>(
-                  label: 'Eliminar pago',
-                  icon: Icons.delete_outline,
-                  destructive: true,
-                  onPressed: (receipt) => unawaited(_confirmDelete(receipt)),
-                ),
-            ],
-            searchLabel: 'Buscar empleado, código o puesto',
-            showSearch: false,
-            searchTextFor: (receipt) => [
-              receipt.employeeName,
-              receipt.employeeCode,
-              receipt.positionName,
-              receipt.periodLabel,
-              _date(receipt.paidAt),
-              MoneyFormatter.format(receipt.paymentAmountInCents),
-            ].join(' '),
-            emptyTitle: 'Sin pagos',
-            emptyMessage:
-                'No hay planillas pagadas para el filtro seleccionado.',
-            compactBuilder: (_, receipt) => ListTile(
-              leading: const Icon(Icons.payments_outlined),
-              title: Text(receipt.employeeName),
-              subtitle: Text(
-                '${receipt.periodLabel} · ${_date(receipt.paidAt)}',
-              ),
-              trailing: Text(
-                MoneyFormatter.format(receipt.paymentAmountInCents),
-              ),
-            ),
-            columns: [
-              BackofficeListColumn<PayrollPaymentReceipt>(
-                label: 'Empleado',
-                width: 275,
-                compare: (a, b) => a.employeeName.compareTo(b.employeeName),
-                cell: (_, receipt) => Text(receipt.employeeName),
-              ),
-              BackofficeListColumn<PayrollPaymentReceipt>(
-                label: 'Puesto',
-                width: 200,
-                compare: (a, b) => a.positionName.compareTo(b.positionName),
-                cell: (_, receipt) => Text(receipt.positionName),
-              ),
-              BackofficeListColumn<PayrollPaymentReceipt>(
-                label: 'Período',
-                width: 215,
-                compare: (a, b) => a.periodStart.compareTo(b.periodStart),
-                cell: (_, receipt) => Text(receipt.periodLabel),
-              ),
-              BackofficeListColumn<PayrollPaymentReceipt>(
-                label: 'Fecha de pago',
-                width: 160,
-                compare: (a, b) => a.paidAt.compareTo(b.paidAt),
-                cell: (_, receipt) => Text(_date(receipt.paidAt)),
-              ),
-              BackofficeListColumn<PayrollPaymentReceipt>(
-                label: 'Pagado',
-                width: 175,
-                alignment: Alignment.centerRight,
-                compare: (a, b) =>
-                    a.paymentAmountInCents.compareTo(b.paymentAmountInCents),
-                cell: (_, receipt) => Text(
-                  MoneyFormatter.format(receipt.paymentAmountInCents),
-                ),
-              ),
-              BackofficeListColumn<PayrollPaymentReceipt>(
-                label: 'Saldo restante',
-                width: 180,
-                alignment: Alignment.centerRight,
-                compare: (a, b) =>
-                    a.balanceAfterInCents.compareTo(b.balanceAfterInCents),
-                cell: (_, receipt) => Text(
-                  MoneyFormatter.format(receipt.balanceAfterInCents),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
+    return PayrollReceiptsCollection(
+      receipts: filtered,
+      canReverse: _canDelete,
+      onDetails: _openDetail,
+      onPdf: (receipt) => unawaited(_shareEmployeeReceipt(receipt)),
+      onReverse: (receipt) => unawaited(_confirmDelete(receipt)),
     );
   }
 
@@ -352,5 +258,138 @@ class _PayrollPaymentsReportPageState extends State<PayrollPaymentsReportPage> {
 
   String _safeName(String value) {
     return value.trim().toLowerCase().replaceAll(RegExp(r'\s+'), '-');
+  }
+}
+
+/// Read-only payroll receipt listing; optional reverse command is staff-only.
+class PayrollReceiptsCollection extends StatelessWidget {
+  /// Creates the receipt listing without loading or mutating remote data.
+  const PayrollReceiptsCollection({
+    required this.receipts,
+    required this.canReverse,
+    required this.onDetails,
+    required this.onPdf,
+    required this.onReverse,
+    super.key,
+  });
+
+  /// Receipt snapshots already filtered by the owning page.
+  final List<PayrollPaymentReceipt> receipts;
+
+  /// True only when the owning page is in staff-administration mode.
+  final bool canReverse;
+
+  /// Opens the existing detail display.
+  final ValueChanged<PayrollPaymentReceipt> onDetails;
+
+  /// Generates the existing payment PDF.
+  final ValueChanged<PayrollPaymentReceipt> onPdf;
+
+  /// Delegates to the existing confirmation before any reversal.
+  final ValueChanged<PayrollPaymentReceipt> onReverse;
+
+  @override
+  Widget build(BuildContext context) {
+    final filtered = receipts;
+    return Column(
+      children: [
+        _PayrollReceiptSummary(receipts: filtered),
+        Expanded(
+          child: BackofficeCollectionView<PayrollPaymentReceipt>(
+            items: filtered,
+            rowKey: (receipt) => receipt.id,
+            rowLabel: (receipt) => receipt.employeeName,
+            selectionActions: [
+              BackofficeSelectionAction<PayrollPaymentReceipt>(
+                label: 'Ver detalle',
+                icon: Icons.visibility_outlined,
+                onPressed: onDetails,
+              ),
+              BackofficeSelectionAction<PayrollPaymentReceipt>(
+                label: 'PDF esquela',
+                icon: Icons.picture_as_pdf_outlined,
+                onPressed: onPdf,
+              ),
+              if (canReverse)
+                BackofficeSelectionAction<PayrollPaymentReceipt>(
+                  label: 'Eliminar pago',
+                  icon: Icons.delete_outline,
+                  destructive: true,
+                  onPressed: onReverse,
+                ),
+            ],
+            searchLabel: 'Buscar empleado, código o puesto',
+            showSearch: false,
+            searchTextFor: (receipt) => [
+              receipt.employeeName,
+              receipt.employeeCode,
+              receipt.positionName,
+              receipt.periodLabel,
+              _date(receipt.paidAt),
+              MoneyFormatter.format(receipt.paymentAmountInCents),
+            ].join(' '),
+            emptyTitle: 'Sin pagos',
+            emptyMessage:
+                'No hay planillas pagadas para el filtro seleccionado.',
+            compactBuilder: (_, receipt) => ListTile(
+              leading: const Icon(Icons.payments_outlined),
+              title: Text(receipt.employeeName),
+              subtitle: Text(
+                '${receipt.periodLabel} · ${_date(receipt.paidAt)}',
+              ),
+              trailing: Text(
+                MoneyFormatter.format(receipt.paymentAmountInCents),
+              ),
+            ),
+            columns: [
+              BackofficeListColumn<PayrollPaymentReceipt>(
+                label: 'Empleado',
+                width: 275,
+                compare: (a, b) => a.employeeName.compareTo(b.employeeName),
+                cell: (_, receipt) => Text(receipt.employeeName),
+              ),
+              BackofficeListColumn<PayrollPaymentReceipt>(
+                label: 'Puesto',
+                width: 200,
+                compare: (a, b) => a.positionName.compareTo(b.positionName),
+                cell: (_, receipt) => Text(receipt.positionName),
+              ),
+              BackofficeListColumn<PayrollPaymentReceipt>(
+                label: 'Período',
+                width: 215,
+                compare: (a, b) => a.periodStart.compareTo(b.periodStart),
+                cell: (_, receipt) => Text(receipt.periodLabel),
+              ),
+              BackofficeListColumn<PayrollPaymentReceipt>(
+                label: 'Fecha de pago',
+                width: 160,
+                compare: (a, b) => a.paidAt.compareTo(b.paidAt),
+                cell: (_, receipt) => Text(_date(receipt.paidAt)),
+              ),
+              BackofficeListColumn<PayrollPaymentReceipt>(
+                label: 'Pagado',
+                width: 175,
+                alignment: Alignment.centerRight,
+                compare: (a, b) =>
+                    a.paymentAmountInCents.compareTo(b.paymentAmountInCents),
+                cell: (_, receipt) => Text(
+                  MoneyFormatter.format(receipt.paymentAmountInCents),
+                ),
+              ),
+              BackofficeListColumn<PayrollPaymentReceipt>(
+                label: 'Saldo restante',
+                width: 180,
+                alignment: Alignment.centerRight,
+                compare: (a, b) =>
+                    a.balanceAfterInCents.compareTo(b.balanceAfterInCents),
+                cell: (_, receipt) => Text(
+                  MoneyFormatter.format(receipt.balanceAfterInCents),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 }
