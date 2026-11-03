@@ -54,8 +54,33 @@ class BackofficeSelectionToolbar<T> extends StatelessWidget {
   /// Available regardless of row selection, subject to permissions.
   final VoidCallback? onCreate;
 
+  static bool _isSpecificAction(String label) {
+    final name = label.trim().toLowerCase();
+    return name.isNotEmpty &&
+        !const {
+          'más',
+          'mas',
+          'more',
+          '...',
+          '…',
+          'opciones',
+          'options',
+          'acciones',
+          'actions',
+        }.contains(name);
+  }
+
   @override
   Widget build(BuildContext context) {
+    for (final action in actions) {
+      if (!_isSpecificAction(action.label)) {
+        throw ArgumentError.value(
+          action.label,
+          'label',
+          'Every Backoffice command must name a specific operation.',
+        );
+      }
+    }
     final colors = Theme.of(context).colorScheme;
     final item = selected;
     return Padding(
