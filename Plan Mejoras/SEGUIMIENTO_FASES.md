@@ -1,11 +1,11 @@
 # Tablero de seguimiento — estabilización y publicación SmooControl
 
 **Estado del programa:** EN_CURSO  
-**Fase activa:** F2 (contrato de rutas implementado en PR #6; requiere validación local Codex)  
+**Fase activa:** F3 (revisión UX Backoffice y PR #4; F2 validada por Codex, cobertura Time Clock pendiente)  
 **Fuente de alcance:** [Plan maestro](PLAN_MAESTRO_END_TO_END.md)  
 **Criterios finales:** [Matriz de aceptación](MATRIZ_ACEPTACION.md)  
 **Despliegue:** [Runbook dominio](PUBLICACION_DOMINIO_RUNBOOK.md)  
-**Última actualización:** 2026-11-03 (inventario de 47 rutas y 222 archivos de presentación; PR #6 con guard por experiencia y pruebas, pendiente Codex local).
+**Última actualización:** 2026-11-03 (PR #6 validada localmente: analyze limpio, 3/3; F3 iniciada y PR #4 revisada, sin fusionar).
 
 > **Fuente única de verdad:** este tablero controla qué fase está abierta y cuáles están cerradas. No se marca una tarea, fase o gate como terminada por un commit, una PR o un CI exitoso sin evidencia y verificación de sus criterios.
 
@@ -34,8 +34,8 @@ Estados admitidos para cada fase:
 |---|---|---|---|---|
 | F0 | Línea base y protección del entorno | EN_VALIDACION (local Codex pendiente) | Ninguna | Snapshot y rollback confirmados |
 | F1 | Inventario completo de experiencias | EN_CURSO | F0 | Matriz de rutas y componentes 100% clasificados |
-| F2 | Contratos de experiencia y autorización | EN_VALIDACION (Codex local) | F1 | Acceso por sesión/experiencia/permiso validado |
-| F3 | UX integral Backoffice Executive Ivory | PENDIENTE | F2 | Todas las pantallas auditadas y aceptadas |
+| F2 | Contratos de experiencia y autorización | EN_VALIDACION (analyze y tests OK; Time Clock pendiente) | F1 | Acceso por sesión/experiencia/permiso validado |
+| F3 | UX integral Backoffice Executive Ivory | EN_CURSO | F2 | Todas las pantallas auditadas y aceptadas |
 | F4 | Runtime, servicios y sincronización segura | PENDIENTE | F1, F2 | Regresión POS/offline superada |
 | F5 | Seguridad y aislamiento por restaurante | PENDIENTE | F2, F4 | Sin bloqueos P0/P1 de seguridad |
 | F6 | Build web y Android reproducibles | PENDIENTE | F3, F4, F5 | Builds íntegros y verificables |
@@ -98,11 +98,11 @@ Estados admitidos para cada fase:
 - [ ] Validar con Codex `flutter analyze`, test de contrato y smoke POS/Backoffice/TimeClock (sin datos productivos).
 
 **Cierre:** pruebas de roles/rutas y navegación aprobadas; negocio intacto.
-**Evidencia:** PR #6 (`853f9091`) con `app_route_experience.dart`, `app_router.dart` y test; **Bloqueo de validación:** necesita Codex local · **Siguiente acción:** sincronizar PR #6 en worktree separado y ejecutar pruebas focalizadas.
+**Evidencia:** PR #6 (`7c882630`), Codex verificó fast-forward limpio, `flutter analyze` sin issues y 3/3 pruebas; **pendiente:** prueba de entrada Time Clock y rutas indirectas. **Siguiente acción:** finalizar smoke de entrada con Codex en punto de integración, sin repetir tests ya certificados.
 
 ### F3 — UX integral Backoffice Executive Ivory
 
-**Estado:** PENDIENTE · **Responsable:** ChatGPT/Codex; aceptación visual: propietario.
+**Estado:** EN_CURSO · **Responsable:** ChatGPT/Codex; aceptación visual: propietario.
 
 - [ ] Auditar todas las pantallas administrativas y subpantallas.
 - [ ] Unificar componentes, colores, fuentes, densidad y textos UX.
@@ -110,7 +110,7 @@ Estados admitidos para cada fase:
 - [ ] Eliminar patrones ambiguos de columna `Acciones` / `Más` según diseño aprobado.
 - [ ] Ajustar diálogos desktop frente a vistas compactas.
 - [ ] Verificar teclado, accesibilidad, zoom, estados vacíos y errores.
-- [ ] Revisar la PR #4 y decidir integración solo tras validar su diff.
+- [x] Identificar los 7 archivos de presentación de PR #4 y verificar que no modifica lógica de dominio/BD; [ ] revisar la totalidad de la UX, las dependencias y realizar validación de integración antes de decidir merge.
 - [ ] Completar evidencias por pantalla en 390×844, 768×1024, 1366×768 y 1920×1080.
 
 **Cierre:** matriz de pantallas y regresión POS aprobadas; excepciones documentadas.
