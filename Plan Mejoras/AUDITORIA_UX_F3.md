@@ -131,3 +131,18 @@ La comprobación de columna `Acciones` duplicada se realiza en el `build()` del 
 **Pendientes de QA:** `dart format`, `flutter analyze`, pruebas Time Clock (4/4), Backoffice/Staff/Reportes/POS, build web con Drift y comprobación visual de las tablas en escritorio, 390 px y 1366 px si hay navegador disponible. No tocar los archivos locales generados `lib/l10n/app_localizations*.dart`; no merge ni despliegue.
 
 **Límites de este lote:** no se modificaron entidades, datos, repositorios, lógica POS ni servidor. Quedan pantallas heredadas de movimientos/ajustes/lotes, nómina, configuración y algunos diálogos, además de la aprobación visual integral.
+
+## 2026-11-03 — Regresión Time Clock sin resolver + test explícito de Modificadores
+
+**Punto de referencia validado:** SHA `74f527d0723e6ed412634fd07627892c7fedbc6c`. Codex confirma `flutter analyze` sin issues, 138/138 pruebas de Backoffice/Staff/Reportes/POS, build Web correcto. **Time Clock sigue en 3/4:** `initialization reload transitions to standalone marker` falla al no aparecer el texto de destino.
+
+La revisión de código identificó que la prueba original resolvía el modo con un cierre sobre una variable `initialized`, sin comprobar si el proveedor se invocó nuevamente, si aparecía la carga o si el segundo Future se completaba. Esta información no alcanza para afirmar si el error está en el gate, la prueba o su sincronización.
+
+**Cambios recientes en PR #7 (sin validar aún):**
+- `TimeClockGate`: se añadió comprobación explícita de `ConnectionState.done` y se mantiene la clave asociada al Future de cada intento; no se cambió ningún acceso al backend.
+- Test Time Clock: transición reescrita con dos `Completer` independientes; comprueba dos invocaciones al loader, estado intermedio de carga y destino final, permitiendo identificar el punto exacto de fallo.
+- Test compacto de Modificadores: comprueba acciones explícitas de grupo/opción, callbacks preservados, ausencia de `PopupMenuButton` a 390 px.
+
+**Gate de próxima ejecución:** correr primero `flutter test test/features/attendance/presentation/pages/time_clock_gate_test.dart -r expanded` y la prueba de Modificadores. Si falla Time Clock, registrar la línea exacta de expect y los contadores; no reportar la transición como corregida ni hacer modificaciones adicionales de producción sin diagnosticar. Luego `flutter analyze`, regresión Backoffice/Staff/Reportes/POS y build web solo si los tests focales lo permiten.
+
+**Persisten:** cobertura visual de nómina, lotes, ajustes, configuración y diálogos, y revisión visual real desktop/móvil. No usar pruebas unitarias como sustituto de QA de interfaz y negocio.
