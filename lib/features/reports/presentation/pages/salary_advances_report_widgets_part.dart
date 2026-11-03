@@ -102,6 +102,86 @@ class _SalaryAdvanceReportBody extends StatelessWidget {
     final employeeById = {
       for (final employee in employees) employee.id: employee,
     };
+    String employeeName(SalaryAdvance item) =>
+        employeeById[item.employeeId]?.fullName ?? 'Empleado';
+    int balance(SalaryAdvance item) =>
+        item.balanceInCents ?? item.amountInCents;
+
+    if (!grouped) {
+      return Column(
+        children: [
+          _SalaryAdvanceTotals(advances: advances),
+          Expanded(
+            child: BackofficeCollectionView<SalaryAdvance>(
+              items: advances,
+              searchLabel: 'Buscar adelanto en resultados',
+              searchTextFor: (item) => [
+                employeeName(item),
+                _dateOnly(item.deliveredAt),
+                _statusLabel(item.status),
+                MoneyFormatter.format(item.amountInCents),
+              ].join(' '),
+              emptyTitle: 'Sin adelantos',
+              emptyMessage: 'No hay adelantos en este filtro.',
+              compactBuilder: (_, item) => _AdvanceCard(
+                advance: item,
+                employee: employeeById[item.employeeId],
+              ),
+              columns: [
+                BackofficeListColumn<SalaryAdvance>(
+                  label: 'Empleado',
+                  width: 270,
+                  compare: (a, b) =>
+                      employeeName(a).compareTo(employeeName(b)),
+                  cell: (_, item) => Text(employeeName(item)),
+                ),
+                BackofficeListColumn<SalaryAdvance>(
+                  label: 'Entrega',
+                  width: 160,
+                  compare: (a, b) =>
+                      a.deliveredAt.compareTo(b.deliveredAt),
+                  cell: (_, item) => Text(_dateOnly(item.deliveredAt)),
+                ),
+                BackofficeListColumn<SalaryAdvance>(
+                  label: 'Estado',
+                  width: 150,
+                  compare: (a, b) => a.status.compareTo(b.status),
+                  cell: (_, item) => Text(_statusLabel(item.status)),
+                ),
+                BackofficeListColumn<SalaryAdvance>(
+                  label: 'Entregado',
+                  width: 170,
+                  alignment: Alignment.centerRight,
+                  compare: (a, b) =>
+                      a.amountInCents.compareTo(b.amountInCents),
+                  cell: (_, item) =>
+                      Text(MoneyFormatter.format(item.amountInCents)),
+                ),
+                BackofficeListColumn<SalaryAdvance>(
+                  label: 'Abonado',
+                  width: 170,
+                  alignment: Alignment.centerRight,
+                  compare: (a, b) =>
+                      (a.amountInCents - balance(a))
+                          .compareTo(b.amountInCents - balance(b)),
+                  cell: (_, item) => Text(
+                    MoneyFormatter.format(item.amountInCents - balance(item)),
+                  ),
+                ),
+                BackofficeListColumn<SalaryAdvance>(
+                  label: 'Saldo',
+                  width: 170,
+                  alignment: Alignment.centerRight,
+                  compare: (a, b) => balance(a).compareTo(balance(b)),
+                  cell: (_, item) => Text(MoneyFormatter.format(balance(item))),
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
+    }
+
     return ListView(
       padding: const EdgeInsets.fromLTRB(12, 0, 12, 16),
       children: [
