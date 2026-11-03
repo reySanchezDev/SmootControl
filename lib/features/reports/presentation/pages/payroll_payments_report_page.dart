@@ -72,13 +72,6 @@ class _PayrollPaymentsReportPageState extends State<PayrollPaymentsReportPage> {
   @override
   Widget build(BuildContext context) {
     return AppPageScaffold(
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.picture_as_pdf_outlined),
-          onPressed: () => unawaited(_shareFormalReport()),
-          tooltip: 'PDF planilla completa',
-        ),
-      ],
       title: _canDelete ? 'Pagos de planilla' : 'Planillas pagadas',
       body: Column(
         children: [
@@ -125,6 +118,7 @@ class _PayrollPaymentsReportPageState extends State<PayrollPaymentsReportPage> {
       onDetails: _openDetail,
       onPdf: (receipt) => unawaited(_shareEmployeeReceipt(receipt)),
       onReverse: (receipt) => unawaited(_confirmDelete(receipt)),
+      onExportAll: () => unawaited(_shareFormalReport()),
     );
   }
 
@@ -270,6 +264,7 @@ class PayrollReceiptsCollection extends StatelessWidget {
     required this.onDetails,
     required this.onPdf,
     required this.onReverse,
+    required this.onExportAll,
     super.key,
   });
 
@@ -288,6 +283,9 @@ class PayrollReceiptsCollection extends StatelessWidget {
   /// Delegates to the existing confirmation before any reversal.
   final ValueChanged<PayrollPaymentReceipt> onReverse;
 
+  /// Exports the filtered complete payroll report.
+  final VoidCallback onExportAll;
+
   @override
   Widget build(BuildContext context) {
     final filtered = receipts;
@@ -299,6 +297,13 @@ class PayrollReceiptsCollection extends StatelessWidget {
             items: filtered,
             rowKey: (receipt) => receipt.id,
             rowLabel: (receipt) => receipt.employeeName,
+            globalActions: [
+              OutlinedButton.icon(
+                onPressed: onExportAll,
+                icon: const Icon(Icons.picture_as_pdf_outlined),
+                label: const Text('PDF planilla completa'),
+              ),
+            ],
             selectionActions: [
               BackofficeSelectionAction<PayrollPaymentReceipt>(
                 label: 'Ver detalle',
