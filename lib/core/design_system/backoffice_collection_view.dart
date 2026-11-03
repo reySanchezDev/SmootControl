@@ -46,6 +46,7 @@ class BackofficeCollectionView<T> extends StatefulWidget {
     this.showSearch = true,
     this.compactBuilder,
     this.onCreate,
+    this.createEnabled = true,
     this.globalActions = const [],
     this.rowKey,
     this.rowLabel,
@@ -82,6 +83,9 @@ class BackofficeCollectionView<T> extends StatefulWidget {
 
   /// Optional primary create action in the same fixed command bar.
   final VoidCallback? onCreate;
+
+  /// Disable creation without hiding its labelled command.
+  final bool createEnabled;
 
   /// Explicit page commands shown alongside selected-record commands.
   final List<Widget> globalActions;
@@ -171,6 +175,7 @@ class _BackofficeCollectionViewState<T>
                     ? null
                     : widget.rowLabel?.call(selected),
                 onCreate: widget.onCreate,
+                createEnabled: widget.createEnabled,
                 globalActions: widget.globalActions,
               ),
             if (widget.showSearch)
