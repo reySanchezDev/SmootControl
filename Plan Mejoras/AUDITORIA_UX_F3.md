@@ -146,3 +146,12 @@ La revisión de código identificó que la prueba original resolvía el modo con
 **Gate de próxima ejecución:** correr primero `flutter test test/features/attendance/presentation/pages/time_clock_gate_test.dart -r expanded` y la prueba de Modificadores. Si falla Time Clock, registrar la línea exacta de expect y los contadores; no reportar la transición como corregida ni hacer modificaciones adicionales de producción sin diagnosticar. Luego `flutter analyze`, regresión Backoffice/Staff/Reportes/POS y build web solo si los tests focales lo permiten.
 
 **Persisten:** cobertura visual de nómina, lotes, ajustes, configuración y diálogos, y revisión visual real desktop/móvil. No usar pruebas unitarias como sustituto de QA de interfaz y negocio.
+
+## Lote adicional — Ajuste de inventario responsive
+
+- `inventory_adjustment_widgets_part.dart`: el bloque **Existencia del sistema / Conteo / Diferencia** ya no fuerza tres columnas en ancho compacto. `LayoutBuilder` apila las secciones por debajo de 650 px; en escritorio conserva la distribución en tres columnas. `TextField`, controladores, conversiones a unidad base y `onChanged` originales permanecen.
+- Revisión de `monthly_operational_report_widgets.dart`: el detalle operativo mensual actual **no usa un `DataTable` clásico**, sino tarjetas y secciones expandibles; se corrige la premisa de auditoría anterior y no se migra sin necesidad.
+- Test de Modificadores añadido para acciones visibles a 390 px y rutas de grupo/opción; debe ejecutarse localmente.
+- Time Clock: continúa **pendiente**, con prueba determinística y logs de invocación; no marcar F2 cerrada.
+
+**Pendiente de certificación:** análisis, tests, build web, más revisión visual de 390px/1366px sin alterar datos productivos.
