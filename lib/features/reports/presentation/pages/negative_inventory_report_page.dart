@@ -64,19 +64,20 @@ class _NegativeInventoryReportPageState
           Expanded(
             child: FutureBuilder<AppResult<NegativeInventoryReport>>(
               future: _future,
-            builder: (context, snapshot) {
-              final result = snapshot.data;
-              if (result == null) return const AppLoadingPage();
+              builder: (context, snapshot) {
+                final result = snapshot.data;
+                if (result == null) return const AppLoadingPage();
 
-              return result.when(
-                success: (report) => _ReportView(report: report, query: _query),
-                failure: (failure) => AppEmptyState(
-                  icon: Icons.error_outline,
-                  message: failure.message,
-                  title: 'No se pudo cargar',
-                ),
-              );
-            },
+                return result.when(
+                  success: (report) =>
+                      _ReportView(report: report, query: _query),
+                  failure: (failure) => AppEmptyState(
+                    icon: Icons.error_outline,
+                    message: failure.message,
+                    title: 'No se pudo cargar',
+                  ),
+                );
+              },
             ),
           ),
         ],
@@ -118,8 +119,7 @@ class _ReportView extends StatelessWidget {
             searchLabel: 'Buscar materia prima o categoría',
             searchTextFor: (row) => '${row.productName} ${row.categoryName}',
             emptyTitle: 'Inventario saludable',
-            emptyMessage:
-                'No hay materias primas negativas para este filtro.',
+            emptyMessage: 'No hay materias primas negativas para este filtro.',
             compactBuilder: (_, row) => _NegativeInventoryCard(row: row),
             columns: [
               BackofficeListColumn<NegativeInventoryRow>(
@@ -138,8 +138,7 @@ class _ReportView extends StatelessWidget {
                 label: 'Existencia',
                 width: 140,
                 alignment: Alignment.centerRight,
-                compare: (a, b) =>
-                    a.quantityOnHand.compareTo(b.quantityOnHand),
+                compare: (a, b) => a.quantityOnHand.compareTo(b.quantityOnHand),
                 cell: (_, row) => Text(_quantityText(row.quantityOnHand)),
               ),
               BackofficeListColumn<NegativeInventoryRow>(
@@ -148,15 +147,15 @@ class _ReportView extends StatelessWidget {
                 alignment: Alignment.centerRight,
                 compare: (a, b) =>
                     a.quantityToRegularize.compareTo(b.quantityToRegularize),
-                cell: (_, row) =>
-                    Text(_quantityText(row.quantityToRegularize)),
+                cell: (_, row) => Text(_quantityText(row.quantityToRegularize)),
               ),
               BackofficeListColumn<NegativeInventoryRow>(
                 label: 'Costo estimado',
                 width: 185,
                 alignment: Alignment.centerRight,
-                compare: (a, b) =>
-                    a.regularizationCostInCents.compareTo(b.regularizationCostInCents),
+                compare: (a, b) => a.regularizationCostInCents.compareTo(
+                  b.regularizationCostInCents,
+                ),
                 cell: (_, row) =>
                     Text(MoneyFormatter.format(row.regularizationCostInCents)),
               ),
@@ -273,8 +272,6 @@ class _NegativeInventoryCard extends StatelessWidget {
       ),
     );
   }
-
-
 }
 
 String _formatMovementDate(DateTime date) =>

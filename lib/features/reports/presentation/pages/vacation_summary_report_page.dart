@@ -48,38 +48,38 @@ class _VacationSummaryReportPageState extends State<VacationSummaryReportPage> {
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
             child: Card(
               child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: [
-                  ActionChip(
-                    avatar: const Icon(Icons.calendar_today_outlined),
-                    label: Text('Al ${_fmt(_asOf)}'),
-                    onPressed: _pickDate,
-                  ),
-                  DropdownButton<String?>(
-                    value: _employeeId,
-                    hint: const Text('Empleado'),
-                    items: [
-                      const DropdownMenuItem(child: Text('Todos')),
-                      for (final employee in _employees)
-                        DropdownMenuItem(
-                          value: employee.id,
-                          child: Text(employee.fullName),
-                        ),
-                    ],
-                    onChanged: (value) => setState(() => _employeeId = value),
-                  ),
-                  FilledButton.icon(
-                    icon: const Icon(Icons.refresh),
-                    label: const Text('Recargar'),
-                    onPressed: _load,
-                  ),
-                ],
+                padding: const EdgeInsets.all(12),
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    ActionChip(
+                      avatar: const Icon(Icons.calendar_today_outlined),
+                      label: Text('Al ${_fmt(_asOf)}'),
+                      onPressed: _pickDate,
+                    ),
+                    DropdownButton<String?>(
+                      value: _employeeId,
+                      hint: const Text('Empleado'),
+                      items: [
+                        const DropdownMenuItem(child: Text('Todos')),
+                        for (final employee in _employees)
+                          DropdownMenuItem(
+                            value: employee.id,
+                            child: Text(employee.fullName),
+                          ),
+                      ],
+                      onChanged: (value) => setState(() => _employeeId = value),
+                    ),
+                    FilledButton.icon(
+                      icon: const Icon(Icons.refresh),
+                      label: const Text('Recargar'),
+                      onPressed: _load,
+                    ),
+                  ],
+                ),
               ),
-            ),
             ),
           ),
           const SizedBox(height: 12),
@@ -91,75 +91,73 @@ class _VacationSummaryReportPageState extends State<VacationSummaryReportPage> {
                     message: _error!,
                   )
                 : _rows == null
-                    ? const AppLoadingPage()
-                    : BackofficeCollectionView<VacationSummary>(
-                        items: _rows!,
-                        searchLabel: 'Buscar empleado',
-                        searchTextFor: (row) => [
-                          row.employeeName,
-                          _fmt(row.startDate),
-                        ].join(' '),
-                        emptyTitle: 'Sin datos',
-                        emptyMessage:
-                            'No hay empleados para el filtro seleccionado.',
-                        compactBuilder: (_, row) => _SummaryCard(row: row),
-                        columns: [
-                          BackofficeListColumn<VacationSummary>(
-                            label: 'Empleado',
-                            width: 275,
-                            compare: (a, b) =>
-                                a.employeeName.compareTo(b.employeeName),
-                            cell: (_, row) => Text(row.employeeName),
-                          ),
-                          BackofficeListColumn<VacationSummary>(
-                            label: 'Inicio',
-                            width: 140,
-                            compare: (a, b) =>
-                                a.startDate.compareTo(b.startDate),
-                            cell: (_, row) => Text(_fmt(row.startDate)),
-                          ),
-                          BackofficeListColumn<VacationSummary>(
-                            label: 'Acumulados',
-                            width: 140,
-                            alignment: Alignment.centerRight,
-                            compare: (a, b) =>
-                                a.accumulatedDays.compareTo(b.accumulatedDays),
-                            cell: (_, row) => Text(_days(row.accumulatedDays)),
-                          ),
-                          BackofficeListColumn<VacationSummary>(
-                            label: 'Tomados',
-                            width: 125,
-                            alignment: Alignment.centerRight,
-                            compare: (a, b) =>
-                                a.takenDays.compareTo(b.takenDays),
-                            cell: (_, row) => Text(_days(row.takenDays)),
-                          ),
-                          BackofficeListColumn<VacationSummary>(
-                            label: 'Programados',
-                            width: 175,
-                            alignment: Alignment.centerRight,
-                            compare: (a, b) =>
-                                a.scheduledDays.compareTo(b.scheduledDays),
-                            cell: (_, row) => Text(_scheduled(row)),
-                          ),
-                          BackofficeListColumn<VacationSummary>(
-                            label: 'Saldo actual',
-                            width: 145,
-                            alignment: Alignment.centerRight,
-                            compare: (a, b) =>
-                                a.currentBalance.compareTo(b.currentBalance),
-                            cell: (_, row) => Text(_days(row.currentBalance)),
-                          ),
-                          BackofficeListColumn<VacationSummary>(
-                            label: 'Saldo proyectado',
-                            width: 165,
-                            alignment: Alignment.centerRight,
-                            compare: (a, b) => a.projectedBalance
-                                .compareTo(b.projectedBalance),
-                            cell: (_, row) => Text(_days(row.projectedBalance)),
-                          ),
-                        ],
+                ? const AppLoadingPage()
+                : BackofficeCollectionView<VacationSummary>(
+                    items: _rows!,
+                    searchLabel: 'Buscar empleado',
+                    searchTextFor: (row) => [
+                      row.employeeName,
+                      _fmt(row.startDate),
+                    ].join(' '),
+                    emptyTitle: 'Sin datos',
+                    emptyMessage:
+                        'No hay empleados para el filtro seleccionado.',
+                    compactBuilder: (_, row) => _SummaryCard(row: row),
+                    columns: [
+                      BackofficeListColumn<VacationSummary>(
+                        label: 'Empleado',
+                        width: 275,
+                        compare: (a, b) =>
+                            a.employeeName.compareTo(b.employeeName),
+                        cell: (_, row) => Text(row.employeeName),
                       ),
+                      BackofficeListColumn<VacationSummary>(
+                        label: 'Inicio',
+                        width: 140,
+                        compare: (a, b) => a.startDate.compareTo(b.startDate),
+                        cell: (_, row) => Text(_fmt(row.startDate)),
+                      ),
+                      BackofficeListColumn<VacationSummary>(
+                        label: 'Acumulados',
+                        width: 140,
+                        alignment: Alignment.centerRight,
+                        compare: (a, b) =>
+                            a.accumulatedDays.compareTo(b.accumulatedDays),
+                        cell: (_, row) => Text(_days(row.accumulatedDays)),
+                      ),
+                      BackofficeListColumn<VacationSummary>(
+                        label: 'Tomados',
+                        width: 125,
+                        alignment: Alignment.centerRight,
+                        compare: (a, b) => a.takenDays.compareTo(b.takenDays),
+                        cell: (_, row) => Text(_days(row.takenDays)),
+                      ),
+                      BackofficeListColumn<VacationSummary>(
+                        label: 'Programados',
+                        width: 175,
+                        alignment: Alignment.centerRight,
+                        compare: (a, b) =>
+                            a.scheduledDays.compareTo(b.scheduledDays),
+                        cell: (_, row) => Text(_scheduled(row)),
+                      ),
+                      BackofficeListColumn<VacationSummary>(
+                        label: 'Saldo actual',
+                        width: 145,
+                        alignment: Alignment.centerRight,
+                        compare: (a, b) =>
+                            a.currentBalance.compareTo(b.currentBalance),
+                        cell: (_, row) => Text(_days(row.currentBalance)),
+                      ),
+                      BackofficeListColumn<VacationSummary>(
+                        label: 'Saldo proyectado',
+                        width: 165,
+                        alignment: Alignment.centerRight,
+                        compare: (a, b) =>
+                            a.projectedBalance.compareTo(b.projectedBalance),
+                        cell: (_, row) => Text(_days(row.projectedBalance)),
+                      ),
+                    ],
+                  ),
           ),
         ],
       ),

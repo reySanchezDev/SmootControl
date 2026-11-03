@@ -131,15 +131,13 @@ class _SalaryAdvanceReportBody extends StatelessWidget {
                 BackofficeListColumn<SalaryAdvance>(
                   label: 'Empleado',
                   width: 270,
-                  compare: (a, b) =>
-                      employeeName(a).compareTo(employeeName(b)),
+                  compare: (a, b) => employeeName(a).compareTo(employeeName(b)),
                   cell: (_, item) => Text(employeeName(item)),
                 ),
                 BackofficeListColumn<SalaryAdvance>(
                   label: 'Entrega',
                   width: 160,
-                  compare: (a, b) =>
-                      a.deliveredAt.compareTo(b.deliveredAt),
+                  compare: (a, b) => a.deliveredAt.compareTo(b.deliveredAt),
                   cell: (_, item) => Text(_dateOnly(item.deliveredAt)),
                 ),
                 BackofficeListColumn<SalaryAdvance>(
@@ -152,8 +150,7 @@ class _SalaryAdvanceReportBody extends StatelessWidget {
                   label: 'Entregado',
                   width: 170,
                   alignment: Alignment.centerRight,
-                  compare: (a, b) =>
-                      a.amountInCents.compareTo(b.amountInCents),
+                  compare: (a, b) => a.amountInCents.compareTo(b.amountInCents),
                   cell: (_, item) =>
                       Text(MoneyFormatter.format(item.amountInCents)),
                 ),
@@ -161,9 +158,9 @@ class _SalaryAdvanceReportBody extends StatelessWidget {
                   label: 'Abonado',
                   width: 170,
                   alignment: Alignment.centerRight,
-                  compare: (a, b) =>
-                      (a.amountInCents - balance(a))
-                          .compareTo(b.amountInCents - balance(b)),
+                  compare: (a, b) => (a.amountInCents - balance(a)).compareTo(
+                    b.amountInCents - balance(b),
+                  ),
                   cell: (_, item) => Text(
                     MoneyFormatter.format(item.amountInCents - balance(item)),
                   ),
