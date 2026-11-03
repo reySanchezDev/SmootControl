@@ -161,6 +161,8 @@ class _AuditLogContent extends StatelessWidget {
   String _searchText(AuditLogEntry entry) {
     return [
       entry.action,
+      entry.entityName,
+      DateFormat('dd/MM/yyyy HH:mm', 'es').format(entry.occurredAt.toLocal()),
       for (final detail in entry.details.entries)
         '${detail.key} ${detail.value}',
     ].join(' ');
