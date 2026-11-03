@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:smoo_control/core/design_system/app_empty_state.dart';
 import 'package:smoo_control/core/design_system/app_loading_page.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
-import 'package:smoo_control/core/design_system/app_text.dart';
+import 'package:smoo_control/core/design_system/backoffice_collection_view.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/core/result/app_result.dart';
 import 'package:smoo_control/features/attendance/domain/entities/vacation_summary.dart';
@@ -42,11 +42,12 @@ class _VacationSummaryReportPageState extends State<VacationSummaryReportPage> {
   Widget build(BuildContext context) {
     return AppPageScaffold(
       title: 'Reporte de vacaciones',
-      body: ListView(
-        padding: const EdgeInsets.all(16),
+      body: Column(
         children: [
-          Card(
-            child: Padding(
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+            child: Card(
+              child: Padding(
               padding: const EdgeInsets.all(12),
               child: Wrap(
                 spacing: 8,
@@ -79,24 +80,87 @@ class _VacationSummaryReportPageState extends State<VacationSummaryReportPage> {
                 ],
               ),
             ),
+            ),
           ),
           const SizedBox(height: 12),
-          if (_error != null)
-            AppEmptyState(
-              icon: Icons.error_outline,
-              title: 'Vacaciones',
-              message: _error!,
-            )
-          else if (_rows == null)
-            const AppLoadingPage()
-          else if (_rows!.isEmpty)
-            const AppEmptyState(
-              icon: Icons.beach_access_outlined,
-              title: 'Sin datos',
-              message: 'No hay empleados para el filtro seleccionado.',
-            )
-          else
-            for (final row in _rows!) _SummaryCard(row: row),
+          Expanded(
+            child: _error != null
+                ? AppEmptyState(
+                    icon: Icons.error_outline,
+                    title: 'Vacaciones',
+                    message: _error!,
+                  )
+                : _rows == null
+                    ? const AppLoadingPage()
+                    : BackofficeCollectionView<VacationSummary>(
+                        items: _rows!,
+                        searchLabel: 'Buscar empleado',
+                        searchTextFor: (row) => [
+                          row.employeeName,
+                          _fmt(row.startDate),
+                        ].join(' '),
+                        emptyTitle: 'Sin datos',
+                        emptyMessage:
+                            'No hay empleados para el filtro seleccionado.',
+                        compactBuilder: (_, row) => _SummaryCard(row: row),
+                        columns: [
+                          BackofficeListColumn<VacationSummary>(
+                            label: 'Empleado',
+                            width: 275,
+                            compare: (a, b) =>
+                                a.employeeName.compareTo(b.employeeName),
+                            cell: (_, row) => Text(row.employeeName),
+                          ),
+                          BackofficeListColumn<VacationSummary>(
+                            label: 'Inicio',
+                            width: 140,
+                            compare: (a, b) =>
+                                a.startDate.compareTo(b.startDate),
+                            cell: (_, row) => Text(_fmt(row.startDate)),
+                          ),
+                          BackofficeListColumn<VacationSummary>(
+                            label: 'Acumulados',
+                            width: 140,
+                            alignment: Alignment.centerRight,
+                            compare: (a, b) =>
+                                a.accumulatedDays.compareTo(b.accumulatedDays),
+                            cell: (_, row) => Text(_days(row.accumulatedDays)),
+                          ),
+                          BackofficeListColumn<VacationSummary>(
+                            label: 'Tomados',
+                            width: 125,
+                            alignment: Alignment.centerRight,
+                            compare: (a, b) =>
+                                a.takenDays.compareTo(b.takenDays),
+                            cell: (_, row) => Text(_days(row.takenDays)),
+                          ),
+                          BackofficeListColumn<VacationSummary>(
+                            label: 'Programados',
+                            width: 175,
+                            alignment: Alignment.centerRight,
+                            compare: (a, b) =>
+                                a.scheduledDays.compareTo(b.scheduledDays),
+                            cell: (_, row) => Text(_scheduled(row)),
+                          ),
+                          BackofficeListColumn<VacationSummary>(
+                            label: 'Saldo actual',
+                            width: 145,
+                            alignment: Alignment.centerRight,
+                            compare: (a, b) =>
+                                a.currentBalance.compareTo(b.currentBalance),
+                            cell: (_, row) => Text(_days(row.currentBalance)),
+                          ),
+                          BackofficeListColumn<VacationSummary>(
+                            label: 'Saldo proyectado',
+                            width: 165,
+                            alignment: Alignment.centerRight,
+                            compare: (a, b) => a.projectedBalance
+                                .compareTo(b.projectedBalance),
+                            cell: (_, row) => Text(_days(row.projectedBalance)),
+                          ),
+                        ],
+                      ),
+          ),
         ],
       ),
     );
@@ -145,10 +209,7 @@ class _SummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheduled = row.scheduledDays > 0
-        ? '${row.scheduledDays.toStringAsFixed(2)} dias '
-              '(${_fmt(row.scheduledFrom!)} - ${_fmt(row.scheduledTo!)})'
-        : '0.00 dias';
+    final scheduled = _scheduled(row);
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(12),
@@ -187,6 +248,14 @@ class _Row extends StatelessWidget {
       ],
     );
   }
+}
+
+String _scheduled(VacationSummary row) {
+  if (row.scheduledDays <= 0) return _days(0);
+  final from = row.scheduledFrom;
+  final to = row.scheduledTo;
+  if (from == null || to == null) return _days(row.scheduledDays);
+  return '${_days(row.scheduledDays)} (${_fmt(from)} - ${_fmt(to)})';
 }
 
 String _days(double value) => '${value.toStringAsFixed(2)} dias';
