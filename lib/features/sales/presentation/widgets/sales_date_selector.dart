@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:smoo_control/core/design_system/app_text.dart';
+import 'package:smoo_control/core/design_system/backoffice_form_standards.dart';
 import 'package:smoo_control/l10n/app_localizations.dart';
 
 /// Date selector used by the transactions page.
@@ -25,23 +25,21 @@ class SalesDateSelector extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-      child: Wrap(
-        crossAxisAlignment: WrapCrossAlignment.center,
-        runSpacing: 8,
-        spacing: 8,
-        children: [
-          IconButton(
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: BackofficeFormStandards.control(
+          maxWidth: BackofficeFormStandards.filterWidth,
+          child: OutlinedButton.icon(
             icon: const Icon(Icons.calendar_month_outlined),
-            onPressed: () {
-              unawaited(_selectDate(context));
-            },
-            tooltip: l10n.reportSelectDate,
+            onPressed: () => unawaited(_selectDate(context)),
+            label: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                '${l10n.salesDateLabel}: ${_formatDate(selectedDate)}',
+              ),
+            ),
           ),
-          AppText(
-            '${l10n.salesDateLabel}: ${_formatDate(selectedDate)}',
-            variant: AppTextVariant.label,
-          ),
-        ],
+        ),
       ),
     );
   }
