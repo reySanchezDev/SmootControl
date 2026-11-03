@@ -28,45 +28,126 @@ class _PayrollDraftList extends StatelessWidget {
       return const AppEmptyState(
         icon: Icons.summarize_outlined,
         title: 'Sin pagos pendientes',
-        message: 'Todos los empleados estan pagados para este periodo.',
+        message: 'Todos los empleados están pagados para este período.',
       );
     }
-    return ListView.separated(
-      itemCount: entries.length + 1,
-      padding: const EdgeInsets.all(12),
-      separatorBuilder: (context, index) => const SizedBox(height: 8),
-      itemBuilder: (context, index) {
-        if (index == 0) {
-          return ListTile(
+
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+          child: ListTile(
             leading: const Icon(Icons.date_range_outlined),
             title: Text(period.label),
             subtitle: Text(
               '${_dateOnly(period.start)} - ${_dateOnly(period.end)}',
             ),
-          );
-        }
-        final entry = entries[index - 1];
-        return Card(
-          margin: EdgeInsets.zero,
-          child: Padding(
-            padding: const EdgeInsets.all(14),
+          ),
+        ),
+        Expanded(
+          child: BackofficeCollectionView<_PayrollEntry>(
+            items: entries,
+            rowKey: (entry) =>
+                '${entry.employeeId}:${entry.periodStart.toIso8601String()}:${entry.periodEnd.toIso8601String()}',
+            rowLabel: (entry) => entry.employeeName,
+            selectionActions: [
+              BackofficeSelectionAction<_PayrollEntry>(
+                label: 'Ver desglose',
+                icon: Icons.receipt_long_outlined,
+                onPressed: (entry) => _showBreakdown(context, entry),
+              ),
+              BackofficeSelectionAction<_PayrollEntry>(
+                label: 'Pagar',
+                icon: Icons.payments_outlined,
+                onPressed: (entry) =>
+                    onPay(_PayrollPayRequest(entry: entry)),
+              ),
+            ],
+            searchLabel: 'Buscar empleado o período',
+            searchTextFor: (entry) => [
+              entry.employeeName,
+              entry.periodLabel,
+              _money(entry.balanceInCents),
+              _money(entry.paidInCents),
+            ].join(' '),
+            emptyTitle: 'Sin coincidencias',
+            emptyMessage: 'No hay empleados pendientes con ese filtro.',
+            compactBuilder: (_, entry) => ListTile(
+              leading: const Icon(Icons.payments_outlined),
+              title: Text(entry.employeeName),
+              subtitle: Text(entry.periodLabel),
+              trailing: Text(_money(entry.balanceInCents)),
+            ),
+            columns: [
+              BackofficeListColumn<_PayrollEntry>(
+                label: 'Empleado',
+                width: 280,
+                compare: (a, b) =>
+                    a.employeeName.compareTo(b.employeeName),
+                cell: (_, entry) => Text(entry.employeeName),
+              ),
+              BackofficeListColumn<_PayrollEntry>(
+                label: 'Período',
+                width: 245,
+                compare: (a, b) =>
+                    a.periodStart.compareTo(b.periodStart),
+                cell: (_, entry) => Text(entry.periodLabel),
+              ),
+              BackofficeListColumn<_PayrollEntry>(
+                label: 'Salario',
+                width: 155,
+                alignment: Alignment.centerRight,
+                compare: (a, b) =>
+                    a.baseSalaryInCents.compareTo(b.baseSalaryInCents),
+                cell: (_, entry) => Text(_money(entry.baseSalaryInCents)),
+              ),
+              BackofficeListColumn<_PayrollEntry>(
+                label: 'Deducciones',
+                width: 160,
+                alignment: Alignment.centerRight,
+                cell: (_, entry) =>
+                    Text(_money(entry.consumptionInCents)),
+              ),
+              BackofficeListColumn<_PayrollEntry>(
+                label: 'Pagado',
+                width: 150,
+                alignment: Alignment.centerRight,
+                compare: (a, b) =>
+                    a.paidInCents.compareTo(b.paidInCents),
+                cell: (_, entry) => Text(_money(entry.paidInCents)),
+              ),
+              BackofficeListColumn<_PayrollEntry>(
+                label: 'Por pagar',
+                width: 175,
+                alignment: Alignment.centerRight,
+                compare: (a, b) =>
+                    a.balanceInCents.compareTo(b.balanceInCents),
+                cell: (_, entry) => Text(_money(entry.balanceInCents)),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showBreakdown(BuildContext context, _PayrollEntry entry) {
+    showDialog<void>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text(entry.employeeName),
+        content: SizedBox(
+          width: 560,
+          child: SingleChildScrollView(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  '${entry.periodLabel} | ${entry.employeeName}',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(height: 10),
-                const _PayrollSectionHeader('Nomina'),
-                _PayrollRow(
-                  label: 'Salario',
-                  value: entry.baseSalaryInCents,
-                ),
-                _PayrollRow(
-                  label: 'Horas extras',
-                  value: entry.overtimeInCents,
-                ),
+                Text(entry.periodLabel),
+                const SizedBox(height: 8),
+                const _PayrollSectionHeader('Nómina'),
+                _PayrollRow(label: 'Salario', value: entry.baseSalaryInCents),
+                _PayrollRow(label: 'Horas extras', value: entry.overtimeInCents),
                 _PayrollRow(label: 'Consumo', value: entry.consumptionInCents),
                 if (entry.rawMaterialConsumptionInCents > 0) ...[
                   _PayrollRow(
@@ -108,28 +189,21 @@ class _PayrollDraftList extends StatelessWidget {
                   ),
                 const Divider(),
                 _PayrollRow(
-                  label: 'Por pagar de nomina',
+                  label: 'Por pagar de nómina',
                   value: entry.balanceInCents,
                   strong: true,
-                ),
-                const SizedBox(height: 10),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: FilledButton.icon(
-                    onPressed: () => onPay(
-                      _PayrollPayRequest(
-                        entry: entry,
-                      ),
-                    ),
-                    icon: const Icon(Icons.payments_outlined),
-                    label: const Text('Pagar'),
-                  ),
                 ),
               ],
             ),
           ),
-        );
-      },
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
+            child: const Text('Cerrar'),
+          ),
+        ],
+      ),
     );
   }
 
