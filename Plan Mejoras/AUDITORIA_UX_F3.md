@@ -76,3 +76,14 @@ Además de los submódulos de Personal, la PR #7 incluye nuevas vistas para tres
 **Criterios de este lote:** una sola pasada de compilación, análisis estático, suite de pruebas, build web local y capturas de desktop/móvil de estos reportes y los módulos de Personal. Registrar las excepciones de visualización sin alterar negocio.
 
 **Pendiente:** estos cambios todavía no se han probado localmente en Codex; no publicar ni fusionar `main`.
+
+## Lote F3 — Acciones de creación y limpieza visual de Personal
+
+**Código en PR #7; pendiente verificación Codex.**
+
+- `Puestos`, `Horas extras`, `Adelantos` y `Consumo de materia prima`: sustituidos iconos de «+» sin etiqueta por acciones primarias visibles «Nuevo puesto», «Nueva hora extra», «Nuevo adelanto» y «Nuevo consumo», reutilizando `BackofficeNewAction`. Sin alterar handlers.
+- Eliminado `_StaffSearchField` obsoleto después de sustituir búsquedas duplicadas por el buscador de tabla; revisado orden de importaciones en Inventario negativo.
+- Queda un aviso de lint `prefer_if_element` **sin ubicación exacta reportada**; Codex debe devolver ubicación o aplicar una corrección sintáctica estrictamente equivalente, sin modificar lógica.
+- El bloqueo previo de Vacaciones quedó resuelto: Codex confirmó 132/132 pruebas y build web exitoso, aunque `flutter analyze` todavía informó 1 warning y 2 infos antes de este nuevo lote.
+
+**Gates:** validar `flutter analyze` hasta 0 avisos, pruebas Backoffice/Staff/Reportes/POS y build web oficial. Mantener locales generados en archivos privados sin commit accidental. No aprobar visualmente sin capturas reales.
