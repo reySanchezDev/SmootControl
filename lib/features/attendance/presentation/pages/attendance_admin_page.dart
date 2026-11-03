@@ -84,9 +84,10 @@ class _AttendanceAdminPageState extends State<AttendanceAdminPage> {
                     : _AttendanceEntriesTable(
                         items: _entries!,
                         readOnly: widget.readOnly,
-                        onCreate: widget.readOnly || _employees.isEmpty
+                        onCreate: widget.readOnly
                             ? null
                             : () => unawaited(_openEditor()),
+                        createEnabled: _employees.isNotEmpty,
                         onEdit: (entry) => unawaited(_openEditor(entry)),
                         onVoid: (entry) => unawaited(_voidEntry(entry)),
                       ),
