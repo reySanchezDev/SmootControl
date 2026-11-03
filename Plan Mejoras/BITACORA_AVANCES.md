@@ -48,6 +48,16 @@
 - **Próximo avance:** consolidar cobertura UX de todos los módulos, preservar POS y generar validación local de integración de PR #4 + aislamiento F2 antes de solicitar revisión visual.
 - **Producción:** sin cambios, despliegue no autorizado.
 
+## 2026-11-03 — Integración real preparada, checkpoint Codex
+
+- **Motivo:** se detectó que la revisión de F3 se había detenido sin desarrollar una integración verificable; corregido el flujo para continuar hasta una dependencia local real.
+- **Trabajo realizado:** creada rama `develop/backoffice-stabilization-integration`, con base exacta `develop/experience-isolation` SHA `7c882630`; integrados los blobs correspondientes a los 7 archivos de PR #4 sin alterar otras rutas.
+- **Resultado:** PR #7 borrador; HEAD `94846f3934963f9e5c57e872dd0e22a135605b79`. Comparación contra `main`: 10 archivos modificados (3 de F2, 7 de F3).
+- **Control:** PR #4, PR #6, `main`, POS de producción y entorno local no modificados.
+- **Riesgos:** integración no compilada; UX todavía no es integral y F2 conserva pendiente cobertura de entrada de Time Clock.
+- **Punto donde Codex sí es necesario:** build/análisis y tests de la rama combinada en worktree local independiente, sin merge/despliegue. Tras la evidencia continuará la ejecución de F3/F4.
+- **Aprobación:** no se solicita revisión visual todavía; publicación no autorizada.
+
 ## Plantilla para nuevos eventos
 
 ```text
