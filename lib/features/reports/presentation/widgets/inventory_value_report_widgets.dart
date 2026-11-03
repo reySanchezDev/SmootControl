@@ -132,66 +132,57 @@ class InventoryDataTable extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: DataTable(
-          columns: [
-            DataColumn(label: AppText(l10n.inventoryProductColumn)),
-            DataColumn(label: AppText(l10n.inventoryCategoryColumn)),
-            DataColumn(
-              label: AppText(l10n.inventoryStockColumn),
-              numeric: true,
-            ),
-            DataColumn(label: AppText(l10n.inventoryCostColumn), numeric: true),
-            DataColumn(
-              label: AppText(l10n.inventoryPriceColumn),
-              numeric: true,
-            ),
-            DataColumn(
-              label: AppText(l10n.inventoryCostValueColumn),
-              numeric: true,
-            ),
-            DataColumn(
-              label: AppText(l10n.inventoryPotentialSalesColumn),
-              numeric: true,
-            ),
-            DataColumn(
-              label: AppText(l10n.inventoryProfitColumn),
-              numeric: true,
-            ),
-          ],
-          rows: [
-            for (final row in rows)
-              DataRow(
-                cells: [
-                  DataCell(AppText(row.productName)),
-                  DataCell(
-                    AppText(
-                      row.isRawMaterial
-                          ? '${row.categoryName} - ${l10n.rawMaterialStatus}'
-                          : row.categoryName,
-                    ),
-                  ),
-                  DataCell(AppText(_quantityText(row.quantityOnHand))),
-                  DataCell(AppText(MoneyFormatter.format(row.costInCents))),
-                  DataCell(AppText(MoneyFormatter.format(row.priceInCents))),
-                  DataCell(
-                    AppText(MoneyFormatter.format(row.inventoryCostInCents)),
-                  ),
-                  DataCell(
-                    AppText(MoneyFormatter.format(row.potentialSalesInCents)),
-                  ),
-                  DataCell(
-                    AppText(
-                      MoneyFormatter.format(row.potentialGrossProfitInCents),
-                    ),
-                  ),
-                ],
+    return SizedBox(
+      height: 440,
+      child: BackofficeDataTable(
+        columns: [
+          l10n.inventoryProductColumn,
+          l10n.inventoryCategoryColumn,
+          l10n.inventoryStockColumn,
+          l10n.inventoryCostColumn,
+          l10n.inventoryPriceColumn,
+          l10n.inventoryCostValueColumn,
+          l10n.inventoryPotentialSalesColumn,
+          l10n.inventoryProfitColumn,
+        ],
+        columnWidths: const [250, 250, 145, 160, 160, 180, 185, 180],
+        columnAlignments: const [
+          Alignment.centerLeft,
+          Alignment.centerLeft,
+          Alignment.centerRight,
+          Alignment.centerRight,
+          Alignment.centerRight,
+          Alignment.centerRight,
+          Alignment.centerRight,
+          Alignment.centerRight,
+        ],
+        sortableColumns: const [
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+        ],
+        rows: [
+          for (final row in rows)
+            [
+              Text(row.productName),
+              Text(
+                row.isRawMaterial
+                    ? '${row.categoryName} - ${l10n.rawMaterialStatus}'
+                    : row.categoryName,
               ),
-          ],
-        ),
+              Text(_quantityText(row.quantityOnHand)),
+              Text(MoneyFormatter.format(row.costInCents)),
+              Text(MoneyFormatter.format(row.priceInCents)),
+              Text(MoneyFormatter.format(row.inventoryCostInCents)),
+              Text(MoneyFormatter.format(row.potentialSalesInCents)),
+              Text(MoneyFormatter.format(row.potentialGrossProfitInCents)),
+            ],
+        ],
       ),
     );
   }
