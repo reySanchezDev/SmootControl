@@ -83,6 +83,15 @@
 - **Estado:** hipótesis corregida, **pendiente prueba local para confirmar**. F3 y gate regresión POS permanecen abiertos; nada se fusiona ni despliega.
 - **Próximo checkpoint Codex:** fast-forward PR #7 al HEAD vigente; `flutter analyze` y reejecutar los 3 archivos de tests afectados + la suite POS pertinente. Reportar fallo o éxito sin tocar lógica funcional.
 
+## 2026-11-03 — Tests POS 93/93 y auditoría de runtime
+
+- **Codex:** fast-forward al SHA `5ac20d79`; `flutter analyze` sin issues, `git diff --check` correcto, **93 de 93 pruebas detectadas y aprobadas** en el alcance ejecutado.
+- **Precisión:** previamente fueron 102 pruebas en otra ejecución; sin comandos exactos **no se puede afirmar que sean el mismo conjunto**. Estado: éxito local del alcance actual, cobertura total pendiente.
+- **Cambios locales:** solo formateo Dart en tres archivos de pruebas POS, sin commit ni push; conservar y consolidar de forma segura antes de nuevo fast-forward.
+- **F4/F5:** revisión estática documentada en `AUDITORIA_RUNTIME_SEGURIDAD_F4_F5.md`; scheduler global y `SMOO_RESTAURANT_ID` compilado son riesgos de preparación comercial a validar, no errores funcionales certificados.
+- **Próxima acción:** Codex consolida únicamente el formato de tests y determina la discrepancia de conteo; el resto del plan continúa sin repetir pasos ya aprobados.
+- **Producción:** intacta.
+
 ## Plantilla para nuevos eventos
 
 ```text
