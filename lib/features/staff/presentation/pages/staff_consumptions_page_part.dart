@@ -212,39 +212,3 @@ class _StaffConsumptionDetailDialog extends StatelessWidget {
   }
 }
 
-class _StaffSearchField extends StatelessWidget {
-  const _StaffSearchField({
-    required this.controller,
-    required this.hintText,
-    required this.onChanged,
-  });
-
-  final TextEditingController controller;
-  final String hintText;
-  final ValueChanged<String> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-      child: TextField(
-        controller: controller,
-        decoration: InputDecoration(
-          border: const OutlineInputBorder(),
-          hintText: hintText,
-          prefixIcon: const Icon(Icons.search),
-          suffixIcon: controller.text.isEmpty
-              ? null
-              : IconButton(
-                  icon: const Icon(Icons.clear),
-                  onPressed: () {
-                    controller.clear();
-                    onChanged('');
-                  },
-                ),
-        ),
-        onChanged: onChanged,
-      ),
-    );
-  }
-}
