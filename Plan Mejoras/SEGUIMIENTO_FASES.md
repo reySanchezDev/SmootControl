@@ -1,11 +1,11 @@
 # Tablero de seguimiento — estabilización y publicación SmooControl
 
 **Estado del programa:** EN_CURSO  
-**Fase activa:** F3 (lote amplio de acciones Nuevo y limpieza UX; pendiente QA local)  
+**Fase activa:** F3 (contratos globales, búsqueda consistente y nuevas pruebas; pendiente QA local agrupada)  
 **Fuente de alcance:** [Plan maestro](PLAN_MAESTRO_END_TO_END.md)  
 **Criterios finales:** [Matriz de aceptación](MATRIZ_ACEPTACION.md)  
 **Despliegue:** [Runbook dominio](PUBLICACION_DOMINIO_RUNBOOK.md)  
-**Última actualización:** 2026-11-03 (Codex: 132/132 tests y build web correctos, pero analyze con 1 warning y 2 infos; eliminado widget sin uso, ordenadas importaciones y normalizadas cuatro acciones de creación en Personal; nuevo QA pendiente).
+**Última actualización:** 2026-11-03 (base SHA 4781a5d1: 132/132 tests, analyze limpio y build web OK; lote posterior incorpora guardas globales de selección, etiquetas explícitas, búsqueda normalizada y sin duplicados, además de pruebas. Nuevo QA pendiente).
 
 > **Fuente única de verdad:** este tablero controla qué fase está abierta y cuáles están cerradas. No se marca una tarea, fase o gate como terminada por un commit, una PR o un CI exitoso sin evidencia y verificación de sus criterios.
 
@@ -115,7 +115,7 @@ Estados admitidos para cada fase:
 - [x] Identificar los 7 archivos de presentación de PR #4 y verificar que no modifica lógica de dominio/BD; [ ] revisar la totalidad de la UX, las dependencias y realizar validación de integración antes de decidir merge.
 - [ ] Completar evidencias por pantalla en 390×844, 768×1024, 1366×768 y 1920×1080.
 
-**Cierre:** matriz de pantallas y regresión POS aprobadas; excepciones documentadas. **Checkpoint Codex, lote transversal:** preservar l10n local; actualizar worktree de PR #7 al HEAD vigente; aplicar `dart format` solo a archivos alterados del lote; localizar y corregir de manera estrictamente sintáctica el lint de `if element`, si subsiste; ejecutar `flutter analyze` cero issues, suites Backoffice/Staff/Reportes/POS y build web oficial. Publicar solo cambios de formato/lint equivalentes en commit separado, sin `main` ni despliegue.
+**Cierre:** matriz de pantallas y regresión POS aprobadas; excepciones documentadas. **Checkpoint Codex:** preservar los tres archivos locales de l10n; actualizar worktree de PR #7 al HEAD vigente; `dart format` únicamente en archivos del lote; `flutter analyze` sin issues; tests focalizados de selección/búsqueda, suites Backoffice/Staff/Reportes/POS y build web oficial. Commit/push solo formato y lint equivalentes en commit separado, sin `main` ni despliegue. QA visual integral sigue pendiente.
 **Evidencia:** PENDIENTE · **Bloqueos:** ninguno registrado · **Siguiente acción:** pendiente de F2.
 
 ### F4 — Runtime, servicios y sincronización
