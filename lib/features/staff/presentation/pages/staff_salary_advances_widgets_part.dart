@@ -74,55 +74,94 @@ class _SalaryAdvanceList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (advances.isEmpty) {
-      return AppEmptyState(
-        icon: Icons.payments_outlined,
-        title: 'Sin adelantos activos',
-        message: hasFilter
-            ? 'No hay adelantos pendientes o parciales en este filtro.'
-            : 'Los adelantos pendientes apareceran aqui.',
-      );
-    }
     final employeeById = {
       for (final employee in employees) employee.id: employee,
     };
-    return ListView.separated(
-      itemCount: advances.length,
-      separatorBuilder: (context, index) => const Divider(height: 1),
-      itemBuilder: (context, index) {
-        final advance = advances[index];
-        final employee = employeeById[advance.employeeId];
-        final balance = advance.balanceInCents ?? advance.amountInCents;
-        final paid = advance.amountInCents - balance;
-        return ListTile(
-          leading: Icon(
-            advance.affectsCash
-                ? Icons.point_of_sale_outlined
-                : Icons.account_balance_outlined,
-          ),
-          title: Text(employee?.fullName ?? 'Empleado'),
-          subtitle: Text(
-            [
-              'Entrega: ${_dateOnly(advance.deliveredAt)}',
-              _salaryAdvanceStatusLabel(advance.status),
-              'Adelanto: ${_money(advance.amountInCents)}',
-              'Abonado: ${_money(paid)}',
-              'Saldo: ${_money(balance)}',
-            ].join(' - '),
-          ),
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(_money(balance)),
-              IconButton(
-                tooltip: 'Eliminar',
-                icon: const Icon(Icons.delete_outline),
-                onPressed: () => onDelete(advance),
-              ),
-            ],
-          ),
-        );
-      },
+    String name(SalaryAdvance advance) =>
+        employeeById[advance.employeeId]?.fullName ?? 'Empleado';
+    int balance(SalaryAdvance advance) =>
+        advance.balanceInCents ?? advance.amountInCents;
+
+    return BackofficeCollectionView<SalaryAdvance>(
+      items: advances,
+      rowKey: (advance) => advance.id,
+      rowLabel: name,
+      selectionActions: [
+        BackofficeSelectionAction<SalaryAdvance>(
+          label: 'Eliminar',
+          icon: Icons.delete_outline,
+          destructive: true,
+          onPressed: onDelete,
+        ),
+      ],
+      searchLabel: 'Buscar adelanto',
+      searchTextFor: (advance) => [
+        name(advance),
+        _dateOnly(advance.deliveredAt),
+        _salaryAdvanceStatusLabel(advance.status),
+        _money(advance.amountInCents),
+        _money(balance(advance)),
+        advance.note ?? '',
+      ].join(' '),
+      emptyTitle: hasFilter ? 'Sin resultados' : 'Sin adelantos activos',
+      emptyMessage: hasFilter
+          ? 'No hay adelantos pendientes o parciales en este filtro.'
+          : 'Los adelantos pendientes aparecerán aquí.',
+      compactBuilder: (_, advance) => ListTile(
+        leading: Icon(
+          advance.affectsCash
+              ? Icons.point_of_sale_outlined
+              : Icons.account_balance_outlined,
+        ),
+        title: Text(name(advance)),
+        subtitle: Text(
+          '${_dateOnly(advance.deliveredAt)} · '
+          '${_salaryAdvanceStatusLabel(advance.status)}',
+        ),
+        trailing: Text(_money(balance(advance))),
+      ),
+      columns: [
+        BackofficeListColumn<SalaryAdvance>(
+          label: 'Empleado',
+          width: 240,
+          compare: (a, b) => name(a).compareTo(name(b)),
+          cell: (_, advance) => Text(name(advance)),
+        ),
+        BackofficeListColumn<SalaryAdvance>(
+          label: 'Entrega',
+          width: 155,
+          compare: (a, b) => a.deliveredAt.compareTo(b.deliveredAt),
+          cell: (_, advance) => Text(_dateOnly(advance.deliveredAt)),
+        ),
+        BackofficeListColumn<SalaryAdvance>(
+          label: 'Estado',
+          width: 135,
+          compare: (a, b) => a.status.compareTo(b.status),
+          cell: (_, advance) =>
+              Text(_salaryAdvanceStatusLabel(advance.status)),
+        ),
+        BackofficeListColumn<SalaryAdvance>(
+          label: 'Adelanto',
+          width: 160,
+          alignment: Alignment.centerRight,
+          compare: (a, b) => a.amountInCents.compareTo(b.amountInCents),
+          cell: (_, advance) => Text(_money(advance.amountInCents)),
+        ),
+        BackofficeListColumn<SalaryAdvance>(
+          label: 'Abonado',
+          width: 160,
+          alignment: Alignment.centerRight,
+          cell: (_, advance) =>
+              Text(_money(advance.amountInCents - balance(advance))),
+        ),
+        BackofficeListColumn<SalaryAdvance>(
+          label: 'Saldo',
+          width: 160,
+          alignment: Alignment.centerRight,
+          compare: (a, b) => balance(a).compareTo(balance(b)),
+          cell: (_, advance) => Text(_money(balance(advance))),
+        ),
+      ],
     );
   }
 }
