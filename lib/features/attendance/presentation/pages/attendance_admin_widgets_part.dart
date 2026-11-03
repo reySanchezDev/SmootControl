@@ -21,30 +21,57 @@ class _AttendanceFilters extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Wrap(
-      runSpacing: 8,
-      spacing: 8,
-      children: [
-        _DateChip(label: 'Desde ${_fmt(from)}', onTap: onFrom),
-        _DateChip(label: 'Hasta ${_fmt(to)}', onTap: onTo),
-        DropdownButton<String?>(
-          value: status,
-          hint: const Text('Estado'),
-          items: const [
-            DropdownMenuItem(child: Text('Todos')),
-            DropdownMenuItem(value: 'open', child: Text('Abiertas')),
-            DropdownMenuItem(value: 'closed', child: Text('Cerradas')),
-          ],
-          onChanged: onStatus,
-        ),
-        FilledButton.icon(
-          icon: const Icon(Icons.refresh),
-          label: const Text('Recargar'),
-          onPressed: onReload,
-        ),
-      ],
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Wrap(
+        crossAxisAlignment: WrapCrossAlignment.center,
+        spacing: BackofficeFormStandards.filterGap,
+        runSpacing: BackofficeFormStandards.filterGap,
+        children: [
+          SizedBox(
+            width: BackofficeFormStandards.dateWidth,
+            child: OutlinedButton.icon(
+              icon: const Icon(Icons.calendar_month_outlined),
+              label: Text('Desde ${_fmt(from)}'),
+              onPressed: onFrom,
+            ),
+          ),
+          SizedBox(
+            width: BackofficeFormStandards.dateWidth,
+            child: OutlinedButton.icon(
+              icon: const Icon(Icons.calendar_month_outlined),
+              label: Text('Hasta ${_fmt(to)}'),
+              onPressed: onTo,
+            ),
+          ),
+          SizedBox(
+            width: BackofficeFormStandards.filterWidth,
+            child: DropdownButtonFormField<String>(
+              initialValue: status,
+              decoration: const InputDecoration(
+                labelText: 'Estado',
+                border: OutlineInputBorder(),
+              ),
+              items: const [
+                DropdownMenuItem(value: '', child: Text('Todos')),
+                DropdownMenuItem(value: 'open', child: Text('Abiertas')),
+                DropdownMenuItem(value: 'closed', child: Text('Cerradas')),
+              ],
+              onChanged: (value) => onStatus(
+                value == null || value.isEmpty ? null : value,
+              ),
+            ),
+          ),
+          FilledButton.icon(
+            icon: const Icon(Icons.refresh),
+            label: const Text('Recargar'),
+            onPressed: onReload,
+          ),
+        ],
+      ),
     );
   }
+
 }
 
 class _AttendanceEntryCard extends StatelessWidget {
@@ -245,22 +272,6 @@ class _AttendanceEditorDialogState extends State<_AttendanceEditorDialog> {
         verificationMethod: 'admin',
         createdAt: entry?.createdAt ?? DateTime.now(),
       ),
-    );
-  }
-}
-
-class _DateChip extends StatelessWidget {
-  const _DateChip({required this.label, required this.onTap});
-
-  final String label;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return ActionChip(
-      avatar: const Icon(Icons.calendar_month_outlined),
-      label: Text(label),
-      onPressed: onTap,
     );
   }
 }
