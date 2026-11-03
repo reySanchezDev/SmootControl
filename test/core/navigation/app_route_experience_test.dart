@@ -17,7 +17,7 @@ void main() {
     isPosUser: false,
   );
 
-  test('POS and Backoffice routes are classified independently of viewport', () {
+  test('Routes are classified independently of viewport', () {
     expect(AppRouteExperience.forRoute(AppRoutes.pos), SmooExperience.pos);
     expect(
       AppRouteExperience.forRoute(AppRoutes.products),
