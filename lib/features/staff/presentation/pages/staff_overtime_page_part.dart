@@ -62,8 +62,8 @@ class _StaffOvertimePageState extends State<StaffOvertimePage> {
     return AppPageScaffold(
       title: 'Horas extras',
       actions: [
-        IconButton(
-          icon: const Icon(Icons.add),
+        BackofficeNewAction(
+          label: 'Nueva hora extra',
           onPressed: () => unawaited(_openForm()),
         ),
       ],
