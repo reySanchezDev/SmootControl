@@ -66,6 +66,15 @@
 - **F3:** integración base técnicamente validada, pero aún no alcanza cobertura visual integral del Backoffice; continuar inspección/implementación restante antes de convocar al propietario.
 - **Producción:** sin merge ni despliegue.
 
+## 2026-11-03 — Ampliación real de F3 después de QA local
+
+- **Codex:** PR #7 inicial SHA `94846f39` validada: analyze sin issues, 44/44 pruebas OK y build web oficial con recursos Drift/SQLite.
+- **Cambios posteriores:** Marcadas administra selección contextual Editar/Eliminar sin columna Acciones, preservando modo reporte de solo lectura. Puestos ahora tiene tabla profesional, búsqueda y selección para Editar, conservando operaciones existentes.
+- **Branch/PR:** `develop/backoffice-stabilization-integration`, PR #7, nuevo HEAD `20c0e2ea9d06f02fed09147c1bfc76ffd0e65d80`.
+- **Estado:** estos cambios nuevos NO están validados en Codex todavía. Se requiere nuevo fast-forward y análisis/pruebas dirigidas.
+- **Pendiente F3:** UX de submódulos administrativos restantes, revisión visual final del propietario, más pruebas Time Clock.
+- **Límite:** sin merge ni producción; modificación exclusiva de presentación.
+
 ## Plantilla para nuevos eventos
 
 ```text
