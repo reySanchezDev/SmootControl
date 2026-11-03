@@ -132,38 +132,67 @@ class _StaffConsumptionList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (consumptions.isEmpty) {
-      return AppEmptyState(
-        icon: Icons.receipt_long_outlined,
-        title: hasFilter ? 'Sin resultados' : 'Sin consumos',
-        message: hasFilter
-            ? 'No hay consumos que coincidan con la busqueda.'
-            : 'Los consumos registrados desde POS apareceran aqui.',
-      );
-    }
-    return ListView.separated(
-      itemCount: consumptions.length,
-      separatorBuilder: (context, index) => const Divider(height: 1),
-      itemBuilder: (context, index) {
-        final item = consumptions[index];
-        return ListTile(
-          leading: const Icon(Icons.receipt_long_outlined),
-          title: Text('${item.receiptLabel} - ${item.employeeName}'),
-          subtitle: Text(_date(item.createdAt)),
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(_money(item.totalInCents)),
-              IconButton(
-                tooltip: 'Eliminar',
-                icon: const Icon(Icons.delete_outline),
-                onPressed: () => onDelete(item),
-              ),
-            ],
-          ),
-          onTap: () => onOpen(item),
-        );
-      },
+    return BackofficeCollectionView<StaffConsumption>(
+      items: consumptions,
+      rowKey: (item) => item.id,
+      rowLabel: (item) => item.receiptLabel,
+      selectionActions: [
+        BackofficeSelectionAction<StaffConsumption>(
+          label: 'Ver detalle',
+          icon: Icons.visibility_outlined,
+          onPressed: onOpen,
+        ),
+        BackofficeSelectionAction<StaffConsumption>(
+          label: 'Eliminar',
+          icon: Icons.delete_outline,
+          destructive: true,
+          onPressed: onDelete,
+        ),
+      ],
+      searchLabel: 'Buscar empleado o recibo',
+      searchTextFor: (item) => [
+        item.employeeName,
+        item.receiptLabel,
+        _dateOnly(item.createdAt),
+        _money(item.totalInCents),
+      ].join(' '),
+      emptyTitle: hasFilter ? 'Sin resultados' : 'Sin consumos',
+      emptyMessage: hasFilter
+          ? 'No hay consumos que coincidan con la búsqueda.'
+          : 'Los consumos registrados desde POS aparecerán aquí.',
+      compactBuilder: (context, item) => ListTile(
+        leading: const Icon(Icons.receipt_long_outlined),
+        title: Text('${item.receiptLabel} - ${item.employeeName}'),
+        subtitle: Text(_date(item.createdAt)),
+        trailing: Text(_money(item.totalInCents)),
+      ),
+      columns: [
+        BackofficeListColumn<StaffConsumption>(
+          label: 'Recibo',
+          width: 210,
+          compare: (a, b) => a.receiptLabel.compareTo(b.receiptLabel),
+          cell: (_, item) => Text(item.receiptLabel),
+        ),
+        BackofficeListColumn<StaffConsumption>(
+          label: 'Empleado',
+          width: 280,
+          compare: (a, b) => a.employeeName.compareTo(b.employeeName),
+          cell: (_, item) => Text(item.employeeName),
+        ),
+        BackofficeListColumn<StaffConsumption>(
+          label: 'Fecha',
+          width: 170,
+          compare: (a, b) => a.createdAt.compareTo(b.createdAt),
+          cell: (_, item) => Text(_date(item.createdAt)),
+        ),
+        BackofficeListColumn<StaffConsumption>(
+          label: 'Total',
+          width: 165,
+          alignment: Alignment.centerRight,
+          compare: (a, b) => a.totalInCents.compareTo(b.totalInCents),
+          cell: (_, item) => Text(_money(item.totalInCents)),
+        ),
+      ],
     );
   }
 }
