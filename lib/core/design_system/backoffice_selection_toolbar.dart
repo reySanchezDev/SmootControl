@@ -39,6 +39,7 @@ class BackofficeSelectionToolbar<T> extends StatelessWidget {
     required this.selected,
     this.selectedLabel,
     this.onCreate,
+    this.globalActions = const [],
     super.key,
   });
 
@@ -53,6 +54,9 @@ class BackofficeSelectionToolbar<T> extends StatelessWidget {
 
   /// Available regardless of row selection, subject to permissions.
   final VoidCallback? onCreate;
+
+  /// Always-available, explicitly labelled commands sharing this command bar.
+  final List<Widget> globalActions;
 
   static bool _isSpecificAction(String label) {
     final name = label.trim().toLowerCase();
@@ -94,6 +98,7 @@ class BackofficeSelectionToolbar<T> extends StatelessWidget {
             spacing: 8,
             runSpacing: 6,
             children: [
+              ...globalActions,
               if (onCreate != null)
                 FilledButton.icon(
                   onPressed: onCreate,
