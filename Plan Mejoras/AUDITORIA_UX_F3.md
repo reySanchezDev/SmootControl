@@ -36,3 +36,14 @@
 2. Identificar reutilización riesgosa de componentes compartidos.
 3. Preparar rama local de integración **sin** fusionar a `main`, incluyendo PR #6 y PR #4 sólo cuando el diff y pruebas sean aceptables.
 4. Solicitar a Codex build local y revisión visual al propietario **únicamente cuando haya una versión integrada suficientemente completa**.
+
+## Lote F3 adicional — 2026-11-03
+
+**Rama de integración PR #7:** tras validar el primer lote (44/44 tests, analyze limpio, build web correcto), se incorporaron únicamente cambios de presentación adicionales:
+
+- `attendance_admin_table_part.dart` / `attendance_admin_page.dart`: marcadas administrativas con selección + Editar/Eliminar explícitos en barra, sin columna Acciones; reporte de solo lectura mantiene las acciones desactivadas. Se reutilizan los mismos callbacks y confirmación existente.
+- `staff_positions_page_part.dart`: lista móvil de puestos transformada en `BackofficeCollectionView` con búsqueda, columnas Puesto/Estado, selección y Editar; se conserva el cuadro de edición y el comando Nuevo existentes.
+
+**Validación pendiente:** análisis y pruebas focalizadas del nuevo HEAD en Codex. Sin cambios en dominio, entidades, repositorios, persistencia o POS.
+
+**Hallazgos UX aún pendientes:** los submódulos de personal (consumos, horas extra, adelantos y materias primas), aprobaciones de horas extra y varios reportes usan vistas particulares; auditar según necesidad real, evitando conversión de vistas de solo lectura a edición y sin perder acciones.
