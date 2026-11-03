@@ -18,6 +18,23 @@ class _AttendanceEntriesTable extends StatelessWidget {
   Widget build(BuildContext context) {
     return BackofficeCollectionView<AttendanceEntry>(
       items: items,
+      rowKey: readOnly ? null : (entry) => entry.id,
+      rowLabel: (entry) => entry.employeeName,
+      selectionActions: readOnly
+          ? null
+          : [
+              BackofficeSelectionAction<AttendanceEntry>(
+                label: 'Editar',
+                icon: Icons.edit_outlined,
+                onPressed: onEdit,
+              ),
+              BackofficeSelectionAction<AttendanceEntry>(
+                label: 'Eliminar',
+                icon: Icons.delete_outline,
+                destructive: true,
+                onPressed: onVoid,
+              ),
+            ],
       searchLabel: 'Buscar empleado, fecha, estado o dispositivo',
       searchTextFor: (entry) => [
         entry.employeeName,
@@ -78,27 +95,7 @@ class _AttendanceEntriesTable extends StatelessWidget {
           compare: (a, b) => a.status.compareTo(b.status),
           cell: (_, entry) => Text(_status(entry.status)),
         ),
-        if (!readOnly)
-          BackofficeListColumn(
-            label: 'Acciones',
-            width: 230,
-            alignment: Alignment.center,
-            cell: (_, entry) => Wrap(
-              spacing: 4,
-              children: [
-                TextButton.icon(
-                  onPressed: () => onEdit(entry),
-                  icon: const Icon(Icons.edit_outlined, size: 18),
-                  label: const Text('Editar'),
-                ),
-                TextButton.icon(
-                  onPressed: () => onVoid(entry),
-                  icon: const Icon(Icons.delete_outline, size: 18),
-                  label: const Text('Eliminar'),
-                ),
-              ],
-            ),
-          ),
+
       ],
     );
   }
