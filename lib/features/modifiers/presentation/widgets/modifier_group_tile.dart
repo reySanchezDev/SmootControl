@@ -81,7 +81,10 @@ class ModifierGroupTile extends StatelessWidget {
                 onEdit: onEditGroup,
               ),
             for (final option in options)
-              ListTile(
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  ListTile(
                 contentPadding: EdgeInsetsDirectional.only(
                   start: isCompact ? 32 : 56,
                   end: 16,
@@ -105,14 +108,15 @@ class ModifierGroupTile extends StatelessWidget {
                         onDeactivate: () => onDeactivateOption(option),
                         onEdit: () => onEditOption(option),
                       ),
+                  ),
+                  if (isCompact)
+                    _CompactOptionCommands(
+                      isActive: option.isActive,
+                      onEdit: () => onEditOption(option),
+                      onDeactivate: () => onDeactivateOption(option),
+                    ),
+                ],
               ),
-            if (isCompact)
-              for (final option in options)
-                _CompactOptionCommands(
-                  isActive: option.isActive,
-                  onEdit: () => onEditOption(option),
-                  onDeactivate: () => onDeactivateOption(option),
-                ),
             TextButton.icon(
               icon: const Icon(Icons.add),
               label: AppText(l10n.addModifierOptionAction),
