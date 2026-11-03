@@ -76,10 +76,11 @@ class _RateTileState extends State<_RateTile> {
                 Row(
                   children: [
                     Expanded(child: _rateField(l10n)),
-                    IconButton(
+                    const SizedBox(width: 8),
+                    OutlinedButton.icon(
                       icon: const Icon(Icons.save_outlined),
+                      label: Text(l10n.saveAction),
                       onPressed: _save,
-                      tooltip: l10n.saveAction,
                     ),
                   ],
                 ),
@@ -101,14 +102,15 @@ class _RateTileState extends State<_RateTile> {
             overflow: TextOverflow.ellipsis,
           ),
           trailing: SizedBox(
-            width: 180,
+            width: 270,
             child: Row(
               children: [
                 Expanded(child: _rateField(l10n)),
-                IconButton(
+                const SizedBox(width: 8),
+                OutlinedButton.icon(
                   icon: const Icon(Icons.save_outlined),
+                  label: Text(l10n.saveAction),
                   onPressed: _save,
-                  tooltip: l10n.saveAction,
                 ),
               ],
             ),
