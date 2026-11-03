@@ -10,10 +10,21 @@ import 'package:smoo_control/features/auth/presentation/pages/device_initializat
 /// Startup gate for the standalone attendance APK.
 final class TimeClockGate extends StatefulWidget {
   /// Creates the time-clock gate.
-  const TimeClockGate({this.startupModeLoader, super.key});
+  const TimeClockGate({
+    this.startupModeLoader,
+    this.timeClockPageBuilder,
+    this.initializationPageBuilder,
+    super.key,
+  });
 
   /// Optional test seam; production resolves the registered startup service.
   final Future<AppResult<DeviceStartupMode>> Function()? startupModeLoader;
+
+  /// Optional test seam; production presents the actual marker page.
+  final WidgetBuilder? timeClockPageBuilder;
+
+  /// Optional test seam; production presents normal device initialization.
+  final Widget Function(BuildContext, VoidCallback)? initializationPageBuilder;
 
   @override
   State<TimeClockGate> createState() => _TimeClockGateState();
@@ -51,10 +62,11 @@ class _TimeClockGateState extends State<TimeClockGate> {
     return switch (mode) {
       DeviceStartupMode.remoteInitialization ||
       DeviceStartupMode.remoteInitialSetup ||
-      DeviceStartupMode.localInitialSetup => DeviceInitializationPage(
-        onInitialized: _reload,
-      ),
-      DeviceStartupMode.localLogin => const TimeClockPage(),
+      DeviceStartupMode.localInitialSetup =>
+        widget.initializationPageBuilder?.call(context, _reload) ??
+            DeviceInitializationPage(onInitialized: _reload),
+      DeviceStartupMode.localLogin =>
+        widget.timeClockPageBuilder?.call(context) ?? const TimeClockPage(),
     };
   }
 
