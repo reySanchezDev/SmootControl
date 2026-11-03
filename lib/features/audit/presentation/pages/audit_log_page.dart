@@ -110,15 +110,19 @@ class _AuditLogContent extends StatelessWidget {
                       alignment: Alignment.center,
                       compare: (a, b) => a.occurredAt.compareTo(b.occurredAt),
                       cell: (_, entry) => Text(
-                        DateFormat('dd/MM/yyyy HH:mm', 'es')
-                            .format(entry.occurredAt.toLocal()),
+                        DateFormat(
+                          'dd/MM/yyyy HH:mm',
+                          'es',
+                        ).format(entry.occurredAt.toLocal()),
                       ),
                     ),
                     BackofficeListColumn(
                       label: 'Acción',
                       width: 310,
-                      compare: (a, b) => auditActionLabel(l10n, a.action)
-                          .compareTo(auditActionLabel(l10n, b.action)),
+                      compare: (a, b) => auditActionLabel(
+                        l10n,
+                        a.action,
+                      ).compareTo(auditActionLabel(l10n, b.action)),
                       cell: (_, entry) => Text(
                         auditActionLabel(l10n, entry.action),
                         softWrap: true,
@@ -127,8 +131,7 @@ class _AuditLogContent extends StatelessWidget {
                     BackofficeListColumn(
                       label: 'Entidad',
                       width: 235,
-                      compare: (a, b) =>
-                          a.entityName.compareTo(b.entityName),
+                      compare: (a, b) => a.entityName.compareTo(b.entityName),
                       cell: (_, entry) =>
                           Text(entry.entityName, softWrap: true),
                     ),
@@ -140,22 +143,24 @@ class _AuditLogContent extends StatelessWidget {
   }
 
   void _showEntryDetail(BuildContext context, AuditLogEntry entry) {
-    unawaited(showDialog<void>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Detalle de auditoría'),
-        content: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 760),
-          child: AuditLogTile(entry: entry),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('Cerrar'),
+    unawaited(
+      showDialog<void>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('Detalle de auditoría'),
+          content: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 760),
+            child: AuditLogTile(entry: entry),
           ),
-        ],
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('Cerrar'),
+            ),
+          ],
+        ),
       ),
-    ));
+    );
   }
 
   String _searchText(AuditLogEntry entry) {

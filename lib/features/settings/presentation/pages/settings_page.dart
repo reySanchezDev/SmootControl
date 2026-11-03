@@ -225,74 +225,74 @@ class _SettingsForm extends StatelessWidget {
         Align(
           alignment: Alignment.topCenter,
           child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 720),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Align(
-                alignment: Alignment.centerRight,
-                child: BackofficeSaveAction(onPressed: onSave),
-              ),
-              const SizedBox(height: 12),
-              AppText(
-                l10n.businessSettingsTitle,
-                variant: AppTextVariant.titleMedium,
-              ),
-              const SizedBox(height: 16),
-              AppInput(
-                controller: businessNameController,
-                label: l10n.businessNameField,
-                requiredField: true,
-              ),
-              const SizedBox(height: 12),
-              AppInput(
-                controller: legalNameController,
-                label: l10n.legalNameField,
-              ),
-              const SizedBox(height: 12),
-              AppInput(
-                controller: taxNumberController,
-                label: l10n.taxNumberField,
-              ),
-              const SizedBox(height: 12),
-              AppInput(
-                controller: phoneController,
-                keyboardType: TextInputType.phone,
-                label: l10n.phoneField,
-              ),
-              const SizedBox(height: 12),
-              AppInput(
-                controller: addressController,
-                label: l10n.addressField,
-              ),
-              const SizedBox(height: 12),
-              CheckboxListTile(
-                contentPadding: EdgeInsets.zero,
-                title: AppText(l10n.showCompanyInfoOnPdfField),
-                value: showCompanyInfoOnReceipts,
-                onChanged: (value) {
-                  onShowCompanyInfoChanged(value ?? true);
-                },
-              ),
-              const SizedBox(height: 12),
-              AppInput(
-                controller: invoicePrefixController,
-                label: l10n.invoicePrefixField,
-                requiredField: true,
-              ),
-              const SizedBox(height: 12),
-              AppInput(
-                controller: initialNumberController,
-                keyboardType: TextInputType.number,
-                label: l10n.initialInvoiceNumberField,
-                requiredField: true,
-              ),
-              if (error != null) ...[
+            constraints: const BoxConstraints(maxWidth: 720),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: BackofficeSaveAction(onPressed: onSave),
+                ),
                 const SizedBox(height: 12),
-                AppText(error!),
+                AppText(
+                  l10n.businessSettingsTitle,
+                  variant: AppTextVariant.titleMedium,
+                ),
+                const SizedBox(height: 16),
+                AppInput(
+                  controller: businessNameController,
+                  label: l10n.businessNameField,
+                  requiredField: true,
+                ),
+                const SizedBox(height: 12),
+                AppInput(
+                  controller: legalNameController,
+                  label: l10n.legalNameField,
+                ),
+                const SizedBox(height: 12),
+                AppInput(
+                  controller: taxNumberController,
+                  label: l10n.taxNumberField,
+                ),
+                const SizedBox(height: 12),
+                AppInput(
+                  controller: phoneController,
+                  keyboardType: TextInputType.phone,
+                  label: l10n.phoneField,
+                ),
+                const SizedBox(height: 12),
+                AppInput(
+                  controller: addressController,
+                  label: l10n.addressField,
+                ),
+                const SizedBox(height: 12),
+                CheckboxListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: AppText(l10n.showCompanyInfoOnPdfField),
+                  value: showCompanyInfoOnReceipts,
+                  onChanged: (value) {
+                    onShowCompanyInfoChanged(value ?? true);
+                  },
+                ),
+                const SizedBox(height: 12),
+                AppInput(
+                  controller: invoicePrefixController,
+                  label: l10n.invoicePrefixField,
+                  requiredField: true,
+                ),
+                const SizedBox(height: 12),
+                AppInput(
+                  controller: initialNumberController,
+                  keyboardType: TextInputType.number,
+                  label: l10n.initialInvoiceNumberField,
+                  requiredField: true,
+                ),
+                if (error != null) ...[
+                  const SizedBox(height: 12),
+                  AppText(error!),
+                ],
               ],
-            ],
-          ),
+            ),
           ),
         ),
       ],
