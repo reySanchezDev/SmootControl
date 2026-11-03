@@ -32,6 +32,14 @@
 - **Próxima acción:** recibir resultados concretos de Codex y continuar F2/F3 automáticamente.
 - **Publicación:** no autorizada.
 
+## 2026-11-03 — Codex validó PR #6; avisos de lint corregidos
+
+- **Evidencia Codex:** worktree local `SmooControl-experience-isolation`, SHA `853f9091`, limpio y `main` intacta; 3/3 pruebas aprobadas.
+- **Análisis:** 4 avisos de lint y cero errores de compilación reportados; corregidos en la misma PR #6 (HEAD `7c88263031122cc62ca20a72d88ae6aca1bfa604`).
+- **Cobertura pendiente:** test/validación de entrada `TimeClockGate`; no se declara completa F2 sin la nueva validación.
+- **Siguiente intervención Codex:** fast-forward seguro de worktree aislado al nuevo HEAD y repetir `flutter analyze` y test focalizado. No tocar `main` ni producción.
+- **Estado:** F2 EN_VALIDACIÓN, no publicada.
+
 ## Plantilla para nuevos eventos
 
 ```text
