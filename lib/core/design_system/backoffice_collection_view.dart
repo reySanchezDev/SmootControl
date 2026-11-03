@@ -171,20 +171,20 @@ class _BackofficeCollectionViewState<T>
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
                 child: AppSearchField(
-                controller: _searchController,
-                label: widget.searchLabel,
-                onChanged: (value) => setState(() {
-                  _query = value;
-                  _page = 0;
-                  _selectedKey = null;
-                }),
-                onClear: () => setState(() {
-                  _searchController.clear();
-                  _query = '';
-                  _page = 0;
-                  _selectedKey = null;
-                }),
-              ),
+                  controller: _searchController,
+                  label: widget.searchLabel,
+                  onChanged: (value) => setState(() {
+                    _query = value;
+                    _page = 0;
+                    _selectedKey = null;
+                  }),
+                  onClear: () => setState(() {
+                    _searchController.clear();
+                    _query = '';
+                    _page = 0;
+                    _selectedKey = null;
+                  }),
+                ),
               ),
             Expanded(
               child: filtered.isEmpty
