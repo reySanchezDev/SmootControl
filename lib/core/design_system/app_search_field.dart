@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:smoo_control/core/design_system/backoffice_form_standards.dart';
 
 /// Standard search field used by catalog and transaction lists.
 class AppSearchField extends StatelessWidget {
@@ -25,7 +26,11 @@ class AppSearchField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TextFormField(
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: BackofficeFormStandards.control(
+        maxWidth: BackofficeFormStandards.searchWidth,
+        child: TextFormField(
       controller: controller,
       decoration: InputDecoration(
         border: const OutlineInputBorder(),
@@ -41,6 +46,8 @@ class AppSearchField extends StatelessWidget {
       ),
       onChanged: onChanged,
       textInputAction: TextInputAction.search,
+        ),
+      ),
     );
   }
 }
