@@ -62,3 +62,17 @@ En la rama de integración se avanzaron **cuatro submódulos de administración*
 **Se eliminaron buscadores duplicados** del contenedor en esas cuatro pantallas porque la tabla reutilizable ya incorpora búsqueda integrada. Los filtros de fecha y las operaciones existentes permanecen.
 
 **Gate:** estos cambios requieren `dart format`, `flutter analyze`, suite de pruebas Backoffice/Staff y regresión POS en el worktree de Codex; después revisión visual de las cuatro pantallas. **No constan como validados** hasta registrar resultados. No modifica entidades, repositorios, APIs ni datos.
+
+## Lote F3 — Reportes administrativos (pendiente QA Codex)
+
+Además de los submódulos de Personal, la PR #7 incluye nuevas vistas para tres reportes:
+
+| Reporte | Cambio visual | Aspectos preservados |
+|---|---|---|
+| Vacaciones | Tabla ordenable de saldos, fechas, acumulados y días programados; tarjeta completa en compacto | Filtro de empleado/fecha, cálculos existentes, modo de solo lectura |
+| Inventario negativo | Tabla con existencia, necesidad de regularización, costo, movimiento y referencia; tarjeta en compacto | Costos originales, resumen y búsqueda; sin acciones destructivas |
+| Adelantos históricos | Tabla al desagrupar, manteniendo resumen de entregado/abonado/saldo; tarjetas al agrupar y en compacto | Estado, rango de fechas, agrupación, montos y solo lectura |
+
+**Criterios de este lote:** una sola pasada de compilación, análisis estático, suite de pruebas, build web local y capturas de desktop/móvil de estos reportes y los módulos de Personal. Registrar las excepciones de visualización sin alterar negocio.
+
+**Pendiente:** estos cambios todavía no se han probado localmente en Codex; no publicar ni fusionar `main`.
