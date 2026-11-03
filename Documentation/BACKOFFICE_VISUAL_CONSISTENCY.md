@@ -1,0 +1,27 @@
+# Reglas globales de consistencia visual — SmooControl Backoffice V2
+
+**Alcance:** toda la interfaz administrativa: listados, filtros, formularios, diálogos, reportes y pantallas futuras. No aplica a controles táctiles POS salvo aprobación específica.
+
+## Reglas obligatorias
+
+1. **Espaciado de formularios:** 12 px lógicos entre campos consecutivos, 16 px entre grupos/secciones y un margen interior consistente de 16 px. No colocar `TextField`, `AppInput` o `DropdownButtonFormField` verticalmente adyacentes sin separación. Para formularios antiguos, revisar los diálogos afectados y migrarlos gradualmente al componente común.
+2. **Congruencia de dimensiones:** el mismo control cumple la misma función con el mismo ancho máximo en todas las pantallas. Referencia única en `BackofficeFormStandards`: búsqueda 440 px, fecha individual 210 px, filtro/select 260 px; separación de filtros 12 px. En móvil usar espacio disponible y evitar overflow. Los filtros se alinean al **inicio** del área de contenido; no centrar controles individuales a lo largo de toda la ventana ni estirarlos indiscriminadamente.
+3. **Búsqueda en tablas:** utilizar `AppSearchField` / `BackofficeCollectionView` y respetar ancho de 440 px. No duplicar búsqueda al existir otra con el mismo propósito.
+4. **Acciones visibles:** comandos de página y listas editables con **icono + verbo claro** (p. ej. `Registrar compra`, `Ajustar inventario`, `Guardar`, `Editar`). Un `tooltip` no reemplaza a la etiqueta visible. Evitar menús genéricos `Más`/`Opciones`, botones solo icono para acciones de negocio y columnas repetitivas `Acciones`. Excepciones justificadas: controles universales de navegación/cierre y accesibilidad.
+5. **Tablas y selección:** conservar encabezado fijo, búsqueda, ordenación, paginación y comandos por selección. Cambiar presentación **no habilita** alterar contratos de pago, inventario, marcadas ni permisos. Documentar cualquier interacción distinta a la anterior y validarla antes de aprobarla.
+6. **Diálogos:** anchura proporcionada, altura desplazable, contenidos siempre visibles con espaciado 12 px; si no hay datos para construir el editor, informar al usuario claramente en vez de abrir una ventana en blanco.
+7. **Reportes:** módulo especializado con catálogo organizado por categorías y **opciones nombradas en lista**, no una cuadrícula de tarjetas grandes. Mantener las rutas y procesos PDF existentes. El componente de navegación debe diferenciar claramente catálogo de reportes y contenidos de reportes.
+8. **Responsividad:** revisar 390 px, 1366×768 y 1920×1080. No inferir que `flutter analyze` valida la apariencia; se requieren capturas/inspección manual real.
+9. **Alcance global:** una observación encontrada en una pantalla exige buscar el mismo patrón en las demás y actualizar el componente compartido si corresponde. Nunca limitar la corrección al primer ejemplo.
+10. **QA incremental:** pruebas del componente y casos de navegación afectados; regresar a suite completa y build oficial al cierre de fase/release, o si cambia código compartido de alto riesgo.
+
+## Criterio de aceptación del lote
+
+- Editar unidad: campos separados de forma legible.
+- Búsqueda de Productos y Modificadores: mismo máximo visual.
+- Inventario: acciones superiores etiquetadas e ilustradas.
+- Movimientos: filtros fecha/tipo alineados y tamaños estables.
+- Ventas: fecha alineada a la izquierda, con comando explícito.
+- Marcadas: editor nunca presenta contenido vacío por lista de empleados faltante.
+- Reportes: lista por categoría con nombres claros y rutas intactas.
+- Revisión transversal pendiente en otras pantallas y diálogos; no declarar cobertura integral sin auditar cada pantalla.
