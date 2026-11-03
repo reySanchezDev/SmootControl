@@ -163,3 +163,17 @@ En `develop/backoffice-stabilization-integration` se unificó el historial `Payr
 En compacto las tarjetas informativas se seleccionan para habilitar los comandos de la toolbar; no se duplican botones en cada tarjeta. Se conservan el resumen de importes y los filtros existentes (empleado, corte y fechas). No se modifican cálculos, pagos, asientos, reversión, repositorios ni permisos de servidor.
 
 **QA incremental pendiente:** formato del archivo cambiado, `flutter analyze`, y comprobación específica de los modos `report` y `staffAdmin`. Por el riesgo de operación de reversión de planilla, validar **únicamente en widget tests con datos ficticios**, sin ejecutar mutaciones de producción. El cierre de F3 incluye prueba de permisos real y QA visual.
+
+## 2026-11-03 — Lote Nómina: pendientes y pagos históricos
+
+**Base previa validada:** Codex confirmó `flutter analyze` sin issues y prueba `modifier_group_tile_test.dart` 1/1 en `bf41bf7b`. Los cambios de Nómina siguientes **no están validados**.
+
+**Planilla pendiente (`staff_payroll_widgets_part.dart`):** se reemplazaron tarjetas largas con botón Pagar repetido por tabla de escritorio ordenable, búsqueda por empleado/período, tarjetas compactas seleccionables y toolbar contextual con `Ver desglose` / `Pagar`. El desglose mantiene todos los valores originales de salario, horas extra, consumos POS/materia prima, adelantos, pagado y saldo restante en diálogo de lectura. `Pagar` sigue llamando **exactamente** `onPay(_PayrollPayRequest(entry: entry))` y su diálogo/servicio original; no se modificó el cómputo `_entries`, modelos, registro de pagos, repositorio ni contrato de persistencia. Columna `Consumos` describe solamente `consumptionInCents`, no todas las deducciones.
+
+**Planillas pagadas (`payroll_payments_report_page.dart`):** historial convertido a tabla con selección y columnas de empleado, puesto, período, fecha, importe y saldo. La toolbar ofrece `Ver detalle`, `PDF esquela` y, **solo en modo Staff Admin**, `Eliminar pago`; la vista de reporte no permite reversión. El diálogo de confirmación original y `reverseReceipt` permanecen intactos. La tarjeta compacta no duplica los botones destructivos. El widget legado `_PayrollReceiptCard` quedó retirado.
+
+**Puerta de QA incremental, por alto riesgo de pagos y reversión:**
+1. `dart format` exclusivamente en los archivos de Nómina modificados; `flutter analyze` sin errores ni warnings.
+2. Tests focalizados de interfaz con datos ficticios: listado/selección/Pagar conserva callback, desglose no ejecuta pago, reportes muestran/ocultan Eliminar según modo y conservan confirmación. **No invocar servicios reales ni datos productivos.**
+3. Inspección estática de que archivos de `data/`, dominio, SQL, backend, POS y reportes PDF no cambiaron. No se requiere build global ni suite POS para este lote aislado.
+4. **Aún pendiente:** QA visual en navegador real y certificación end-to-end al cierre de F3. No declarar pagos seguros por un análisis estático únicamente.
