@@ -134,6 +134,7 @@ class _ExchangeRatesPageState extends State<ExchangeRatesPage> {
         const SizedBox(height: 16),
         for (var day = 1; day <= days; day += 1)
           _RateTile(
+            key: ValueKey(DateTime(_month.year, _month.month, day)),
             currencyCode: _currencyCode,
             date: DateTime(_month.year, _month.month, day),
             rate: byDay[day],
