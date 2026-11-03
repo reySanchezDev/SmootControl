@@ -1,60 +1,45 @@
 part of 'modifier_group_tile.dart';
 
-enum _GroupAction { add, deactivate, edit }
-
-class _GroupPopupActions extends StatelessWidget {
-  const _GroupPopupActions({
+class _CompactGroupCommands extends StatelessWidget {
+  const _CompactGroupCommands({
     required this.isActive,
     required this.onAddOption,
-    required this.onDeactivateGroup,
-    required this.onEditGroup,
+    required this.onDeactivate,
+    required this.onEdit,
   });
 
   final bool isActive;
   final VoidCallback onAddOption;
-  final VoidCallback onDeactivateGroup;
-  final VoidCallback onEditGroup;
+  final VoidCallback onDeactivate;
+  final VoidCallback onEdit;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return PopupMenuButton<_GroupAction>(
-      icon: const Icon(Icons.more_vert),
-      onSelected: (action) {
-        switch (action) {
-          case _GroupAction.add:
-            onAddOption();
-          case _GroupAction.deactivate:
-            onDeactivateGroup();
-          case _GroupAction.edit:
-            onEditGroup();
-        }
-      },
-      itemBuilder: (context) => [
-        PopupMenuItem(
-          value: _GroupAction.add,
-          child: _PopupActionLabel(
-            icon: Icons.add,
-            label: l10n.addModifierOptionAction,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 4,
+        children: [
+          OutlinedButton.icon(
+            icon: const Icon(Icons.add),
+            label: Text(l10n.addModifierOptionAction),
+            onPressed: onAddOption,
           ),
-        ),
-        if (isActive)
-          PopupMenuItem(
-            value: _GroupAction.deactivate,
-            child: _PopupActionLabel(
-              icon: Icons.delete_outline,
-              label: l10n.deactivateAction,
+          OutlinedButton.icon(
+            icon: const Icon(Icons.edit_outlined),
+            label: Text(l10n.editAction),
+            onPressed: onEdit,
+          ),
+          if (isActive)
+            OutlinedButton.icon(
+              icon: const Icon(Icons.toggle_off_outlined),
+              label: Text(l10n.deactivateAction),
+              onPressed: onDeactivate,
             ),
-          ),
-        PopupMenuItem(
-          value: _GroupAction.edit,
-          child: _PopupActionLabel(
-            icon: Icons.edit_outlined,
-            label: l10n.editAction,
-          ),
-        ),
-      ],
-      tooltip: l10n.moreOptionsAction,
+        ],
+      ),
     );
   }
 }
@@ -104,10 +89,8 @@ class _GroupActions extends StatelessWidget {
   }
 }
 
-enum _OptionAction { deactivate, edit }
-
-class _OptionPopupActions extends StatelessWidget {
-  const _OptionPopupActions({
+class _CompactOptionCommands extends StatelessWidget {
+  const _CompactOptionCommands({
     required this.isActive,
     required this.onDeactivate,
     required this.onEdit,
@@ -120,34 +103,25 @@ class _OptionPopupActions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return PopupMenuButton<_OptionAction>(
-      icon: const Icon(Icons.more_vert),
-      onSelected: (action) {
-        switch (action) {
-          case _OptionAction.deactivate:
-            onDeactivate();
-          case _OptionAction.edit:
-            onEdit();
-        }
-      },
-      itemBuilder: (context) => [
-        if (isActive)
-          PopupMenuItem(
-            value: _OptionAction.deactivate,
-            child: _PopupActionLabel(
-              icon: Icons.delete_outline,
-              label: l10n.deactivateAction,
+    return Padding(
+      padding: const EdgeInsetsDirectional.only(start: 32, end: 12, bottom: 8),
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 4,
+        children: [
+          OutlinedButton.icon(
+            icon: const Icon(Icons.edit_outlined),
+            label: Text(l10n.editAction),
+            onPressed: onEdit,
+          ),
+          if (isActive)
+            OutlinedButton.icon(
+              icon: const Icon(Icons.toggle_off_outlined),
+              label: Text(l10n.deactivateAction),
+              onPressed: onDeactivate,
             ),
-          ),
-        PopupMenuItem(
-          value: _OptionAction.edit,
-          child: _PopupActionLabel(
-            icon: Icons.edit_outlined,
-            label: l10n.editAction,
-          ),
-        ),
-      ],
-      tooltip: l10n.moreOptionsAction,
+        ],
+      ),
     );
   }
 }
@@ -187,23 +161,3 @@ class _OptionActions extends StatelessWidget {
   }
 }
 
-class _PopupActionLabel extends StatelessWidget {
-  const _PopupActionLabel({
-    required this.icon,
-    required this.label,
-  });
-
-  final IconData icon;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(icon),
-        const SizedBox(width: 12),
-        Expanded(child: AppText(label)),
-      ],
-    );
-  }
-}
