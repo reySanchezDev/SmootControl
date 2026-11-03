@@ -11,6 +11,8 @@ class CashRegisterBackofficeTable extends StatelessWidget {
   /// Builds a real remote-data cash register table.
   const CashRegisterBackofficeTable({
     required this.records,
+    required this.onReload,
+    required this.reloadEnabled,
     required this.onEdit,
     required this.onDelete,
     required this.compactBuilder,
@@ -19,6 +21,10 @@ class CashRegisterBackofficeTable extends StatelessWidget {
 
   /// Filtered remote register records.
   final List<CashRegisterAdminRecord> records;
+
+  /// Reload command beside the selected-record operations.
+  final VoidCallback onReload;
+  final bool reloadEnabled;
 
   /// Existing edit flow.
   final ValueChanged<CashRegisterAdminRecord> onEdit;
@@ -40,6 +46,13 @@ class CashRegisterBackofficeTable extends StatelessWidget {
       items: records,
       rowKey: (row) => row.id,
       rowLabel: cashier,
+      globalActions: [
+        OutlinedButton.icon(
+          onPressed: reloadEnabled ? onReload : null,
+          icon: const Icon(Icons.refresh),
+          label: const Text('Recargar'),
+        ),
+      ],
       selectionActions: [
         BackofficeSelectionAction<CashRegisterAdminRecord>(
           label: l10n.editAction,
