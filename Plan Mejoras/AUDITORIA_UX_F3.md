@@ -107,3 +107,27 @@ Además de los submódulos de Personal, la PR #7 incluye nuevas vistas para tres
 La comprobación de columna `Acciones` duplicada se realiza en el `build()` del componente, en modo `assert`, para no exigir evaluación constante a la construcción. La prueba ejecuta el widget en el tester y verifica la excepción. El requisito de `rowKey` estable conserva assert en constructor. Estas son protecciones de desarrollo, no sustituyen validaciones de permisos backend ni la comprobación de botones deshabilitados.
 
 **Último código no validado por Codex:** consultar HEAD actual de `develop/backoffice-stabilization-integration`; el punto de certificación sigue siendo `4781a5d1` hasta recibir una nueva ejecución.
+
+## Lote amplio posterior a 138/138 — Time Clock, Modificadores, Reportes
+
+**Punto de partida certificado por Codex:** commit `04856a2099a26fcf6c44e23203d9b20020731492`, `flutter analyze` limpio, 138/138 suites Backoffice/Staff/Reportes/POS, build web correcto. **Este nuevo lote requiere nueva validación.**
+
+**Time Clock (F2):**
+- En primer intento, tres de cuatro pruebas pasaron; falló la transición de inicialización a marcador.
+- Se ajustó `TimeClockGate` para no renderizar datos anteriores mientras carga un nuevo modo y se asignó una clave al `FutureBuilder` por ciclo, evitando estado anterior persistente. Se mantiene proveedor de modo y destino original sin cambios de datos.
+- Volver a ejecutar las 4 pruebas, incluida transición, más análisis y regresión.
+
+**Modificadores (F3):**
+- La vista compacta ya no utiliza `PopupMenuButton` en grupos ni opciones.
+- Acciones descriptivas `Editar`, `Desactivar` y `Agregar opción` visibles como comandos envueltos (`Wrap`) debajo del grupo expandido y junto a cada opción. Se mantiene protección de inactividad y callbacks originales.
+- Se retiró el botón `Agregar opción` duplicado en compacto. En escritorio se preserva UX de tabla con selección global y detalle de opciones.
+
+**Reportes (F3):**
+- `reports_daily_view_part.dart`: ventas diarias ahora usa `BackofficeDataTable`, encabezado fijo, desplazamiento vertical interno y totales al final.
+- `reports_expenses_view_part.dart`: gastos diarios igual, preservando resumen de categorías y total.
+- `inventory_value_report_widgets.dart`: valor de inventario usa tabla común de 8 columnas, con unidades, costos, precios, proyecciones y métricas originales.
+- Se mantienen tarjetas móviles. Para tablas incluidas dentro de `ListView`, se fijó una altura acotada para evitar restricciones verticales infinitas.
+
+**Pendientes de QA:** `dart format`, `flutter analyze`, pruebas Time Clock (4/4), Backoffice/Staff/Reportes/POS, build web con Drift y comprobación visual de las tablas en escritorio, 390 px y 1366 px si hay navegador disponible. No tocar los archivos locales generados `lib/l10n/app_localizations*.dart`; no merge ni despliegue.
+
+**Límites de este lote:** no se modificaron entidades, datos, repositorios, lógica POS ni servidor. Quedan pantallas heredadas de movimientos/ajustes/lotes, nómina, configuración y algunos diálogos, además de la aprobación visual integral.
