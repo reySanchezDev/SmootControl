@@ -64,12 +64,7 @@ class ModifierGroupTile extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
           trailing: isCompact
-              ? _GroupPopupActions(
-                  isActive: group.isActive,
-                  onAddOption: onAddOption,
-                  onDeactivateGroup: onDeactivateGroup,
-                  onEditGroup: onEditGroup,
-                )
+              ? const Icon(Icons.expand_more)
               : _GroupActions(
                   isActive: group.isActive,
                   onAddOption: onAddOption,
@@ -78,6 +73,13 @@ class ModifierGroupTile extends StatelessWidget {
                   optionsLabel: _optionsCountLabel(l10n),
                 ),
           children: [
+            if (isCompact)
+              _CompactGroupCommands(
+                isActive: group.isActive,
+                onAddOption: onAddOption,
+                onDeactivate: onDeactivateGroup,
+                onEdit: onEditGroup,
+              ),
             for (final option in options)
               ListTile(
                 contentPadding: EdgeInsetsDirectional.only(
@@ -97,17 +99,20 @@ class ModifierGroupTile extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
                 trailing: isCompact
-                    ? _OptionPopupActions(
-                        isActive: option.isActive,
-                        onDeactivate: () => onDeactivateOption(option),
-                        onEdit: () => onEditOption(option),
-                      )
+                    ? null
                     : _OptionActions(
                         isActive: option.isActive,
                         onDeactivate: () => onDeactivateOption(option),
                         onEdit: () => onEditOption(option),
                       ),
               ),
+            if (isCompact)
+              for (final option in options)
+                _CompactOptionCommands(
+                  isActive: option.isActive,
+                  onEdit: () => onEditOption(option),
+                  onDeactivate: () => onDeactivateOption(option),
+                ),
             TextButton.icon(
               icon: const Icon(Icons.add),
               label: AppText(l10n.addModifierOptionAction),
