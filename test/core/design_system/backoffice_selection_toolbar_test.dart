@@ -108,4 +108,27 @@ void main() {
     expect(find.text('Más'), findsNothing);
     expect(tester.takeException(), isNull);
   });
+  testWidgets('generic More actions are rejected in administrative toolbars', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: BackofficeSelectionToolbar<String>(
+            actions: [
+              BackofficeSelectionAction<String>(
+                label: 'Más',
+                icon: Icons.more_horiz,
+                onPressed: (_) {},
+              ),
+            ],
+            selected: null,
+          ),
+        ),
+      ),
+    );
+
+    expect(tester.takeException(), isArgumentError);
+  });
+
 }
