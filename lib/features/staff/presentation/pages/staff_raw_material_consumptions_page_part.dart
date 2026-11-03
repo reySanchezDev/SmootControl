@@ -181,47 +181,81 @@ class _RawMaterialConsumptionList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (items.isEmpty) {
-      return const AppEmptyState(
-        icon: Icons.restaurant_outlined,
-        title: 'Sin consumos',
-        message: 'Los consumos de materia prima apareceran aqui.',
-      );
-    }
-    return ListView.separated(
-      padding: const EdgeInsets.all(12),
-      itemCount: items.length,
-      separatorBuilder: (context, index) => const SizedBox(height: 8),
-      itemBuilder: (context, index) {
-        final item = items[index];
-        final locked = item.payrollRunId != null;
-        return Card(
-          child: ListTile(
-            leading: Icon(locked ? Icons.lock_outline : Icons.restaurant),
-            title: Text('${item.employeeName} - ${_money(item.totalInCents)}'),
-            subtitle: Text(
-              '${_date(item.consumedAt)} | '
-              '${item.lines.length} lineas',
-            ),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  tooltip: locked ? 'Aplicado a planilla' : 'Editar',
-                  icon: const Icon(Icons.edit_outlined),
-                  onPressed: locked ? null : () => onEdit(item),
-                ),
-                IconButton(
-                  tooltip: locked ? 'Aplicado a planilla' : 'Eliminar',
-                  icon: const Icon(Icons.delete_outline),
-                  onPressed: locked ? null : () => onDelete(item),
-                ),
-              ],
-            ),
-            onTap: locked ? null : () => onEdit(item),
+    return BackofficeCollectionView<RawMaterialStaffConsumption>(
+      items: items,
+      rowKey: (item) => item.id,
+      rowLabel: (item) => item.employeeName,
+      selectionActions: [
+        BackofficeSelectionAction<RawMaterialStaffConsumption>(
+          label: 'Editar',
+          icon: Icons.edit_outlined,
+          enabledWhen: (item) => item.payrollRunId == null,
+          onPressed: onEdit,
+        ),
+        BackofficeSelectionAction<RawMaterialStaffConsumption>(
+          label: 'Eliminar',
+          icon: Icons.delete_outline,
+          destructive: true,
+          enabledWhen: (item) => item.payrollRunId == null,
+          onPressed: onDelete,
+        ),
+      ],
+      searchLabel: 'Buscar consumo de materia prima',
+      searchTextFor: (item) => [
+        item.employeeName,
+        _date(item.consumedAt),
+        _money(item.totalInCents),
+        for (final line in item.lines) line.productName,
+      ].join(' '),
+      emptyTitle: 'Sin consumos',
+      emptyMessage: 'Los consumos de materia prima aparecerán aquí.',
+      compactBuilder: (_, item) => ListTile(
+        leading: Icon(
+          item.payrollRunId == null
+              ? Icons.restaurant_outlined
+              : Icons.lock_outline,
+        ),
+        title: Text(item.employeeName),
+        subtitle: Text(
+          '${_date(item.consumedAt)} · ${item.lines.length} líneas',
+        ),
+        trailing: Text(_money(item.totalInCents)),
+      ),
+      columns: [
+        BackofficeListColumn<RawMaterialStaffConsumption>(
+          label: 'Empleado',
+          width: 260,
+          compare: (a, b) => a.employeeName.compareTo(b.employeeName),
+          cell: (_, item) => Text(item.employeeName),
+        ),
+        BackofficeListColumn<RawMaterialStaffConsumption>(
+          label: 'Fecha',
+          width: 175,
+          compare: (a, b) => a.consumedAt.compareTo(b.consumedAt),
+          cell: (_, item) => Text(_date(item.consumedAt)),
+        ),
+        BackofficeListColumn<RawMaterialStaffConsumption>(
+          label: 'Líneas',
+          width: 120,
+          alignment: Alignment.centerRight,
+          compare: (a, b) => a.lines.length.compareTo(b.lines.length),
+          cell: (_, item) => Text('${item.lines.length}'),
+        ),
+        BackofficeListColumn<RawMaterialStaffConsumption>(
+          label: 'Estado',
+          width: 170,
+          cell: (_, item) => Text(
+            item.payrollRunId == null ? 'Editable' : 'Aplicado a planilla',
           ),
-        );
-      },
+        ),
+        BackofficeListColumn<RawMaterialStaffConsumption>(
+          label: 'Monto',
+          width: 170,
+          alignment: Alignment.centerRight,
+          compare: (a, b) => a.totalInCents.compareTo(b.totalInCents),
+          cell: (_, item) => Text(_money(item.totalInCents)),
+        ),
+      ],
     );
   }
 }
