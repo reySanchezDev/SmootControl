@@ -60,15 +60,20 @@ class _SalaryAdvancesReportPageState extends State<SalaryAdvancesReportPage> {
             from: _from,
             grouped: _grouped,
             onChanged: _selectRange,
-            onGroupedChanged: (value) => setState(() => _grouped = value),
+            onGroupedChanged: (value) => setState(() {
+              _grouped = value;
+              _search.clear();
+              _query = '';
+            }),
             onReload: () => setState(() => _future = _load()),
             onStatusChanged: _setStatus,
             status: _status,
             to: _to,
           ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
-            child: TextField(
+          if (_grouped)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+              child: TextField(
               controller: _search,
               decoration: const InputDecoration(
                 prefixIcon: Icon(Icons.search),
