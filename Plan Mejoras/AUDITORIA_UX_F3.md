@@ -47,3 +47,18 @@
 **Validación pendiente:** análisis y pruebas focalizadas del nuevo HEAD en Codex. Sin cambios en dominio, entidades, repositorios, persistencia o POS.
 
 **Hallazgos UX aún pendientes:** los submódulos de personal (consumos, horas extra, adelantos y materias primas), aprobaciones de horas extra y varios reportes usan vistas particulares; auditar según necesidad real, evitando conversión de vistas de solo lectura a edición y sin perder acciones.
+
+## Lote ampliado de Personal — validación única pendiente
+
+En la rama de integración se avanzaron **cuatro submódulos de administración** antes de solicitar otra ejecución local:
+
+| Pantalla | Adaptación UX | Protecciones preservadas |
+|---|---|---|
+| Horas extras manuales | Tabla, columnas, ordenación, búsqueda única, selección + Editar/Eliminar | Operaciones habilitadas solo en registros pendientes |
+| Consumo de materia prima | Tabla, búsqueda por producto/empleado, selección + Editar/Eliminar | Registros aplicados a planilla mantienen acciones bloqueadas |
+| Adelantos de salario | Tabla, importes separados, búsqueda única, selección + Eliminar | Confirmación y rechazo backend para adelantos abonados se conservan |
+| Consumos de personal | Tabla, búsqueda única, selección + Ver detalle/Eliminar | Confirmación destructiva y detalles originales intactos |
+
+**Se eliminaron buscadores duplicados** del contenedor en esas cuatro pantallas porque la tabla reutilizable ya incorpora búsqueda integrada. Los filtros de fecha y las operaciones existentes permanecen.
+
+**Gate:** estos cambios requieren `dart format`, `flutter analyze`, suite de pruebas Backoffice/Staff y regresión POS en el worktree de Codex; después revisión visual de las cuatro pantallas. **No constan como validados** hasta registrar resultados. No modifica entidades, repositorios, APIs ni datos.
