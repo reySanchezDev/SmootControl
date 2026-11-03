@@ -3,14 +3,10 @@ part of 'cash_register_admin_page.dart';
 class _CashRegisterAdminTile extends StatelessWidget {
   const _CashRegisterAdminTile({
     required this.dateFormat,
-    required this.onDelete,
-    required this.onEdit,
     required this.record,
   });
 
   final DateFormat dateFormat;
-  final VoidCallback onDelete;
-  final VoidCallback onEdit;
   final CashRegisterAdminRecord record;
 
   @override
@@ -67,24 +63,7 @@ class _CashRegisterAdminTile extends StatelessWidget {
                   '${record.openedAt.minute.toString().padLeft(2, '0')}',
             ),
             const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                AppButton(
-                  icon: Icons.edit_outlined,
-                  label: l10n.editAction,
-                  onPressed: onEdit,
-                  primary: false,
-                ),
-                AppButton(
-                  icon: Icons.delete_outline,
-                  label: l10n.deleteAction,
-                  onPressed: onDelete,
-                  primary: false,
-                ),
-              ],
-            ),
+
           ],
         ),
       ),
