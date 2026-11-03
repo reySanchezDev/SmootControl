@@ -58,8 +58,8 @@ class _SalaryAdvancesPageState extends State<SalaryAdvancesPage> {
     return AppPageScaffold(
       title: 'Adelantos',
       actions: [
-        IconButton(
-          icon: const Icon(Icons.add),
+        BackofficeNewAction(
+          label: 'Nuevo adelanto',
           onPressed: () => unawaited(_addAdvance()),
         ),
       ],
