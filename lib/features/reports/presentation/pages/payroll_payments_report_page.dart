@@ -174,22 +174,19 @@ class _PayrollPaymentsReportPageState extends State<PayrollPaymentsReportPage> {
               BackofficeListColumn<PayrollPaymentReceipt>(
                 label: 'Empleado',
                 width: 275,
-                compare: (a, b) =>
-                    a.employeeName.compareTo(b.employeeName),
+                compare: (a, b) => a.employeeName.compareTo(b.employeeName),
                 cell: (_, receipt) => Text(receipt.employeeName),
               ),
               BackofficeListColumn<PayrollPaymentReceipt>(
                 label: 'Puesto',
                 width: 200,
-                compare: (a, b) =>
-                    a.positionName.compareTo(b.positionName),
+                compare: (a, b) => a.positionName.compareTo(b.positionName),
                 cell: (_, receipt) => Text(receipt.positionName),
               ),
               BackofficeListColumn<PayrollPaymentReceipt>(
                 label: 'Período',
                 width: 215,
-                compare: (a, b) =>
-                    a.periodStart.compareTo(b.periodStart),
+                compare: (a, b) => a.periodStart.compareTo(b.periodStart),
                 cell: (_, receipt) => Text(receipt.periodLabel),
               ),
               BackofficeListColumn<PayrollPaymentReceipt>(
@@ -202,8 +199,8 @@ class _PayrollPaymentsReportPageState extends State<PayrollPaymentsReportPage> {
                 label: 'Pagado',
                 width: 175,
                 alignment: Alignment.centerRight,
-                compare: (a, b) => a.paymentAmountInCents
-                    .compareTo(b.paymentAmountInCents),
+                compare: (a, b) =>
+                    a.paymentAmountInCents.compareTo(b.paymentAmountInCents),
                 cell: (_, receipt) => Text(
                   MoneyFormatter.format(receipt.paymentAmountInCents),
                 ),

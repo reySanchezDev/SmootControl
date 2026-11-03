@@ -59,8 +59,7 @@ class _PayrollDraftList extends StatelessWidget {
               BackofficeSelectionAction<_PayrollEntry>(
                 label: 'Pagar',
                 icon: Icons.payments_outlined,
-                onPressed: (entry) =>
-                    onPay(_PayrollPayRequest(entry: entry)),
+                onPressed: (entry) => onPay(_PayrollPayRequest(entry: entry)),
               ),
             ],
             searchLabel: 'Buscar empleado o período',
@@ -82,15 +81,13 @@ class _PayrollDraftList extends StatelessWidget {
               BackofficeListColumn<_PayrollEntry>(
                 label: 'Empleado',
                 width: 280,
-                compare: (a, b) =>
-                    a.employeeName.compareTo(b.employeeName),
+                compare: (a, b) => a.employeeName.compareTo(b.employeeName),
                 cell: (_, entry) => Text(entry.employeeName),
               ),
               BackofficeListColumn<_PayrollEntry>(
                 label: 'Período',
                 width: 245,
-                compare: (a, b) =>
-                    a.periodStart.compareTo(b.periodStart),
+                compare: (a, b) => a.periodStart.compareTo(b.periodStart),
                 cell: (_, entry) => Text(entry.periodLabel),
               ),
               BackofficeListColumn<_PayrollEntry>(
@@ -105,23 +102,20 @@ class _PayrollDraftList extends StatelessWidget {
                 label: 'Consumos',
                 width: 160,
                 alignment: Alignment.centerRight,
-                cell: (_, entry) =>
-                    Text(_money(entry.consumptionInCents)),
+                cell: (_, entry) => Text(_money(entry.consumptionInCents)),
               ),
               BackofficeListColumn<_PayrollEntry>(
                 label: 'Pagado',
                 width: 150,
                 alignment: Alignment.centerRight,
-                compare: (a, b) =>
-                    a.paidInCents.compareTo(b.paidInCents),
+                compare: (a, b) => a.paidInCents.compareTo(b.paidInCents),
                 cell: (_, entry) => Text(_money(entry.paidInCents)),
               ),
               BackofficeListColumn<_PayrollEntry>(
                 label: 'Por pagar',
                 width: 175,
                 alignment: Alignment.centerRight,
-                compare: (a, b) =>
-                    a.balanceInCents.compareTo(b.balanceInCents),
+                compare: (a, b) => a.balanceInCents.compareTo(b.balanceInCents),
                 cell: (_, entry) => Text(_money(entry.balanceInCents)),
               ),
             ],
@@ -147,7 +141,10 @@ class _PayrollDraftList extends StatelessWidget {
                 const SizedBox(height: 8),
                 const _PayrollSectionHeader('Nómina'),
                 _PayrollRow(label: 'Salario', value: entry.baseSalaryInCents),
-                _PayrollRow(label: 'Horas extras', value: entry.overtimeInCents),
+                _PayrollRow(
+                  label: 'Horas extras',
+                  value: entry.overtimeInCents,
+                ),
                 _PayrollRow(label: 'Consumo', value: entry.consumptionInCents),
                 if (entry.rawMaterialConsumptionInCents > 0) ...[
                   _PayrollRow(
