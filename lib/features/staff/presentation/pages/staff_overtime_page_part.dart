@@ -10,7 +10,6 @@ class StaffOvertimePage extends StatefulWidget {
 }
 
 class _StaffOvertimePageState extends State<StaffOvertimePage> {
-  final _search = TextEditingController();
   late Future<
     ({
       List<Employee> employees,
@@ -19,7 +18,6 @@ class _StaffOvertimePageState extends State<StaffOvertimePage> {
     })
   >
   _future;
-  String _query = '';
 
   SupabaseStaffAdminRepository get _repository =>
       serviceLocator<SupabaseStaffAdminRepository>();
@@ -28,12 +26,6 @@ class _StaffOvertimePageState extends State<StaffOvertimePage> {
   void initState() {
     super.initState();
     _reload();
-  }
-
-  @override
-  void dispose() {
-    _search.dispose();
-    super.dispose();
   }
 
   void _reload() => _future = _load();
@@ -96,15 +88,10 @@ class _StaffOvertimePageState extends State<StaffOvertimePage> {
               final data = snapshot.requireData;
               return Column(
                 children: [
-                  _StaffSearchField(
-                    controller: _search,
-                    hintText: 'Buscar por empleado, fecha, estado o monto',
-                    onChanged: (value) => setState(() => _query = value),
-                  ),
                   Expanded(
                     child: _OvertimeList(
-                      entries: _filter(data.entries),
-                      hasFilter: _query.trim().isNotEmpty,
+                      entries: data.entries,
+                      hasFilter: false,
                       onDelete: _deleteEntry,
                       onEdit: (entry) => _openForm(entry: entry),
                     ),
@@ -114,23 +101,6 @@ class _StaffOvertimePageState extends State<StaffOvertimePage> {
             },
           ),
     );
-  }
-
-  List<EmployeeOvertimeEntry> _filter(List<EmployeeOvertimeEntry> entries) {
-    final query = _query.trim().toLowerCase();
-    if (query.isEmpty) return entries;
-    return entries.where((entry) {
-      final values = [
-        entry.employeeName,
-        _dateOnly(entry.workedDate),
-        _overtimeStatusLabel(entry.status),
-        entry.hours.toString(),
-        _money(entry.hourRateInCents),
-        _money(entry.totalInCents),
-        entry.note ?? '',
-      ].join(' ').toLowerCase();
-      return values.contains(query);
-    }).toList();
   }
 
   Future<void> _openForm({EmployeeOvertimeEntry? entry}) async {
