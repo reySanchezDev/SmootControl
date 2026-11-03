@@ -53,13 +53,6 @@ class BackofficeCollectionView<T> extends StatefulWidget {
   }) : assert(
          selectionActions == null || rowKey != null,
          'Selection-based lists need a stable rowKey.',
-       ),
-       assert(
-         selectionActions == null ||
-             !columns.any((column) =>
-                 column.label.trim().toLowerCase() == 'acciones' ||
-                 column.label.trim().toLowerCase() == 'actions'),
-         'Selection commands must not duplicate an Actions column.',
        );
 
   /// Current records.
@@ -121,6 +114,14 @@ class _BackofficeCollectionViewState<T>
 
   @override
   Widget build(BuildContext context) {
+    assert(
+      widget.selectionActions == null ||
+          !widget.columns.any((column) {
+            final name = column.label.trim().toLowerCase();
+            return name == 'acciones' || name == 'actions';
+          }),
+      'Selection commands must not duplicate an Actions column.',
+    );
     final filtered = widget.items.where((item) {
       return containsNormalizedSearch(widget.searchTextFor(item), _query);
     }).toList();
