@@ -50,13 +50,9 @@ class _AttendanceFilters extends StatelessWidget {
 class _AttendanceEntryCard extends StatelessWidget {
   const _AttendanceEntryCard({
     required this.entry,
-    required this.onEdit,
-    required this.onVoid,
   });
 
   final AttendanceEntry entry;
-  final VoidCallback? onEdit;
-  final VoidCallback? onVoid;
 
   @override
   Widget build(BuildContext context) {
@@ -84,16 +80,7 @@ class _AttendanceEntryCard extends StatelessWidget {
                     variant: AppTextVariant.titleMedium,
                   ),
                 ),
-                if (onEdit != null)
-                  IconButton(
-                    icon: const Icon(Icons.edit_outlined),
-                    onPressed: onEdit,
-                  ),
-                if (onVoid != null)
-                  IconButton(
-                    icon: const Icon(Icons.delete_outline),
-                    onPressed: onVoid,
-                  ),
+
               ],
             ),
             const SizedBox(height: 8),
