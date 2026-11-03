@@ -5,7 +5,7 @@
 **Fuente de alcance:** [Plan maestro](PLAN_MAESTRO_END_TO_END.md)  
 **Criterios finales:** [Matriz de aceptación](MATRIZ_ACEPTACION.md)  
 **Despliegue:** [Runbook dominio](PUBLICACION_DOMINIO_RUNBOOK.md)  
-**Última actualización:** 2026-11-03 (creación de la herramienta de seguimiento; **ninguna fase ejecutada**).
+**Última actualización:** 2026-11-03 (confirmación del propietario sobre línea base visual y pruebas locales; verificaciones técnicas F0 aún pendientes).
 
 > **Fuente única de verdad:** este tablero controla qué fase está abierta y cuáles están cerradas. No se marca una tarea, fase o gate como terminada por un commit, una PR o un CI exitoso sin evidencia y verificación de sus criterios.
 
@@ -55,12 +55,12 @@ Estados admitidos para cada fase:
 - [ ] Registrar HEAD de `main`, PR #4, ramas y worktrees.
 - [ ] Preservar y documentar stashes y cambios locales.
 - [ ] Identificar versión Flutter/Dart/Gradle y configuración de entornos.
-- [ ] Capturar referencia visual funcional de POS teléfono/tableta y Backoffice desktop/mobile.
-- [ ] Definir ambiente no productivo para pruebas que escriben datos.
+- [x] Reconocer como línea base visual aprobada por el propietario el diseño Executive Ivory y los patrones previamente aceptados; no rediseñar ni solicitar nueva aprobación de esa base. La verificación de que las pantallas lo respetan corresponde a F3.
+- [x] Establecer flujo de validación: pruebas y compilaciones locales con Codex; revisión visual y aceptación por el propietario. No crear un entorno remoto de QA por defecto. Para operaciones que escriban datos, usar fixtures/mocks o datos aislados y nunca producción; cualquier excepción se documentará antes de ejecutarse.
 - [ ] Definir estrategia y verificar reversión de cambios Git.
 
 **Cierre:** línea base reproducible, evidencias guardadas, ningún cambio productivo.
-**Evidencia:** PENDIENTE · **Bloqueos:** ninguno registrado · **Siguiente acción:** iniciar inventario y registrar línea base.
+**Evidencia:** confirmación explícita del propietario en la conversación del 2026-11-03 para base visual y validación local; pendiente consignar HEAD, worktrees, versiones y rollback. **Bloqueos:** ninguno registrado · **Siguiente acción:** completar verificaciones técnicas restantes de F0 sin repetir aprobaciones ya otorgadas.
 
 ### F1 — Inventario completo de experiencias
 
