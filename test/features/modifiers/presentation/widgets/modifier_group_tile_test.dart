@@ -33,7 +33,11 @@ void main() {
           body: ModifierGroupTile(
             group: const ModifierGroup(id: 'group', name: 'Salsas'),
             options: const [
-              ModifierOption(id: 'option', groupId: 'group', name: 'Salsa picante'),
+              ModifierOption(
+                id: 'option',
+                groupId: 'group',
+                name: 'Salsa picante',
+              ),
             ],
             onAddOption: () => addCount++,
             onEditGroup: () => editGroupCount++,
