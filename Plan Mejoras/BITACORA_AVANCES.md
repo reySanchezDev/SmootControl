@@ -13,6 +13,15 @@
 - **Próxima acción:** validar alcance documental y abrir F0 con línea base y registro de evidencias.
 - **Aprobación de publicación:** NO CONCEDIDA.
 
+## 2026-11-03 — Aclaración de alcance F0 por el propietario
+
+- **Fase:** F0, ajuste documental de tareas ya definidas; no implica ejecución técnica.
+- **Decisión:** el diseño Executive Ivory y la base visual existente ya están aprobados. No repetir elección de estética ni solicitar nueva aprobación de esa base.
+- **Decisión:** Codex ejecuta pruebas, análisis y compilación en el entorno local, y el propietario revisa los resultados. No crear un segundo entorno de desarrollo ni sustituir esta validación por GitHub Actions repetitivos.
+- **Salvaguarda:** pruebas con escritura solo mediante mocks, fixtures o datos aislados. El staging HTTPS de F7 se mantiene para validar el dominio antes de producción.
+- **Avance F0:** dos definiciones reconocidas como cumplidas; quedan pendientes verificaciones de versiones, repositorio/worktrees/stashes y rollback.
+- **Publicación:** no autorizada.
+
 ## Plantilla para nuevos eventos
 
 ```text
