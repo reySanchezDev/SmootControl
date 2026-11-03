@@ -59,12 +59,14 @@ class _MeasurementUnitDialogState extends State<_MeasurementUnitDialog> {
           children: [
             TextField(
               controller: _code,
-              decoration: const InputDecoration(labelText: 'Codigo'),
+              decoration: const InputDecoration(labelText: 'Código'),
             ),
+            const SizedBox(height: 12),
             TextField(
               controller: _name,
               decoration: const InputDecoration(labelText: 'Nombre'),
             ),
+            const SizedBox(height: 12),
             DropdownButtonFormField<String>(
               initialValue: _draft.group,
               decoration: const InputDecoration(labelText: 'Tipo'),
@@ -75,11 +77,15 @@ class _MeasurementUnitDialogState extends State<_MeasurementUnitDialog> {
               ],
               onChanged: (value) => _draft.group = value ?? 'count',
             ),
+            const SizedBox(height: 12),
             TextField(
               controller: _factor,
               decoration: const InputDecoration(labelText: 'Factor base'),
             ),
-            if (_error != null) AppText(_error!, maxLines: 3),
+            if (_error != null) ...[
+              const SizedBox(height: 12),
+              AppText(_error!, maxLines: 3),
+            ],
           ],
         ),
       ),
