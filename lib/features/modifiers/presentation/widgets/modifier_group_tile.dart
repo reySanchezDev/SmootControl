@@ -85,29 +85,29 @@ class ModifierGroupTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   ListTile(
-                contentPadding: EdgeInsetsDirectional.only(
-                  start: isCompact ? 32 : 56,
-                  end: 16,
-                ),
-                leading: const Icon(Icons.restaurant_menu_outlined),
-                subtitle: AppText(
-                  _optionStatusLabel(l10n, option),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  variant: AppTextVariant.label,
-                ),
-                title: AppText(
-                  option.name,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                trailing: isCompact
-                    ? null
-                    : _OptionActions(
-                        isActive: option.isActive,
-                        onDeactivate: () => onDeactivateOption(option),
-                        onEdit: () => onEditOption(option),
-                      ),
+                    contentPadding: EdgeInsetsDirectional.only(
+                      start: isCompact ? 32 : 56,
+                      end: 16,
+                    ),
+                    leading: const Icon(Icons.restaurant_menu_outlined),
+                    subtitle: AppText(
+                      _optionStatusLabel(l10n, option),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      variant: AppTextVariant.label,
+                    ),
+                    title: AppText(
+                      option.name,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    trailing: isCompact
+                        ? null
+                        : _OptionActions(
+                            isActive: option.isActive,
+                            onDeactivate: () => onDeactivateOption(option),
+                            onEdit: () => onEditOption(option),
+                          ),
                   ),
                   if (isCompact)
                     _CompactOptionCommands(
