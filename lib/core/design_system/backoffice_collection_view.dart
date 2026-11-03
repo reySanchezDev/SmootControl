@@ -46,6 +46,7 @@ class BackofficeCollectionView<T> extends StatefulWidget {
     this.showSearch = true,
     this.compactBuilder,
     this.onCreate,
+    this.globalActions = const [],
     this.rowKey,
     this.rowLabel,
     this.selectionActions,
@@ -81,6 +82,9 @@ class BackofficeCollectionView<T> extends StatefulWidget {
 
   /// Optional primary create action in the same fixed command bar.
   final VoidCallback? onCreate;
+
+  /// Explicit page commands shown alongside selected-record commands.
+  final List<Widget> globalActions;
 
   /// Stable identity used only in selection-based catalog lists.
   final String Function(T item)? rowKey;
@@ -167,6 +171,7 @@ class _BackofficeCollectionViewState<T>
                     ? null
                     : widget.rowLabel?.call(selected),
                 onCreate: widget.onCreate,
+                globalActions: widget.globalActions,
               ),
             if (widget.showSearch)
               Padding(
