@@ -33,7 +33,10 @@ class _RawMaterialConsumptionsPageState
     return AppPageScaffold(
       title: 'Consumo materia prima',
       actions: [
-        IconButton(icon: const Icon(Icons.add), onPressed: _open),
+        BackofficeNewAction(
+          label: 'Nuevo consumo',
+          onPressed: _open,
+        ),
       ],
       body: Column(
         children: [
