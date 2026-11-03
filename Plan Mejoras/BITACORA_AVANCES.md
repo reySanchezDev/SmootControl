@@ -75,6 +75,14 @@
 - **Pendiente F3:** UX de submódulos administrativos restantes, revisión visual final del propietario, más pruebas Time Clock.
 - **Límite:** sin merge ni producción; modificación exclusiva de presentación.
 
+## 2026-11-03 — Regresión POS: cinco tests con etiqueta incorrecta
+
+- **Codex:** PR #7 HEAD `20c0e2ea`, análisis sin issues; suite POS 97/102, cinco fallos en `pos_bloc_test`, `pos_payment_amount_dialog_test` y `pos_split_accounts_dialog_test`.
+- **Diagnóstico documental confirmado:** las pruebas buscan `find.text('OK')` incluso cuando `AppLocalizations.okAction` define `Aceptar` (es) y `Accept` (en). Las mismas expectativas constaban en `main`, y los controles POS no se modificaron en los cambios de Marcadas/Puestos.
+- **Corrección:** tres archivos **exclusivamente de tests** actualizados para consultar `AppLocalizations.of(context).okAction` según el diálogo y su locale. Ningún widget POS, operación de negocio, traducción o dato fue modificado.
+- **Estado:** hipótesis corregida, **pendiente prueba local para confirmar**. F3 y gate regresión POS permanecen abiertos; nada se fusiona ni despliega.
+- **Próximo checkpoint Codex:** fast-forward PR #7 al HEAD vigente; `flutter analyze` y reejecutar los 3 archivos de tests afectados + la suite POS pertinente. Reportar fallo o éxito sin tocar lógica funcional.
+
 ## Plantilla para nuevos eventos
 
 ```text
