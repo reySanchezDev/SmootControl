@@ -1,11 +1,11 @@
 # Tablero de seguimiento — estabilización y publicación SmooControl
 
 **Estado del programa:** EN_CURSO  
-**Fase activa:** F3 (revisión UX Backoffice y PR #4; F2 validada por Codex, cobertura Time Clock pendiente)  
+**Fase activa:** F3 (integración de PR #4 + PR #6 preparada en PR #7; requiere validación Codex local antes de continuar)  
 **Fuente de alcance:** [Plan maestro](PLAN_MAESTRO_END_TO_END.md)  
 **Criterios finales:** [Matriz de aceptación](MATRIZ_ACEPTACION.md)  
 **Despliegue:** [Runbook dominio](PUBLICACION_DOMINIO_RUNBOOK.md)  
-**Última actualización:** 2026-11-03 (PR #6 validada localmente: analyze limpio, 3/3; F3 iniciada y PR #4 revisada, sin fusionar).
+**Última actualización:** 2026-11-03 (PR #7 integra 10 archivos sobre rama independiente; sin tocar `main`; pendiente análisis/tests y cobertura visual F3).
 
 > **Fuente única de verdad:** este tablero controla qué fase está abierta y cuáles están cerradas. No se marca una tarea, fase o gate como terminada por un commit, una PR o un CI exitoso sin evidencia y verificación de sus criterios.
 
@@ -104,7 +104,7 @@ Estados admitidos para cada fase:
 
 **Estado:** EN_CURSO · **Responsable:** ChatGPT/Codex; aceptación visual: propietario.
 
-- [ ] Auditar todas las pantallas administrativas y subpantallas.
+- [ ] Auditar todas las pantallas administrativas y subpantallas; revisión inicial de PR #4 documentada en `AUDITORIA_UX_F3.md`.
 - [ ] Unificar componentes, colores, fuentes, densidad y textos UX.
 - [ ] Homogeneizar tablas, filtros, scroll, encabezados y acciones etiquetadas.
 - [ ] Eliminar patrones ambiguos de columna `Acciones` / `Más` según diseño aprobado.
@@ -113,7 +113,7 @@ Estados admitidos para cada fase:
 - [x] Identificar los 7 archivos de presentación de PR #4 y verificar que no modifica lógica de dominio/BD; [ ] revisar la totalidad de la UX, las dependencias y realizar validación de integración antes de decidir merge.
 - [ ] Completar evidencias por pantalla en 390×844, 768×1024, 1366×768 y 1920×1080.
 
-**Cierre:** matriz de pantallas y regresión POS aprobadas; excepciones documentadas.
+**Cierre:** matriz de pantallas y regresión POS aprobadas; excepciones documentadas. **Checkpoint Codex:** PR #7 (no PR #4 ni PR #6 por separado): fast-forward de worktree independiente, `flutter analyze`, pruebas relevantes, smoke Backoffice/POS/Time Clock; capturas sólo cuando exista UX suficiente para aceptación visual.
 **Evidencia:** PENDIENTE · **Bloqueos:** ninguno registrado · **Siguiente acción:** pendiente de F2.
 
 ### F4 — Runtime, servicios y sincronización
