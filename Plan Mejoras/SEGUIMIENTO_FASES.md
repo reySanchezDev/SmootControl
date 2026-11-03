@@ -115,7 +115,7 @@ Estados admitidos para cada fase:
 - [x] Identificar los 7 archivos de presentación de PR #4 y verificar que no modifica lógica de dominio/BD; [ ] revisar la totalidad de la UX, las dependencias y realizar validación de integración antes de decidir merge.
 - [ ] Completar evidencias por pantalla en 390×844, 768×1024, 1366×768 y 1920×1080.
 
-**Cierre:** matriz de pantallas y regresión POS aprobadas; excepciones documentadas. **Checkpoint Codex de lote grande:** actualizar worktree de PR #7 y ejecutar una sola pasada: `dart format` en los siete archivos modificados de Personal, `flutter analyze`, suites relevantes de Staff/Backoffice/POS, build web oficial, y preparar preview local sin tocar `main` ni producción. Registrar SHA/resultado; la revisión visual del propietario sigue pendiente.
+**Cierre:** matriz de pantallas y regresión POS aprobadas; excepciones documentadas. **Checkpoint Codex de lote grande:** actualizar worktree de PR #7 y ejecutar una sola pasada: `dart format` en los cinco archivos modificados de Personal, `flutter analyze`, suites relevantes de Staff/Backoffice/POS, build web oficial, y preparar preview local sin tocar `main` ni producción. Registrar SHA/resultado; la revisión visual del propietario sigue pendiente.
 **Evidencia:** PENDIENTE · **Bloqueos:** ninguno registrado · **Siguiente acción:** pendiente de F2.
 
 ### F4 — Runtime, servicios y sincronización
