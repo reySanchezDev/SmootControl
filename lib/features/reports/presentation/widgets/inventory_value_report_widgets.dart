@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
+import 'package:smoo_control/core/design_system/backoffice_data_table.dart';
 import 'package:smoo_control/core/formatters/money_formatter.dart';
 import 'package:smoo_control/features/reports/domain/entities/inventory_value_report.dart';
 import 'package:smoo_control/features/reports/presentation/widgets/inventory_value_mobile_card.dart';
