@@ -1,11 +1,11 @@
 # Tablero de seguimiento — estabilización y publicación SmooControl
 
 **Estado del programa:** EN_CURSO  
-**Fase activa:** F3 (PR #7 validada en local inicialmente; segundo lote UX pendiente de validación Codex)  
+**Fase activa:** F3 (corrección de tests POS preexistentes pendiente de validación Codex)  
 **Fuente de alcance:** [Plan maestro](PLAN_MAESTRO_END_TO_END.md)  
 **Criterios finales:** [Matriz de aceptación](MATRIZ_ACEPTACION.md)  
 **Despliegue:** [Runbook dominio](PUBLICACION_DOMINIO_RUNBOOK.md)  
-**Última actualización:** 2026-11-03 (PR #7 base verificada localmente con 44/44 pruebas y build web; ampliada UX de Marcadas y Puestos, nuevo checkpoint Codex pendiente).
+**Última actualización:** 2026-11-03 (analyze limpio pero 5/102 pruebas POS fallan por expectativa literal `OK` en tests ya existentes en main; corregidos únicamente tests en PR #7, pendientes de revalidación).
 
 > **Fuente única de verdad:** este tablero controla qué fase está abierta y cuáles están cerradas. No se marca una tarea, fase o gate como terminada por un commit, una PR o un CI exitoso sin evidencia y verificación de sus criterios.
 
@@ -113,7 +113,7 @@ Estados admitidos para cada fase:
 - [x] Identificar los 7 archivos de presentación de PR #4 y verificar que no modifica lógica de dominio/BD; [ ] revisar la totalidad de la UX, las dependencias y realizar validación de integración antes de decidir merge.
 - [ ] Completar evidencias por pantalla en 390×844, 768×1024, 1366×768 y 1920×1080.
 
-**Cierre:** matriz de pantallas y regresión POS aprobadas; excepciones documentadas. **Checkpoint Codex:** PR #7 en su nuevo HEAD (Marcadas/Puestos añadidos): fast-forward de worktree independiente, `flutter analyze`, pruebas relevantes y smoke de los módulos tocados. Mantener 8080/8081 y producción intactos; no es la aprobación visual final de F3.
+**Cierre:** matriz de pantallas y regresión POS aprobadas; excepciones documentadas. **Checkpoint Codex:** PR #7 HEAD actualizado tras reparar únicamente expectativas localizadas en tests: fast-forward en worktree independiente, `dart format` de los tres tests afectados (solo si formateo necesario), `flutter analyze`, tests focalizados y regresión POS completa. Mantener main, stashes, 8080/8081 y producción intactos; no es aprobación visual final.
 **Evidencia:** PENDIENTE · **Bloqueos:** ninguno registrado · **Siguiente acción:** pendiente de F2.
 
 ### F4 — Runtime, servicios y sincronización
