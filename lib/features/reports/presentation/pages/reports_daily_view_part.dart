@@ -221,39 +221,41 @@ class _DailySalesDataTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final rows = [
-      for (final row in report.rows)
-        DataRow(
-          cells: [
-            DataCell(Text(_formatDate(row.date))),
-            DataCell(Text(MoneyFormatter.format(row.totalSalesInCents))),
-            DataCell(Text(MoneyFormatter.format(row.totalCostInCents))),
-            DataCell(Text(MoneyFormatter.format(row.grossProfitInCents))),
-          ],
-        ),
-      DataRow(
-        cells: [
-          const DataCell(Text('Totales')),
-          DataCell(Text(MoneyFormatter.format(report.totalSalesInCents))),
-          DataCell(Text(MoneyFormatter.format(report.totalCostInCents))),
-          DataCell(Text(MoneyFormatter.format(report.grossProfitInCents))),
+    return SizedBox(
+      height: 420,
+      child: BackofficeDataTable(
+        columns: const [
+          'Fecha',
+          'Total vendido',
+          'Total costos',
+          'Utilidad bruta',
         ],
-      ),
-    ];
-
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: DataTable(
-          columns: const [
-            DataColumn(label: Text('Fecha')),
-            DataColumn(label: Text('Total vendido'), numeric: true),
-            DataColumn(label: Text('Total costos'), numeric: true),
-            DataColumn(label: Text('Utilidad bruta'), numeric: true),
+        columnWidths: const [180, 230, 230, 240],
+        columnAlignments: const [
+          Alignment.centerLeft,
+          Alignment.centerRight,
+          Alignment.centerRight,
+          Alignment.centerRight,
+        ],
+        sortableColumns: const [false, false, false, false],
+        rows: [
+          for (final row in report.rows)
+            [
+              Text(_formatDate(row.date)),
+              Text(MoneyFormatter.format(row.totalSalesInCents)),
+              Text(MoneyFormatter.format(row.totalCostInCents)),
+              Text(MoneyFormatter.format(row.grossProfitInCents)),
+            ],
+          [
+            const Text(
+              'Totales',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            Text(MoneyFormatter.format(report.totalSalesInCents)),
+            Text(MoneyFormatter.format(report.totalCostInCents)),
+            Text(MoneyFormatter.format(report.grossProfitInCents)),
           ],
-          rows: rows,
-        ),
+        ],
       ),
     );
   }
