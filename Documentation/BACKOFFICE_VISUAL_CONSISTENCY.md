@@ -25,3 +25,11 @@
 - Marcadas: editor nunca presenta contenido vacío por lista de empleados faltante.
 - Reportes: lista por categoría con nombres claros y rutas intactas.
 - Revisión transversal pendiente en otras pantallas y diálogos; no declarar cobertura integral sin auditar cada pantalla.
+
+## Regla de no regresión funcional — obligatoria
+
+El trabajo F3 es **exclusivamente de presentación**. Está prohibido modificar las condiciones para abrir formularios, los datos que se cargan, filtros del repositorio, validaciones de dominio, persistencia, autorización, cálculos, navegación funcional o contratos de callbacks sin aprobación explícita. La posición de los controles puede cambiar, pero sus comportamientos existentes deben ser equivalentes.
+
+**Incidente Marcadas:** se introdujo una comprobación adicional de empleados que impedía editar registros existentes; la condición fue retirada y `_openEditor`, `_load` y la lista de empleados fueron restaurados exactamente desde la versión base `b3fddd4a` mediante el commit `8d67daba`. La corrección visual de posición de comandos se conserva. Esto **no demuestra** que la pantalla en blanco original esté resuelta; requerirá reproducir el fallo y diagnosticarlo con evidencia antes de proponer cambios funcionales, sujetos a autorización.
+
+En cada lote: comprobar `git diff` por archivo contra la base y separar mejoras visuales de cualquier cambio de comportamiento. Ante un cambio de comportamiento no aprobado, revertirlo, no adaptarlo silenciosamente.
