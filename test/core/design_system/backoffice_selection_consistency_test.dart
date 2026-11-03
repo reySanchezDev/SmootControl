@@ -128,7 +128,9 @@ void main() {
     expect(deleted, isEmpty);
   });
 
-  test('selection contract requires a key and no duplicate Actions', () {
+  testWidgets('selection contract requires a key and no duplicate Actions', (
+    tester,
+  ) async {
     final columns = [
       BackofficeListColumn<String>(
         label: 'Registro',
@@ -144,39 +146,30 @@ void main() {
       ),
     ];
 
-    expect(
-      () => BackofficeCollectionView<String>(
-        items: const [],
-        columns: columns,
-        searchTextFor: (item) => item,
-        searchLabel: 'Buscar',
-        emptyMessage: 'Sin datos',
-        emptyTitle: 'Sin datos',
-        selectionActions: actions,
-      ),
-      throwsAssertionError,
-    );
-
-    expect(
-      () => BackofficeCollectionView<String>(
-        items: const [],
-        rowKey: (record) => record,
-        columns: [
-          ...columns,
-          BackofficeListColumn<String>(
-            label: 'Acciones',
-            width: 120,
-            cell: (_, record) => Text(record),
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: BackofficeCollectionView<String>(
+            items: const [],
+            rowKey: (record) => record,
+            columns: [
+              ...columns,
+              BackofficeListColumn<String>(
+                label: 'Acciones',
+                width: 120,
+                cell: (_, record) => Text(record),
+              ),
+            ],
+            searchTextFor: (item) => item,
+            searchLabel: 'Buscar',
+            emptyMessage: 'Sin datos',
+            emptyTitle: 'Sin datos',
+            selectionActions: actions,
           ),
-        ],
-        searchTextFor: (item) => item,
-        searchLabel: 'Buscar',
-        emptyMessage: 'Sin datos',
-        emptyTitle: 'Sin datos',
-        selectionActions: actions,
+        ),
       ),
-      throwsAssertionError,
     );
+    expect(tester.takeException(), isAssertionError);
   });
 }
 
