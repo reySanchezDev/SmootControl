@@ -97,9 +97,12 @@ class _SalaryAdvanceList extends StatelessWidget {
       searchLabel: 'Buscar adelanto',
       searchTextFor: (advance) => [
         name(advance),
+        employeeById[advance.employeeId]?.code ?? '',
+        advance.affectsCash ? 'Afecta caja' : 'Cuenta externa',
         _dateOnly(advance.deliveredAt),
         _salaryAdvanceStatusLabel(advance.status),
         _money(advance.amountInCents),
+        _money(advance.amountInCents - balance(advance)),
         _money(balance(advance)),
         advance.note ?? '',
       ].join(' '),
