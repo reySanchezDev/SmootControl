@@ -1,11 +1,11 @@
 # Tablero de seguimiento — estabilización y publicación SmooControl
 
 **Estado del programa:** EN_CURSO  
-**Fase activa:** F3 (contratos globales, búsqueda consistente y nuevas pruebas; pendiente QA local agrupada)  
+**Fase activa:** F3 (lote amplio: modificadores y tres reportes con tablas fijas; Time Clock F2 en revalidación)  
 **Fuente de alcance:** [Plan maestro](PLAN_MAESTRO_END_TO_END.md)  
 **Criterios finales:** [Matriz de aceptación](MATRIZ_ACEPTACION.md)  
 **Despliegue:** [Runbook dominio](PUBLICACION_DOMINIO_RUNBOOK.md)  
-**Última actualización:** 2026-11-03 (base SHA 4781a5d1: 132/132 tests, analyze limpio y build web OK; lote posterior incorpora guardas globales de selección, etiquetas explícitas, búsqueda normalizada y sin duplicados, además de pruebas. Nuevo QA pendiente).
+**Última actualización:** 2026-11-03 (base SHA 04856a20 validada: 138/138 pruebas, analyze y build web OK; Time Clock 3/4 por transición, corregida para revalidar. Lote F3 amplia: Modificadores sin menús Más y tres reportes con encabezado fijo, aún sin QA local).
 
 > **Fuente única de verdad:** este tablero controla qué fase está abierta y cuáles están cerradas. No se marca una tarea, fase o gate como terminada por un commit, una PR o un CI exitoso sin evidencia y verificación de sus criterios.
 
