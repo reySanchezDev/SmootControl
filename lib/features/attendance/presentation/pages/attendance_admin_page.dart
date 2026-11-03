@@ -7,7 +7,6 @@ import 'package:smoo_control/core/design_system/app_message_dialog.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
 import 'package:smoo_control/core/design_system/backoffice_collection_view.dart';
-import 'package:smoo_control/core/design_system/backoffice_new_action.dart';
 import 'package:smoo_control/core/design_system/backoffice_selection_toolbar.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/core/result/app_result.dart';
@@ -55,12 +54,6 @@ class _AttendanceAdminPageState extends State<AttendanceAdminPage> {
   @override
   Widget build(BuildContext context) {
     return AppPageScaffold(
-      actions: [
-        if (!widget.readOnly)
-          BackofficeNewAction(
-            onPressed: _employees.isEmpty ? null : _openEditor,
-          ),
-      ],
       title: widget.readOnly ? 'Reporte de marcadas' : 'Marcadas',
       body: Column(
         children: [
@@ -91,6 +84,9 @@ class _AttendanceAdminPageState extends State<AttendanceAdminPage> {
                     : _AttendanceEntriesTable(
                         items: _entries!,
                         readOnly: widget.readOnly,
+                        onCreate: widget.readOnly || _employees.isEmpty
+                            ? null
+                            : () => unawaited(_openEditor()),
                         onEdit: (entry) => unawaited(_openEditor(entry)),
                         onVoid: (entry) => unawaited(_voidEntry(entry)),
                       ),
