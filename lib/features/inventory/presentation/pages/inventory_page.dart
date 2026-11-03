@@ -66,15 +66,15 @@ class _InventoryPageState extends State<InventoryPage>
     final l10n = AppLocalizations.of(context);
     return AppPageScaffold(
       actions: [
-        IconButton(
+        OutlinedButton.icon(
           icon: const Icon(Icons.fact_check_outlined),
           onPressed: _openAdjustmentDialog,
-          tooltip: l10n.inventoryAdjustmentAction,
+          label: Text(l10n.inventoryAdjustmentAction),
         ),
-        IconButton(
+        FilledButton.icon(
           icon: const Icon(Icons.add_shopping_cart_outlined),
           onPressed: _openPurchaseDialog,
-          tooltip: 'Registrar compra',
+          label: const Text('Registrar compra'),
         ),
       ],
       title: 'Inventario',
