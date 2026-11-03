@@ -222,7 +222,9 @@ class _SettingsForm extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        ConstrainedBox(
+        Align(
+          alignment: Alignment.topCenter,
+          child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 720),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -290,6 +292,7 @@ class _SettingsForm extends StatelessWidget {
                 AppText(error!),
               ],
             ],
+          ),
           ),
         ),
       ],
