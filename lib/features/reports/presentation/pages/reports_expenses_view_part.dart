@@ -231,33 +231,30 @@ class _ExpensesDataTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final rows = [
-      for (final row in report.rows)
-        DataRow(
-          cells: [
-            DataCell(Text(_formatDate(row.date))),
-            DataCell(Text(MoneyFormatter.format(row.totalInCents))),
-          ],
-        ),
-      DataRow(
-        cells: [
-          const DataCell(Text('Totales')),
-          DataCell(Text(MoneyFormatter.format(report.totalInCents))),
+    return SizedBox(
+      height: 420,
+      child: BackofficeDataTable(
+        columns: const ['Fecha', 'Total gastos'],
+        columnWidths: const [260, 280],
+        columnAlignments: const [
+          Alignment.centerLeft,
+          Alignment.centerRight,
         ],
-      ),
-    ];
-
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: DataTable(
-          columns: const [
-            DataColumn(label: Text('Fecha')),
-            DataColumn(label: Text('Total gastos'), numeric: true),
+        sortableColumns: const [false, false],
+        rows: [
+          for (final row in report.rows)
+            [
+              Text(_formatDate(row.date)),
+              Text(MoneyFormatter.format(row.totalInCents)),
+            ],
+          [
+            const Text(
+              'Totales',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            Text(MoneyFormatter.format(report.totalInCents)),
           ],
-          rows: rows,
-        ),
+        ],
       ),
     );
   }
