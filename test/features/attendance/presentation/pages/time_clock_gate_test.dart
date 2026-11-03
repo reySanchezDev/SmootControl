@@ -83,34 +83,43 @@ void main() {
   testWidgets('initialization reload transitions to standalone marker', (
     tester,
   ) async {
-    var initialized = false;
+    final first = Completer<AppResult<DeviceStartupMode>>();
+    final second = Completer<AppResult<DeviceStartupMode>>();
+    var loads = 0;
+
     await tester.pumpWidget(
       MaterialApp(
         home: TimeClockGate(
-          startupModeLoader: () async => AppSuccess(
-            initialized
-                ? DeviceStartupMode.localLogin
-                : DeviceStartupMode.remoteInitialization,
-          ),
+          startupModeLoader: () {
+            loads++;
+            return loads == 1 ? first.future : second.future;
+          },
           timeClockPageBuilder: (_) => const Text('Marcador independiente'),
           initializationPageBuilder: (_, reload) => TextButton(
-            onPressed: () {
-              initialized = true;
-              reload();
-            },
+            onPressed: reload,
             child: const Text('Restaurar dispositivo'),
           ),
         ),
       ),
     );
+    expect(loads, 1);
+    first.complete(
+      const AppSuccess(DeviceStartupMode.remoteInitialization),
+    );
     await tester.pumpAndSettle();
-
     expect(find.text('Restaurar dispositivo'), findsOneWidget);
+
     await tester.tap(find.text('Restaurar dispositivo'));
+    await tester.pump();
+    expect(loads, 2);
+    expect(find.byType(CircularProgressIndicator), findsWidgets);
+
+    second.complete(const AppSuccess(DeviceStartupMode.localLogin));
     await tester.pumpAndSettle();
 
     expect(find.text('Marcador independiente'), findsOneWidget);
     expect(find.text('Restaurar dispositivo'), findsNothing);
     expect(tester.takeException(), isNull);
   });
+
 }
