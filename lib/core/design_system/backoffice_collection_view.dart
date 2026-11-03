@@ -4,6 +4,7 @@ import 'package:smoo_control/core/design_system/app_search_field.dart';
 import 'package:smoo_control/core/design_system/backoffice_data_table.dart';
 import 'package:smoo_control/core/design_system/backoffice_pagination_footer.dart';
 import 'package:smoo_control/core/design_system/backoffice_selection_toolbar.dart';
+import 'package:smoo_control/core/utils/search_text.dart';
 
 /// Column contract shared across administrative catalog screens.
 class BackofficeListColumn<T> {
@@ -117,9 +118,7 @@ class _BackofficeCollectionViewState<T>
   @override
   Widget build(BuildContext context) {
     final filtered = widget.items.where((item) {
-      return widget.searchTextFor(item)
-          .toLowerCase()
-          .contains(_query.trim().toLowerCase());
+      return containsNormalizedSearch(widget.searchTextFor(item), _query);
     }).toList();
     if (_sortColumn < widget.columns.length) {
       final comparator = widget.columns[_sortColumn].compare;
