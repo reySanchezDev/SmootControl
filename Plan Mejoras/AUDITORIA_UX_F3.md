@@ -177,3 +177,10 @@ En compacto las tarjetas informativas se seleccionan para habilitar los comandos
 2. Tests focalizados de interfaz con datos ficticios: listado/selección/Pagar conserva callback, desglose no ejecuta pago, reportes muestran/ocultan Eliminar según modo y conservan confirmación. **No invocar servicios reales ni datos productivos.**
 3. Inspección estática de que archivos de `data/`, dominio, SQL, backend, POS y reportes PDF no cambiaron. No se requiere build global ni suite POS para este lote aislado.
 4. **Aún pendiente:** QA visual en navegador real y certificación end-to-end al cierre de F3. No declarar pagos seguros por un análisis estático únicamente.
+
+## Nómina: cobertura focalizada añadida, QA pendiente
+
+- Corregidas dos observaciones de analyzer en el widget de planilla pendiente: clave de fila dividida en líneas y `unawaited(showDialog<void>(...))` para el diálogo de desglose. Sin cambios en cómputos.
+- Extraído el widget de presentación `PayrollReceiptsCollection` para poder probar comandos **sin montar servicios remotos**. La pantalla propietaria sigue aplicando `PayrollPaymentsPageMode.staffAdmin` como condición para `canReverse` y conserva las funciones originales de Ver detalle, PDF y confirmación/reversión.
+- Nueva prueba `test/features/reports/presentation/pages/payroll_receipts_collection_test.dart`: modo reporte sin Eliminar, Ver detalle y PDF envían los callbacks correctos; modo Staff Admin habilita Eliminar únicamente tras seleccionar y llama al callback provisto. Datos del recibo completamente ficticios; no se ejecuta `reverseReceipt` ni pagos.
+- **Todavía no certificado:** selección y acción Pagar de planilla pendiente, confirmación real del borrado y permisos efectivos del backend; se mantienen como gates de aceptación F3. Análisis, formato y nueva prueba pendientes de Codex.
