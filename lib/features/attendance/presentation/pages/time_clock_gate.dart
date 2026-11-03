@@ -42,6 +42,7 @@ class _TimeClockGateState extends State<TimeClockGate> {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<AppResult<DeviceStartupMode>>(
+      key: ValueKey(_future),
       future: _future,
       builder: (context, snapshot) {
         final result = snapshot.data;
