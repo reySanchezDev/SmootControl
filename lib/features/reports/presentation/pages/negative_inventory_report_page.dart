@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:smoo_control/core/design_system/app_empty_state.dart';
 import 'package:smoo_control/core/design_system/app_loading_page.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
+import 'package:smoo_control/core/design_system/backoffice_collection_view.dart';
 import 'package:smoo_control/core/design_system/app_search_field.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
@@ -48,18 +49,21 @@ class _NegativeInventoryReportPageState
   Widget build(BuildContext context) {
     return AppPageScaffold(
       title: 'Inventario negativo',
-      body: ListView(
-        padding: const EdgeInsets.all(16),
+      body: Column(
         children: [
-          _FilterCard(
-            controller: _searchController,
-            onChanged: (value) => setState(() => _query = value),
-            onClear: _clearSearch,
-            onReload: _reload,
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+            child: _FilterCard(
+              controller: _searchController,
+              onChanged: (value) => setState(() => _query = value),
+              onClear: _clearSearch,
+              onReload: _reload,
+            ),
           ),
           const SizedBox(height: 12),
-          FutureBuilder<AppResult<NegativeInventoryReport>>(
-            future: _future,
+          Expanded(
+            child: FutureBuilder<AppResult<NegativeInventoryReport>>(
+              future: _future,
             builder: (context, snapshot) {
               final result = snapshot.data;
               if (result == null) return const AppLoadingPage();
@@ -73,6 +77,7 @@ class _NegativeInventoryReportPageState
                 ),
               );
             },
+            ),
           ),
         ],
       ),
@@ -102,20 +107,83 @@ class _ReportView extends StatelessWidget {
       );
     }).toList();
 
-    if (rows.isEmpty) {
-      return const AppEmptyState(
-        icon: Icons.check_circle_outline,
-        message: 'No hay materias primas negativas para este filtro.',
-        title: 'Inventario saludable',
-      );
-    }
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _SummaryCard(report: report),
-        const SizedBox(height: 12),
-        for (final row in rows) _NegativeInventoryCard(row: row),
+        const SizedBox(height: 8),
+        Expanded(
+          child: BackofficeCollectionView<NegativeInventoryRow>(
+            items: rows,
+            searchLabel: 'Buscar materia prima o categoría',
+            searchTextFor: (row) => '${row.productName} ${row.categoryName}',
+            emptyTitle: 'Inventario saludable',
+            emptyMessage:
+                'No hay materias primas negativas para este filtro.',
+            compactBuilder: (_, row) => _NegativeInventoryCard(row: row),
+            columns: [
+              BackofficeListColumn<NegativeInventoryRow>(
+                label: 'Materia prima',
+                width: 260,
+                compare: (a, b) => a.productName.compareTo(b.productName),
+                cell: (_, row) => Text(row.productName),
+              ),
+              BackofficeListColumn<NegativeInventoryRow>(
+                label: 'Categoría',
+                width: 215,
+                compare: (a, b) => a.categoryName.compareTo(b.categoryName),
+                cell: (_, row) => Text(row.categoryName),
+              ),
+              BackofficeListColumn<NegativeInventoryRow>(
+                label: 'Existencia',
+                width: 140,
+                alignment: Alignment.centerRight,
+                compare: (a, b) =>
+                    a.quantityOnHand.compareTo(b.quantityOnHand),
+                cell: (_, row) => Text(_quantityText(row.quantityOnHand)),
+              ),
+              BackofficeListColumn<NegativeInventoryRow>(
+                label: 'A regularizar',
+                width: 150,
+                alignment: Alignment.centerRight,
+                compare: (a, b) =>
+                    a.quantityToRegularize.compareTo(b.quantityToRegularize),
+                cell: (_, row) =>
+                    Text(_quantityText(row.quantityToRegularize)),
+              ),
+              BackofficeListColumn<NegativeInventoryRow>(
+                label: 'Costo estimado',
+                width: 185,
+                alignment: Alignment.centerRight,
+                compare: (a, b) =>
+                    a.regularizationCostInCents.compareTo(b.regularizationCostInCents),
+                cell: (_, row) =>
+                    Text(MoneyFormatter.format(row.regularizationCostInCents)),
+              ),
+              BackofficeListColumn<NegativeInventoryRow>(
+                label: 'Último movimiento',
+                width: 185,
+                compare: (a, b) {
+                  final left = a.lastMovementAt;
+                  final right = b.lastMovementAt;
+                  if (left == null) return right == null ? 0 : -1;
+                  if (right == null) return 1;
+                  return left.compareTo(right);
+                },
+                cell: (_, row) => Text(
+                  row.lastMovementAt == null
+                      ? '—'
+                      : _formatMovementDate(row.lastMovementAt!),
+                ),
+              ),
+              BackofficeListColumn<NegativeInventoryRow>(
+                label: 'Referencia',
+                width: 155,
+                cell: (_, row) => Text(row.shortReferenceId ?? '—'),
+              ),
+            ],
+          ),
+        ),
       ],
     );
   }
@@ -191,7 +259,7 @@ class _NegativeInventoryCard extends StatelessWidget {
             if (row.lastMovementAt != null) ...[
               const SizedBox(height: 6),
               AppText(
-                'Ultimo consumo: ${_formatDateTime(row.lastMovementAt!)}',
+                'Ultimo consumo: ${_formatMovementDate(row.lastMovementAt!)}',
                 variant: AppTextVariant.label,
               ),
             ],
@@ -206,10 +274,12 @@ class _NegativeInventoryCard extends StatelessWidget {
     );
   }
 
-  String _formatDateTime(DateTime date) =>
-      '${_two(date.day)}/${_two(date.month)}/${date.year} '
-      '${_two(date.hour)}:${_two(date.minute)}';
+
 }
+
+String _formatMovementDate(DateTime date) =>
+    '${_two(date.day)}/${_two(date.month)}/${date.year} '
+    '${_two(date.hour)}:${_two(date.minute)}';
 
 String _two(int value) => value.toString().padLeft(2, '0');
 
