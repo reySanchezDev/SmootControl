@@ -119,44 +119,57 @@ class _InventoryAdjustmentTile extends StatelessWidget {
               ),
             ],
             const SizedBox(height: 10),
-            Row(
-              children: [
-                Expanded(
-                  child: _AdjustmentReadOnlyValue(
-                    label: l10n.inventoryAdjustmentSystemStock,
-                    value: _quantityWithUnit(displayStock, displayUnit),
-                    helper: _baseDetail(row.item.quantityOnHand, baseUnit),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: TextField(
-                    controller: row.countController,
-                    decoration: InputDecoration(
-                      isDense: true,
-                      labelText:
-                          '${l10n.inventoryAdjustmentCountedStock}'
-                          '${displayUnit == null ? '' : ' ($displayUnit)'}',
-                      helperText: _countBaseDetail(
-                        countedBase,
-                        baseUnit,
-                        displayUnit,
-                      ),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final systemStock = _AdjustmentReadOnlyValue(
+                  label: l10n.inventoryAdjustmentSystemStock,
+                  value: _quantityWithUnit(displayStock, displayUnit),
+                  helper: _baseDetail(row.item.quantityOnHand, baseUnit),
+                );
+                final countedField = TextField(
+                  controller: row.countController,
+                  decoration: InputDecoration(
+                    isDense: true,
+                    labelText:
+                        '${l10n.inventoryAdjustmentCountedStock}'
+                        '${displayUnit == null ? '' : ' ($displayUnit)'}',
+                    helperText: _countBaseDetail(
+                      countedBase,
+                      baseUnit,
+                      displayUnit,
                     ),
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
-                    onChanged: (_) => onChanged(),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _AdjustmentReadOnlyValue(
-                    label: l10n.inventoryAdjustmentDifference,
-                    value: _quantityWithUnit(delta, baseUnit),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
                   ),
-                ),
-              ],
+                  onChanged: (_) => onChanged(),
+                );
+                final difference = _AdjustmentReadOnlyValue(
+                  label: l10n.inventoryAdjustmentDifference,
+                  value: _quantityWithUnit(delta, baseUnit),
+                );
+                if (constraints.maxWidth < 650) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      systemStock,
+                      const SizedBox(height: 12),
+                      countedField,
+                      const SizedBox(height: 12),
+                      difference,
+                    ],
+                  );
+                }
+                return Row(
+                  children: [
+                    Expanded(child: systemStock),
+                    const SizedBox(width: 12),
+                    Expanded(child: countedField),
+                    const SizedBox(width: 12),
+                    Expanded(child: difference),
+                  ],
+                );
+              },
             ),
           ],
         ),
