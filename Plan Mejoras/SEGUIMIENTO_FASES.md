@@ -248,3 +248,9 @@ Aprobación (si aplica):
 Se adoptó **QA proporcional al riesgo**; documentación operativa publicada en `Documentation/QA_POLICY_RISK_BASED.md` de la rama `develop/backoffice-stabilization-integration` (commit `2ad333f`). No se repetirán los 138 tests ni build Web por cada cambio de UI, formato o error aislado. Se harán pruebas focalizadas durante desarrollo, regresión de módulos relacionados cuando corresponda y **end-to-end completo al finalizar F3/release**.
 
 **Time Clock:** persiste 3/4; se requiere la excepción exacta de `initialization reload transitions to standalone marker` ejecutada de forma individual y detallada. No atribuir el defecto a producción sin evidencia. **Último lote general validado:** 138/138, `flutter analyze` y build Web correctos en `74f527d0`. Los cambios posteriores no están certificados.
+
+## 2026-11-03 — Time Clock resuelto; lote UX Configuración
+
+- **Time Clock:** `setState(() => _future = _startupMode())` devolvía un Future; se cambió a callback bloque síncrono en commit `55d1d45d`. Codex verificó **4/4 pruebas focalizadas aprobadas**; no se repitieron regresión completa ni build Web por la nueva política de QA.
+- **F3 UX**, rama `develop/backoffice-stabilization-integration`: auditoría ahora incluye nombre de entidad y fecha visible en su búsqueda; Configuración centra el formulario en el espacio disponible; Tasas de cambio identifica filas por fecha al navegar de mes y muestra botones de Guardar explícitos. **Pendiente:** formato, análisis y QA focalizado de este lote; no se declara visualmente aprobado.
+- Mantener los tres archivos de l10n locales sin commit, 11 stashes, `main` y producción intactos. Próxima validación incremental: `dart format` solo de esos cuatro archivos y `flutter analyze` (sin tests POS ni build Web por estos cambios), más pruebas específicas si aparecen.
