@@ -48,12 +48,6 @@ class _CashRegisterAdminPageState extends State<CashRegisterAdminPage> {
     final l10n = AppLocalizations.of(context);
     return AppPageScaffold(
       title: l10n.cashRegisterAdminTitle,
-      actions: [
-        IconButton(
-          onPressed: _loading ? null : _load,
-          icon: const Icon(Icons.refresh),
-        ),
-      ],
       body: Column(
         children: [
           Padding(
@@ -79,13 +73,13 @@ class _CashRegisterAdminPageState extends State<CashRegisterAdminPage> {
                       )
                     : CashRegisterBackofficeTable(
                         records: _records,
+                        onReload: _load,
+                        reloadEnabled: !_loading,
                         onEdit: (record) => unawaited(_edit(record)),
                         onDelete: (record) => unawaited(_delete(record)),
                         compactBuilder: (context, record) =>
                             _CashRegisterAdminTile(
                               dateFormat: _dateFormat,
-                              onDelete: () => unawaited(_delete(record)),
-                              onEdit: () => unawaited(_edit(record)),
                               record: record,
                             ),
                       ),
