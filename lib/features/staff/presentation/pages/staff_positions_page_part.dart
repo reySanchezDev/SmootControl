@@ -80,28 +80,44 @@ class _PositionList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (positions.isEmpty) {
-      return const AppEmptyState(
-        icon: Icons.work_outline,
-        title: 'Sin puestos',
-        message: 'Los puestos registrados apareceran aqui.',
-      );
-    }
-    return ListView.separated(
-      itemCount: positions.length,
-      separatorBuilder: (context, index) => const Divider(height: 1),
-      itemBuilder: (context, index) {
-        final position = positions[index];
-        return ListTile(
-          leading: Icon(
-            position.isActive ? Icons.work_outline : Icons.block_outlined,
-          ),
-          title: Text(position.name),
-          subtitle: Text(position.isActive ? 'Activo' : 'Inactivo'),
-          trailing: const Icon(Icons.edit_outlined),
-          onTap: () => onEdit(position),
-        );
-      },
+    return BackofficeCollectionView<EmployeePosition>(
+      items: positions,
+      rowKey: (item) => item.id,
+      rowLabel: (item) => item.name,
+      selectionActions: [
+        BackofficeSelectionAction<EmployeePosition>(
+          label: 'Editar',
+          icon: Icons.edit_outlined,
+          onPressed: onEdit,
+        ),
+      ],
+      searchLabel: 'Buscar puesto',
+      searchTextFor: (item) => item.name,
+      emptyTitle: 'Sin puestos',
+      emptyMessage: 'Los puestos registrados aparecerán aquí.',
+      compactBuilder: (context, item) => ListTile(
+        leading: Icon(
+          item.isActive ? Icons.work_outline : Icons.block_outlined,
+        ),
+        title: Text(item.name),
+        subtitle: Text(item.isActive ? 'Activo' : 'Inactivo'),
+      ),
+      columns: [
+        BackofficeListColumn<EmployeePosition>(
+          label: 'Puesto',
+          width: 360,
+          compare: (a, b) => a.name.compareTo(b.name),
+          cell: (_, item) => Text(item.name),
+        ),
+        BackofficeListColumn<EmployeePosition>(
+          label: 'Estado',
+          width: 170,
+          alignment: Alignment.center,
+          compare: (a, b) =>
+              a.isActive == b.isActive ? 0 : (a.isActive ? -1 : 1),
+          cell: (_, item) => Text(item.isActive ? 'Activo' : 'Inactivo'),
+        ),
+      ],
     );
   }
 }
