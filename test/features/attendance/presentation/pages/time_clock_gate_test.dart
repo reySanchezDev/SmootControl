@@ -59,4 +59,59 @@ void main() {
     expect(find.text('No se pudo validar el marcador.'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+  testWidgets('local login opens standalone Time Clock and not POS', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: TimeClockGate(
+          startupModeLoader: () async =>
+              const AppSuccess(DeviceStartupMode.localLogin),
+          timeClockPageBuilder: (_) => const Text('Marcador independiente'),
+          initializationPageBuilder: (_, _) =>
+              const Text('Inicialización de dispositivo'),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Marcador independiente'), findsOneWidget);
+    expect(find.text('Inicialización de dispositivo'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('initialization reload transitions to standalone marker', (
+    tester,
+  ) async {
+    var initialized = false;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: TimeClockGate(
+          startupModeLoader: () async => AppSuccess(
+            initialized
+                ? DeviceStartupMode.localLogin
+                : DeviceStartupMode.remoteInitialization,
+          ),
+          timeClockPageBuilder: (_) => const Text('Marcador independiente'),
+          initializationPageBuilder: (_, reload) => TextButton(
+            onPressed: () {
+              initialized = true;
+              reload();
+            },
+            child: const Text('Restaurar dispositivo'),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Restaurar dispositivo'), findsOneWidget);
+    await tester.tap(find.text('Restaurar dispositivo'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Marcador independiente'), findsOneWidget);
+    expect(find.text('Restaurar dispositivo'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
 }
