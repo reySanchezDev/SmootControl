@@ -58,6 +58,14 @@
 - **Punto donde Codex sí es necesario:** build/análisis y tests de la rama combinada en worktree local independiente, sin merge/despliegue. Tras la evidencia continuará la ejecución de F3/F4.
 - **Aprobación:** no se solicita revisión visual todavía; publicación no autorizada.
 
+## 2026-11-03 — PR #7 verificada por Codex en local
+
+- **Rama:** `develop/backoffice-stabilization-integration`, SHA `94846f3934963f9e5c57e872dd0e22a135605b79`, worktree limpio; 11 stashes preservados y `main` intacta.
+- **Verificación:** `flutter analyze` sin issues; **44/44 pruebas** aprobadas, build web release oficial correcto y recursos Drift/SQLite presentes.
+- **Observaciones:** warning no fatal hit-test POS durante acción Exit, revisar en siguiente ciclo de QA; prueba widget de entrada Time Clock aún pendiente.
+- **F3:** integración base técnicamente validada, pero aún no alcanza cobertura visual integral del Backoffice; continuar inspección/implementación restante antes de convocar al propietario.
+- **Producción:** sin merge ni despliegue.
+
 ## Plantilla para nuevos eventos
 
 ```text
