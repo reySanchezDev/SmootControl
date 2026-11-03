@@ -19,50 +19,57 @@ class _MovementFilters extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-      child: Column(
-        children: [
-          DropdownButtonFormField<InventoryMovementDocumentType>(
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              labelText: 'Tipo de movimiento',
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Wrap(
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: BackofficeFormStandards.filterGap,
+          runSpacing: BackofficeFormStandards.filterGap,
+          children: [
+            BackofficeFormStandards.control(
+              maxWidth: BackofficeFormStandards.filterWidth,
+              child: DropdownButtonFormField<InventoryMovementDocumentType>(
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  labelText: 'Tipo de movimiento',
+                ),
+                initialValue: type,
+                items: [
+                  for (final item in InventoryMovementDocumentType.values)
+                    DropdownMenuItem(
+                      value: item,
+                      child: AppText(_typeLabel(item)),
+                    ),
+                ],
+                onChanged: (value) => onChanged(value ?? type, from, to),
+              ),
             ),
-            initialValue: type,
-            items: [
-              for (final item in InventoryMovementDocumentType.values)
-                DropdownMenuItem(value: item, child: AppText(_typeLabel(item))),
-            ],
-            onChanged: (value) => onChanged(value ?? type, from, to),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              Expanded(
-                child: AppButton(
-                  icon: Icons.date_range,
-                  label: 'Desde ${_dateText(from)}',
-                  onPressed: () => unawaited(_pick(context, from, true)),
-                  primary: false,
-                ),
+            BackofficeFormStandards.control(
+              maxWidth: BackofficeFormStandards.dateWidth,
+              child: AppButton(
+                icon: Icons.date_range,
+                label: 'Desde ${_dateText(from)}',
+                onPressed: () => unawaited(_pick(context, from, true)),
+                primary: false,
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: AppButton(
-                  icon: Icons.event,
-                  label: 'Hasta ${_dateText(to)}',
-                  onPressed: () => unawaited(_pick(context, to, false)),
-                  primary: false,
-                ),
+            ),
+            BackofficeFormStandards.control(
+              maxWidth: BackofficeFormStandards.dateWidth,
+              child: AppButton(
+                icon: Icons.event,
+                label: 'Hasta ${_dateText(to)}',
+                onPressed: () => unawaited(_pick(context, to, false)),
+                primary: false,
               ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          AppButton(
-            icon: Icons.refresh,
-            label: 'Recargar',
-            onPressed: onReload,
-          ),
-        ],
+            ),
+            AppButton(
+              icon: Icons.refresh,
+              label: 'Recargar',
+              onPressed: onReload,
+            ),
+          ],
+        ),
       ),
     );
   }
