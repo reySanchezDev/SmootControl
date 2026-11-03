@@ -1,11 +1,11 @@
 # Tablero de seguimiento — estabilización y publicación SmooControl
 
 **Estado del programa:** EN_CURSO  
-**Fase activa:** F1 (inventario estático terminado; inspección de rutas y subpantallas indirectas pendiente)  
+**Fase activa:** F2 (contrato de rutas implementado en PR #6; requiere validación local Codex)  
 **Fuente de alcance:** [Plan maestro](PLAN_MAESTRO_END_TO_END.md)  
 **Criterios finales:** [Matriz de aceptación](MATRIZ_ACEPTACION.md)  
 **Despliegue:** [Runbook dominio](PUBLICACION_DOMINIO_RUNBOOK.md)  
-**Última actualización:** 2026-11-03 (avance automático autorizado; F1 matriz real de 47 rutas; tareas locales F0 diferidas al primer control Codex).
+**Última actualización:** 2026-11-03 (inventario de 47 rutas y 222 archivos de presentación; PR #6 con guard por experiencia y pruebas, pendiente Codex local).
 
 > **Fuente única de verdad:** este tablero controla qué fase está abierta y cuáles están cerradas. No se marca una tarea, fase o gate como terminada por un commit, una PR o un CI exitoso sin evidencia y verificación de sus criterios.
 
@@ -34,7 +34,7 @@ Estados admitidos para cada fase:
 |---|---|---|---|---|
 | F0 | Línea base y protección del entorno | EN_VALIDACION (local Codex pendiente) | Ninguna | Snapshot y rollback confirmados |
 | F1 | Inventario completo de experiencias | EN_CURSO | F0 | Matriz de rutas y componentes 100% clasificados |
-| F2 | Contratos de experiencia y autorización | PENDIENTE | F1 | Acceso por sesión/experiencia/permiso validado |
+| F2 | Contratos de experiencia y autorización | EN_VALIDACION (Codex local) | F1 | Acceso por sesión/experiencia/permiso validado |
 | F3 | UX integral Backoffice Executive Ivory | PENDIENTE | F2 | Todas las pantallas auditadas y aceptadas |
 | F4 | Runtime, servicios y sincronización segura | PENDIENTE | F1, F2 | Regresión POS/offline superada |
 | F5 | Seguridad y aislamiento por restaurante | PENDIENTE | F2, F4 | Sin bloqueos P0/P1 de seguridad |
@@ -53,6 +53,8 @@ Estados admitidos para cada fase:
 - En cada interrupción enviar solo: **estado**, **qué debe hacer cada parte**, y **qué sigue**. Los detalles técnicos y evidencia quedan en los documentos del repo.
 - F0 no se vuelve a discutir visualmente: Executive Ivory ya aprobado; Codex puede cerrar inventario local/worktrees y validación de rollback al siguiente punto de control sin bloquear la revisión de código remoto.
 - No marcar controles locales como verificados si Codex aún no ha presentado evidencia; registrar pendientes sin detener el resto del trabajo.
+
+**Punto de intervención Codex (F2):** únicamente validar PR #6 en worktree independiente; ejecutar `flutter analyze` y `flutter test test/core/navigation/app_route_experience_test.dart`, luego smoke de rutas y de entradas existentes. No fusionar, no realizar reset destructivo, no modificar producción. Si existen errores reportarlos con líneas y archivos, sin alterar la lógica de negocio.
 
 ## 4. Seguimiento detallado por fase
 
@@ -86,17 +88,17 @@ Estados admitidos para cada fase:
 
 ### F2 — Contratos de experiencia y autorización
 
-**Estado:** PENDIENTE · **Responsable:** ChatGPT, Codex para validación.
+**Estado:** EN_VALIDACION (código en PR #6; no certificado) · **Responsable:** ChatGPT, Codex para validación.
 
-- [ ] Definir contrato mínimo sin duplicar router/BLoC.
+- [x] Definir contrato mínimo `AppRouteExperience` y `SmooExperience` en PR #6 sin duplicar router/BLoC.
 - [ ] Verificar `AuthGate`, tipos de sesión y experiencia.
-- [ ] Declarar rutas por experiencia, preservando permisos existentes.
-- [ ] Bloquear acceso cruzado por URL directa/deep link y rutas desconocidas.
+- [x] Declarar rutas por experiencia, preservando permisos existentes; [ ] comprobar que no falta ninguna ruta real.
+- [x] Implementar guard de experiencia para rutas nombradas y fallback seguro en PR #6; [ ] verificar pruebas locales.
 - [ ] Verificar expiración de sesión, logout y cambios de permisos.
-- [ ] Probar preservación de `TimeClockGate` y navegación Backoffice.
+- [ ] Validar con Codex `flutter analyze`, test de contrato y smoke POS/Backoffice/TimeClock (sin datos productivos).
 
 **Cierre:** pruebas de roles/rutas y navegación aprobadas; negocio intacto.
-**Evidencia:** PENDIENTE · **Bloqueos:** ninguno registrado · **Siguiente acción:** pendiente de F1.
+**Evidencia:** PR #6 (`853f9091`) con `app_route_experience.dart`, `app_router.dart` y test; **Bloqueo de validación:** necesita Codex local · **Siguiente acción:** sincronizar PR #6 en worktree separado y ejecutar pruebas focalizadas.
 
 ### F3 — UX integral Backoffice Executive Ivory
 
