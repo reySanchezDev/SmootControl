@@ -117,6 +117,7 @@ class _ReportView extends StatelessWidget {
           child: BackofficeCollectionView<NegativeInventoryRow>(
             items: rows,
             searchLabel: 'Buscar materia prima o categoría',
+            showSearch: false,
             searchTextFor: (row) => '${row.productName} ${row.categoryName}',
             emptyTitle: 'Inventario saludable',
             emptyMessage: 'No hay materias primas negativas para este filtro.',
