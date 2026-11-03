@@ -87,3 +87,17 @@ Además de los submódulos de Personal, la PR #7 incluye nuevas vistas para tres
 - El bloqueo previo de Vacaciones quedó resuelto: Codex confirmó 132/132 pruebas y build web exitoso, aunque `flutter analyze` todavía informó 1 warning y 2 infos antes de este nuevo lote.
 
 **Gates:** validar `flutter analyze` hasta 0 avisos, pruebas Backoffice/Staff/Reportes/POS y build web oficial. Mantener locales generados en archivos privados sin commit accidental. No aprobar visualmente sin capturas reales.
+
+## Lote transversal — consistencia, búsquedas y regresión UI (2026-11-03)
+
+**Base validada por Codex:** `4781a5d1`, `flutter analyze` sin issues, 132/132 pruebas aprobadas y build Web oficial correcto. **Cambios posteriores NO verificados localmente.**
+
+- **Contrato de selección global:** `BackofficeCollectionView` ahora comprueba en modo assert que las listas con comandos de selección reciban `rowKey` estable y no dupliquen columna `Acciones`. No afecta listas heredadas con acciones por fila mientras migran.
+- **Etiquetas claras:** `BackofficeSelectionToolbar` rechaza nombres genéricos `Más`, `Acciones` y equivalentes, manteniendo la regla UX ya aprobada.
+- **Búsqueda:** todas las listas del componente reutilizable normalizan tildes, diéresis y ñ mediante `containsNormalizedSearch`. No se cambian los datos; solo la comparación textual.
+- **Sin duplicados:** `showSearch` permite que reportes con filtro superior eviten repetir el mismo campo; Inventario negativo conserva su filtro superior y oculta el interno. Adelantos históricos muestra buscador del agrupado o del listado tabular, pero no ambos simultáneamente; al cambiar de modo limpia consulta obsoleta.
+- **Pruebas nuevas:** `backoffice_selection_consistency_test.dart` verifica que registros bloqueados no habiliten Eliminar, las selecciones viejas no sobrevivan a reemplazo de registros y se cumpla el contrato de columna; `backoffice_collection_search_test.dart` prueba búsquedas con tildes y ausencia de campo duplicado; `backoffice_selection_toolbar_test.dart` amplía rechazo de etiqueta genérica.
+
+**Importante:** no hay certificación visual de estas vistas ni garantía de que el nuevo lote compile hasta Codex. Falta revisar en un navegador real los estados seleccionados, el overflow de acciones, escalas y tableros a 1366×768, 1920×1080 y compacto.
+
+**Siguiente checkpoint agrupado:** una única actualización de PR #7 y ejecución de `dart format` (solo archivos tocados), `flutter analyze` (cero issues), pruebas compartidas y suites Backoffice/Staff/Reportes/POS, build web oficial, conservación de l10n local y comparación de diff con `main`. No merge ni despliegue.
