@@ -198,73 +198,8 @@ class _SummaryChip extends StatelessWidget {
   }
 }
 
-class _PayrollReceiptCard extends StatelessWidget {
-  const _PayrollReceiptCard({
-    required this.onDelete,
-    required this.onPdf,
-    required this.onTap,
-    required this.receipt,
-  });
-
-  final VoidCallback? onDelete;
-  final VoidCallback onPdf;
-  final VoidCallback onTap;
-  final PayrollPaymentReceipt receipt;
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(14),
-          child: Row(
-            children: [
-              const Icon(Icons.payments_outlined),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    AppText(
-                      receipt.employeeName,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      variant: AppTextVariant.titleMedium,
-                    ),
-                    AppText(
-                      '${receipt.periodLabel} - ${_date(receipt.paidAt)}',
-                      variant: AppTextVariant.label,
-                    ),
-                    AppText(_paidLabel(receipt), variant: AppTextVariant.label),
-                  ],
-                ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.picture_as_pdf_outlined),
-                onPressed: onPdf,
-                tooltip: 'PDF esquela',
-              ),
-              if (onDelete != null)
-                IconButton(
-                  icon: const Icon(Icons.delete_outline),
-                  onPressed: onDelete,
-                  tooltip: 'Eliminar pago',
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 String _date(DateTime date) {
   String two(int value) => value.toString().padLeft(2, '0');
   return '${two(date.day)}/${two(date.month)}/${date.year}';
 }
 
-String _paidLabel(PayrollPaymentReceipt receipt) {
-  return 'Pagado ${MoneyFormatter.format(receipt.paymentAmountInCents)}';
-}
