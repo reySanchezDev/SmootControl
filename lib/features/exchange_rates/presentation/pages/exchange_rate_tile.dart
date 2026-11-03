@@ -6,6 +6,7 @@ class _RateTile extends StatefulWidget {
     required this.date,
     required this.onSaved,
     this.rate,
+    super.key,
   });
 
   final String currencyCode;
