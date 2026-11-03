@@ -148,14 +148,18 @@ void main() {
     );
   });
 
-  testWidgets('shows validation as an OK dialog', (tester) async {
+  testWidgets('shows localized validation acknowledgment dialog', (tester) async {
     await _pumpDialog(tester);
 
     await tester.tap(find.byKey(const ValueKey('split-confirm')));
     await tester.pumpAndSettle();
 
     expect(find.byType(AlertDialog), findsOneWidget);
-    expect(find.text('OK'), findsOneWidget);
+    expect(find.text(
+      AppLocalizations.of(
+        tester.element(find.byType(AlertDialog)),
+      ).okAction,
+    ), findsOneWidget);
   });
 
   testWidgets('renders split workspace on constrained touch surfaces', (
