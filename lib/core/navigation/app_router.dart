@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smoo_control/core/config/app_run_mode.dart';
-import 'package:smoo_control/core/navigation/app_route_experience.dart';
-import 'package:smoo_control/features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:smoo_control/features/auth/presentation/bloc/auth_state.dart';
 import 'package:smoo_control/core/navigation/admin_online_guard.dart';
+import 'package:smoo_control/core/navigation/app_route_experience.dart';
 import 'package:smoo_control/core/navigation/app_routes.dart';
 import 'package:smoo_control/core/navigation/route_access.dart';
 import 'package:smoo_control/features/attendance/presentation/pages/attendance_admin_page.dart';
 import 'package:smoo_control/features/attendance/presentation/pages/overtime_approvals_page.dart';
 import 'package:smoo_control/features/attendance/presentation/pages/vacation_requests_page.dart';
 import 'package:smoo_control/features/audit/presentation/pages/audit_log_page.dart';
+import 'package:smoo_control/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:smoo_control/features/auth/presentation/bloc/auth_state.dart';
 import 'package:smoo_control/features/auth/presentation/pages/auth_gate.dart';
 import 'package:smoo_control/features/cash_register/presentation/pages/cash_register_admin_page.dart';
 import 'package:smoo_control/features/catalog/presentation/pages/catalog_page.dart';
@@ -58,7 +58,7 @@ Route<void> onGenerateAppRoute(RouteSettings settings) {
 }
 
 /// Rejects unknown or cross-experience routes before invoking the page builder.
-/// Server APIs must continue enforcing their own authorization and tenant rules.
+/// APIs must enforce authorization and tenant boundaries independently.
 Widget _experienceGuardedPage(String? routeName) {
   if (AppRouteExperience.forRoute(routeName) == null) {
     return const Scaffold(
