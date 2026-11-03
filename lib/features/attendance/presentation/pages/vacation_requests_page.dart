@@ -6,6 +6,7 @@ import 'package:smoo_control/core/design_system/app_loading_page.dart';
 import 'package:smoo_control/core/design_system/app_message_dialog.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
+import 'package:smoo_control/core/design_system/backoffice_form_standards.dart';
 import 'package:smoo_control/core/design_system/backoffice_collection_view.dart';
 import 'package:smoo_control/core/design_system/backoffice_selection_toolbar.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
@@ -56,9 +57,7 @@ class _VacationRequestsPageState extends State<VacationRequestsPage> {
       title: 'Vacaciones',
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-            child: _VacationFilters(
+          _VacationFilters(
               from: _from,
               to: _to,
               employees: _employees,
@@ -69,7 +68,6 @@ class _VacationRequestsPageState extends State<VacationRequestsPage> {
               onEmployee: (value) => setState(() => _employeeId = value),
               onStatus: (value) => setState(() => _status = value),
               onReload: _load,
-            ),
           ),
           Expanded(
             child: _error != null
