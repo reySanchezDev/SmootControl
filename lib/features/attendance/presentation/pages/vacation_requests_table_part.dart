@@ -5,10 +5,12 @@ class _VacationRequestsTable extends StatelessWidget {
   const _VacationRequestsTable({
     required this.items,
     required this.onAction,
+    required this.onCreate,
   });
 
   final List<VacationRequest> items;
   final Future<void> Function(VacationRequest, String) onAction;
+  final VoidCallback? onCreate;
 
   String _status(VacationRequest item) => switch (item.status) {
     'pending' => 'Pendiente',
@@ -23,6 +25,7 @@ class _VacationRequestsTable extends StatelessWidget {
       items: items,
       rowKey: (item) => item.id,
       rowLabel: (item) => item.employeeName,
+      onCreate: onCreate,
       selectionActions: [
         BackofficeSelectionAction<VacationRequest>(
           label: 'Aprobar',
