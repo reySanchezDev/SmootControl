@@ -160,13 +160,15 @@ class _PayrollPaymentsReportPageState extends State<PayrollPaymentsReportPage> {
             emptyTitle: 'Sin pagos',
             emptyMessage:
                 'No hay planillas pagadas para el filtro seleccionado.',
-            compactBuilder: (_, receipt) => _PayrollReceiptCard(
-              receipt: receipt,
-              onDelete: _canDelete
-                  ? () => unawaited(_confirmDelete(receipt))
-                  : null,
-              onPdf: () => unawaited(_shareEmployeeReceipt(receipt)),
-              onTap: () => _openDetail(receipt),
+            compactBuilder: (_, receipt) => ListTile(
+              leading: const Icon(Icons.payments_outlined),
+              title: Text(receipt.employeeName),
+              subtitle: Text(
+                '${receipt.periodLabel} · ${_date(receipt.paidAt)}',
+              ),
+              trailing: Text(
+                MoneyFormatter.format(receipt.paymentAmountInCents),
+              ),
             ),
             columns: [
               BackofficeListColumn<PayrollPaymentReceipt>(
