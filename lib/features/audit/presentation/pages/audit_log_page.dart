@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
@@ -5,6 +7,7 @@ import 'package:smoo_control/core/design_system/app_empty_state.dart';
 import 'package:smoo_control/core/design_system/app_loading_page.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
 import 'package:smoo_control/core/design_system/backoffice_collection_view.dart';
+import 'package:smoo_control/core/design_system/backoffice_selection_toolbar.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/features/audit/domain/entities/audit_log_entry.dart';
 import 'package:smoo_control/features/audit/presentation/bloc/audit_log_bloc.dart';
@@ -86,6 +89,15 @@ class _AuditLogContent extends StatelessWidget {
                 )
               : BackofficeCollectionView<AuditLogEntry>(
                   items: entries,
+                  rowKey: (entry) => entry.id,
+                  rowLabel: (entry) => entry.entityName,
+                  selectionActions: [
+                    BackofficeSelectionAction<AuditLogEntry>(
+                      label: 'Ver detalle',
+                      icon: Icons.visibility_outlined,
+                      onPressed: (entry) => _showEntryDetail(context, entry),
+                    ),
+                  ],
                   searchLabel: 'Buscar acción, entidad o detalle',
                   searchTextFor: _searchText,
                   emptyTitle: l10n.emptySearchTitle,
@@ -120,34 +132,30 @@ class _AuditLogContent extends StatelessWidget {
                       cell: (_, entry) =>
                           Text(entry.entityName, softWrap: true),
                     ),
-                    BackofficeListColumn(
-                      label: 'Detalle',
-                      width: 190,
-                      alignment: Alignment.center,
-                      cell: (_, entry) => TextButton.icon(
-                        onPressed: () => showDialog<void>(
-                          context: context,
-                          builder: (dialogContext) => AlertDialog(
-                            title: const Text('Detalle de auditoría'),
-                            content: AuditLogTile(entry: entry),
-                            actions: [
-                              TextButton(
-                                onPressed: () =>
-                                    Navigator.of(dialogContext).pop(),
-                                child: const Text('Cerrar'),
-                              ),
-                            ],
-                          ),
-                        ),
-                        icon: const Icon(Icons.visibility_outlined),
-                        label: const Text('Ver detalle'),
-                      ),
-                    ),
                   ],
                 ),
         ),
       ],
     );
+  }
+
+  void _showEntryDetail(BuildContext context, AuditLogEntry entry) {
+    unawaited(showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Detalle de auditoría'),
+        content: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 760),
+          child: AuditLogTile(entry: entry),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Cerrar'),
+          ),
+        ],
+      ),
+    ));
   }
 
   String _searchText(AuditLogEntry entry) {

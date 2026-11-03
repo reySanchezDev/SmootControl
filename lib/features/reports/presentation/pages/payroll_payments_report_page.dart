@@ -162,6 +162,25 @@ class _PayrollPaymentsReportPageState extends State<PayrollPaymentsReportPage> {
   }
 
   void _openDetail(PayrollPaymentReceipt receipt) {
+    final desktop = MediaQuery.sizeOf(context).width >= 900;
+    if (desktop) {
+      unawaited(
+        showDialog<void>(
+          context: context,
+          builder: (_) => Dialog(
+            insetPadding: const EdgeInsets.all(32),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: 1000,
+                maxHeight: MediaQuery.sizeOf(context).height * 0.85,
+              ),
+              child: _PayrollReceiptDetail(receipt: receipt),
+            ),
+          ),
+        ),
+      );
+      return;
+    }
     unawaited(
       showModalBottomSheet<void>(
         context: context,

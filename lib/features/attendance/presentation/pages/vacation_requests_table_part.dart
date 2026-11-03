@@ -21,6 +21,28 @@ class _VacationRequestsTable extends StatelessWidget {
   Widget build(BuildContext context) {
     return BackofficeCollectionView<VacationRequest>(
       items: items,
+      rowKey: (item) => item.id,
+      rowLabel: (item) => item.employeeName,
+      selectionActions: [
+        BackofficeSelectionAction<VacationRequest>(
+          label: 'Aprobar',
+          icon: Icons.check_outlined,
+          enabledWhen: (item) => item.isPending,
+          onPressed: (item) => unawaited(onAction(item, 'approved')),
+        ),
+        BackofficeSelectionAction<VacationRequest>(
+          label: 'Rechazar',
+          icon: Icons.close_outlined,
+          enabledWhen: (item) => item.isPending,
+          onPressed: (item) => unawaited(onAction(item, 'rejected')),
+        ),
+        BackofficeSelectionAction<VacationRequest>(
+          label: 'Eliminar',
+          icon: Icons.delete_outline,
+          destructive: true,
+          onPressed: (item) => unawaited(onAction(item, 'delete')),
+        ),
+      ],
       searchLabel: 'Buscar empleado, tipo o estado',
       searchTextFor: (item) =>
           '${item.employeeName} ${item.requestType} ${_status(item)} '
@@ -71,34 +93,6 @@ class _VacationRequestsTable extends StatelessWidget {
           alignment: Alignment.center,
           compare: (a, b) => a.status.compareTo(b.status),
           cell: (_, item) => Text(_status(item)),
-        ),
-        BackofficeListColumn(
-          label: 'Acciones',
-          width: 370,
-          alignment: Alignment.center,
-          cell: (_, item) => Wrap(
-            spacing: 4,
-            runSpacing: 4,
-            children: [
-              if (item.isPending) ...[
-                TextButton.icon(
-                  onPressed: () => unawaited(onAction(item, 'approved')),
-                  icon: const Icon(Icons.check_outlined, size: 18),
-                  label: const Text('Aprobar'),
-                ),
-                TextButton.icon(
-                  onPressed: () => unawaited(onAction(item, 'rejected')),
-                  icon: const Icon(Icons.close_outlined, size: 18),
-                  label: const Text('Rechazar'),
-                ),
-              ],
-              TextButton.icon(
-                onPressed: () => unawaited(onAction(item, 'delete')),
-                icon: const Icon(Icons.delete_outline, size: 18),
-                label: const Text('Eliminar'),
-              ),
-            ],
-          ),
         ),
       ],
     );
