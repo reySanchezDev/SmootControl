@@ -1,11 +1,11 @@
 # Tablero de seguimiento — estabilización y publicación SmooControl
 
 **Estado del programa:** EN_CURSO  
-**Fase activa:** F3 (tres reportes adicionales y lote Personal integrados; validación única pendiente)  
+**Fase activa:** F3 (compilación del lote de Reportes pendiente de revalidación)  
 **Fuente de alcance:** [Plan maestro](PLAN_MAESTRO_END_TO_END.md)  
 **Criterios finales:** [Matriz de aceptación](MATRIZ_ACEPTACION.md)  
 **Despliegue:** [Runbook dominio](PUBLICACION_DOMINIO_RUNBOOK.md)  
-**Última actualización:** 2026-11-03 (Codex confirmó 121/121 pruebas, analyze y build web correctos en SHA 75744800. Después se integraron tres reportes: Vacaciones, Inventario negativo y Adelantos históricos; QA de estos cambios aún pendiente).
+**Última actualización:** 2026-11-03 (Codex: 130 pruebas aprobadas, 1 bloqueada; analyze/build fallaron por import `app_text.dart` faltante en Vacaciones. Corregido en PR #7, SHA d097bd43; requiere revalidación. Localizaciones locales preservadas).
 
 > **Fuente única de verdad:** este tablero controla qué fase está abierta y cuáles están cerradas. No se marca una tarea, fase o gate como terminada por un commit, una PR o un CI exitoso sin evidencia y verificación de sus criterios.
 
@@ -115,7 +115,7 @@ Estados admitidos para cada fase:
 - [x] Identificar los 7 archivos de presentación de PR #4 y verificar que no modifica lógica de dominio/BD; [ ] revisar la totalidad de la UX, las dependencias y realizar validación de integración antes de decidir merge.
 - [ ] Completar evidencias por pantalla en 390×844, 768×1024, 1366×768 y 1920×1080.
 
-**Cierre:** matriz de pantallas y regresión POS aprobadas; excepciones documentadas. **Checkpoint Codex de lote grande:** actualizar worktree de PR #7 al HEAD vigente. Preservar los 3 archivos de localización generados localmente; no descartarlos ni incluirlos por accidente. Aplicar `dart format` solo a los 4 archivos de reportes modificados en este lote, después `flutter analyze`, suites Backoffice/Staff/Reportes/POS y build web oficial. Preparar capturas de escritorio y móvil de los tres reportes cuando puedan abrirse con datos seguros. No fusionar ni publicar; la aprobación visual del propietario queda pendiente.
+**Cierre:** matriz de pantallas y regresión POS aprobadas; excepciones documentadas. **Checkpoint Codex:** actualizar worktree de PR #7 al SHA d097bd43 manteniendo intactos los 3 archivos de l10n generados localmente; ejecutar `flutter analyze`, reintentar el test bloqueado y las suites Backoffice/Staff/Reportes/POS, más build web oficial. No requerir capturas reales sin navegador disponible. No fusionar ni publicar.
 **Evidencia:** PENDIENTE · **Bloqueos:** ninguno registrado · **Siguiente acción:** pendiente de F2.
 
 ### F4 — Runtime, servicios y sincronización
