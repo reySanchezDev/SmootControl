@@ -7,7 +7,7 @@ import 'package:smoo_control/core/design_system/backoffice_selection_toolbar.dar
 
 /// Column contract shared across administrative catalog screens.
 class BackofficeListColumn<T> {
-  /// Creates a sortable data column or a non-sortable actions column.
+  /// Creates an administrative data column.
   const BackofficeListColumn({
     required this.label,
     required this.width,
@@ -48,12 +48,22 @@ class BackofficeCollectionView<T> extends StatefulWidget {
     this.rowLabel,
     this.selectionActions,
     super.key,
-  });
+  }) : assert(
+         selectionActions == null || rowKey != null,
+         'Selection-based lists need a stable rowKey.',
+       ),
+       assert(
+         selectionActions == null ||
+             !columns.any((column) =>
+                 column.label.trim().toLowerCase() == 'acciones' ||
+                 column.label.trim().toLowerCase() == 'actions'),
+         'Selection commands must not duplicate an Actions column.',
+       );
 
   /// Current records.
   final List<T> items;
 
-  /// Data columns. The last column is conventionally Actions.
+  /// Data columns, excluding per-row actions when selection is enabled.
   final List<BackofficeListColumn<T>> columns;
 
   /// Domain-backed fields that may be searched.
