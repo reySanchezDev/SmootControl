@@ -81,9 +81,8 @@ class _VacationRequestsPageState extends State<VacationRequestsPage> {
                     : _VacationRequestsTable(
                         items: _items!,
                         onAction: _act,
-                        onCreate: _employees.isEmpty
-                            ? null
-                            : () => unawaited(_create()),
+                        onCreate: () => unawaited(_create()),
+                        createEnabled: _employees.isNotEmpty,
                       ),
           ),
         ],
