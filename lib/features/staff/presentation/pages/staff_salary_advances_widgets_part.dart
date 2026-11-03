@@ -140,8 +140,7 @@ class _SalaryAdvanceList extends StatelessWidget {
           label: 'Estado',
           width: 135,
           compare: (a, b) => a.status.compareTo(b.status),
-          cell: (_, advance) =>
-              Text(_salaryAdvanceStatusLabel(advance.status)),
+          cell: (_, advance) => Text(_salaryAdvanceStatusLabel(advance.status)),
         ),
         BackofficeListColumn<SalaryAdvance>(
           label: 'Adelanto',
