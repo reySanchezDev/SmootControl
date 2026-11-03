@@ -29,10 +29,13 @@ class _DailySalesFilterCard extends StatelessWidget {
         child: LayoutBuilder(
           builder: (context, constraints) {
             final compact = constraints.maxWidth < 620;
-            final rangeButton = _DateRangeFilterButton(
-              from: from,
-              onChanged: onRangeChanged,
-              to: to,
+            final rangeButton = ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 260),
+              child: _DateRangeFilterButton(
+                from: from,
+                onChanged: onRangeChanged,
+                to: to,
+              ),
             );
             final reloadButton = FilledButton.icon(
               onPressed: onReload,
@@ -83,7 +86,7 @@ class _DailySalesFilterCard extends StatelessWidget {
 
             return Row(
               children: [
-                Expanded(child: rangeButton),
+                rangeButton,
                 const SizedBox(width: 10),
                 quickActions,
                 const SizedBox(width: 10),
@@ -130,10 +133,10 @@ class _CompactDateActions extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 8),
-        IconButton.filled(
+        OutlinedButton.icon(
           onPressed: onReload,
           icon: const Icon(Icons.refresh),
-          tooltip: 'Recargar',
+          label: const Text('Recargar'),
         ),
       ],
     );
