@@ -196,48 +196,83 @@ class _OvertimeList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (entries.isEmpty) {
-      return AppEmptyState(
-        icon: Icons.more_time_outlined,
-        title: hasFilter ? 'Sin resultados' : 'Sin horas extras',
-        message: hasFilter
-            ? 'No hay horas extras que coincidan con la busqueda.'
-            : 'Las horas extras registradas apareceran aqui.',
-      );
-    }
-    return ListView.separated(
-      itemCount: entries.length,
-      separatorBuilder: (context, index) => const Divider(height: 1),
-      itemBuilder: (context, index) {
-        final entry = entries[index];
-        return ListTile(
-          leading: const Icon(Icons.more_time_outlined),
-          title: Text('${entry.employeeName} - ${entry.hours} h'),
-          subtitle: Text(
-            [
-              _dateOnly(entry.workedDate),
-              _overtimeStatusLabel(entry.status),
-              'Valor ${_money(entry.hourRateInCents)}',
-            ].join(' - '),
-          ),
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(_money(entry.totalInCents)),
-              if (entry.isPending)
-                IconButton(
-                  icon: const Icon(Icons.edit_outlined),
-                  onPressed: () => onEdit(entry),
-                ),
-              if (entry.isPending)
-                IconButton(
-                  icon: const Icon(Icons.delete_outline),
-                  onPressed: () => onDelete(entry),
-                ),
-            ],
-          ),
-        );
-      },
+    return BackofficeCollectionView<EmployeeOvertimeEntry>(
+      items: entries,
+      rowKey: (entry) => entry.id,
+      rowLabel: (entry) => entry.employeeName,
+      selectionActions: [
+        BackofficeSelectionAction<EmployeeOvertimeEntry>(
+          label: 'Editar',
+          icon: Icons.edit_outlined,
+          enabledWhen: (entry) => entry.isPending,
+          onPressed: onEdit,
+        ),
+        BackofficeSelectionAction<EmployeeOvertimeEntry>(
+          label: 'Eliminar',
+          icon: Icons.delete_outline,
+          destructive: true,
+          enabledWhen: (entry) => entry.isPending,
+          onPressed: onDelete,
+        ),
+      ],
+      searchLabel: 'Buscar horas extra',
+      searchTextFor: (entry) => [
+        entry.employeeName,
+        _dateOnly(entry.workedDate),
+        _overtimeStatusLabel(entry.status),
+        entry.hours.toString(),
+        _money(entry.hourRateInCents),
+        _money(entry.totalInCents),
+        entry.note ?? '',
+      ].join(' '),
+      emptyTitle: hasFilter ? 'Sin resultados' : 'Sin horas extras',
+      emptyMessage: hasFilter
+          ? 'No hay horas extras que coincidan con la búsqueda.'
+          : 'Las horas extras registradas aparecerán aquí.',
+      compactBuilder: (_, entry) => ListTile(
+        leading: const Icon(Icons.more_time_outlined),
+        title: Text(entry.employeeName),
+        subtitle: Text(
+          '${_dateOnly(entry.workedDate)} · '
+          '${_overtimeStatusLabel(entry.status)} · '
+          '${entry.hours.toStringAsFixed(2)} h',
+        ),
+        trailing: Text(_money(entry.totalInCents)),
+      ),
+      columns: [
+        BackofficeListColumn<EmployeeOvertimeEntry>(
+          label: 'Empleado',
+          width: 260,
+          compare: (a, b) => a.employeeName.compareTo(b.employeeName),
+          cell: (_, entry) => Text(entry.employeeName),
+        ),
+        BackofficeListColumn<EmployeeOvertimeEntry>(
+          label: 'Fecha',
+          width: 165,
+          compare: (a, b) => a.workedDate.compareTo(b.workedDate),
+          cell: (_, entry) => Text(_dateOnly(entry.workedDate)),
+        ),
+        BackofficeListColumn<EmployeeOvertimeEntry>(
+          label: 'Horas',
+          width: 120,
+          alignment: Alignment.centerRight,
+          compare: (a, b) => a.hours.compareTo(b.hours),
+          cell: (_, entry) => Text(entry.hours.toStringAsFixed(2)),
+        ),
+        BackofficeListColumn<EmployeeOvertimeEntry>(
+          label: 'Estado',
+          width: 150,
+          compare: (a, b) => a.status.compareTo(b.status),
+          cell: (_, entry) => Text(_overtimeStatusLabel(entry.status)),
+        ),
+        BackofficeListColumn<EmployeeOvertimeEntry>(
+          label: 'Monto',
+          width: 170,
+          alignment: Alignment.centerRight,
+          compare: (a, b) => a.totalInCents.compareTo(b.totalInCents),
+          cell: (_, entry) => Text(_money(entry.totalInCents)),
+        ),
+      ],
     );
   }
 }
