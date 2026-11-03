@@ -1,11 +1,11 @@
 # Tablero de seguimiento — estabilización y publicación SmooControl
 
-**Estado del programa:** NO INICIADO  
-**Fase activa:** 0 (preparación, sin comenzar ejecución)  
+**Estado del programa:** EN_CURSO  
+**Fase activa:** F1 (inventario estático terminado; inspección de rutas y subpantallas indirectas pendiente)  
 **Fuente de alcance:** [Plan maestro](PLAN_MAESTRO_END_TO_END.md)  
 **Criterios finales:** [Matriz de aceptación](MATRIZ_ACEPTACION.md)  
 **Despliegue:** [Runbook dominio](PUBLICACION_DOMINIO_RUNBOOK.md)  
-**Última actualización:** 2026-11-03 (confirmación del propietario sobre línea base visual y pruebas locales; verificaciones técnicas F0 aún pendientes).
+**Última actualización:** 2026-11-03 (avance automático autorizado; F1 matriz real de 47 rutas; tareas locales F0 diferidas al primer control Codex).
 
 > **Fuente única de verdad:** este tablero controla qué fase está abierta y cuáles están cerradas. No se marca una tarea, fase o gate como terminada por un commit, una PR o un CI exitoso sin evidencia y verificación de sus criterios.
 
@@ -22,7 +22,7 @@ Estados admitidos para cada fase:
 
 **Flujo:** PENDIENTE → EN_CURSO → EN_VALIDACION → COMPLETADA; cualquier fase puede pasar a BLOQUEADA y reanudarse, o REABIERTA si falla una condición previamente aprobada.
 
-**Regla de avance:** por defecto se ejecuta **una fase activa a la vez**. La siguiente solo inicia cuando la actual está COMPLETADA, o cuando se documente una excepción de paralelización sin riesgos ni dependencias. Las fases futuras pueden planificarse sin considerarse iniciadas.
+**Regla de avance:** por defecto se trabaja en **una línea principal de ejecución a la vez**, avanzando de manera automática. La siguiente inicia automáticamente cuando su dependencia lógica esté resuelta, sin solicitar confirmaciones rutinarias; la verificación local pendiente se registra para el punto obligatorio de Codex. No bloquear auditorías documentales por trabajo local independiente. Las fases futuras pueden planificarse sin considerarse iniciadas.
 
 **Regla de cierre:** toda fase necesita (1) tareas completas o N/A justificado, (2) pruebas acordes al riesgo, (3) evidencia trazable, (4) cero bloqueos críticos abiertos, (5) aprobación del responsable. La publicación exige autorización expresa del propietario, no inferida.
 
@@ -32,8 +32,8 @@ Estados admitidos para cada fase:
 
 | Fase | Nombre | Estado | Dependencia previa | Resultado comprobable |
 |---|---|---|---|---|
-| F0 | Línea base y protección del entorno | PENDIENTE | Ninguna | Snapshot y rollback confirmados |
-| F1 | Inventario completo de experiencias | PENDIENTE | F0 | Matriz de rutas y componentes 100% clasificados |
+| F0 | Línea base y protección del entorno | EN_VALIDACION (local Codex pendiente) | Ninguna | Snapshot y rollback confirmados |
+| F1 | Inventario completo de experiencias | EN_CURSO | F0 | Matriz de rutas y componentes 100% clasificados |
 | F2 | Contratos de experiencia y autorización | PENDIENTE | F1 | Acceso por sesión/experiencia/permiso validado |
 | F3 | UX integral Backoffice Executive Ivory | PENDIENTE | F2 | Todas las pantallas auditadas y aceptadas |
 | F4 | Runtime, servicios y sincronización segura | PENDIENTE | F1, F2 | Regresión POS/offline superada |
@@ -46,11 +46,19 @@ Estados admitidos para cada fase:
 
 **Avance:** 0 de 11 fases completadas. Este porcentaje es **administrativo**, no estimación de esfuerzo. Una fase no equivale a una onceava parte del trabajo.
 
-## 3. Seguimiento detallado por fase
+## 3. Protocolo de ejecución sin interrupciones
+
+- ChatGPT avanza automáticamente entre tareas y fases remotas sobre el plan. No pedir autorización de rutina ni enviar reportes por cada archivo.
+- **Interrupciones permitidas:** (a) Codex requiere compilar/probar/sincronizar en el local; (b) propietario debe evaluar el resultado visual; (c) decisión externa imprescindible (dominio, DNS, hosting, aprobación explícita de merge/despliegue o acción irreversible).
+- En cada interrupción enviar solo: **estado**, **qué debe hacer cada parte**, y **qué sigue**. Los detalles técnicos y evidencia quedan en los documentos del repo.
+- F0 no se vuelve a discutir visualmente: Executive Ivory ya aprobado; Codex puede cerrar inventario local/worktrees y validación de rollback al siguiente punto de control sin bloquear la revisión de código remoto.
+- No marcar controles locales como verificados si Codex aún no ha presentado evidencia; registrar pendientes sin detener el resto del trabajo.
+
+## 4. Seguimiento detallado por fase
 
 ### F0 — Línea base y protección del entorno
 
-**Estado:** PENDIENTE · **Responsable técnico:** ChatGPT/Codex · **Aprobación:** propietario.
+**Estado:** EN_VALIDACION (solo verificaciones técnicas locales pendientes) · **Responsable técnico:** ChatGPT/Codex · **Aprobación:** propietario.
 
 - [ ] Registrar HEAD de `main`, PR #4, ramas y worktrees.
 - [ ] Preservar y documentar stashes y cambios locales.
@@ -64,17 +72,17 @@ Estados admitidos para cada fase:
 
 ### F1 — Inventario completo de experiencias
 
-**Estado:** PENDIENTE · **Responsable:** ChatGPT.
+**Estado:** EN_CURSO · **Responsable:** ChatGPT.
 
-- [ ] Identificar todas las rutas, subrutas, tabs, detalles y diálogos.
-- [ ] Clasificar cada pantalla: Backoffice, POS, Time Clock o compartida.
-- [ ] Asociar rol, permiso, dependencias y conectividad a cada ruta.
-- [ ] Identificar widgets visuales y servicios compartidos de riesgo.
+- [x] Inventariar todas las 47 rutas declaradas en AppRoutes y los destinos sidebar; [ ] completar subrutas, tabs, detalles y diálogos indirectos.
+- [x] Clasificar las rutas declaradas como Backoffice/POS y la entrada especial Time Clock; [ ] completar pantallas auxiliares indirectas.
+- [x] Asociar permisos declarados y requisitos de conectividad por ruta en `MATRIZ_EXPERIENCIAS.md`; [ ] revisar excepciones en tiempo de ejecución.
+- [x] Identificar componentes centrales, UI compartida y scheduler de riesgo; [ ] completar mapa de dependencias indirectas.
 - [ ] Registrar exclusiones y excepciones justificadas.
-- [ ] Publicar `MATRIZ_EXPERIENCIAS.md` y revisar cobertura.
+- [x] Publicar `MATRIZ_EXPERIENCIAS.md`; [ ] cerrar cobertura de subpantallas y navegación dinámica.
 
 **Cierre:** 100% de rutas navegables clasificadas; dependencias de riesgo documentadas.
-**Evidencia:** PENDIENTE · **Bloqueos:** ninguno registrado · **Siguiente acción:** pendiente de F0.
+**Evidencia:** `MATRIZ_EXPERIENCIAS.md`, HEAD del documento `d835c010`; **Bloqueos:** ninguno para revisión remota · **Siguiente acción:** completar rutas indirectas y preparar F2.
 
 ### F2 — Contratos de experiencia y autorización
 
