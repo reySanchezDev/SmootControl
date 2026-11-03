@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:smoo_control/core/design_system/app_empty_state.dart';
 import 'package:smoo_control/core/design_system/app_loading_page.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
-import 'package:smoo_control/core/design_system/app_text.dart';
+import 'package:smoo_control/core/design_system/backoffice_collection_view.dart';
+import 'package:smoo_control/core/design_system/backoffice_selection_toolbar.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/core/formatters/money_formatter.dart';
 import 'package:smoo_control/core/result/app_result.dart';
@@ -41,47 +42,109 @@ class _OvertimeApprovalsPageState extends State<OvertimeApprovalsPage> {
   Widget build(BuildContext context) {
     return AppPageScaffold(
       title: 'Horas extra por autorizar',
-      body: ListView(
-        padding: const EdgeInsets.all(16),
+      body: Column(
         children: [
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              ActionChip(
-                avatar: const Icon(Icons.calendar_month_outlined),
-                label: Text('Desde ${_fmt(_from)}'),
-                onPressed: () => _pickDate(isFrom: true),
-              ),
-              ActionChip(
-                avatar: const Icon(Icons.calendar_month_outlined),
-                label: Text('Hasta ${_fmt(_to)}'),
-                onPressed: () => _pickDate(isFrom: false),
-              ),
-              FilledButton.icon(
-                icon: const Icon(Icons.refresh),
-                label: const Text('Recargar'),
-                onPressed: _load,
-              ),
-            ],
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                ActionChip(
+                  avatar: const Icon(Icons.calendar_month_outlined),
+                  label: Text('Desde ${_fmt(_from)}'),
+                  onPressed: () => _pickDate(isFrom: true),
+                ),
+                ActionChip(
+                  avatar: const Icon(Icons.calendar_month_outlined),
+                  label: Text('Hasta ${_fmt(_to)}'),
+                  onPressed: () => _pickDate(isFrom: false),
+                ),
+                FilledButton.icon(
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Recargar'),
+                  onPressed: _load,
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 12),
-          if (_error != null)
-            AppEmptyState(
-              icon: Icons.error_outline,
-              message: _error!,
-              title: 'Horas extra',
-            )
-          else if (_items == null)
-            const AppLoadingPage()
-          else if (_items!.isEmpty)
-            const AppEmptyState(
-              icon: Icons.more_time_outlined,
-              message: 'No hay horas extra pendientes.',
-              title: 'Sin pendientes',
-            )
-          else
-            for (final item in _items!) _CandidateCard(item: item, act: _act),
+          Expanded(
+            child: _error != null
+                ? AppEmptyState(
+                    icon: Icons.error_outline,
+                    message: _error!,
+                    title: 'Horas extra',
+                  )
+                : _items == null
+                    ? const AppLoadingPage()
+                    : BackofficeCollectionView<OvertimeCandidate>(
+                        items: _items!,
+                        rowKey: (item) => item.id,
+                        rowLabel: (item) => item.employeeName,
+                        selectionActions: [
+                          BackofficeSelectionAction<OvertimeCandidate>(
+                            label: 'Autorizar',
+                            icon: Icons.check_outlined,
+                            onPressed: (item) =>
+                                unawaited(_act(item, approve: true)),
+                          ),
+                          BackofficeSelectionAction<OvertimeCandidate>(
+                            label: 'Rechazar',
+                            icon: Icons.close_outlined,
+                            onPressed: (item) =>
+                                unawaited(_act(item, approve: false)),
+                          ),
+                        ],
+                        searchLabel: 'Buscar empleado o fecha',
+                        searchTextFor: (item) =>
+                            '${item.employeeName} ${_fmt(item.workedDate)}',
+                        emptyTitle: 'Sin pendientes',
+                        emptyMessage: 'No hay horas extra pendientes.',
+                        compactBuilder: (context, item) => ListTile(
+                          title: Text(item.employeeName),
+                          subtitle: Text(
+                            '${_fmt(item.workedDate)} · '
+                            '${item.hours.toStringAsFixed(2)} horas',
+                          ),
+                          trailing: Text(
+                            MoneyFormatter.format(item.totalInCents),
+                          ),
+                        ),
+                        columns: [
+                          BackofficeListColumn<OvertimeCandidate>(
+                            label: 'Empleado',
+                            width: 280,
+                            compare: (a, b) =>
+                                a.employeeName.compareTo(b.employeeName),
+                            cell: (_, item) => Text(item.employeeName),
+                          ),
+                          BackofficeListColumn<OvertimeCandidate>(
+                            label: 'Fecha',
+                            width: 160,
+                            compare: (a, b) =>
+                                a.workedDate.compareTo(b.workedDate),
+                            cell: (_, item) => Text(_fmt(item.workedDate)),
+                          ),
+                          BackofficeListColumn<OvertimeCandidate>(
+                            label: 'Horas',
+                            width: 130,
+                            alignment: Alignment.centerRight,
+                            compare: (a, b) => a.hours.compareTo(b.hours),
+                            cell: (_, item) =>
+                                Text(item.hours.toStringAsFixed(2)),
+                          ),
+                          BackofficeListColumn<OvertimeCandidate>(
+                            label: 'Monto',
+                            width: 170,
+                            alignment: Alignment.centerRight,
+                            compare: (a, b) =>
+                                a.totalInCents.compareTo(b.totalInCents),
+                            cell: (_, item) =>
+                                Text(MoneyFormatter.format(item.totalInCents)),
+                          ),
+                        ],
+                      ),
+          ),
         ],
       ),
     );
@@ -143,71 +206,6 @@ class _OvertimeApprovalsPageState extends State<OvertimeApprovalsPage> {
           SnackBar(content: Text(error.message)),
         );
     }
-  }
-}
-
-class _CandidateCard extends StatelessWidget {
-  const _CandidateCard({required this.item, required this.act});
-
-  final OvertimeCandidate item;
-  final Future<void> Function(OvertimeCandidate item, {required bool approve})
-  act;
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            AppText(
-              '${item.employeeName} | ${_fmt(item.workedDate)}',
-              variant: AppTextVariant.titleMedium,
-            ),
-            const SizedBox(height: 8),
-            _Row(label: 'Horas', value: item.hours.toStringAsFixed(2)),
-            _Row(
-              label: 'Monto',
-              value: MoneyFormatter.format(item.totalInCents),
-            ),
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                TextButton(
-                  onPressed: () => unawaited(act(item, approve: false)),
-                  child: const Text('Rechazar'),
-                ),
-                const SizedBox(width: 8),
-                FilledButton.icon(
-                  icon: const Icon(Icons.check),
-                  label: const Text('Autorizar'),
-                  onPressed: () => unawaited(act(item, approve: true)),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _Row extends StatelessWidget {
-  const _Row({required this.label, required this.value});
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(child: AppText(label)),
-        AppText(value, variant: AppTextVariant.label),
-      ],
-    );
   }
 }
 
