@@ -30,8 +30,8 @@ class _StaffPositionsPageState extends State<StaffPositionsPage> {
     return AppPageScaffold(
       title: 'Puestos',
       actions: [
-        IconButton(
-          icon: const Icon(Icons.add),
+        BackofficeNewAction(
+          label: 'Nuevo puesto',
           onPressed: () => unawaited(_editPosition()),
         ),
       ],
