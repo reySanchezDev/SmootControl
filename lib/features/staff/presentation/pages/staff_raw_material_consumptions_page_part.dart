@@ -12,11 +12,9 @@ class RawMaterialConsumptionsPage extends StatefulWidget {
 
 class _RawMaterialConsumptionsPageState
     extends State<RawMaterialConsumptionsPage> {
-  final _search = TextEditingController();
   late DateTime _from;
   late DateTime _to;
   late Future<AppResult<List<RawMaterialStaffConsumption>>> _future;
-  String _query = '';
 
   SupabaseStaffAdminRepository get _staff =>
       serviceLocator<SupabaseStaffAdminRepository>();
@@ -31,12 +29,6 @@ class _RawMaterialConsumptionsPageState
   }
 
   @override
-  void dispose() {
-    _search.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return AppPageScaffold(
       title: 'Consumo materia prima',
@@ -46,11 +38,6 @@ class _RawMaterialConsumptionsPageState
       body: Column(
         children: [
           _filters(),
-          _StaffSearchField(
-            controller: _search,
-            hintText: 'Buscar empleado, producto, fecha o monto',
-            onChanged: (value) => setState(() => _query = value),
-          ),
           Expanded(
             child: FutureBuilder<AppResult<List<RawMaterialStaffConsumption>>>(
               future: _future,
@@ -58,7 +45,7 @@ class _RawMaterialConsumptionsPageState
                 if (!snapshot.hasData) return const AppLoadingPage();
                 return switch (snapshot.requireData) {
                   AppSuccess(:final value) => _RawMaterialConsumptionList(
-                    items: _filtered(value),
+                    items: value,
                     onDelete: _delete,
                     onEdit: _open,
                   ),
@@ -120,23 +107,6 @@ class _RawMaterialConsumptionsPageState
 
   Future<AppResult<List<RawMaterialStaffConsumption>>> _load() {
     return _staff.getRawMaterialStaffConsumptions(from: _from, to: _to);
-  }
-
-  List<RawMaterialStaffConsumption> _filtered(
-    List<RawMaterialStaffConsumption> items,
-  ) {
-    final query = _query.trim().toLowerCase();
-    if (query.isEmpty) return items;
-    return items.where((item) {
-      final products = item.lines.map((line) => line.productName).join(' ');
-      final text = [
-        item.employeeName,
-        products,
-        _date(item.consumedAt),
-        _money(item.totalInCents),
-      ].join(' ').toLowerCase();
-      return text.contains(query);
-    }).toList();
   }
 
   Future<void> _open([RawMaterialStaffConsumption? item]) async {
