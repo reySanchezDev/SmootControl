@@ -39,6 +39,7 @@ class BackofficeSelectionToolbar<T> extends StatelessWidget {
     required this.selected,
     this.selectedLabel,
     this.onCreate,
+    this.createEnabled = true,
     this.globalActions = const [],
     super.key,
   });
@@ -54,6 +55,9 @@ class BackofficeSelectionToolbar<T> extends StatelessWidget {
 
   /// Available regardless of row selection, subject to permissions.
   final VoidCallback? onCreate;
+
+  /// Keeps the New command visible but disabled when creating is unavailable.
+  final bool createEnabled;
 
   /// Always-available, explicitly labelled commands sharing this command bar.
   final List<Widget> globalActions;
@@ -101,7 +105,7 @@ class BackofficeSelectionToolbar<T> extends StatelessWidget {
               ...globalActions,
               if (onCreate != null)
                 FilledButton.icon(
-                  onPressed: onCreate,
+                  onPressed: createEnabled ? onCreate : null,
                   icon: const Icon(Icons.add_rounded, size: 18),
                   label: const Text('Nuevo'),
                 ),
