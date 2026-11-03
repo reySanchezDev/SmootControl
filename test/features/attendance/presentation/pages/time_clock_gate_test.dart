@@ -113,5 +113,4 @@ void main() {
     expect(find.text('Restaurar dispositivo'), findsNothing);
     expect(tester.takeException(), isNull);
   });
-
 }
