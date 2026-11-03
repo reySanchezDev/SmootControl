@@ -77,6 +77,8 @@ class _TimeClockGateState extends State<TimeClockGate> {
   }
 
   void _reload() {
-    setState(() => _future = _startupMode());
+    setState(() {
+      _future = _startupMode();
+    });
   }
 }
