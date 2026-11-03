@@ -785,7 +785,11 @@ void main() {
         final saleCompleted = bloc.stream.firstWhere(
           (state) => state is PosReady && state.lastCompletedSale != null,
         );
-        await tester.tap(find.text('OK'));
+        await tester.tap(find.text(
+      AppLocalizations.of(
+        tester.element(find.byType(PosPaymentAmountDialog)),
+      ).okAction,
+    ));
         await tester.pumpAndSettle();
         await saleCompleted;
 
