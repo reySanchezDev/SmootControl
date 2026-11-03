@@ -155,3 +155,11 @@ La revisión de código identificó que la prueba original resolvía el modo con
 - Time Clock: continúa **pendiente**, con prueba determinística y logs de invocación; no marcar F2 cerrada.
 
 **Pendiente de certificación:** análisis, tests, build web, más revisión visual de 390px/1366px sin alterar datos productivos.
+
+## 2026-11-03 — Historial de pagos de planilla, lote F3
+
+En `develop/backoffice-stabilization-integration` se unificó el historial `PayrollPaymentsReportPage` con la tabla de Backoffice: columnas Empleado, Puesto, Período, Fecha de pago, Pagado y Saldo restante, con selección y acciones explícitas `Ver detalle` y `PDF esquela`. `Eliminar pago` se ofrece **solo en modo Staff Admin**; el modo `report` se mantiene de solo lectura. La operación destructiva conserva su confirmación y el handler anterior sin modificación del servicio `reverseReceipt`.
+
+En compacto las tarjetas informativas se seleccionan para habilitar los comandos de la toolbar; no se duplican botones en cada tarjeta. Se conservan el resumen de importes y los filtros existentes (empleado, corte y fechas). No se modifican cálculos, pagos, asientos, reversión, repositorios ni permisos de servidor.
+
+**QA incremental pendiente:** formato del archivo cambiado, `flutter analyze`, y comprobación específica de los modos `report` y `staffAdmin`. Por el riesgo de operación de reversión de planilla, validar **únicamente en widget tests con datos ficticios**, sin ejecutar mutaciones de producción. El cierre de F3 incluye prueba de permisos real y QA visual.
