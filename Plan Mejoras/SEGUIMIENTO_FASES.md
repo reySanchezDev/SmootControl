@@ -1,11 +1,11 @@
 # Tablero de seguimiento — estabilización y publicación SmooControl
 
 **Estado del programa:** EN_CURSO  
-**Fase activa:** F3 (corrección de tests POS preexistentes pendiente de validación Codex)  
+**Fase activa:** F3 (107/107 pruebas conciliadas; lote Consumos/Horas extra pendiente QA local)  
 **Fuente de alcance:** [Plan maestro](PLAN_MAESTRO_END_TO_END.md)  
 **Criterios finales:** [Matriz de aceptación](MATRIZ_ACEPTACION.md)  
 **Despliegue:** [Runbook dominio](PUBLICACION_DOMINIO_RUNBOOK.md)  
-**Última actualización:** 2026-11-03 (Codex reporta analyze limpio y 93/93 pruebas POS; discrepancia con los 102 casos previos pendiente de conciliar. Tres archivos locales solo formateados sin commit. F4/F5 auditados estáticamente).
+**Última actualización:** 2026-11-03 (Codex confirmó 93/93 suite POS y 107/107 combinadas; formato commit c64a06ad. Nuevos cambios UX en consumos y aprobación de horas extra requieren análisis local).
 
 > **Fuente única de verdad:** este tablero controla qué fase está abierta y cuáles están cerradas. No se marca una tarea, fase o gate como terminada por un commit, una PR o un CI exitoso sin evidencia y verificación de sus criterios.
 
@@ -106,7 +106,7 @@ Estados admitidos para cada fase:
 
 **Estado:** EN_CURSO · **Responsable:** ChatGPT/Codex; aceptación visual: propietario.
 
-- [ ] Auditar todas las pantallas administrativas y subpantallas; revisión inicial de PR #4 documentada en `AUDITORIA_UX_F3.md`.
+- [ ] Auditar todas las pantallas administrativas y subpantallas; PR #4 revisada y nuevo lote de Consumos/Horas extra pendiente de validación.
 - [ ] Unificar componentes, colores, fuentes, densidad y textos UX.
 - [x] Extender selección y acciones explícitas a Marcadas y Puestos en PR #7; [ ] completar revisión de los demás módulos, filtros, scroll, encabezados y acciones etiquetadas.
 - [ ] Eliminar patrones ambiguos de columna `Acciones` / `Más` según diseño aprobado.
