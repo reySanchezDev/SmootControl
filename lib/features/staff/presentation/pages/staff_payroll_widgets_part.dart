@@ -47,8 +47,11 @@ class _PayrollDraftList extends StatelessWidget {
         Expanded(
           child: BackofficeCollectionView<_PayrollEntry>(
             items: entries,
-            rowKey: (entry) =>
-                '${entry.employeeId}:${entry.periodStart.toIso8601String()}:${entry.periodEnd.toIso8601String()}',
+            rowKey: (entry) => [
+              entry.employeeId,
+              entry.periodStart.toIso8601String(),
+              entry.periodEnd.toIso8601String(),
+            ].join(':'),
             rowLabel: (entry) => entry.employeeName,
             selectionActions: [
               BackofficeSelectionAction<_PayrollEntry>(
@@ -126,7 +129,7 @@ class _PayrollDraftList extends StatelessWidget {
   }
 
   void _showBreakdown(BuildContext context, _PayrollEntry entry) {
-    showDialog<void>(
+    unawaited(showDialog<void>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: Text(entry.employeeName),
@@ -201,7 +204,7 @@ class _PayrollDraftList extends StatelessWidget {
           ),
         ],
       ),
-    );
+    ));
   }
 
   List<_PayrollEntry> _entries() {
