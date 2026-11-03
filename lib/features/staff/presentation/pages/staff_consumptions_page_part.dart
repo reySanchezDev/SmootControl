@@ -211,4 +211,3 @@ class _StaffConsumptionDetailDialog extends StatelessWidget {
     );
   }
 }
-
