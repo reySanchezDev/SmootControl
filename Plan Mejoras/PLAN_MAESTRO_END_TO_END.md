@@ -1,6 +1,6 @@
 # Plan maestro end-to-end — SmooControl como producto comercial
 
-**Estado:** APROBACIÓN DE ALCANCE PENDIENTE · Documento de planificación, no implementación.
+**Estado:** PLAN DOCUMENTADO · Línea base visual Executive Ivory ya aprobada por el propietario; ejecución técnica y publicación pendientes.
 **Origen:** auditoría del repositorio `main` (`c6680eb6`) del 03-11-2026.
 **Trabajo paralelo:** PR #4 (`develop/backoffice-ux-unification`), **sin fusionar**. No incluir esa PR de forma implícita.
 **Responsables:** ChatGPT (diseño/revisión); Codex (compilación, pruebas y preview local); propietario (decisiones de dominio, hosting, aprobación y publicación).
@@ -54,8 +54,9 @@ Formalizar `SmooExperience { pos, backoffice, timeClock }` **solo si** reduce du
 - Congelar referencia de `main`; registrar versión, Flutter/Dart/Gradle y dependencias.
 - Inventariar ramas, PR #4, stashes locales, worktrees y preview; preservar estado del POS.
 - Crear rama `develop/experience-isolation` desde `main` al iniciar implementación; documentación en su propia PR.
-- Capturar pruebas de humo y capturas representativas **antes** de modificaciones: POS teléfono/tableta y Backoffice 390×844, 1366×768, 1920×1080.
-- Definir dueño y ambiente de staging de datos no productivos; si no existe, usar pruebas con mocks y ambiente aislado, nunca ventas reales para ensayos destructivos.
+- **No repetir la selección/aprobación visual:** Executive Ivory y los patrones visuales previamente aceptados son la línea base aprobada. En F3 se verificará su aplicación completa con evidencias, sin replantear el diseño.
+- Ejecutar pruebas, compilaciones y previews **en local con Codex**, y revisión/aceptación por el propietario; no crear infraestructura remota de QA para el desarrollo ordinario.
+- En pruebas que puedan escribir datos usar mocks, fixtures o datos aislados; nunca operaciones destructivas ni ensayos con ventas reales en producción. **Staging HTTPS en F7 continúa siendo requisito de prepublicación**, distinto de las pruebas cotidianas locales.
 
 **Salida:** matriz de línea base, riesgos, rollback de rama, lista de evidencias.
 
