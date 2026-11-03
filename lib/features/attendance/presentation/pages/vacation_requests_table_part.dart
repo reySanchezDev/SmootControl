@@ -53,7 +53,7 @@ class _VacationRequestsTable extends StatelessWidget {
       emptyTitle: 'Sin resultados',
       emptyMessage: 'No hay vacaciones con esos criterios.',
       compactBuilder: (_, item) =>
-          _VacationCard(item: item, onAction: onAction),
+          _VacationCard(item: item),
       columns: [
         BackofficeListColumn(
           label: 'Empleado',
