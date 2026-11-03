@@ -102,8 +102,8 @@ class BackofficeSelectionToolbar<T> extends StatelessWidget {
                 ),
               for (final action in actions)
                 OutlinedButton.icon(
-                  onPressed: item != null &&
-                          (action.enabledWhen?.call(item) ?? true)
+                  onPressed:
+                      item != null && (action.enabledWhen?.call(item) ?? true)
                       ? () => action.onPressed(item)
                       : null,
                   icon: Icon(action.icon, size: 18),

@@ -74,14 +74,14 @@ class _SalaryAdvancesReportPageState extends State<SalaryAdvancesReportPage> {
             Padding(
               padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
               child: TextField(
-              controller: _search,
-              decoration: const InputDecoration(
-                prefixIcon: Icon(Icons.search),
-                hintText: 'Buscar empleado, fecha o monto',
+                controller: _search,
+                decoration: const InputDecoration(
+                  prefixIcon: Icon(Icons.search),
+                  hintText: 'Buscar empleado, fecha o monto',
+                ),
+                onChanged: (value) => setState(() => _query = value),
               ),
-              onChanged: (value) => setState(() => _query = value),
             ),
-          ),
           Expanded(
             child:
                 FutureBuilder<

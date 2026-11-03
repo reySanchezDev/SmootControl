@@ -63,8 +63,8 @@ void main() {
     await tester.pumpWidget(
       collection(
         items: const [
-          _Record('1', 'Consumo pendiente', false),
-          _Record('2', 'Consumo aplicado', true),
+          _Record('1', 'Consumo pendiente', locked: false),
+          _Record('2', 'Consumo aplicado', locked: true),
         ],
         onDelete: (record) => deleted.add(record.id),
       ),
@@ -97,7 +97,7 @@ void main() {
     });
 
     final deleted = <String>[];
-    var records = const [_Record('1', 'Registro anterior', false)];
+    var records = const [_Record('1', 'Registro anterior', locked: false)];
     late StateSetter update;
     await tester.pumpWidget(
       StatefulBuilder(
@@ -115,16 +115,22 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Seleccionado: Registro anterior'), findsOneWidget);
 
-    update(() => records = const [_Record('2', 'Registro nuevo', false)]);
+    update(
+      () => records = const [_Record('2', 'Registro nuevo', locked: false)],
+    );
     await tester.pumpAndSettle();
     expect(
-      tester.widget<OutlinedButton>(
-        find.widgetWithText(OutlinedButton, 'Eliminar'),
-      ).onPressed,
+      tester
+          .widget<OutlinedButton>(
+            find.widgetWithText(OutlinedButton, 'Eliminar'),
+          )
+          .onPressed,
       isNull,
     );
-    expect(find.text('Seleccioná un registro para habilitar las acciones.'),
-        findsOneWidget);
+    expect(
+      find.text('Seleccioná un registro para habilitar las acciones.'),
+      findsOneWidget,
+    );
     expect(deleted, isEmpty);
   });
 
@@ -174,7 +180,7 @@ void main() {
 }
 
 class _Record {
-  const _Record(this.id, this.label, this.locked);
+  const _Record(this.id, this.label, {required this.locked});
 
   final String id;
   final String label;

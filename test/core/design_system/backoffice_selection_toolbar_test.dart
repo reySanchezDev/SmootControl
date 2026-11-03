@@ -39,9 +39,7 @@ void main() {
             cell: (_, item) => Text(item),
           ),
         ],
-        compactBuilder: compact
-            ? (_, item) => Card(child: Text(item))
-            : null,
+        compactBuilder: compact ? (_, item) => Card(child: Text(item)) : null,
       ),
     ),
   );
@@ -81,8 +79,10 @@ void main() {
     await tester.enterText(find.byType(TextFormField), 'Córdoba');
     await tester.pumpAndSettle();
     expect(tester.widget<OutlinedButton>(edit).onPressed, isNull);
-    expect(find.text('Seleccioná un registro para habilitar las acciones.'),
-        findsOneWidget);
+    expect(
+      find.text('Seleccioná un registro para habilitar las acciones.'),
+      findsOneWidget,
+    );
     expect(tester.takeException(), isNull);
   });
 
@@ -130,5 +130,4 @@ void main() {
 
     expect(tester.takeException(), isArgumentError);
   });
-
 }

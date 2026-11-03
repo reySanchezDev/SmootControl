@@ -42,8 +42,8 @@ class BackofficeCollectionView<T> extends StatefulWidget {
     required this.searchTextFor,
     required this.searchLabel,
     required this.emptyMessage,
-    this.showSearch = true,
     required this.emptyTitle,
+    this.showSearch = true,
     this.compactBuilder,
     this.onCreate,
     this.rowKey,
@@ -196,80 +196,78 @@ class _BackofficeCollectionViewState<T>
                       ),
                     )
                   : compact
-                      ? ListView.separated(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          itemCount: shown.length,
-                          itemBuilder: (context, index) => InkWell(
-                            onTap: widget.selectionActions == null
-                                ? null
-                                : () => setState(() {
-                                    _selectedKey = widget.rowKey!(shown[index]);
-                                  }),
-                            child: Semantics(
-                              selected: selectedIndex == index,
-                              child: DecoratedBox(
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(
-                                    color: selectedIndex == index
-                                        ? Theme.of(context).colorScheme.primary
-                                        : Colors.transparent,
-                                    width: 2,
-                                  ),
-                                ),
-                                child: widget.compactBuilder!(
-                                  context,
-                                  shown[index],
-                                ),
+                  ? ListView.separated(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: shown.length,
+                      itemBuilder: (context, index) => InkWell(
+                        onTap: widget.selectionActions == null
+                            ? null
+                            : () => setState(() {
+                                _selectedKey = widget.rowKey!(shown[index]);
+                              }),
+                        child: Semantics(
+                          selected: selectedIndex == index,
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: selectedIndex == index
+                                    ? Theme.of(context).colorScheme.primary
+                                    : Colors.transparent,
+                                width: 2,
                               ),
                             ),
+                            child: widget.compactBuilder!(
+                              context,
+                              shown[index],
+                            ),
                           ),
-                          separatorBuilder: (_, _) =>
-                              const SizedBox(height: 8),
-                        )
-                      : BackofficeDataTable(
-                          columns: [
-                            for (final column in widget.columns) column.label,
-                          ],
-                          columnWidths: [
-                            for (final column in widget.columns) column.width,
-                          ],
-                          columnAlignments: [
-                            for (final column in widget.columns)
-                              column.alignment,
-                          ],
-                          sortableColumns: [
-                            for (final column in widget.columns)
-                              column.compare != null,
-                          ],
-                          sortColumnIndex: _sortColumn,
-                          sortAscending: _ascending,
-                          onSort: (index) {
-                            if (widget.columns[index].compare == null) return;
-                            setState(() {
-                              if (_sortColumn == index) {
-                                _ascending = !_ascending;
-                              } else {
-                                _sortColumn = index;
-                                _ascending = true;
-                              }
-                              _page = 0;
-                            });
-                          },
-                          selectedRowIndex: selectedIndex,
-                          onRowSelected: widget.selectionActions == null
-                              ? null
-                              : (index) => setState(() {
-                                  _selectedKey = widget.rowKey!(shown[index]);
-                                }),
-                          rows: [
-                            for (final item in shown)
-                              [
-                                for (final column in widget.columns)
-                                  column.cell(context, item),
-                              ],
-                          ],
                         ),
+                      ),
+                      separatorBuilder: (_, _) => const SizedBox(height: 8),
+                    )
+                  : BackofficeDataTable(
+                      columns: [
+                        for (final column in widget.columns) column.label,
+                      ],
+                      columnWidths: [
+                        for (final column in widget.columns) column.width,
+                      ],
+                      columnAlignments: [
+                        for (final column in widget.columns) column.alignment,
+                      ],
+                      sortableColumns: [
+                        for (final column in widget.columns)
+                          column.compare != null,
+                      ],
+                      sortColumnIndex: _sortColumn,
+                      sortAscending: _ascending,
+                      onSort: (index) {
+                        if (widget.columns[index].compare == null) return;
+                        setState(() {
+                          if (_sortColumn == index) {
+                            _ascending = !_ascending;
+                          } else {
+                            _sortColumn = index;
+                            _ascending = true;
+                          }
+                          _page = 0;
+                        });
+                      },
+                      selectedRowIndex: selectedIndex,
+                      onRowSelected: widget.selectionActions == null
+                          ? null
+                          : (index) => setState(() {
+                              _selectedKey = widget.rowKey!(shown[index]);
+                            }),
+                      rows: [
+                        for (final item in shown)
+                          [
+                            for (final column in widget.columns)
+                              column.cell(context, item),
+                          ],
+                      ],
+                    ),
             ),
             BackofficePaginationFooter(
               rowsPerPage: _pageSize,
