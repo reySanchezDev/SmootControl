@@ -142,6 +142,23 @@ class _AttendanceAdminPageState extends State<AttendanceAdminPage> {
   }
 
   Future<void> _openEditor([AttendanceEntry? entry]) async {
+    if (_employees.isEmpty) {
+      await showAppMessageDialog(
+        context: context,
+        title: 'No se puede abrir el editor',
+        message: 'No hay empleados activos disponibles. Verificá el catálogo de empleados.',
+      );
+      return;
+    }
+    if (entry != null &&
+        !_employees.any((employee) => employee.id == entry.employeeId)) {
+      await showAppMessageDialog(
+        context: context,
+        title: 'No se puede editar esta marcada',
+        message: 'El empleado del registro no está disponible entre los empleados activos. Verificá su estado antes de editar.',
+      );
+      return;
+    }
     final saved = await showDialog<AttendanceEntry>(
       context: context,
       builder: (_) => _AttendanceEditorDialog(
