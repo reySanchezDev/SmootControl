@@ -10,9 +10,7 @@ class StaffConsumptionsPage extends StatefulWidget {
 }
 
 class _StaffConsumptionsPageState extends State<StaffConsumptionsPage> {
-  final _searchController = TextEditingController();
   late Future<AppResult<List<StaffConsumption>>> _future;
-  String _query = '';
 
   SupabaseStaffAdminRepository get _repository =>
       serviceLocator<SupabaseStaffAdminRepository>();
@@ -24,22 +22,11 @@ class _StaffConsumptionsPageState extends State<StaffConsumptionsPage> {
   }
 
   @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return AppPageScaffold(
       title: 'Consumos de personal',
       body: Column(
         children: [
-          _StaffSearchField(
-            controller: _searchController,
-            hintText: 'Buscar por empleado, recibo, fecha o monto',
-            onChanged: (value) => setState(() => _query = value),
-          ),
           Expanded(
             child: FutureBuilder<AppResult<List<StaffConsumption>>>(
               future: _future,
@@ -47,8 +34,8 @@ class _StaffConsumptionsPageState extends State<StaffConsumptionsPage> {
                 if (!snapshot.hasData) return const AppLoadingPage();
                 return switch (snapshot.requireData) {
                   AppSuccess(:final value) => _StaffConsumptionList(
-                    consumptions: _filterConsumptions(value),
-                    hasFilter: _query.trim().isNotEmpty,
+                    consumptions: value,
+                    hasFilter: false,
                     onDelete: _deleteConsumption,
                     onOpen: _openDetail,
                   ),
@@ -64,22 +51,6 @@ class _StaffConsumptionsPageState extends State<StaffConsumptionsPage> {
         ],
       ),
     );
-  }
-
-  List<StaffConsumption> _filterConsumptions(
-    List<StaffConsumption> consumptions,
-  ) {
-    final query = _query.trim().toLowerCase();
-    if (query.isEmpty) return consumptions;
-    return consumptions.where((item) {
-      final values = [
-        item.employeeName,
-        item.receiptLabel,
-        _dateOnly(item.createdAt),
-        _money(item.totalInCents),
-      ].join(' ').toLowerCase();
-      return values.contains(query);
-    }).toList();
   }
 
   Future<void> _openDetail(StaffConsumption consumption) async {
