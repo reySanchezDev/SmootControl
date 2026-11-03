@@ -42,6 +42,7 @@ class BackofficeCollectionView<T> extends StatefulWidget {
     required this.searchTextFor,
     required this.searchLabel,
     required this.emptyMessage,
+    this.showSearch = true,
     required this.emptyTitle,
     this.compactBuilder,
     this.onCreate,
@@ -72,6 +73,9 @@ class BackofficeCollectionView<T> extends StatefulWidget {
 
   /// Search field's user-friendly label.
   final String searchLabel;
+
+  /// Whether to render search when a parent already provides filtering.
+  final bool showSearch;
 
   /// No-results description.
   final String emptyMessage;
@@ -163,9 +167,10 @@ class _BackofficeCollectionViewState<T>
                     : widget.rowLabel?.call(selected),
                 onCreate: widget.onCreate,
               ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-              child: AppSearchField(
+            if (widget.showSearch)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+                child: AppSearchField(
                 controller: _searchController,
                 label: widget.searchLabel,
                 onChanged: (value) => setState(() {
@@ -180,7 +185,7 @@ class _BackofficeCollectionViewState<T>
                   _selectedKey = null;
                 }),
               ),
-            ),
+              ),
             Expanded(
               child: filtered.isEmpty
                   ? Center(
