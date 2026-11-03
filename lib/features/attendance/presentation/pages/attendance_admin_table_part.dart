@@ -7,6 +7,7 @@ class _AttendanceEntriesTable extends StatelessWidget {
     required this.readOnly,
     required this.onEdit,
     required this.onCreate,
+    required this.createEnabled,
     required this.onVoid,
   });
 
@@ -14,6 +15,7 @@ class _AttendanceEntriesTable extends StatelessWidget {
   final bool readOnly;
   final ValueChanged<AttendanceEntry> onEdit;
   final VoidCallback? onCreate;
+  final bool createEnabled;
   final ValueChanged<AttendanceEntry> onVoid;
 
   @override
@@ -23,6 +25,7 @@ class _AttendanceEntriesTable extends StatelessWidget {
       rowKey: readOnly ? null : (entry) => entry.id,
       rowLabel: (entry) => entry.employeeName,
       onCreate: readOnly ? null : onCreate,
+      createEnabled: createEnabled,
       selectionActions: readOnly
           ? null
           : [
