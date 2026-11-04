@@ -65,6 +65,58 @@ void main() {
     expect(saved, [367500]);
   });
 
+  testWidgets('four-decimal exchange rate persists without rounding', (
+    tester,
+  ) async {
+    final saved = <int>[];
+    await tester.pumpWidget(
+      harness((day, units) async {
+        saved.add(units);
+        return AppSuccess(
+          ExchangeRate(
+            currencyCode: 'USD',
+            businessDate: day,
+            rateInCents: (units / 100).round(),
+            rateInTenThousandths: units,
+          ),
+        );
+      }),
+    );
+
+    await tester.enterText(find.byType(TextField), '36.6243');
+    await tester.tap(find.text('Otra celda'));
+    await tester.pumpAndSettle();
+
+    expect(saved, [366243]);
+    expect(find.text('Guardado'), findsOneWidget);
+  });
+
+  testWidgets('five decimal places are rejected without save', (
+    tester,
+  ) async {
+    var calls = 0;
+    await tester.pumpWidget(
+      harness((day, units) async {
+        calls++;
+        return AppSuccess(
+          ExchangeRate(
+            currencyCode: 'USD',
+            businessDate: day,
+            rateInCents: (units / 100).round(),
+            rateInTenThousandths: units,
+          ),
+        );
+      }),
+    );
+
+    await tester.enterText(find.byType(TextField), '36.62435');
+    await tester.tap(find.text('Otra celda'));
+    await tester.pumpAndSettle();
+
+    expect(calls, 0);
+    expect(find.textContaining('hasta 4 decimales'), findsOneWidget);
+  });
+
   testWidgets('unchanged rate never issues a save', (tester) async {
     var calls = 0;
     await tester.pumpWidget(
