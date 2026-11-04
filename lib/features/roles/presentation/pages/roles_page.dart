@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smoo_control/core/design_system/app_empty_state.dart';
-import 'package:smoo_control/core/design_system/backoffice_action_feedback.dart';
 import 'package:smoo_control/core/design_system/app_loading_page.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
+import 'package:smoo_control/core/design_system/backoffice_action_feedback.dart';
 import 'package:smoo_control/core/design_system/backoffice_collection_view.dart';
 import 'package:smoo_control/core/design_system/backoffice_selection_toolbar.dart';
 import 'package:smoo_control/core/design_system/confirm_deactivate_dialog.dart';
@@ -40,7 +40,9 @@ class RolesPage extends StatelessWidget {
                   BackofficeActionFeedback.show(
                     context,
                     outcome: BackofficeActionOutcome.success,
-                    message: 'Rol «$roleName» y sus permisos guardados correctamente.',
+                    message:
+                        'Rol «$roleName» y sus permisos '
+                        'guardados correctamente.',
                   );
                 case RolesActionFailed(:final failure, :final mayBePartial):
                   BackofficeActionFeedback.show(
