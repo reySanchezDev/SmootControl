@@ -89,7 +89,10 @@ class _VacationFilters extends StatelessWidget {
                   DropdownMenuItem(value: '', child: Text('Todos')),
                   DropdownMenuItem(value: 'pending', child: Text('Pendientes')),
                   DropdownMenuItem(value: 'approved', child: Text('Aprobadas')),
-                  DropdownMenuItem(value: 'rejected', child: Text('Rechazadas')),
+                  DropdownMenuItem(
+                    value: 'rejected',
+                    child: Text('Rechazadas'),
+                  ),
                 ],
                 onChanged: (value) => onStatus(
                   value == null || value.isEmpty ? null : value,
