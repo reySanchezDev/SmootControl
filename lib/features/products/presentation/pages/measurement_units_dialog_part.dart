@@ -53,20 +53,22 @@ class _MeasurementUnitDialogState extends State<_MeasurementUnitDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text(widget.unit == null ? 'Nueva unidad' : 'Editar unidad'),
-      content: SingleChildScrollView(
-        child: Column(
+      content: SizedBox(
+        width: BackofficeFormStandards.dialogWidth,
+        child: SingleChildScrollView(
+          child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: _code,
               decoration: const InputDecoration(labelText: 'Código'),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: BackofficeFormStandards.fieldGap),
             TextField(
               controller: _name,
               decoration: const InputDecoration(labelText: 'Nombre'),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: BackofficeFormStandards.fieldGap),
             DropdownButtonFormField<String>(
               initialValue: _draft.group,
               decoration: const InputDecoration(labelText: 'Tipo'),
@@ -77,16 +79,17 @@ class _MeasurementUnitDialogState extends State<_MeasurementUnitDialog> {
               ],
               onChanged: (value) => _draft.group = value ?? 'count',
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: BackofficeFormStandards.fieldGap),
             TextField(
               controller: _factor,
               decoration: const InputDecoration(labelText: 'Factor base'),
             ),
             if (_error != null) ...[
-              const SizedBox(height: 12),
+              const SizedBox(height: BackofficeFormStandards.fieldGap),
               AppText(_error!, maxLines: 3),
             ],
           ],
+        ),
         ),
       ),
       actions: [
