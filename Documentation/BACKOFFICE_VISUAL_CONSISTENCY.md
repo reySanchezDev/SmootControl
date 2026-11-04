@@ -60,3 +60,13 @@ La inspección de componentes compartidos detectó problemas de ancho y espaciad
 **No se declara cobertura global terminada:** continúan pendientes de inspección pantalla por pantalla Caja, Tasas, varios diálogos de personal, reportes, empaques y movimientos. La revisión visual en 390/1366/1920 sigue pendiente. No usar este lote para afirmar regresión funcional aprobada.
 
 **QA proporcional requerido ahora:** `dart format` sobre archivos del lote, `flutter analyze`, y pruebas focalizadas de diálogos y selección móvil de Unidades. No repetir 138 pruebas ni construir Web por cambios de espaciado; compilar una vez al preparar revisión visual del lote completo. No publicar si falla el análisis. Ningún servicio ni repositorio fue modificado en este lote.
+
+## F3 — Continuación de Caja y Tasas de cambio (2026-11-04)
+
+Base anterior confirmada por Codex: `deafa566c0817d5a0adfd830424c3877294fb608`, `flutter analyze` limpio, selección de empleados de Marcadas 4/4; no hay aún tests de widget localizados para Personal, Unidades ni Vacaciones.
+
+**Caja:** filtros Desde/Hasta utilizan el ancho de fecha compartido de 210 px, separación de 12 px y etiquetas explícitas. Editor de sesión adopta ancho preferido de diálogo 520 px y separación del diseño global. Se conservaron `_pickDate`, los callbacks de edición y eliminación, `_submit`, el servicio remoto y las validaciones monetarias.
+
+**Tasas de cambio:** navegación entre meses mediante controles con icono y etiqueta visible dentro del módulo (en vez de flechas aisladas en el encabezado). El período sigue siendo visible; el campo de tasa mensual deja de expandirse indefinidamente y utiliza máximo de filtro compartido de 260 px en escritorio. Se conservaron `_previousMonth`, `_nextMonth`, `_applyMonthRate`, `_saveRate` y sus repositorios. La edición de importes diarios no se modificó.
+
+**QA incremental requerido:** formatear solo archivos tocados de Caja/Tasas, ejecutar `flutter analyze` y pruebas focalizadas existentes de vistas de Caja/Tasas sin datos reales. No ejecutar regresión general ni build hasta cerrar el lote visual. Continúa pendiente auditoría del resto de diálogos de nómina, Gastos, inventario, roles y permisos, usuarios y reportes; no declarar F3 concluida.
