@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:smoo_control/core/design_system/app_button.dart';
 import 'package:smoo_control/core/design_system/app_input.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
+import 'package:smoo_control/core/design_system/backoffice_form_standards.dart';
 import 'package:smoo_control/features/roles/domain/entities/access_permission.dart';
 import 'package:smoo_control/features/roles/domain/entities/access_role.dart';
 import 'package:smoo_control/l10n/app_localizations.dart';
@@ -67,7 +68,7 @@ class _CreateRoleDialogState extends State<CreateRoleDialog> {
         variant: AppTextVariant.titleMedium,
       ),
       content: SizedBox(
-        width: 420,
+        width: BackofficeFormStandards.wideDialogWidth,
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -78,7 +79,7 @@ class _CreateRoleDialogState extends State<CreateRoleDialog> {
                 label: l10n.roleDescriptionField,
                 controller: _descriptionController,
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: BackofficeFormStandards.sectionGap),
               CheckboxListTile(
                 contentPadding: EdgeInsets.zero,
                 title: AppText(l10n.systemRoleField),
@@ -92,6 +93,7 @@ class _CreateRoleDialogState extends State<CreateRoleDialog> {
                 value: _isActive,
                 onChanged: (value) => setState(() => _isActive = value ?? true),
               ),
+              const SizedBox(height: BackofficeFormStandards.sectionGap),
               Align(
                 alignment: Alignment.centerLeft,
                 child: AppText(
