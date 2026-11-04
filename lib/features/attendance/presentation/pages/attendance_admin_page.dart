@@ -14,8 +14,8 @@ import 'package:smoo_control/core/result/app_result.dart';
 import 'package:smoo_control/features/attendance/domain/entities/attendance_entry.dart';
 import 'package:smoo_control/features/attendance/domain/repositories/i_attendance_repository.dart';
 import 'package:smoo_control/features/attendance/presentation/pages/attendance_employee_selection.dart';
-import 'package:smoo_control/features/staff/domain/entities/employee.dart';
 import 'package:smoo_control/features/staff/data/repositories/supabase_staff_admin_repository.dart';
+import 'package:smoo_control/features/staff/domain/entities/employee.dart';
 
 part 'attendance_admin_widgets_part.dart';
 part 'attendance_admin_table_part.dart';
@@ -35,7 +35,7 @@ final class AttendanceAdminPage extends StatefulWidget {
 class _AttendanceAdminPageState extends State<AttendanceAdminPage> {
   final IAttendanceRepository _attendanceRepository =
       serviceLocator<IAttendanceRepository>();
-  // Administrative attendance must use the same remote employee source as Personal.
+  // Marcadas uses Personal's remote employee source.
   final SupabaseStaffAdminRepository _staffRepository =
       serviceLocator<SupabaseStaffAdminRepository>();
   late DateTime _from;
