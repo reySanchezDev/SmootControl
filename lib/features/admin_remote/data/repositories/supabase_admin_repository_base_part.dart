@@ -181,6 +181,8 @@ abstract class _SupabaseAdminRepositoryBase {
       currencyCode: _text(row['currency_code']),
       businessDate: _date(row['business_date']),
       rateInCents: _moneyToCents(row['rate']),
+      rateInTenThousandths:
+          (double.parse(row['rate'].toString()) * 10000).round(),
     );
   }
 
