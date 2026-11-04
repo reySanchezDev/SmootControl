@@ -291,7 +291,17 @@ class _ExchangeRatesPageState extends State<ExchangeRatesPage> {
 /// Returns units of 1/10000; never silently rounds away entered precision.
 int? _parseExchangeRate(String input) {
   final value = input.trim().replaceAll(',', '.');
-  if (!RegExp(r'^\\d+(\\.\\d{1,4})?$').hasMatch(value)) return null;
+  if (!RegExp(r'^\d+(\.\d{1,4})?).hasMatch(value)) return null;
+  final parts = value.split('.');
+  final whole = int.tryParse(parts.first);
+  final fraction = int.tryParse(
+    parts.length == 1 ? '0' : parts.last.padRight(4, '0'),
+  );
+  if (whole == null || fraction == null) return null;
+  final result = whole * 10000 + fraction;
+  return result > 0 && result <= 999999999999999 ? result : null;
+}
+).hasMatch(value)) return null;
   final parts = value.split('.');
   final whole = int.tryParse(parts.first);
   final fraction = int.tryParse(
