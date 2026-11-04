@@ -1,6 +1,7 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:smoo_control/core/result/app_result.dart';
+import 'package:smoo_control/core/result/app_failure.dart';
 import 'package:smoo_control/features/audit/domain/entities/audit_log_entry.dart';
 import 'package:smoo_control/features/audit/domain/repositories/i_audit_log_repository.dart';
 import 'package:smoo_control/features/roles/domain/entities/access_permission.dart';
@@ -68,13 +69,66 @@ void main() {
         expect(audit.entries.single.entityId, 'role-admin');
       },
     );
+    blocTest<RolesBloc, RolesState>(
+      'confirms save only after both role and permissions succeed',
+      build: () {
+        final repository = _RolesRepositoryFake(roles: [admin]);
+        return RolesBloc(
+          repository: repository,
+          seedService: AccessSeedService(repository),
+          auditLogRepository: AuditLogRepositoryFake(),
+          seedDefaults: false,
+        );
+      },
+      act: (bloc) => bloc.add(
+        const RoleSaved(
+          role: admin,
+          permissionCodes: ['ventas.registrar'],
+        ),
+      ),
+      expect: () => [
+        const RolesLoading(),
+        const RolesActionSucceeded('Administrador'),
+        isA<RolesLoaded>(),
+      ],
+    );
+
+    blocTest<RolesBloc, RolesState>(
+      'reports a possible partial save when permissions fail',
+      build: () {
+        final repository = _RolesRepositoryFake(
+          roles: [admin],
+          failPermissions: true,
+        );
+        return RolesBloc(
+          repository: repository,
+          seedService: AccessSeedService(repository),
+          auditLogRepository: AuditLogRepositoryFake(),
+          seedDefaults: false,
+        );
+      },
+      act: (bloc) => bloc.add(
+        const RoleSaved(
+          role: admin,
+          permissionCodes: ['ventas.registrar'],
+        ),
+      ),
+      expect: () => [
+        const RolesLoading(),
+        isA<RolesActionFailed>()
+            .having((state) => state.mayBePartial, 'partial', isTrue)
+            .having((state) => state.failure.message, 'message', 'Permisos fallaron'),
+      ],
+    );
   });
 }
 
 late AuditLogRepositoryFake audit;
 
 final class _RolesRepositoryFake implements IRolesRepository {
-  _RolesRepositoryFake({required this.roles});
+  _RolesRepositoryFake({required this.roles, this.failPermissions = false});
+
+  final bool failPermissions;
 
   final List<AccessRole> roles;
   final List<AccessPermission> permissions = [];
@@ -116,6 +170,11 @@ final class _RolesRepositoryFake implements IRolesRepository {
     required String roleId,
     required List<String> permissionCodes,
   }) async {
+    if (failPermissions) {
+      return const AppFailureResult<void>(
+        AppFailure(code: 'permissions', message: 'Permisos fallaron'),
+      );
+    }
     codesByRole[roleId] = permissionCodes;
     return const AppSuccess<void>(null);
   }
