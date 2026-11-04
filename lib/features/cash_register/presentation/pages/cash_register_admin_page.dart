@@ -3,12 +3,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:smoo_control/core/design_system/app_button.dart';
-import 'package:smoo_control/core/design_system/backoffice_action_feedback.dart';
 import 'package:smoo_control/core/design_system/app_empty_state.dart';
 import 'package:smoo_control/core/design_system/app_input.dart';
 import 'package:smoo_control/core/design_system/app_message_dialog.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
+import 'package:smoo_control/core/design_system/backoffice_action_feedback.dart';
 import 'package:smoo_control/core/design_system/backoffice_form_standards.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/core/formatters/money_formatter.dart';
@@ -68,23 +68,22 @@ class _CashRegisterAdminPageState extends State<CashRegisterAdminPage> {
             child: _loading
                 ? const Center(child: CircularProgressIndicator())
                 : _error != null
-                    ? AppEmptyState(
-                        icon: Icons.error_outline,
-                        message: _error!,
-                        title: l10n.cashRegisterAdminTitle,
-                      )
-                    : CashRegisterBackofficeTable(
-                        records: _records,
-                        onReload: _load,
-                        reloadEnabled: !_loading,
-                        onEdit: (record) => unawaited(_edit(record)),
-                        onDelete: (record) => unawaited(_delete(record)),
-                        compactBuilder: (context, record) =>
-                            _CashRegisterAdminTile(
-                              dateFormat: _dateFormat,
-                              record: record,
-                            ),
-                      ),
+                ? AppEmptyState(
+                    icon: Icons.error_outline,
+                    message: _error!,
+                    title: l10n.cashRegisterAdminTitle,
+                  )
+                : CashRegisterBackofficeTable(
+                    records: _records,
+                    onReload: _load,
+                    reloadEnabled: !_loading,
+                    onEdit: (record) => unawaited(_edit(record)),
+                    onDelete: (record) => unawaited(_delete(record)),
+                    compactBuilder: (context, record) => _CashRegisterAdminTile(
+                      dateFormat: _dateFormat,
+                      record: record,
+                    ),
+                  ),
           ),
         ],
       ),

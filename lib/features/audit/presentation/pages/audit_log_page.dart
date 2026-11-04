@@ -6,8 +6,8 @@ import 'package:intl/intl.dart';
 import 'package:smoo_control/core/design_system/app_empty_state.dart';
 import 'package:smoo_control/core/design_system/app_loading_page.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
-import 'package:smoo_control/core/design_system/backoffice_form_standards.dart';
 import 'package:smoo_control/core/design_system/backoffice_collection_view.dart';
+import 'package:smoo_control/core/design_system/backoffice_form_standards.dart';
 import 'package:smoo_control/core/design_system/backoffice_selection_toolbar.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/features/audit/domain/entities/audit_log_entry.dart';
@@ -74,7 +74,9 @@ class _AuditLogContent extends StatelessWidget {
             alignment: Alignment.centerLeft,
             child: OutlinedButton.icon(
               icon: const Icon(Icons.calendar_month_outlined),
-              label: Text('Fecha: ${DateFormat('dd/MM/yyyy', 'es').format(date)}'),
+              label: Text(
+                'Fecha: ${DateFormat('dd/MM/yyyy', 'es').format(date)}',
+              ),
               onPressed: () => _selectDate(context),
             ),
           ),

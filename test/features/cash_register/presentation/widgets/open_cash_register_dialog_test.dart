@@ -50,7 +50,10 @@ void main() {
     await tester.tap(find.byType(TextFormField).first);
     await tester.pumpAndSettle();
     await _enterAmount(tester, '100');
-    await tester.tap(find.text('OK'));
+    final l10n = AppLocalizations.of(
+      tester.element(find.byType(TextFormField)),
+    );
+    await tester.tap(find.text(l10n.okAction));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Open'));
     await tester.pumpAndSettle();
