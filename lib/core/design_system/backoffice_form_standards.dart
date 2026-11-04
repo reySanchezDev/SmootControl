@@ -8,6 +8,15 @@ abstract final class BackofficeFormStandards {
   /// Space between independent filter groups.
   static const double filterGap = 12;
 
+  /// Standard width for compact administrative edit dialogs.
+  static const double dialogWidth = 520;
+
+  /// Standard width for detailed administrative forms.
+  static const double wideDialogWidth = 680;
+
+  /// Space between distinct form sections.
+  static const double sectionGap = 16;
+
   /// Maximum width of a search field on desktop.
   static const double searchWidth = 440;
 
