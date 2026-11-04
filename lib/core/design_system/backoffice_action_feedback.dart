@@ -1,35 +1,37 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
-/// Semantic outcome of an administrative operation.
+/// Result types for explicit administrative actions.
 enum BackofficeActionOutcome {
-  /// Persistence completed successfully.
+  /// The operation was confirmed as completed.
   success,
 
-  /// The operation failed remotely or locally.
+  /// The operation failed.
   error,
 
-  /// Input was rejected before persistence.
+  /// Validation or a recoverable situation needs attention.
   warning,
 
-  /// The operation reports neutral information.
+  /// Neutral information for the user.
   info,
 }
 
-/// Standard feedback after an administrative operation finishes.
+/// Accessible modal feedback for explicit administrative actions.
 ///
-/// A success must be emitted only after the persistence layer confirms it;
-/// validation rejection and server failure must never be presented as success.
+/// Do not show success before the persistence layer confirms it. Repeated
+/// inline edits, such as daily exchange-rate cells, keep field-local feedback
+/// so a modal does not interrupt keyboard entry.
 abstract final class BackofficeActionFeedback {
-  /// Shows one accessible, nonblocking message with a visible outcome label.
+  /// Displays a result dialog with an explicit outcome, icon, and acknowledgment.
   static void show(
     BuildContext context, {
     required BackofficeActionOutcome outcome,
     required String message,
   }) {
-    final messenger = ScaffoldMessenger.of(context);
-    final (label, icon) = switch (outcome) {
+    final (title, icon) = switch (outcome) {
       BackofficeActionOutcome.success => (
-        'Correcto',
+        'Operación exitosa',
         Icons.check_circle_outline,
       ),
       BackofficeActionOutcome.error => ('Error', Icons.error_outline),
@@ -39,20 +41,34 @@ abstract final class BackofficeActionFeedback {
       ),
       BackofficeActionOutcome.info => ('Información', Icons.info_outline),
     };
-    messenger
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          behavior: SnackBarBehavior.floating,
-          duration: const Duration(seconds: 5),
-          content: Row(
-            children: [
-              Icon(icon, color: Theme.of(context).colorScheme.onInverseSurface),
-              const SizedBox(width: 12),
-              Expanded(child: Text('$label: $message')),
+
+    unawaited(
+      showDialog<void>(
+        context: context,
+        builder: (dialogContext) {
+          final colors = Theme.of(dialogContext).colorScheme;
+          final emphasis = switch (outcome) {
+            BackofficeActionOutcome.success => colors.primary,
+            BackofficeActionOutcome.error => colors.error,
+            BackofficeActionOutcome.warning => colors.tertiary,
+            BackofficeActionOutcome.info => colors.primary,
+          };
+          return AlertDialog(
+            icon: Icon(icon, color: emphasis, size: 32),
+            title: Text(title, textAlign: TextAlign.center),
+            content: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 440),
+              child: Text(message, textAlign: TextAlign.center),
+            ),
+            actions: [
+              FilledButton(
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                child: const Text('Aceptar'),
+              ),
             ],
-          ),
-        ),
-      );
+          );
+        },
+      ),
+    );
   }
 }
