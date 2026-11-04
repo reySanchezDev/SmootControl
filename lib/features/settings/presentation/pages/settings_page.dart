@@ -1,11 +1,9 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smoo_control/core/design_system/app_empty_state.dart';
+import 'package:smoo_control/core/design_system/backoffice_action_feedback.dart';
 import 'package:smoo_control/core/design_system/app_input.dart';
 import 'package:smoo_control/core/design_system/app_loading_page.dart';
-import 'package:smoo_control/core/design_system/app_message_dialog.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
 import 'package:smoo_control/core/design_system/backoffice_save_action.dart';
@@ -82,12 +80,10 @@ class _SettingsBodyState extends State<_SettingsBody> {
           }
 
           if (state.saved) {
-            unawaited(
-              showAppMessageDialog(
-                context: context,
-                message: l10n.settingsSavedMessage,
-                title: l10n.moduleSettings,
-              ),
+            BackofficeActionFeedback.show(
+              context,
+              outcome: BackofficeActionOutcome.success,
+              message: l10n.settingsSavedMessage,
             );
           }
         }
