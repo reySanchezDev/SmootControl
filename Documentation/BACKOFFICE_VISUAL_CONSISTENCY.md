@@ -179,3 +179,18 @@ El propietario aprobó visualmente Roles, Usuarios y Gastos tras SHA `26e39c237a
 **Estimación operativa de avance F3:** aproximadamente **80 %**, orientativa y no resultado de un conteo exhaustivo de pantallas; el catálogo de `lib/features` incluye rutas POS y administración y no se puede equiparar el número de archivos con porcentaje de aceptación. Restan auditoría de Métodos de pago/otros catálogos, coherencia de Inventario y Movimientos, Caja y Reportes/Configuración, aplicación UX-041 a las operaciones aún no cubiertas, y cierre con inspección responsive y pruebas de no regresión. No declarar F3 terminada hasta validación visual y funcional integral.
 
 **QA proporcional:** ejecutar `flutter analyze`, pruebas focalizadas existentes de Métodos de pago/selección y verificar formato solo de tres archivos modificados. Si pasa todo, ejecutar build Web oficial con Supabase/Drift y actualizar `8081` en la misma tarea. No ejecutar cambios reales en Supabase, no alterar `main`, POS, `8080`, producción ni stashes.
+
+## F3 — Lote ampliado de revisión transversal, una sola validación (2026-11-04)
+
+A petición del propietario, se agruparon cambios previamente separados para ejecutar **un único ciclo de Codex**, con `flutter analyze`, pruebas focalizadas secuenciales y, si todo pasa, build y actualización de `8081` en la misma tarea.
+
+**Incluido en el mismo lote (no declarado validado aún):**
+- Métodos de pago: diálogo de 520 px lógicos, margen superior que protege la etiqueta Nombre, separación uniforme y eliminación de comandos duplicados por tarjeta móvil, conservando acciones en barra contextual.
+- Inventario: tres diálogos administrativos (ajustes, compras de productos por lote y compras de empaques por lote) usan `BackofficeFormStandards.wideDialogWidth` en escritorio, y espacios `fieldGap/sectionGap`. Mantienen ancho adaptable en móvil, controles de búsqueda, filas, comprobaciones, servicios, callbacks y guardado originales.
+- Inventario: las tres advertencias «sin productos/empaques» pasan de Snackbar inferior a diálogo modal de advertencia UX-041. No se modificó la condición de disponibilidad ni la operación.
+- Reportes: el comando de generación de PDF en el resumen se muestra con **icono y texto**, conservando el callback y la desactivación cuando no existe resumen.
+- Configuración: tras `BusinessSettingsLoaded(saved: true)`, la confirmación se presenta como diálogo modal **Operación exitosa** de UX-041, sin mensaje por carga inicial; se preserva el flujo de guardado.
+
+**Excluido deliberadamente por riesgo:** los diálogos de abrir/cerrar caja compartidos con el POS, permisos, movimientos reales, modificaciones a Supabase, lógica de ventas, seguridad y operaciones de producción. Caja y Movimientos ya tenían mejoras de filtros/tabla, pero no se declaran completamente auditados solo por este lote.
+
+**QA antes de publicación visual:** formatear únicamente los archivos Dart alterados, comprobar imports de `part of` (incluido `BackofficeFormStandards` en `inventory_page.dart`), ejecutar `flutter analyze`; pruebas focalizadas de Métodos de pago, Inventario y sus diálogos, Reportes, Configuración y feedback modal, más la selección compartida. En caso de fallos corregir solo problemas de este lote. Si pasa todo, commit/push y construir con Supabase+Drift para actualizar exclusivamente `8081`, verificando SHA servido y HTTP 200. Mantener 17 stashes, `8080`, `main`, POS, producción y datos reales intactos. No ejecutar regresión general para cambios puramente visuales.
