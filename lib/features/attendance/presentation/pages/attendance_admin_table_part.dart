@@ -6,6 +6,7 @@ class _AttendanceEntriesTable extends StatelessWidget {
     required this.items,
     required this.readOnly,
     required this.onEdit,
+    required this.canEdit,
     required this.onCreate,
     required this.createEnabled,
     required this.onVoid,
@@ -14,6 +15,7 @@ class _AttendanceEntriesTable extends StatelessWidget {
   final List<AttendanceEntry> items;
   final bool readOnly;
   final ValueChanged<AttendanceEntry> onEdit;
+  final bool Function(AttendanceEntry entry) canEdit;
   final VoidCallback? onCreate;
   final bool createEnabled;
   final ValueChanged<AttendanceEntry> onVoid;
@@ -32,6 +34,7 @@ class _AttendanceEntriesTable extends StatelessWidget {
               BackofficeSelectionAction<AttendanceEntry>(
                 label: 'Editar',
                 icon: Icons.edit_outlined,
+                enabledWhen: canEdit,
                 onPressed: onEdit,
               ),
               BackofficeSelectionAction<AttendanceEntry>(
