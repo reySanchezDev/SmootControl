@@ -39,3 +39,12 @@ políticas universales sin ratificar el cambio en el repositorio central.
 - Ejecutar `dart format`, `flutter analyze`, pruebas y verificación de UI antes
   de considerar una tarea terminada; si el ambiente carece de Flutter,
   declararlo explícitamente, sin fingir resultados.
+
+## Build Web / preview con Supabase (obligatorio para Codex)
+
+- **Usar siempre** `tool/build_web_release.ps1` para generar el Backoffice Web, nunca un `flutter build web` suelto ni un build sin `--dart-define`.
+- El script exige `SMOO_SUPABASE_URL`, `SMOO_SUPABASE_PUBLISHABLE_KEY` y `SMOO_RESTAURANT_ID`. Si falta alguna, aborta **antes** de limpiar/compilar. Un HTTP 200 no demuestra que la autenticación esté configurada.
+- El archivo `Requerimiento/CredencialesSupabase.md` permanece fuera del control de versiones y debe usarse sin copiarlo ni exponer su contenido. Al compilar desde `SmooControl-stabilization-latest`, el script puede reutilizar automáticamente el archivo del worktree hermano `SmooControl-backoffice-stabilization-integration`, si existe. Alternativamente usar `-CredentialsPath "RUTA_LOCAL"` o la variable `SMOO_CREDENTIALS_PATH` para declarar una ubicación estable en la máquina.
+- **Nunca** añadir secretos a Git, logs, prompts ni capturas. Las claves de tipo service-role/secret **no deben** usarse en cliente Web; solo la clave publicable destinada al navegador.
+- Reemplazar `8081` solo si el build válido termina con éxito. Verificar además que el inicio de sesión remoto esté configurado, no únicamente que los archivos respondan HTTP 200.
+- No alterar `8080`, `main`, producción ni el worktree original para preparar el preview.
