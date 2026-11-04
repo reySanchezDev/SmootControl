@@ -212,4 +212,145 @@ void main() {
     expect(amounts, [3715]);
     expect(find.text('Guardado'), findsOneWidget);
   });
+  testWidgets('Tab stays in daily rates even with an earlier sidebar target', (
+    tester,
+  ) async {
+    final focusNodes = [FocusNode(), FocusNode(), FocusNode()];
+    addTearDown(() {
+      for (final node in focusNodes) {
+        node.dispose();
+      }
+    });
+    final persisted = <int>[];
+    Future<AppResult<ExchangeRate>> save(DateTime day, int cents) async {
+      persisted.add(cents);
+      return AppSuccess(
+        ExchangeRate(
+          currencyCode: 'USD',
+          businessDate: day,
+          rateInCents: cents,
+        ),
+      );
+    }
+
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('es'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: Row(
+            children: [
+              TextButton(
+                onPressed: () {},
+                child: const Text('Marcadas menú'),
+              ),
+              Expanded(
+                child: Column(
+                  children: [
+                    for (var day = 0; day < 3; day++)
+                      ExchangeRateTile(
+                        date: DateTime(2026, 11, day + 1),
+                        currencyCode: 'USD',
+                        onSaved: save,
+                        focusNode: focusNodes[day],
+                        previousFocusNode: day == 0 ? null : focusNodes[day - 1],
+                        nextFocusNode: day == 2 ? null : focusNodes[day + 1],
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    final fields = find.byType(TextField);
+    await tester.tap(fields.first);
+    await tester.enterText(fields.first, '36.71');
+    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+    await tester.pumpAndSettle();
+    expect(focusNodes[1].hasFocus, isTrue);
+    expect(persisted, [3671]);
+
+    await tester.enterText(fields.at(1), '36.72');
+    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+    await tester.pumpAndSettle();
+    expect(focusNodes[2].hasFocus, isTrue);
+    expect(persisted, [3671, 3672]);
+
+    await tester.sendKeyDownEvent(LogicalKeyboardKey.shiftLeft);
+    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+    await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
+    await tester.pumpAndSettle();
+    expect(focusNodes[1].hasFocus, isTrue);
+  });
+
+  testWidgets('Enter focuses the next daily rate, not sidebar', (
+    tester,
+  ) async {
+    final first = FocusNode();
+    final second = FocusNode();
+    addTearDown(() {
+      first.dispose();
+      second.dispose();
+    });
+    final saved = <int>[];
+    Future<AppResult<ExchangeRate>> save(DateTime day, int cents) async {
+      saved.add(cents);
+      return AppSuccess(
+        ExchangeRate(
+          currencyCode: 'USD',
+          businessDate: day,
+          rateInCents: cents,
+        ),
+      );
+    }
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('es'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: Row(
+            children: [
+              TextButton(
+                onPressed: () {},
+                child: const Text('Marcadas menú'),
+              ),
+              Expanded(
+                child: Column(
+                  children: [
+                    ExchangeRateTile(
+                      currencyCode: 'USD',
+                      date: date,
+                      onSaved: save,
+                      focusNode: first,
+                      nextFocusNode: second,
+                    ),
+                    ExchangeRateTile(
+                      currencyCode: 'USD',
+                      date: DateTime(2026, 11, 5),
+                      onSaved: save,
+                      focusNode: second,
+                      previousFocusNode: first,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.byType(TextField).first);
+    await tester.enterText(find.byType(TextField).first, '36.75');
+    await tester.testTextInput.receiveAction(TextInputAction.next);
+    await tester.pumpAndSettle();
+
+    expect(second.hasFocus, isTrue);
+    expect(saved, [3675]);
+  });
+
 }
