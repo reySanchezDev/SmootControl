@@ -31,6 +31,7 @@ class _ExchangeRatesPageState extends State<ExchangeRatesPage> {
       serviceLocator<SupabaseAdminRepository>();
   late DateTime _month;
   late Future<AppResult<List<ExchangeRate>>> _future;
+  final Set<Future<AppResult<ExchangeRate>>> _pendingDailySaves = {};
 
   @override
   void initState() {
@@ -147,7 +148,7 @@ class _ExchangeRatesPageState extends State<ExchangeRatesPage> {
         ),
         const SizedBox(height: 16),
         for (var day = 1; day <= days; day += 1)
-          _RateTile(
+          ExchangeRateTile(
             key: ValueKey(DateTime(_month.year, _month.month, day)),
             currencyCode: _currencyCode,
             date: DateTime(_month.year, _month.month, day),
@@ -171,13 +172,20 @@ class _ExchangeRatesPageState extends State<ExchangeRatesPage> {
     );
   }
 
-  void _previousMonth() {
-    _month = DateTime(_month.year, _month.month - 1);
-    _load();
+  Future<void> _waitForDailySaves() async {
+    while (_pendingDailySaves.isNotEmpty) {
+      await Future.wait(_pendingDailySaves.toList());
+    }
   }
 
-  void _nextMonth() {
-    _month = DateTime(_month.year, _month.month + 1);
+  Future<void> _previousMonth() => _changeMonth(-1);
+
+  Future<void> _nextMonth() => _changeMonth(1);
+
+  Future<void> _changeMonth(int offset) async {
+    await _waitForDailySaves();
+    if (!mounted) return;
+    _month = DateTime(_month.year, _month.month + offset);
     _load();
   }
 
@@ -185,24 +193,42 @@ class _ExchangeRatesPageState extends State<ExchangeRatesPage> {
     final rateInCents = MoneyFormatter.parseToCents(
       _monthlyRateController.text,
     );
-    if (rateInCents == null) return;
+    if (rateInCents == null || rateInCents <= 0) return;
 
-    await _repository.fillMonth(
+    await _waitForDailySaves();
+    if (!mounted) return;
+    final result = await _repository.fillMonth(
       currencyCode: _currencyCode,
       month: _month,
       rateInCents: rateInCents,
     );
-    _load();
+    if (!mounted) return;
+    switch (result) {
+      case AppSuccess():
+        _load();
+      case AppFailureResult(:final error):
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(error.message)),
+        );
+    }
   }
 
-  Future<void> _saveRate(DateTime date, int rateInCents) async {
-    await _repository.saveRate(
+  Future<AppResult<ExchangeRate>> _saveRate(
+    DateTime date,
+    int rateInCents,
+  ) async {
+    final operation = _repository.saveRate(
       ExchangeRate(
         currencyCode: _currencyCode,
         businessDate: date,
         rateInCents: rateInCents,
       ),
     );
-    _load();
+    _pendingDailySaves.add(operation);
+    try {
+      return await operation;
+    } finally {
+      _pendingDailySaves.remove(operation);
+    }
   }
 }
