@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:smoo_control/core/design_system/app_button.dart';
 import 'package:smoo_control/core/design_system/app_input.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
+import 'package:smoo_control/core/design_system/backoffice_form_standards.dart';
 import 'package:smoo_control/core/formatters/money_formatter.dart';
 import 'package:smoo_control/features/expenses/domain/entities/expense_category.dart';
 import 'package:smoo_control/l10n/app_localizations.dart';
@@ -84,12 +85,13 @@ class _CreateExpenseCategoryDialogState
         variant: AppTextVariant.titleMedium,
       ),
       content: SizedBox(
-        width: 360,
-        child: Column(
+        width: BackofficeFormStandards.dialogWidth,
+        child: SingleChildScrollView(
+          child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             AppInput(label: l10n.nameField, controller: _nameController),
-            const SizedBox(height: 8),
+            const SizedBox(height: BackofficeFormStandards.fieldGap),
             DropdownButtonFormField<String?>(
               decoration: InputDecoration(labelText: l10n.categoryInsideOf),
               initialValue: _parentId,
@@ -105,7 +107,7 @@ class _CreateExpenseCategoryDialogState
               ],
               onChanged: _changeParent,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: BackofficeFormStandards.fieldGap),
             CheckboxListTile(
               contentPadding: EdgeInsets.zero,
               title: AppText(l10n.activeField),
@@ -125,7 +127,7 @@ class _CreateExpenseCategoryDialogState
                 onChanged: _changeCoverageEnabled,
               ),
               if (_includeInGrossProfitCoverage) ...[
-                const SizedBox(height: 8),
+                const SizedBox(height: BackofficeFormStandards.fieldGap),
                 DropdownButtonFormField<ExpenseCoverageType>(
                   decoration: InputDecoration(
                     labelText: l10n.expenseCoverageTypeField,
@@ -143,13 +145,13 @@ class _CreateExpenseCategoryDialogState
                   ],
                   onChanged: (value) => setState(() => _coverageType = value),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: BackofficeFormStandards.fieldGap),
                 AppInput(
                   controller: _amountController,
                   keyboardType: TextInputType.number,
                   label: l10n.expenseCoverageAmountField,
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: BackofficeFormStandards.fieldGap),
                 DropdownButtonFormField<ExpenseCoverageFrequency>(
                   decoration: InputDecoration(
                     labelText: l10n.expenseCoverageFrequencyField,
@@ -176,13 +178,13 @@ class _CreateExpenseCategoryDialogState
                   onChanged: (value) =>
                       setState(() => _coverageFrequency = value),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: BackofficeFormStandards.fieldGap),
                 AppInput(
                   controller: _dueDaysController,
                   keyboardType: TextInputType.number,
                   label: l10n.expenseCoverageDueDaysField,
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: BackofficeFormStandards.fieldGap),
                 AppInput(
                   controller: _notesController,
                   label: l10n.expenseCoverageNotesField,
@@ -190,8 +192,12 @@ class _CreateExpenseCategoryDialogState
                 ),
               ],
             ],
-            if (_error != null) AppText(_error!, maxLines: 2),
+            if (_error != null) ...[
+              const SizedBox(height: BackofficeFormStandards.fieldGap),
+              AppText(_error!, maxLines: 2),
+            ],
           ],
+          ),
         ),
       ),
       actions: [
