@@ -218,7 +218,8 @@ class _ExchangeRateTileState extends State<ExchangeRateTile> {
         unawaited(_commit());
       },
       onSubmitted: (_) {
-        if (widget.nextFocusNode case final next?) {
+        final next = widget.nextFocusNode;
+        if (next != null) {
           next.requestFocus();
         } else {
           FocusScope.of(context).nextFocus();
