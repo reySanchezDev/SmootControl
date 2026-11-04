@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:smoo_control/core/design_system/app_button.dart';
+import 'package:smoo_control/core/design_system/backoffice_action_feedback.dart';
 import 'package:smoo_control/core/design_system/app_empty_state.dart';
 import 'package:smoo_control/core/design_system/app_input.dart';
 import 'package:smoo_control/core/design_system/app_message_dialog.dart';
@@ -166,16 +167,16 @@ class _CashRegisterAdminPageState extends State<CashRegisterAdminPage> {
   ) async {
     switch (result) {
       case AppSuccess():
-        await showAppMessageDialog(
-          context: context,
-          title: 'Caja actualizada',
+        BackofficeActionFeedback.show(
+          context,
+          outcome: BackofficeActionOutcome.success,
           message: successMessage,
         );
         if (mounted) await _load();
       case AppFailureResult(:final error):
-        await showAppMessageDialog(
-          context: context,
-          title: 'No se pudo completar',
+        BackofficeActionFeedback.show(
+          context,
+          outcome: BackofficeActionOutcome.error,
           message: error.message,
         );
     }
