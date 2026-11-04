@@ -72,7 +72,7 @@ class _ExchangeRateTileState extends State<ExchangeRateTile> {
   }
 
   void _handleFocus() {
-    if (!_focusNode.hasFocus) _commit();
+    if (!_focusNode.hasFocus) unawaited(_commit());
   }
 
   void _onChanged(String _) {
@@ -118,7 +118,7 @@ class _ExchangeRateTileState extends State<ExchangeRateTile> {
             _saving = false;
             _savedFeedback = !_dirty;
           });
-          if (_dirty && !_focusNode.hasFocus) _commit();
+          if (_dirty && !_focusNode.hasFocus) unawaited(_commit());
         case AppFailureResult(:final error):
           setState(() {
             _saving = false;
@@ -126,7 +126,7 @@ class _ExchangeRateTileState extends State<ExchangeRateTile> {
             _dirty = true;
           });
       }
-    } catch (_) {
+    } on Object catch (_) {
       if (!mounted) return;
       setState(() {
         _saving = false;
@@ -185,7 +185,14 @@ class _ExchangeRateTileState extends State<ExchangeRateTile> {
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
       textInputAction: TextInputAction.next,
       onChanged: _onChanged,
-      onSubmitted: (_) => FocusScope.of(context).nextFocus(),
+      onTapOutside: (_) {
+        _focusNode.unfocus();
+        unawaited(_commit());
+      },
+      onSubmitted: (_) {
+        FocusScope.of(context).nextFocus();
+        unawaited(_commit());
+      },
       decoration: InputDecoration(
         isDense: true,
         labelText: l10n.exchangeRateField,
