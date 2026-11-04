@@ -147,6 +147,10 @@ class _ExchangeRatesPageState extends State<ExchangeRatesPage> {
           },
         ),
         const SizedBox(height: 16),
+        const Text(
+          'Las tasas diarias se guardan automáticamente al salir del campo.',
+        ),
+        const SizedBox(height: 8),
         for (var day = 1; day <= days; day += 1)
           ExchangeRateTile(
             key: ValueKey(DateTime(_month.year, _month.month, day)),
