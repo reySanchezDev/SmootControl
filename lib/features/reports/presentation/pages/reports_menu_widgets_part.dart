@@ -61,7 +61,7 @@ class _ReportOptionCard extends StatelessWidget {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       leading: Icon(icon, color: Theme.of(context).colorScheme.primary),
-      title: AppText(title, variant: AppTextVariant.body),
+      title: AppText(title),
       subtitle: AppText(
         subtitle,
         maxLines: 2,
