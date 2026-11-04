@@ -131,3 +131,21 @@ El usuario demostró en Chrome que el autoguardado por fila y la navegación fun
 ### Aclaración obligatoria de UX-041: modalidad de presentación
 
 En la revisión visual de 2026-11-04 el usuario rechazó expresamente los Snackbars inferiores. Para **acciones explícitas** (por ejemplo, `Aplicar al mes`) el resultado debe presentarse **en una ventana de diálogo modal** con tipo reconocible: éxito, advertencia, error o información. No basta cambiar colores o textos de una notificación fugaz. El usuario cierra el diálogo mediante `Aceptar`. El estado de ejecución previo permanece en el botón correspondiente. Las acciones de edición continua por teclado (tasas por día) conservan estados inline, porque mostrar un diálogo por celda impediría su uso como hoja de cálculo. Cada nuevo módulo debe aplicar esta distinción y verificarla con pruebas.
+
+## F3 — Gastos, Usuarios y Roles/permisos: consistencia de formularios y selección (2026-11-04)
+
+Tasas de cambio quedó aprobada por el propietario en el navegador sobre el SHA `f1b41c5f50f39f0b29bb72f5241436463d66c9f9`, tras la validación focalizada 14/14 de Tasas y 4/4 del feedback modal UX-041.
+
+En la inspección de los tres módulos se detectó:
+- **Usuarios:** editor limitado a 380 px, sin scroll en el contenido, sin agrupación visual de los controles de estado; tarjeta compacta duplicaba botones Editar/Inactivar pese a disponer de `BackofficeCollectionView.selectionActions`.
+- **Roles y permisos:** editor de 420 px con lista extensa de permisos, grupos demasiado próximos; tarjeta compacta duplicaba las mismas acciones de la botonera seleccionada.
+- **Gastos:** editor de categorías a 360 px, con campos de cobertura condicional y sin desplazamiento en el contenido; espaciado de 8 px distinto del estándar. `ExpensesBackofficeTable` ya utilizaba correctamente la selección y comandos explícitos.
+
+**Correcciones de presentación:**
+- Diálogos de Usuarios y Categorías de Gastos: ancho preferido `BackofficeFormStandards.dialogWidth` (520), contenido con `SingleChildScrollView` y espacios uniformes.
+- Diálogo de Roles: ancho preferido `wideDialogWidth` (680), separación entre bloques de datos/estado/permisos. La matriz de permisos y sus callbacks no cambian.
+- Usuarios y Roles: tarjetas compactas sin botoneras duplicadas; editar e inactivar siguen disponibles a través de los comandos explícitos de la barra de selección, tanto en escritorio como en móvil.
+
+**Límite explícito de UX-041:** la persistencia de estos tres módulos se ejecuta mediante eventos BLoC (`ExpenseCategorySaved`, `ExpenseCategoryDeleted`, `UserSaved`, `RoleSaved`). Sus estados de UI actuales (`Loading`, `Loaded`, `Failure`) no diferencian si `Loaded` provino de una carga inicial o de una mutación confirmada, y algunos flujos vuelven a leer después de guardar. Por tanto, está **prohibido** presentar un diálogo de «Guardado correctamente» al recibir el resultado del formulario, emitir el evento o entrar genéricamente en `Loaded`. Para aplicar UX-041 a estos módulos deberá introducirse, previa revisión funcional específica, un resultado identificable por operación y correlación con la mutación. No alterar repositorios, reglas de roles ni permisos sin autorización.
+
+**QA focalizado para este lote:** formatear solo los cinco archivos Dart afectados, ejecutar `flutter analyze` y pruebas disponibles de diálogos/tablas de selección. En la misma ejecución, tras superar validaciones, compilar Web oficial y actualizar solamente `8081` con Supabase/Drift. Revisar 390 px y escritorio (1366/1920). No ejecutar regresión general ni guardar datos reales de Usuarios, Roles o Gastos.
