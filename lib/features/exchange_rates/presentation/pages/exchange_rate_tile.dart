@@ -43,7 +43,7 @@ class _ExchangeRateTileState extends State<ExchangeRateTile> {
   late final TextEditingController _controller;
   late final FocusNode _focusNode;
   late final bool _ownsFocusNode;
-  int? _lastSavedCents;
+  int? _lastSavedUnits;
   bool _dirty = false;
   bool _saving = false;
   String? _error;
@@ -52,7 +52,7 @@ class _ExchangeRateTileState extends State<ExchangeRateTile> {
   @override
   void initState() {
     super.initState();
-    _lastSavedCents = widget.rate?.rateInCents;
+    _lastSavedUnits = _rateUnits(widget.rate);
     _controller = TextEditingController(text: _rateText);
     _ownsFocusNode = widget.focusNode == null;
     _focusNode = widget.focusNode ?? FocusNode();
@@ -62,11 +62,11 @@ class _ExchangeRateTileState extends State<ExchangeRateTile> {
   @override
   void didUpdateWidget(covariant ExchangeRateTile oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.rate?.rateInCents != widget.rate?.rateInCents &&
+    if (_rateUnits(oldWidget.rate) != _rateUnits(widget.rate) &&
         !_dirty &&
         !_saving &&
         !_focusNode.hasFocus) {
-      _lastSavedCents = widget.rate?.rateInCents;
+      _lastSavedUnits = _rateUnits(widget.rate);
       _controller.text = _rateText;
       _savedFeedback = false;
     }
@@ -80,9 +80,14 @@ class _ExchangeRateTileState extends State<ExchangeRateTile> {
     super.dispose();
   }
 
+  int? _rateUnits(ExchangeRate? rate) {
+    if (rate == null) return null;
+    return rate.rateInTenThousandths ?? rate.rateInCents * 100;
+  }
+
   String get _rateText {
     final rate = widget.rate;
-    return rate == null ? '' : rate.rate.toStringAsFixed(2);
+    return rate == null ? '' : rate.rate.toStringAsFixed(4);
   }
 
   void _handleFocus() {
@@ -100,14 +105,14 @@ class _ExchangeRateTileState extends State<ExchangeRateTile> {
   /// Serializes successive edits of the same cell without losing the latest.
   Future<void> _commit() async {
     if (_saving || !_dirty) return;
-    final cents = MoneyFormatter.parseToCents(_controller.text);
-    if (cents == null || cents <= 0) {
+    final units = _parseExchangeRate(_controller.text);
+    if (units == null) {
       if (mounted) {
-        setState(() => _error = 'Ingresá una tasa válida mayor que cero.');
+        setState(() => _error = 'Ingresá una tasa válida mayor que cero y hasta 4 decimales.');
       }
       return;
     }
-    if (cents == _lastSavedCents) {
+    if (units == _lastSavedUnits) {
       setState(() {
         _dirty = false;
         _error = null;
@@ -122,12 +127,12 @@ class _ExchangeRateTileState extends State<ExchangeRateTile> {
       _savedFeedback = false;
     });
     try {
-      final result = await widget.onSaved(widget.date, cents);
+      final result = await widget.onSaved(widget.date, units);
       if (!mounted) return;
       switch (result) {
         case AppSuccess():
           setState(() {
-            _lastSavedCents = cents;
+            _lastSavedUnits = units;
             _dirty = _controller.text != submittedText;
             _saving = false;
             _savedFeedback = !_dirty;
