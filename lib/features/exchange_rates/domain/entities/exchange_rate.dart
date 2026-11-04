@@ -7,6 +7,7 @@ final class ExchangeRate extends Equatable {
     required this.currencyCode,
     required this.businessDate,
     required this.rateInCents,
+    this.rateInTenThousandths,
   });
 
   /// ISO currency code, for example USD.
@@ -18,9 +19,17 @@ final class ExchangeRate extends Equatable {
   /// Local currency cents per one foreign currency unit.
   final int rateInCents;
 
+  /// Exact 4-decimal remote rate; optional for legacy POS/local records.
+  final int? rateInTenThousandths;
+
   /// Decimal rate shown to users.
-  double get rate => rateInCents / 100;
+  double get rate => (rateInTenThousandths ?? rateInCents * 100) / 10000;
 
   @override
-  List<Object?> get props => [currencyCode, businessDate, rateInCents];
+  List<Object?> get props => [
+    currencyCode,
+    businessDate,
+    rateInCents,
+    rateInTenThousandths,
+  ];
 }
