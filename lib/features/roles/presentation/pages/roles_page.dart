@@ -4,7 +4,6 @@ import 'package:smoo_control/core/design_system/app_empty_state.dart';
 import 'package:smoo_control/core/design_system/app_loading_page.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
-import 'package:smoo_control/core/design_system/app_tile_actions.dart';
 import 'package:smoo_control/core/design_system/backoffice_collection_view.dart';
 import 'package:smoo_control/core/design_system/backoffice_selection_toolbar.dart';
 import 'package:smoo_control/core/design_system/confirm_deactivate_dialog.dart';
@@ -111,8 +110,6 @@ class _RolesList extends StatelessWidget {
       compactBuilder: (context, role) => _RoleTile(
         role: role,
         permissionCount: state.permissionCodesByRole[role.id]?.length ?? 0,
-        onDeactivate: () => _deactivateRole(context, role),
-        onEdit: () => _openEditDialog(context, role),
       ),
       columns: [
         BackofficeListColumn(
@@ -206,14 +203,10 @@ class _RolesList extends StatelessWidget {
 
 class _RoleTile extends StatelessWidget {
   const _RoleTile({
-    required this.onDeactivate,
-    required this.onEdit,
     required this.permissionCount,
     required this.role,
   });
 
-  final VoidCallback onDeactivate;
-  final VoidCallback onEdit;
   final int permissionCount;
   final AccessRole role;
 
@@ -222,10 +215,7 @@ class _RoleTile extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final status = role.isActive ? l10n.activeStatus : l10n.inactiveStatus;
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final compact = constraints.maxWidth < 560;
-        return ListTile(
+    return ListTile(
           leading: const Icon(Icons.admin_panel_settings_outlined),
           subtitle: AppText(
             '$status · $permissionCount ${l10n.permissionsSection}',
@@ -234,25 +224,7 @@ class _RoleTile extends StatelessWidget {
           title: AppText(
             role.name,
           ),
-          trailing: AppTileActions(
-            compact: compact,
-            actions: [
-              if (role.isActive && !role.isSystem)
-                AppTileAction(
-                  color: Theme.of(context).colorScheme.error,
-                  icon: Icons.delete_outline,
-                  label: l10n.deactivateAction,
-                  onPressed: onDeactivate,
-                ),
-              AppTileAction(
-                icon: Icons.edit_outlined,
-                label: l10n.editAction,
-                onPressed: onEdit,
-              ),
-            ],
-          ),
-        );
-      },
+
     );
   }
 }
