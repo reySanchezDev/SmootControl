@@ -4,16 +4,10 @@ class _PaymentMethodTile extends StatelessWidget {
   const _PaymentMethodTile({
     required this.depth,
     required this.method,
-    required this.onDeactivate,
-    required this.onEdit,
-    required this.onRemove,
   });
 
   final int depth;
   final PaymentMethod method;
-  final VoidCallback onDeactivate;
-  final VoidCallback onEdit;
-  final VoidCallback? onRemove;
 
   @override
   Widget build(BuildContext context) {
@@ -50,30 +44,7 @@ class _PaymentMethodTile extends StatelessWidget {
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
-          trailing: AppTileActions(
-            compact: compact,
-            actions: [
-              if (onRemove != null)
-                AppTileAction(
-                  color: Theme.of(context).colorScheme.error,
-                  icon: Icons.delete_outline,
-                  label: l10n.removeAction,
-                  onPressed: onRemove!,
-                ),
-              if (method.isActive)
-                AppTileAction(
-                  color: Theme.of(context).colorScheme.error,
-                  icon: Icons.visibility_off_outlined,
-                  label: l10n.deactivateAction,
-                  onPressed: onDeactivate,
-                ),
-              AppTileAction(
-                icon: Icons.edit_outlined,
-                label: l10n.editAction,
-                onPressed: onEdit,
-              ),
-            ],
-          ),
+
         );
       },
     );
