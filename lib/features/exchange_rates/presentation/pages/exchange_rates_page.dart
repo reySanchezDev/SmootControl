@@ -4,6 +4,7 @@ import 'package:smoo_control/core/design_system/app_empty_state.dart';
 import 'package:smoo_control/core/design_system/app_loading_page.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
+import 'package:smoo_control/core/design_system/backoffice_form_standards.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/core/formatters/money_formatter.dart';
 import 'package:smoo_control/core/result/app_result.dart';
@@ -50,18 +51,6 @@ class _ExchangeRatesPageState extends State<ExchangeRatesPage> {
     final l10n = AppLocalizations.of(context);
     return AppPageScaffold(
       title: l10n.moduleExchangeRates,
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.chevron_left),
-          onPressed: _previousMonth,
-          tooltip: l10n.previousAction,
-        ),
-        IconButton(
-          icon: const Icon(Icons.chevron_right),
-          onPressed: _nextMonth,
-          tooltip: l10n.nextAction,
-        ),
-      ],
       body: FutureBuilder<AppResult<List<ExchangeRate>>>(
         future: _future,
         builder: (context, snapshot) {
@@ -91,11 +80,28 @@ class _ExchangeRatesPageState extends State<ExchangeRatesPage> {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        AppText(
-          '${l10n.exchangeRateMonthLabel}: ${_month.month}/${_month.year}',
-          variant: AppTextVariant.titleMedium,
+        Wrap(
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: BackofficeFormStandards.filterGap,
+          runSpacing: BackofficeFormStandards.filterGap,
+          children: [
+            OutlinedButton.icon(
+              icon: const Icon(Icons.chevron_left),
+              label: Text(l10n.previousAction),
+              onPressed: _previousMonth,
+            ),
+            AppText(
+              '${l10n.exchangeRateMonthLabel}: ${_month.month}/${_month.year}',
+              variant: AppTextVariant.titleMedium,
+            ),
+            OutlinedButton.icon(
+              icon: const Icon(Icons.chevron_right),
+              label: Text(l10n.nextAction),
+              onPressed: _nextMonth,
+            ),
+          ],
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: BackofficeFormStandards.sectionGap),
         LayoutBuilder(
           builder: (context, constraints) {
             final isCompact = constraints.maxWidth < 520;
@@ -122,12 +128,20 @@ class _ExchangeRatesPageState extends State<ExchangeRatesPage> {
               );
             }
 
-            return Row(
-              children: [
-                Expanded(child: input),
-                const SizedBox(width: 12),
-                action,
-              ],
+            return Align(
+              alignment: Alignment.centerLeft,
+              child: Wrap(
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: BackofficeFormStandards.filterGap,
+                runSpacing: BackofficeFormStandards.filterGap,
+                children: [
+                  SizedBox(
+                    width: BackofficeFormStandards.filterWidth,
+                    child: input,
+                  ),
+                  action,
+                ],
+              ),
             );
           },
         ),
