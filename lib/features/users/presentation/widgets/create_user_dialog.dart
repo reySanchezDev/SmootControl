@@ -94,57 +94,60 @@ class _CreateUserDialogState extends State<CreateUserDialog> {
         width: BackofficeFormStandards.dialogWidth,
         child: SingleChildScrollView(
           child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            AppInput(label: l10n.displayNameField, controller: _nameController),
-            const SizedBox(height: 12),
-            AppInput(label: l10n.emailField, controller: _emailController),
-            const SizedBox(height: 12),
-            AppInput(
-              label: widget.user == null
-                  ? l10n.pinField
-                  : l10n.pinOptionalField,
-              controller: _pinController,
-              keyboardType: TextInputType.number,
-              obscureText: true,
-            ),
-            const SizedBox(height: 12),
-            DropdownButtonFormField<String>(
-              decoration: InputDecoration(labelText: l10n.roleField),
-              initialValue: _roleId,
-              isExpanded: true,
-              items: [
-                for (final role in _activeRoles)
-                  DropdownMenuItem(value: role.id, child: AppText(role.name)),
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AppInput(
+                label: l10n.displayNameField,
+                controller: _nameController,
+              ),
+              const SizedBox(height: 12),
+              AppInput(label: l10n.emailField, controller: _emailController),
+              const SizedBox(height: 12),
+              AppInput(
+                label: widget.user == null
+                    ? l10n.pinField
+                    : l10n.pinOptionalField,
+                controller: _pinController,
+                keyboardType: TextInputType.number,
+                obscureText: true,
+              ),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String>(
+                decoration: InputDecoration(labelText: l10n.roleField),
+                initialValue: _roleId,
+                isExpanded: true,
+                items: [
+                  for (final role in _activeRoles)
+                    DropdownMenuItem(value: role.id, child: AppText(role.name)),
+                ],
+                onChanged: (value) => setState(() {
+                  _roleId = value;
+                  if (_isPosRole(value)) {
+                    _isPosUser = true;
+                  }
+                }),
+              ),
+              const SizedBox(height: BackofficeFormStandards.sectionGap),
+              CheckboxListTile(
+                contentPadding: EdgeInsets.zero,
+                title: AppText(l10n.posUserField),
+                subtitle: AppText(l10n.posUserHelp, maxLines: 2),
+                value: _isPosUser,
+                onChanged: (value) => setState(() {
+                  _isPosUser = value ?? false;
+                }),
+              ),
+              CheckboxListTile(
+                contentPadding: EdgeInsets.zero,
+                title: AppText(l10n.activeField),
+                value: _isActive,
+                onChanged: (value) => setState(() => _isActive = value ?? true),
+              ),
+              if (_error != null) ...[
+                const SizedBox(height: BackofficeFormStandards.fieldGap),
+                AppText(_error!, maxLines: 2),
               ],
-              onChanged: (value) => setState(() {
-                _roleId = value;
-                if (_isPosRole(value)) {
-                  _isPosUser = true;
-                }
-              }),
-            ),
-            const SizedBox(height: BackofficeFormStandards.sectionGap),
-            CheckboxListTile(
-              contentPadding: EdgeInsets.zero,
-              title: AppText(l10n.posUserField),
-              subtitle: AppText(l10n.posUserHelp, maxLines: 2),
-              value: _isPosUser,
-              onChanged: (value) => setState(() {
-                _isPosUser = value ?? false;
-              }),
-            ),
-            CheckboxListTile(
-              contentPadding: EdgeInsets.zero,
-              title: AppText(l10n.activeField),
-              value: _isActive,
-              onChanged: (value) => setState(() => _isActive = value ?? true),
-            ),
-            if (_error != null) ...[
-              const SizedBox(height: BackofficeFormStandards.fieldGap),
-              AppText(_error!, maxLines: 2),
             ],
-          ],
           ),
         ),
       ),

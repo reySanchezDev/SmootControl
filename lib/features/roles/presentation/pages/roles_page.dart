@@ -141,8 +141,7 @@ class _RolesList extends StatelessWidget {
           label: 'Estado',
           width: 145,
           alignment: Alignment.center,
-          compare: (a, b) =>
-              (a.isActive ? 1 : 0).compareTo(b.isActive ? 1 : 0),
+          compare: (a, b) => (a.isActive ? 1 : 0).compareTo(b.isActive ? 1 : 0),
           cell: (_, role) =>
               Text(role.isActive ? l10n.activeStatus : l10n.inactiveStatus),
         ),
@@ -216,15 +215,14 @@ class _RoleTile extends StatelessWidget {
     final status = role.isActive ? l10n.activeStatus : l10n.inactiveStatus;
 
     return ListTile(
-          leading: const Icon(Icons.admin_panel_settings_outlined),
-          subtitle: AppText(
-            '$status · $permissionCount ${l10n.permissionsSection}',
-            variant: AppTextVariant.label,
-          ),
-          title: AppText(
-            role.name,
-          ),
-
+      leading: const Icon(Icons.admin_panel_settings_outlined),
+      subtitle: AppText(
+        '$status · $permissionCount ${l10n.permissionsSection}',
+        variant: AppTextVariant.label,
+      ),
+      title: AppText(
+        role.name,
+      ),
     );
   }
 }

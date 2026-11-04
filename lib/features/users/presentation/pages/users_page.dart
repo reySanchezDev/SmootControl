@@ -120,16 +120,14 @@ class _UsersList extends StatelessWidget {
         BackofficeListColumn(
           label: 'Rol',
           width: 235,
-          compare: (a, b) =>
-              _roleName(a.roleId).compareTo(_roleName(b.roleId)),
+          compare: (a, b) => _roleName(a.roleId).compareTo(_roleName(b.roleId)),
           cell: (_, user) => Text(_roleName(user.roleId)),
         ),
         BackofficeListColumn(
           label: 'Estado',
           width: 125,
           alignment: Alignment.center,
-          compare: (a, b) =>
-              (a.isActive ? 1 : 0).compareTo(b.isActive ? 1 : 0),
+          compare: (a, b) => (a.isActive ? 1 : 0).compareTo(b.isActive ? 1 : 0),
           cell: (_, user) =>
               Text(user.isActive ? l10n.activeStatus : l10n.inactiveStatus),
         ),
@@ -191,15 +189,14 @@ class _UserTile extends StatelessWidget {
     final status = user.isActive ? l10n.activeStatus : l10n.inactiveStatus;
 
     return ListTile(
-          leading: const Icon(Icons.person_outline),
-          subtitle: AppText(
-            '$roleName · $status',
-            variant: AppTextVariant.label,
-          ),
-          title: AppText(
-            user.displayName,
-          ),
-
+      leading: const Icon(Icons.person_outline),
+      subtitle: AppText(
+        '$roleName · $status',
+        variant: AppTextVariant.label,
+      ),
+      title: AppText(
+        user.displayName,
+      ),
     );
   }
 }

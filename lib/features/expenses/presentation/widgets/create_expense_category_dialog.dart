@@ -88,115 +88,115 @@ class _CreateExpenseCategoryDialogState
         width: BackofficeFormStandards.dialogWidth,
         child: SingleChildScrollView(
           child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            AppInput(label: l10n.nameField, controller: _nameController),
-            const SizedBox(height: BackofficeFormStandards.fieldGap),
-            DropdownButtonFormField<String?>(
-              decoration: InputDecoration(labelText: l10n.categoryInsideOf),
-              initialValue: _parentId,
-              items: [
-                DropdownMenuItem<String?>(
-                  child: AppText(l10n.rootCategoryOption),
-                ),
-                for (final category in _parentOptions)
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AppInput(label: l10n.nameField, controller: _nameController),
+              const SizedBox(height: BackofficeFormStandards.fieldGap),
+              DropdownButtonFormField<String?>(
+                decoration: InputDecoration(labelText: l10n.categoryInsideOf),
+                initialValue: _parentId,
+                items: [
                   DropdownMenuItem<String?>(
-                    value: category.id,
-                    child: AppText(category.name),
+                    child: AppText(l10n.rootCategoryOption),
                   ),
-              ],
-              onChanged: _changeParent,
-            ),
-            const SizedBox(height: BackofficeFormStandards.fieldGap),
-            CheckboxListTile(
-              contentPadding: EdgeInsets.zero,
-              title: AppText(l10n.activeField),
-              value: _isActive,
-              onChanged: (value) => setState(() => _isActive = value ?? true),
-            ),
-            if (_parentId != null) ...[
+                  for (final category in _parentOptions)
+                    DropdownMenuItem<String?>(
+                      value: category.id,
+                      child: AppText(category.name),
+                    ),
+                ],
+                onChanged: _changeParent,
+              ),
+              const SizedBox(height: BackofficeFormStandards.fieldGap),
               CheckboxListTile(
                 contentPadding: EdgeInsets.zero,
-                title: AppText(l10n.expenseCategoryCoverageField),
-                subtitle: AppText(
-                  l10n.expenseCategoryCoverageSubcategoryHelp,
-                  maxLines: 3,
-                  variant: AppTextVariant.label,
-                ),
-                value: _includeInGrossProfitCoverage,
-                onChanged: _changeCoverageEnabled,
+                title: AppText(l10n.activeField),
+                value: _isActive,
+                onChanged: (value) => setState(() => _isActive = value ?? true),
               ),
-              if (_includeInGrossProfitCoverage) ...[
-                const SizedBox(height: BackofficeFormStandards.fieldGap),
-                DropdownButtonFormField<ExpenseCoverageType>(
-                  decoration: InputDecoration(
-                    labelText: l10n.expenseCoverageTypeField,
+              if (_parentId != null) ...[
+                CheckboxListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: AppText(l10n.expenseCategoryCoverageField),
+                  subtitle: AppText(
+                    l10n.expenseCategoryCoverageSubcategoryHelp,
+                    maxLines: 3,
+                    variant: AppTextVariant.label,
                   ),
-                  initialValue: _coverageType,
-                  items: [
-                    DropdownMenuItem(
-                      value: ExpenseCoverageType.fixed,
-                      child: AppText(l10n.expenseCoverageTypeFixed),
-                    ),
-                    DropdownMenuItem(
-                      value: ExpenseCoverageType.variable,
-                      child: AppText(l10n.expenseCoverageTypeVariable),
-                    ),
-                  ],
-                  onChanged: (value) => setState(() => _coverageType = value),
+                  value: _includeInGrossProfitCoverage,
+                  onChanged: _changeCoverageEnabled,
                 ),
-                const SizedBox(height: BackofficeFormStandards.fieldGap),
-                AppInput(
-                  controller: _amountController,
-                  keyboardType: TextInputType.number,
-                  label: l10n.expenseCoverageAmountField,
-                ),
-                const SizedBox(height: BackofficeFormStandards.fieldGap),
-                DropdownButtonFormField<ExpenseCoverageFrequency>(
-                  decoration: InputDecoration(
-                    labelText: l10n.expenseCoverageFrequencyField,
+                if (_includeInGrossProfitCoverage) ...[
+                  const SizedBox(height: BackofficeFormStandards.fieldGap),
+                  DropdownButtonFormField<ExpenseCoverageType>(
+                    decoration: InputDecoration(
+                      labelText: l10n.expenseCoverageTypeField,
+                    ),
+                    initialValue: _coverageType,
+                    items: [
+                      DropdownMenuItem(
+                        value: ExpenseCoverageType.fixed,
+                        child: AppText(l10n.expenseCoverageTypeFixed),
+                      ),
+                      DropdownMenuItem(
+                        value: ExpenseCoverageType.variable,
+                        child: AppText(l10n.expenseCoverageTypeVariable),
+                      ),
+                    ],
+                    onChanged: (value) => setState(() => _coverageType = value),
                   ),
-                  initialValue: _coverageFrequency,
-                  items: [
-                    DropdownMenuItem(
-                      value: ExpenseCoverageFrequency.weekly,
-                      child: AppText(l10n.expenseCoverageFrequencyWeekly),
+                  const SizedBox(height: BackofficeFormStandards.fieldGap),
+                  AppInput(
+                    controller: _amountController,
+                    keyboardType: TextInputType.number,
+                    label: l10n.expenseCoverageAmountField,
+                  ),
+                  const SizedBox(height: BackofficeFormStandards.fieldGap),
+                  DropdownButtonFormField<ExpenseCoverageFrequency>(
+                    decoration: InputDecoration(
+                      labelText: l10n.expenseCoverageFrequencyField,
                     ),
-                    DropdownMenuItem(
-                      value: ExpenseCoverageFrequency.biweekly,
-                      child: AppText(l10n.expenseCoverageFrequencyBiweekly),
-                    ),
-                    DropdownMenuItem(
-                      value: ExpenseCoverageFrequency.monthly,
-                      child: AppText(l10n.expenseCoverageFrequencyMonthly),
-                    ),
-                    DropdownMenuItem(
-                      value: ExpenseCoverageFrequency.custom,
-                      child: AppText(l10n.expenseCoverageFrequencyCustom),
-                    ),
-                  ],
-                  onChanged: (value) =>
-                      setState(() => _coverageFrequency = value),
-                ),
+                    initialValue: _coverageFrequency,
+                    items: [
+                      DropdownMenuItem(
+                        value: ExpenseCoverageFrequency.weekly,
+                        child: AppText(l10n.expenseCoverageFrequencyWeekly),
+                      ),
+                      DropdownMenuItem(
+                        value: ExpenseCoverageFrequency.biweekly,
+                        child: AppText(l10n.expenseCoverageFrequencyBiweekly),
+                      ),
+                      DropdownMenuItem(
+                        value: ExpenseCoverageFrequency.monthly,
+                        child: AppText(l10n.expenseCoverageFrequencyMonthly),
+                      ),
+                      DropdownMenuItem(
+                        value: ExpenseCoverageFrequency.custom,
+                        child: AppText(l10n.expenseCoverageFrequencyCustom),
+                      ),
+                    ],
+                    onChanged: (value) =>
+                        setState(() => _coverageFrequency = value),
+                  ),
+                  const SizedBox(height: BackofficeFormStandards.fieldGap),
+                  AppInput(
+                    controller: _dueDaysController,
+                    keyboardType: TextInputType.number,
+                    label: l10n.expenseCoverageDueDaysField,
+                  ),
+                  const SizedBox(height: BackofficeFormStandards.fieldGap),
+                  AppInput(
+                    controller: _notesController,
+                    label: l10n.expenseCoverageNotesField,
+                    maxLines: 2,
+                  ),
+                ],
+              ],
+              if (_error != null) ...[
                 const SizedBox(height: BackofficeFormStandards.fieldGap),
-                AppInput(
-                  controller: _dueDaysController,
-                  keyboardType: TextInputType.number,
-                  label: l10n.expenseCoverageDueDaysField,
-                ),
-                const SizedBox(height: BackofficeFormStandards.fieldGap),
-                AppInput(
-                  controller: _notesController,
-                  label: l10n.expenseCoverageNotesField,
-                  maxLines: 2,
-                ),
+                AppText(_error!, maxLines: 2),
               ],
             ],
-            if (_error != null) ...[
-              const SizedBox(height: BackofficeFormStandards.fieldGap),
-              AppText(_error!, maxLines: 2),
-            ],
-          ],
           ),
         ),
       ),
@@ -227,8 +227,7 @@ class _CreateExpenseCategoryDialogState
       return;
     }
 
-    final includeCoverage =
-        _parentId != null && _includeInGrossProfitCoverage;
+    final includeCoverage = _parentId != null && _includeInGrossProfitCoverage;
 
     Navigator.of(context).pop(
       ExpenseCategory(
@@ -238,9 +237,7 @@ class _CreateExpenseCategoryDialogState
         isActive: _isActive,
         includeInGrossProfitCoverage: includeCoverage,
         coverageDueDays: includeCoverage ? dueDays : const [],
-        coverageEstimatedAmountInCents: includeCoverage
-            ? amountInCents
-            : null,
+        coverageEstimatedAmountInCents: includeCoverage ? amountInCents : null,
         coverageFrequency: includeCoverage ? _coverageFrequency : null,
         coverageNotes: includeCoverage ? _notesController.text.trim() : null,
         coverageType: includeCoverage ? _coverageType : null,
