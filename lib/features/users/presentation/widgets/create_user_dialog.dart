@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:smoo_control/core/design_system/app_button.dart';
 import 'package:smoo_control/core/design_system/app_input.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
+import 'package:smoo_control/core/design_system/backoffice_form_standards.dart';
 import 'package:smoo_control/features/roles/domain/entities/access_role.dart';
 import 'package:smoo_control/features/roles/domain/services/default_access_roles.dart';
 import 'package:smoo_control/features/users/domain/entities/app_user_profile.dart';
@@ -90,8 +91,9 @@ class _CreateUserDialogState extends State<CreateUserDialog> {
         variant: AppTextVariant.titleMedium,
       ),
       content: SizedBox(
-        width: 380,
-        child: Column(
+        width: BackofficeFormStandards.dialogWidth,
+        child: SingleChildScrollView(
+          child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             AppInput(label: l10n.displayNameField, controller: _nameController),
@@ -122,6 +124,7 @@ class _CreateUserDialogState extends State<CreateUserDialog> {
                 }
               }),
             ),
+            const SizedBox(height: BackofficeFormStandards.sectionGap),
             CheckboxListTile(
               contentPadding: EdgeInsets.zero,
               title: AppText(l10n.posUserField),
@@ -137,8 +140,12 @@ class _CreateUserDialogState extends State<CreateUserDialog> {
               value: _isActive,
               onChanged: (value) => setState(() => _isActive = value ?? true),
             ),
-            if (_error != null) AppText(_error!, maxLines: 2),
+            if (_error != null) ...[
+              const SizedBox(height: BackofficeFormStandards.fieldGap),
+              AppText(_error!, maxLines: 2),
+            ],
           ],
+          ),
         ),
       ),
       actions: [
