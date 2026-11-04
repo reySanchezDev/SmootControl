@@ -73,6 +73,8 @@ class _CreateRoleDialogState extends State<CreateRoleDialog> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              // Give the floating label room above the first populated field.
+              const SizedBox(height: BackofficeFormStandards.fieldGap),
               AppInput(label: l10n.nameField, controller: _nameController),
               const SizedBox(height: 12),
               AppInput(
