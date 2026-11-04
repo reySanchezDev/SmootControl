@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:smoo_control/core/design_system/app_empty_state.dart';
 import 'package:smoo_control/core/design_system/app_loading_page.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
+import 'package:smoo_control/core/design_system/backoffice_form_standards.dart';
 import 'package:smoo_control/core/design_system/backoffice_collection_view.dart';
 import 'package:smoo_control/core/design_system/backoffice_selection_toolbar.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
@@ -73,7 +74,7 @@ class _AuditLogContent extends StatelessWidget {
             alignment: Alignment.centerLeft,
             child: OutlinedButton.icon(
               icon: const Icon(Icons.calendar_month_outlined),
-              label: Text(DateFormat.yMMMd('es').format(date)),
+              label: Text('Fecha: ${DateFormat('dd/MM/yyyy', 'es').format(date)}'),
               onPressed: () => _selectDate(context),
             ),
           ),
@@ -148,9 +149,11 @@ class _AuditLogContent extends StatelessWidget {
         context: context,
         builder: (dialogContext) => AlertDialog(
           title: const Text('Detalle de auditoría'),
-          content: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 760),
-            child: AuditLogTile(entry: entry),
+          content: SizedBox(
+            width: BackofficeFormStandards.wideDialogWidth,
+            child: SingleChildScrollView(
+              child: AuditLogTile(entry: entry),
+            ),
           ),
           actions: [
             TextButton(
