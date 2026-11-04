@@ -62,7 +62,7 @@ class _CashRegisterAdminTile extends StatelessWidget {
                   '${record.openedAt.hour.toString().padLeft(2, '0')}:'
                   '${record.openedAt.minute.toString().padLeft(2, '0')}',
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: BackofficeFormStandards.fieldGap),
 
           ],
         ),
@@ -143,8 +143,10 @@ class _EditCashRegisterDialogState extends State<_EditCashRegisterDialog> {
     final l10n = AppLocalizations.of(context);
     return AlertDialog(
       title: AppText(l10n.cashRegisterAdminEdit),
-      content: SingleChildScrollView(
-        child: Column(
+      content: SizedBox(
+        width: BackofficeFormStandards.dialogWidth,
+        child: SingleChildScrollView(
+          child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             AppInput(
@@ -152,13 +154,13 @@ class _EditCashRegisterDialogState extends State<_EditCashRegisterDialog> {
               keyboardType: TextInputType.number,
               label: l10n.openingCashField,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: BackofficeFormStandards.fieldGap),
             AppInput(
               controller: _closingController,
               keyboardType: TextInputType.number,
               label: l10n.closingCashField,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: BackofficeFormStandards.fieldGap),
             SegmentedButton<String>(
               segments: [
                 ButtonSegment(
@@ -180,6 +182,7 @@ class _EditCashRegisterDialogState extends State<_EditCashRegisterDialog> {
               AppText(_error!, maxLines: 2),
             ],
           ],
+        ),
         ),
       ),
       actions: [
