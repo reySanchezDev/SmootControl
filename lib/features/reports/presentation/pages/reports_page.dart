@@ -201,12 +201,12 @@ class ReportSummaryPage extends StatelessWidget {
           BlocBuilder<ReportsBloc, ReportsState>(
             builder: (context, state) {
               final summary = state is ReportsLoaded ? state.summary : null;
-              return IconButton(
+              return OutlinedButton.icon(
                 icon: const Icon(Icons.picture_as_pdf_outlined),
+                label: Text(l10n.generatePdfAction),
                 onPressed: summary == null
                     ? null
                     : () => unawaited(_shareReport(summary)),
-                tooltip: l10n.generatePdfAction,
               );
             },
           ),
