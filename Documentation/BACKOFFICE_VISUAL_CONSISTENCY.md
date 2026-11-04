@@ -90,3 +90,15 @@ Implementación en `ExchangeRateTile` y `ExchangeRatesPage`:
 Codex reportó `flutter analyze` con 3 observaciones (`discarded_futures`, `unawaited_futures`, `avoid_catches_without_on_clauses`) y prueba de celda 1/4. La causa de las tres aserciones fallidas es que pulsar un botón externo no implica necesariamente perder el foco en Flutter; el componente dependía exclusivamente del listener de `FocusNode`. Se añadió `TextField.onTapOutside` para disparar `_commit()` al tocar fuera, además de mantener focus loss y `onSubmitted` como eventos de teclado. Se envolvieron explícitamente los Futures no esperados en `unawaited`, se importó `dart:async` y se restringió `catch` a `on Object`. No cambió el servicio de persistencia ni `fillMonth`.
 
 **Estado:** implementación publicada, **pendiente** de que Codex ejecute de nuevo `flutter analyze` y solo `exchange_rate_tile_test.dart`. No ejecutar build ni regresión completa hasta validación focalizada limpia.
+
+### Ajuste posterior observado en navegador: Tab/Enter saltaba al sidebar
+
+El usuario confirmó en Chrome que el guardado diario funciona pero Tab/Enter podía enfocar la opción **Marcadas** del sidebar. Las pruebas anteriores solo ejercitaban un formulario aislado y no reprodujeron el orden de foco de todo el workspace.
+
+Se corrigió exclusivamente la navegación de teclado de Tasas:
+- `ExchangeRatesPage` administra 31 `FocusNode` estables y los libera en `dispose`. Cada fila recibe referencias explícitas a la celda diaria anterior y siguiente.
+- `ExchangeRateTile` redirige **Tab** a la tasa siguiente, **Shift+Tab** a la anterior y **Enter** a la siguiente mediante esos nodos, sin `FocusScope.nextFocus` global mientras existe celda siguiente; el autoguardado al perder foco permanece.
+- Los 28–31 controles diarios se montan dentro de una única columna desplazable para que también exista un destino de foco cuando la celda siguiente empieza fuera de la ventana.
+- Se añadieron pruebas de integración de foco con un botón representativo de **Marcadas** en el mismo árbol, además de los tests previos de guardado. No se toca el sidebar ni POS.
+
+**Bloqueo de publicación visual:** ejecutar `flutter analyze` y pruebas focalizadas de Tasas; corregir lo que falle, y **solo con todas las validaciones verdes** compilar Web oficial con Supabase/Drift y actualizar `127.0.0.1:8081` en la **misma tarea Codex**. Verificar navegación real de Tab, Enter y Shift+Tab, incluyendo filas alejadas del inicio, sin probar guardado con importes ficticios sobre datos de negocio reales. No modificar `main`, `8080` ni producción.
