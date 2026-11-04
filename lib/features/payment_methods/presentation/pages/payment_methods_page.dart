@@ -5,7 +5,6 @@ import 'package:smoo_control/core/design_system/app_loading_page.dart';
 import 'package:smoo_control/core/design_system/app_message_dialog.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
-import 'package:smoo_control/core/design_system/app_tile_actions.dart';
 import 'package:smoo_control/core/design_system/confirm_deactivate_dialog.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/features/payment_methods/domain/entities/payment_method.dart';
@@ -59,12 +58,6 @@ class PaymentMethodsPage extends StatelessWidget {
                     compactBuilder: (context, method) => _PaymentMethodTile(
                       depth: _depthFor(method, methods),
                       method: method,
-                      onDeactivate: () =>
-                          _deactivateMethod(context, method),
-                      onEdit: () => _openEditDialog(context, method),
-                      onRemove: _canRemoveMethod(method, methods)
-                          ? () => _confirmRemoveLevel(context, method)
-                          : null,
                     ),
                   ),
               };
