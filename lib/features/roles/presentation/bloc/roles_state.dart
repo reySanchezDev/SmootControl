@@ -57,3 +57,30 @@ final class RolesFailure extends RolesState {
   @override
   List<Object?> get props => [failure];
 }
+
+/// A confirmed role-and-permissions mutation; never emitted for initial reads.
+final class RolesActionSucceeded extends RolesState {
+  /// Creates a confirmed action outcome.
+  const RolesActionSucceeded(this.roleName);
+
+  /// Human-readable role name.
+  final String roleName;
+
+  @override
+  List<Object?> get props => [roleName];
+}
+
+/// A mutation failure; permissions may have been saved only partially.
+final class RolesActionFailed extends RolesState {
+  /// Creates an action-specific failure, distinct from the initial load.
+  const RolesActionFailed(this.failure, {this.mayBePartial = false});
+
+  /// Failure returned by persistence.
+  final AppFailure failure;
+
+  /// True if the role was saved before permissions failed.
+  final bool mayBePartial;
+
+  @override
+  List<Object?> get props => [failure, mayBePartial];
+}
