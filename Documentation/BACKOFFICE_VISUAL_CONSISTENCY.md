@@ -84,3 +84,9 @@ Implementación en `ExchangeRateTile` y `ExchangeRatesPage`:
 - Se conserva el repositorio `saveRate`, modelo `ExchangeRate`, validaciones de moneda y transacciones existentes, sin cambiar API ni SQL.
 
 **QA focalizado:** `test/features/exchange_rates/presentation/pages/exchange_rate_tile_test.dart`: autoguardado al perder foco, ausencia de guardado si no se cambia el valor, falla remota preservando el texto y rechazo de valor cero. Pendientes de ejecución por Codex. Además revisar manualmente Tab/Enter, navegación mensual, concurrencia y las pantallas compactas 390 px antes de aprobar. No afirmar validación sin resultado de pruebas.
+
+### Corrección del autoguardado focalizado — 2026-11-04
+
+Codex reportó `flutter analyze` con 3 observaciones (`discarded_futures`, `unawaited_futures`, `avoid_catches_without_on_clauses`) y prueba de celda 1/4. La causa de las tres aserciones fallidas es que pulsar un botón externo no implica necesariamente perder el foco en Flutter; el componente dependía exclusivamente del listener de `FocusNode`. Se añadió `TextField.onTapOutside` para disparar `_commit()` al tocar fuera, además de mantener focus loss y `onSubmitted` como eventos de teclado. Se envolvieron explícitamente los Futures no esperados en `unawaited`, se importó `dart:async` y se restringió `catch` a `on Object`. No cambió el servicio de persistencia ni `fillMonth`.
+
+**Estado:** implementación publicada, **pendiente** de que Codex ejecute de nuevo `flutter analyze` y solo `exchange_rate_tile_test.dart`. No ejecutar build ni regresión completa hasta validación focalizada limpia.
