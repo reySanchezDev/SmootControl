@@ -1,6 +1,7 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:smoo_control/core/result/app_result.dart';
+import 'package:smoo_control/core/result/app_failure.dart';
 import 'package:smoo_control/features/audit/domain/entities/audit_log_entry.dart';
 import 'package:smoo_control/features/audit/domain/repositories/i_audit_log_repository.dart';
 import 'package:smoo_control/features/roles/domain/entities/access_permission.dart';
@@ -68,13 +69,57 @@ void main() {
         expect(audit.entries.single.entityId, 'user-1');
       },
     );
+    blocTest<UsersBloc, UsersState>(
+      'confirms user save only after persistence success',
+      build: () {
+        const rolesRepository = _RolesRepositoryFake([role]);
+        return UsersBloc(
+          usersRepository: const _UsersRepositoryFake([user]),
+          rolesRepository: rolesRepository,
+          seedService: const AccessSeedService(rolesRepository),
+          auditLogRepository: AuditLogRepositoryFake(),
+          seedDefaults: false,
+        );
+      },
+      act: (bloc) => bloc.add(const UserSaved(user)),
+      expect: () => [
+        const UsersLoading(),
+        const UsersActionSucceeded('Rey'),
+        const UsersLoaded(users: [user], roles: [role]),
+      ],
+    );
+
+    blocTest<UsersBloc, UsersState>(
+      'does not announce success when user persistence fails',
+      build: () {
+        const rolesRepository = _RolesRepositoryFake([role]);
+        return UsersBloc(
+          usersRepository: const _UsersRepositoryFake([], failSave: true),
+          rolesRepository: rolesRepository,
+          seedService: const AccessSeedService(rolesRepository),
+          auditLogRepository: AuditLogRepositoryFake(),
+          seedDefaults: false,
+        );
+      },
+      act: (bloc) => bloc.add(const UserSaved(user)),
+      expect: () => [
+        const UsersLoading(),
+        isA<UsersActionFailed>().having(
+          (state) => state.failure.message,
+          'error',
+          'No se guardó el usuario',
+        ),
+      ],
+    );
   });
 }
 
 late AuditLogRepositoryFake audit;
 
 final class _UsersRepositoryFake implements IUsersRepository {
-  const _UsersRepositoryFake(this.users);
+  const _UsersRepositoryFake(this.users, {this.failSave = false});
+
+  final bool failSave;
 
   final List<AppUserProfile> users;
 
@@ -88,6 +133,11 @@ final class _UsersRepositoryFake implements IUsersRepository {
     AppUserProfile user, {
     String? pin,
   }) async {
+    if (failSave) {
+      return const AppFailureResult<AppUserProfile>(
+        AppFailure(code: 'save_failed', message: 'No se guardó el usuario'),
+      );
+    }
     return AppSuccess(user);
   }
 }
