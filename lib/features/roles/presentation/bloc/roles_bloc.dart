@@ -50,7 +50,7 @@ final class RolesBloc extends Bloc<RolesEvent, RolesState> {
     final saveResult = await _repository.saveRole(event.role);
     switch (saveResult) {
       case AppFailureResult(:final error):
-        emit(RolesFailure(error));
+        emit(RolesActionFailed(error));
         return;
       case AppSuccess():
         break;
@@ -62,7 +62,7 @@ final class RolesBloc extends Bloc<RolesEvent, RolesState> {
     );
     switch (permissionsResult) {
       case AppFailureResult(:final error):
-        emit(RolesFailure(error));
+        emit(RolesActionFailed(error, mayBePartial: true));
         return;
       case AppSuccess():
         await _auditLogRepository.saveEntry(
@@ -78,6 +78,7 @@ final class RolesBloc extends Bloc<RolesEvent, RolesState> {
             occurredAt: DateTime.now(),
           ),
         );
+        emit(RolesActionSucceeded(event.role.name));
         await _load(emit);
     }
   }
