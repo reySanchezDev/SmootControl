@@ -187,10 +187,7 @@ class _ExchangeRateTileState extends State<ExchangeRateTile> {
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
       textInputAction: TextInputAction.next,
       onChanged: _onChanged,
-      onSubmitted: (_) {
-        _focusNode.unfocus();
-        _commit();
-      },
+      onSubmitted: (_) => FocusScope.of(context).nextFocus(),
       decoration: InputDecoration(
         isDense: true,
         labelText: l10n.exchangeRateField,
