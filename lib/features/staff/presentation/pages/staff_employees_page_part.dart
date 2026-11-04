@@ -168,14 +168,17 @@ class _EmployeeDialogState extends State<_EmployeeDialog> {
       title: Text(
         widget.employee == null ? 'Nuevo empleado' : 'Editar empleado',
       ),
-      content: SingleChildScrollView(
-        child: Column(
+      content: SizedBox(
+        width: BackofficeFormStandards.dialogWidth,
+        child: SingleChildScrollView(
+          child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: _name,
               decoration: const InputDecoration(labelText: 'Nombre *'),
             ),
+            const SizedBox(height: BackofficeFormStandards.fieldGap),
             DropdownButtonFormField<String>(
               initialValue: _positionId,
               isExpanded: true,
@@ -191,6 +194,7 @@ class _EmployeeDialogState extends State<_EmployeeDialog> {
               ],
               onChanged: (value) => setState(() => _positionId = value),
             ),
+            const SizedBox(height: BackofficeFormStandards.fieldGap),
             DropdownButtonFormField<String>(
               initialValue: _shiftId,
               isExpanded: true,
@@ -209,6 +213,7 @@ class _EmployeeDialogState extends State<_EmployeeDialog> {
               ],
               onChanged: (value) => setState(() => _shiftId = value),
             ),
+            const SizedBox(height: BackofficeFormStandards.fieldGap),
             TextField(
               controller: _salary,
               decoration: const InputDecoration(
@@ -216,10 +221,12 @@ class _EmployeeDialogState extends State<_EmployeeDialog> {
               ),
               keyboardType: TextInputType.number,
             ),
+            const SizedBox(height: BackofficeFormStandards.fieldGap),
             TextField(
               controller: _photoUrl,
               decoration: const InputDecoration(labelText: 'Foto URL'),
             ),
+            const SizedBox(height: BackofficeFormStandards.sectionGap),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
               title: const Text('Activo'),
@@ -238,12 +245,15 @@ class _EmployeeDialogState extends State<_EmployeeDialog> {
                 setState(() => _showInTimeClock = value);
               },
             ),
-            if (_error != null)
+            if (_error != null) ...[
+              const SizedBox(height: BackofficeFormStandards.fieldGap),
               Text(
                 _error!,
                 style: TextStyle(color: Theme.of(context).colorScheme.error),
               ),
+            ],
           ],
+        ),
         ),
       ),
       actions: [
