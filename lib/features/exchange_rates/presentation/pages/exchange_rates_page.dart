@@ -3,11 +3,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:smoo_control/core/design_system/app_button.dart';
-import 'package:smoo_control/core/design_system/backoffice_action_feedback.dart';
 import 'package:smoo_control/core/design_system/app_empty_state.dart';
 import 'package:smoo_control/core/design_system/app_loading_page.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
+import 'package:smoo_control/core/design_system/backoffice_action_feedback.dart';
 import 'package:smoo_control/core/design_system/backoffice_form_standards.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/core/formatters/money_formatter.dart';
@@ -131,10 +131,14 @@ class _ExchangeRatesPageState extends State<ExchangeRatesPage> {
                   setState(() => _monthlyRateError = null);
                 }
               },
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
             );
             final action = AppButton(
-              label: _applyingMonth ? 'Aplicando…' : l10n.exchangeRateApplyMonthAction,
+              label: _applyingMonth
+                  ? 'Aplicando…'
+                  : l10n.exchangeRateApplyMonthAction,
               onPressed: _applyingMonth ? null : _applyMonthRate,
             );
 
@@ -233,7 +237,9 @@ class _ExchangeRatesPageState extends State<ExchangeRatesPage> {
       BackofficeActionFeedback.show(
         context,
         outcome: BackofficeActionOutcome.warning,
-        message: 'No se aplicó la tasa: ingresá un valor positivo con hasta 4 decimales.',
+        message:
+            'No se aplicó la tasa: ingresá un valor positivo con hasta '
+            '4 decimales.',
       );
       return;
     }
@@ -257,13 +263,18 @@ class _ExchangeRatesPageState extends State<ExchangeRatesPage> {
           BackofficeActionFeedback.show(
             context,
             outcome: BackofficeActionOutcome.success,
-            message: 'Tasa aplicada correctamente a todos los días de ${_month.month}/${_month.year}.',
+            message:
+                'Tasa aplicada correctamente a todos los días de '
+                '${_month.month}/${_month.year}.',
           );
         case AppFailureResult(:final error):
           BackofficeActionFeedback.show(
             context,
             outcome: BackofficeActionOutcome.error,
-            message: 'No se completó toda la operación: ${error.message}. Algunos días podrían haberse actualizado; recargá para verificar.',
+            message:
+                'No se completó toda la operación: ${error.message}. '
+                'Algunos días podrían haberse actualizado; recargá para '
+                'verificar.',
           );
       }
     } on Object catch (_) {
@@ -271,7 +282,9 @@ class _ExchangeRatesPageState extends State<ExchangeRatesPage> {
       BackofficeActionFeedback.show(
         context,
         outcome: BackofficeActionOutcome.error,
-        message: 'No se pudo completar la operación. Algunos días podrían haberse actualizado; recargá para verificar antes de reintentar.',
+        message:
+            'No se pudo completar la operación. Algunos días podrían '
+            'haberse actualizado; recargá para verificar antes de reintentar.',
       );
     } finally {
       if (mounted) setState(() => _applyingMonth = false);

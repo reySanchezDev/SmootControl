@@ -1,8 +1,16 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
+import 'package:smoo_control/core/config/supabase_app_config.dart';
+import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/core/result/app_failure.dart';
 import 'package:smoo_control/core/result/app_result.dart';
+import 'package:smoo_control/core/session/current_remote_session_service.dart';
+import 'package:smoo_control/core/session/current_restaurant_service.dart';
+import 'package:smoo_control/features/admin_remote/data/repositories/supabase_admin_repository.dart';
 import 'package:smoo_control/features/exchange_rates/domain/entities/exchange_rate.dart';
 import 'package:smoo_control/features/exchange_rates/presentation/pages/exchange_rates_page.dart';
 import 'package:smoo_control/l10n/app_localizations.dart';
@@ -487,4 +495,133 @@ void main() {
     expect(focusNodes[focusNodes.length - 2].hasFocus, isTrue);
     expect(focusNodes.last.hasFocus, isFalse);
   });
+
+  testWidgets('monthly rate shows success only after remote success', (
+    tester,
+  ) async {
+    final client = _MonthlyRateClient(
+      responseDelay: const Duration(milliseconds: 20),
+    );
+    await _pumpMonthlyPage(tester, client);
+
+    final monthlyField = find.byType(TextField).first;
+    await tester.enterText(monthlyField, '36.6243');
+    await tester.tap(find.text('Aplicar al mes'));
+    await tester.pump();
+    expect(find.textContaining('Correcto:'), findsNothing);
+    expect(find.text('Aplicando…'), findsOneWidget);
+
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Correcto:'), findsOneWidget);
+    expect(client.postCount, 30);
+  });
+
+  testWidgets('monthly invalid and partial rates never show success', (
+    tester,
+  ) async {
+    final invalidClient = _MonthlyRateClient();
+    await _pumpMonthlyPage(tester, invalidClient);
+    await tester.enterText(find.byType(TextField).first, '36.62435');
+    await tester.tap(find.text('Aplicar al mes'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('hasta 4 decimales'), findsWidgets);
+    expect(find.textContaining('Correcto:'), findsNothing);
+    expect(invalidClient.postCount, 0);
+
+    final partialClient = _MonthlyRateClient(failAtPost: 2);
+    await _pumpMonthlyPage(tester, partialClient);
+    await tester.enterText(find.byType(TextField).first, '36.75');
+    await tester.tap(find.text('Aplicar al mes'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Error:'), findsOneWidget);
+    expect(find.textContaining('Correcto:'), findsNothing);
+  });
+
+  testWidgets('monthly action ignores a second tap while applying', (
+    tester,
+  ) async {
+    final client = _MonthlyRateClient(
+      responseDelay: const Duration(milliseconds: 20),
+    );
+    await _pumpMonthlyPage(tester, client);
+    await tester.enterText(find.byType(TextField).first, '36.75');
+    final action = find.text('Aplicar al mes');
+    await tester.tap(action);
+    await tester.pump();
+    expect(find.text('Aplicando…'), findsOneWidget);
+    await tester.tap(find.text('Aplicando…'));
+    await tester.pumpAndSettle();
+    expect(client.postCount, 30);
+  });
+}
+
+Future<void> _pumpMonthlyPage(
+  WidgetTester tester,
+  _MonthlyRateClient client,
+) async {
+  await tester.pumpWidget(const SizedBox.shrink());
+  await tester.pumpAndSettle();
+  await serviceLocator.reset();
+  final session = CurrentRemoteSessionService()
+    ..set(accessToken: 'test-token', userId: 'test-user');
+  serviceLocator.registerSingleton<SupabaseAdminRepository>(
+    SupabaseAdminRepository(
+      config: const SupabaseAppConfig(
+        supabaseUrl: 'https://test.supabase.co',
+        publishableKey: 'test-key',
+      ),
+      restaurantService: const CurrentRestaurantService(
+        restaurantId: 'test-restaurant',
+      ),
+      remoteSessionService: session,
+      client: client,
+    ),
+  );
+  await tester.pumpWidget(
+    const MaterialApp(
+      locale: Locale('es'),
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: ExchangeRatesPage(),
+    ),
+  );
+  await tester.pumpAndSettle();
+}
+
+final class _MonthlyRateClient extends http.BaseClient {
+  _MonthlyRateClient({this.failAtPost, this.responseDelay = Duration.zero});
+
+  final int? failAtPost;
+  final Duration responseDelay;
+  int postCount = 0;
+
+  @override
+  Future<http.StreamedResponse> send(http.BaseRequest request) async {
+    if (request.method == 'GET') {
+      return _response(request, 200, '[]');
+    }
+    if (request.method == 'POST') {
+      postCount++;
+      if (responseDelay != Duration.zero) {
+        await Future<void>.delayed(responseDelay);
+      }
+      if (postCount == failAtPost) {
+        return _response(request, 500, '{"message":"simulated failure"}');
+      }
+      return _response(request, 201, '[]');
+    }
+    return _response(request, 200, '[]');
+  }
+
+  http.StreamedResponse _response(
+    http.BaseRequest request,
+    int statusCode,
+    String body,
+  ) {
+    return http.StreamedResponse(
+      Stream.value(utf8.encode(body)),
+      statusCode,
+      request: request,
+    );
+  }
 }

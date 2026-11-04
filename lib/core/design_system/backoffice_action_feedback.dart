@@ -1,7 +1,19 @@
 import 'package:flutter/material.dart';
 
 /// Semantic outcome of an administrative operation.
-enum BackofficeActionOutcome { success, error, warning, info }
+enum BackofficeActionOutcome {
+  /// Persistence completed successfully.
+  success,
+
+  /// The operation failed remotely or locally.
+  error,
+
+  /// Input was rejected before persistence.
+  warning,
+
+  /// The operation reports neutral information.
+  info,
+}
 
 /// Standard feedback after an administrative operation finishes.
 ///
@@ -16,9 +28,15 @@ abstract final class BackofficeActionFeedback {
   }) {
     final messenger = ScaffoldMessenger.of(context);
     final (label, icon) = switch (outcome) {
-      BackofficeActionOutcome.success => ('Correcto', Icons.check_circle_outline),
+      BackofficeActionOutcome.success => (
+        'Correcto',
+        Icons.check_circle_outline,
+      ),
       BackofficeActionOutcome.error => ('Error', Icons.error_outline),
-      BackofficeActionOutcome.warning => ('Atención', Icons.warning_amber_outlined),
+      BackofficeActionOutcome.warning => (
+        'Atención',
+        Icons.warning_amber_outlined,
+      ),
       BackofficeActionOutcome.info => ('Información', Icons.info_outline),
     };
     messenger

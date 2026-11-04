@@ -108,7 +108,10 @@ class _ExchangeRateTileState extends State<ExchangeRateTile> {
     final units = _parseExchangeRate(_controller.text);
     if (units == null) {
       if (mounted) {
-        setState(() => _error = 'Ingresá una tasa válida mayor que cero y hasta 4 decimales.');
+        setState(
+          () => _error =
+              'Ingresá una tasa válida mayor que cero y hasta 4 decimales.',
+        );
       }
       return;
     }
