@@ -13,8 +13,9 @@ import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/core/result/app_result.dart';
 import 'package:smoo_control/features/attendance/domain/entities/attendance_entry.dart';
 import 'package:smoo_control/features/attendance/domain/repositories/i_attendance_repository.dart';
+import 'package:smoo_control/features/attendance/presentation/pages/attendance_employee_selection.dart';
 import 'package:smoo_control/features/staff/domain/entities/employee.dart';
-import 'package:smoo_control/features/staff/domain/repositories/i_staff_repository.dart';
+import 'package:smoo_control/features/staff/data/repositories/supabase_staff_admin_repository.dart';
 
 part 'attendance_admin_widgets_part.dart';
 part 'attendance_admin_table_part.dart';
@@ -34,11 +35,14 @@ final class AttendanceAdminPage extends StatefulWidget {
 class _AttendanceAdminPageState extends State<AttendanceAdminPage> {
   final IAttendanceRepository _attendanceRepository =
       serviceLocator<IAttendanceRepository>();
-  final IStaffRepository _staffRepository = serviceLocator<IStaffRepository>();
+  // Administrative attendance must use the same remote employee source as Personal.
+  final SupabaseStaffAdminRepository _staffRepository =
+      serviceLocator<SupabaseStaffAdminRepository>();
   late DateTime _from;
   late DateTime _to;
   String? _status;
   List<Employee> _employees = const [];
+  List<Employee> _allEmployees = const [];
   List<AttendanceEntry>? _entries;
   String? _error;
 
@@ -88,6 +92,10 @@ class _AttendanceAdminPageState extends State<AttendanceAdminPage> {
                             ? null
                             : () => unawaited(_openEditor()),
                         createEnabled: _employees.isNotEmpty,
+                        canEdit: (entry) => AttendanceEmployeeSelection.canEdit(
+                          _allEmployees,
+                          entry.employeeId,
+                        ),
                         onEdit: (entry) => unawaited(_openEditor(entry)),
                         onVoid: (entry) => unawaited(_voidEntry(entry)),
                       ),
@@ -112,7 +120,8 @@ class _AttendanceAdminPageState extends State<AttendanceAdminPage> {
     switch ((employees, entries)) {
       case (AppSuccess(value: final staff), AppSuccess(value: final marks)):
         setState(() {
-          _employees = staff.where((item) => item.isActive).toList();
+          _allEmployees = staff;
+          _employees = AttendanceEmployeeSelection.forCreation(staff);
           _entries = marks;
         });
       case (AppFailureResult(error: final error), _):
@@ -140,10 +149,27 @@ class _AttendanceAdminPageState extends State<AttendanceAdminPage> {
   }
 
   Future<void> _openEditor([AttendanceEntry? entry]) async {
+    final editorEmployees = entry == null
+        ? _employees
+        : AttendanceEmployeeSelection.forEditing(
+            _allEmployees,
+            entry.employeeId,
+          );
+    if (editorEmployees == null || editorEmployees.isEmpty) {
+      await showAppMessageDialog(
+        context: context,
+        title: 'No se puede abrir el editor',
+        message: entry == null
+            ? 'No hay empleados activos disponibles.'
+            : 'No se encontró el empleado original de esta marcada. '
+                'No se modificará el registro.',
+      );
+      return;
+    }
     final saved = await showDialog<AttendanceEntry>(
       context: context,
       builder: (_) => _AttendanceEditorDialog(
-        employees: _employees,
+        employees: editorEmployees,
         entry: entry,
       ),
     );
