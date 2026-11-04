@@ -58,7 +58,7 @@ class _BatchProductPurchaseDialogState
         maxLines: 2,
       ),
       content: SizedBox(
-        width: isCompact ? double.maxFinite : 720,
+        width: isCompact ? double.maxFinite : BackofficeFormStandards.wideDialogWidth,
         height: _batchDialogHeight(mediaSize, isCompact),
         child: Column(
           children: [
@@ -67,7 +67,7 @@ class _BatchProductPurchaseDialogState
               controller: _filterController,
               onChanged: (_) => setState(() {}),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: BackofficeFormStandards.sectionGap),
             if (!isCompact) ...[
               const _BatchPurchaseHeader(productLabel: 'PRODUCTO'),
               const Divider(height: 1),
@@ -90,7 +90,7 @@ class _BatchProductPurchaseDialogState
                     ),
             ),
             if (_error != null) ...[
-              const SizedBox(height: 12),
+              const SizedBox(height: BackofficeFormStandards.fieldGap),
               AppText(_error!, maxLines: 3),
             ],
           ],
