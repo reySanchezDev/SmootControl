@@ -23,7 +23,8 @@ enum BackofficeActionOutcome {
 /// inline edits, such as daily exchange-rate cells, keep field-local feedback
 /// so a modal does not interrupt keyboard entry.
 abstract final class BackofficeActionFeedback {
-  /// Displays a result dialog with an explicit outcome, icon, and acknowledgment.
+  /// Displays a result dialog with an explicit outcome, icon, and
+  /// acknowledgment.
   static void show(
     BuildContext context, {
     required BackofficeActionOutcome outcome,

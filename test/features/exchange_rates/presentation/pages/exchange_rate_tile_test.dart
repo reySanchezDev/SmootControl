@@ -512,7 +512,11 @@ void main() {
     expect(find.text('Aplicando…'), findsOneWidget);
 
     await tester.pumpAndSettle();
-    expect(find.textContaining('Correcto:'), findsOneWidget);
+    expect(find.byType(AlertDialog), findsOneWidget);
+    expect(find.text('Operación exitosa'), findsOneWidget);
+    expect(find.textContaining('Tasa aplicada correctamente'), findsOneWidget);
+    expect(find.byIcon(Icons.check_circle_outline), findsOneWidget);
+    expect(find.byType(SnackBar), findsNothing);
     expect(client.postCount, 30);
   });
 
@@ -525,7 +529,10 @@ void main() {
     await tester.tap(find.text('Aplicar al mes'));
     await tester.pumpAndSettle();
     expect(find.textContaining('hasta 4 decimales'), findsWidgets);
-    expect(find.textContaining('Correcto:'), findsNothing);
+    expect(find.byType(AlertDialog), findsOneWidget);
+    expect(find.text('Atención'), findsOneWidget);
+    expect(find.byIcon(Icons.warning_amber_outlined), findsOneWidget);
+    expect(find.byType(SnackBar), findsNothing);
     expect(invalidClient.postCount, 0);
 
     final partialClient = _MonthlyRateClient(failAtPost: 2);
@@ -533,8 +540,14 @@ void main() {
     await tester.enterText(find.byType(TextField).first, '36.75');
     await tester.tap(find.text('Aplicar al mes'));
     await tester.pumpAndSettle();
-    expect(find.textContaining('Error:'), findsOneWidget);
-    expect(find.textContaining('Correcto:'), findsNothing);
+    expect(find.byType(AlertDialog), findsOneWidget);
+    expect(find.text('Error'), findsOneWidget);
+    expect(
+      find.textContaining('No se completó toda la operación'),
+      findsOneWidget,
+    );
+    expect(find.byIcon(Icons.error_outline), findsOneWidget);
+    expect(find.byType(SnackBar), findsNothing);
   });
 
   testWidgets('monthly action ignores a second tap while applying', (
