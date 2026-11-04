@@ -208,42 +208,42 @@ class _ExchangeRateTileState extends State<ExchangeRateTile> {
         return KeyEventResult.handled;
       },
       child: TextField(
-      controller: _controller,
-      focusNode: _focusNode,
-      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-      textInputAction: TextInputAction.next,
-      onChanged: _onChanged,
-      onTapOutside: (_) {
-        _focusNode.unfocus();
-        unawaited(_commit());
-      },
-      onSubmitted: (_) {
-        final next = widget.nextFocusNode;
-        if (next != null) {
-          next.requestFocus();
-        } else {
-          FocusScope.of(context).nextFocus();
-        }
-        unawaited(_commit());
-      },
-      decoration: InputDecoration(
-        isDense: true,
-        labelText: l10n.exchangeRateField,
-        helperText: _error == null ? statusText : null,
-        errorText: _error,
-        suffixIcon: _saving
-            ? const Padding(
-                padding: EdgeInsets.all(12),
-                child: SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                ),
-              )
-            : _savedFeedback
-            ? const Icon(Icons.check_circle_outline, size: 20)
-            : null,
-      ),
+        controller: _controller,
+        focusNode: _focusNode,
+        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        textInputAction: TextInputAction.next,
+        onChanged: _onChanged,
+        onTapOutside: (_) {
+          _focusNode.unfocus();
+          unawaited(_commit());
+        },
+        onSubmitted: (_) {
+          final next = widget.nextFocusNode;
+          if (next != null) {
+            next.requestFocus();
+          } else {
+            FocusScope.of(context).nextFocus();
+          }
+          unawaited(_commit());
+        },
+        decoration: InputDecoration(
+          isDense: true,
+          labelText: l10n.exchangeRateField,
+          helperText: _error == null ? statusText : null,
+          errorText: _error,
+          suffixIcon: _saving
+              ? const Padding(
+                  padding: EdgeInsets.all(12),
+                  child: SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                )
+              : _savedFeedback
+              ? const Icon(Icons.check_circle_outline, size: 20)
+              : null,
+        ),
       ),
     );
   }

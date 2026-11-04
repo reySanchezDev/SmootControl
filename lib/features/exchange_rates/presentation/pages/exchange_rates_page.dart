@@ -173,10 +173,10 @@ class _ExchangeRatesPageState extends State<ExchangeRatesPage> {
                 rate: byDay[day],
                 onSaved: _saveRate,
                 focusNode: _dailyRateFocusNodes[day - 1],
-                previousFocusNode:
-                    day > 1 ? _dailyRateFocusNodes[day - 2] : null,
-                nextFocusNode:
-                    day < days ? _dailyRateFocusNodes[day] : null,
+                previousFocusNode: day > 1
+                    ? _dailyRateFocusNodes[day - 2]
+                    : null,
+                nextFocusNode: day < days ? _dailyRateFocusNodes[day] : null,
               ),
           ],
         ),

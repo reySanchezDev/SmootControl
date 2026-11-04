@@ -254,7 +254,9 @@ void main() {
                         currencyCode: 'USD',
                         onSaved: save,
                         focusNode: focusNodes[day],
-                        previousFocusNode: day == 0 ? null : focusNodes[day - 1],
+                        previousFocusNode: day == 0
+                            ? null
+                            : focusNodes[day - 1],
                         nextFocusNode: day == 2 ? null : focusNodes[day + 1],
                       ),
                   ],
@@ -307,6 +309,7 @@ void main() {
         ),
       );
     }
+
     await tester.pumpWidget(
       MaterialApp(
         locale: const Locale('es'),
@@ -353,4 +356,83 @@ void main() {
     expect(saved, [3675]);
   });
 
+  testWidgets('keyboard navigation reaches rows beyond the viewport', (
+    tester,
+  ) async {
+    final focusNodes = List.generate(30, (_) => FocusNode());
+    addTearDown(() {
+      for (final node in focusNodes) {
+        node.dispose();
+      }
+    });
+
+    Future<AppResult<ExchangeRate>> save(DateTime day, int cents) async {
+      return AppSuccess(
+        ExchangeRate(
+          currencyCode: 'USD',
+          businessDate: day,
+          rateInCents: cents,
+        ),
+      );
+    }
+
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('es'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: Row(
+            children: [
+              TextButton(
+                onPressed: () {},
+                child: const Text('Marcadas menú'),
+              ),
+              Expanded(
+                child: SizedBox(
+                  height: 180,
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        for (var day = 0; day < focusNodes.length; day++)
+                          ExchangeRateTile(
+                            date: DateTime(2026, 11, day + 1),
+                            currencyCode: 'USD',
+                            onSaved: save,
+                            focusNode: focusNodes[day],
+                            previousFocusNode: day == 0
+                                ? null
+                                : focusNodes[day - 1],
+                            nextFocusNode: day == focusNodes.length - 1
+                                ? null
+                                : focusNodes[day + 1],
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.byType(TextField).first);
+    for (var index = 1; index < focusNodes.length; index++) {
+      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+    }
+    await tester.pumpAndSettle();
+
+    expect(focusNodes.last.hasFocus, isTrue);
+    expect(focusNodes[0].hasFocus, isFalse);
+
+    await tester.sendKeyDownEvent(LogicalKeyboardKey.shiftLeft);
+    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+    await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
+    await tester.pumpAndSettle();
+
+    expect(focusNodes[focusNodes.length - 2].hasFocus, isTrue);
+    expect(focusNodes.last.hasFocus, isFalse);
+  });
 }
