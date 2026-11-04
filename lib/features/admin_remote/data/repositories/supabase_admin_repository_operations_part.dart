@@ -211,6 +211,7 @@ mixin _SupabaseAdminOperationsMixin on _SupabaseAdminRepositoryBase
     required String currencyCode,
     required DateTime month,
     required int rateInCents,
+    int? rateInTenThousandths,
   }) async {
     return _guard(
       'exchange_rates_fill_failed',
@@ -223,6 +224,7 @@ mixin _SupabaseAdminOperationsMixin on _SupabaseAdminRepositoryBase
             currencyCode: currencyCode,
             businessDate: DateTime(month.year, month.month, day),
             rateInCents: rateInCents,
+            rateInTenThousandths: rateInTenThousandths,
           );
           await _upsert(
             'exchange_rates',
@@ -241,7 +243,9 @@ mixin _SupabaseAdminOperationsMixin on _SupabaseAdminRepositoryBase
       'restaurant_id': _restaurantId,
       'currency_code': rate.currencyCode,
       'business_date': _dateOnly(rate.businessDate),
-      'rate': _money(rate.rateInCents),
+      'rate': rate.rateInTenThousandths == null
+          ? _money(rate.rateInCents)
+          : (rate.rateInTenThousandths! / 10000).toStringAsFixed(4),
       'updated_at': DateTime.now().toIso8601String(),
     };
   }
