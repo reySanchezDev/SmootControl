@@ -33,3 +33,13 @@ El trabajo F3 es **exclusivamente de presentación**. Está prohibido modificar 
 **Incidente Marcadas:** se introdujo una comprobación adicional de empleados que impedía editar registros existentes; la condición fue retirada y `_openEditor`, `_load` y la lista de empleados fueron restaurados exactamente desde la versión base `b3fddd4a` mediante el commit `8d67daba`. La corrección visual de posición de comandos se conserva. Esto **no demuestra** que la pantalla en blanco original esté resuelta; requerirá reproducir el fallo y diagnosticarlo con evidencia antes de proponer cambios funcionales, sujetos a autorización.
 
 En cada lote: comprobar `git diff` por archivo contra la base y separar mejoras visuales de cualquier cambio de comportamiento. Ante un cambio de comportamiento no aprobado, revertirlo, no adaptarlo silenciosamente.
+
+## Excepción funcional autorizada — Marcadas (2026-11-04)
+
+**Autorización expresa del propietario:** corregir exclusivamente la resolución de empleados de Marcadas, preservando el diseño V2. La investigación demostró que `AttendanceAdminPage` utilizaba `IStaffRepository`, enlazado por DI a `StaffPosRepository` (Drift local), mientras Personal consultaba `SupabaseStaffAdminRepository` remoto.
+
+**Corrección:** Marcadas usa ahora `serviceLocator<SupabaseStaffAdminRepository>()` localmente, sin alterar el binding de `IStaffRepository`, POS, Time Clock, los servicios RPC de marcadas, el formulario ni el servicio de guardado. La lista remota completa permite resolver el `AttendanceEntry.employeeId` contra `Employee.id`, incluso si el empleado histórico está inactivo. Para crear marcadas se mantienen solo empleados activos. Si no se encuentra el ID original, el comando Editar queda inhabilitado y no se asigna una persona arbitraria.
+
+**Pruebas añadidas (pendientes de ejecución):** empleados activos, empleados inactivos históricos, ID inexistente y catálogo vacío. La certificación del defecto requiere además abrir el formulario en Web V2 con un registro real **sin pulsar Guardar**, revisar ID/identidad, campos y Cancelar; pruebas de escritura solamente con datos ficticios.
+
+No utilizar esta excepción como autorización para cambiar flujos de otras pantallas.
