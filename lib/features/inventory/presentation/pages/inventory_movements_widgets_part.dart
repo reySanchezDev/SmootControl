@@ -108,7 +108,7 @@ class _MovementHeaderTile extends StatelessWidget {
       ),
       subtitle: AppText(
         '${_dateTimeText(document.createdAt)} - '
-        '${document.lineCount} lineas - Neto: '
+        '${document.lineCount} líneas - Neto: '
         '${delta > 0 ? '+' : ''}${_quantityText(delta)}',
         variant: AppTextVariant.label,
       ),
@@ -166,7 +166,7 @@ class _MovementLines extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         AppText(document.title, variant: AppTextVariant.titleMedium),
-        const SizedBox(height: 4),
+        const SizedBox(height: BackofficeFormStandards.fieldGap),
         AppText(
           '${_typeLabel(document.type)} - ${_dateTimeText(document.createdAt)}',
           variant: AppTextVariant.label,
