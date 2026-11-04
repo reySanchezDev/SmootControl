@@ -4,7 +4,6 @@ import 'package:smoo_control/core/design_system/app_empty_state.dart';
 import 'package:smoo_control/core/design_system/app_loading_page.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
-import 'package:smoo_control/core/design_system/app_tile_actions.dart';
 import 'package:smoo_control/core/design_system/backoffice_collection_view.dart';
 import 'package:smoo_control/core/design_system/backoffice_selection_toolbar.dart';
 import 'package:smoo_control/core/design_system/confirm_deactivate_dialog.dart';
@@ -104,8 +103,6 @@ class _UsersList extends StatelessWidget {
       compactBuilder: (context, user) => _UserTile(
         roleName: _roleName(user.roleId),
         user: user,
-        onDeactivate: () => _deactivateUser(context, user),
-        onEdit: () => _openEditDialog(context, user),
       ),
       columns: [
         BackofficeListColumn(
@@ -181,14 +178,10 @@ class _UsersList extends StatelessWidget {
 
 class _UserTile extends StatelessWidget {
   const _UserTile({
-    required this.onDeactivate,
-    required this.onEdit,
     required this.roleName,
     required this.user,
   });
 
-  final VoidCallback onDeactivate;
-  final VoidCallback onEdit;
   final String roleName;
   final AppUserProfile user;
 
@@ -197,10 +190,7 @@ class _UserTile extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final status = user.isActive ? l10n.activeStatus : l10n.inactiveStatus;
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final compact = constraints.maxWidth < 560;
-        return ListTile(
+    return ListTile(
           leading: const Icon(Icons.person_outline),
           subtitle: AppText(
             '$roleName · $status',
@@ -209,25 +199,7 @@ class _UserTile extends StatelessWidget {
           title: AppText(
             user.displayName,
           ),
-          trailing: AppTileActions(
-            compact: compact,
-            actions: [
-              if (user.isActive)
-                AppTileAction(
-                  color: Theme.of(context).colorScheme.error,
-                  icon: Icons.delete_outline,
-                  label: l10n.deactivateAction,
-                  onPressed: onDeactivate,
-                ),
-              AppTileAction(
-                icon: Icons.edit_outlined,
-                label: l10n.editAction,
-                onPressed: onEdit,
-              ),
-            ],
-          ),
-        );
-      },
+
     );
   }
 }
