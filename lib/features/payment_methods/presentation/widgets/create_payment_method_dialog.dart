@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:smoo_control/core/design_system/app_button.dart';
 import 'package:smoo_control/core/design_system/app_input.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
+import 'package:smoo_control/core/design_system/backoffice_form_standards.dart';
 import 'package:smoo_control/features/payment_methods/domain/entities/payment_method.dart';
 import 'package:smoo_control/features/payment_methods/domain/services/payment_method_tree_service.dart';
 import 'package:smoo_control/l10n/app_localizations.dart';
@@ -75,13 +76,14 @@ class _CreatePaymentMethodDialogState extends State<CreatePaymentMethodDialog> {
         variant: AppTextVariant.titleMedium,
       ),
       content: SizedBox(
-        width: 360,
+        width: BackofficeFormStandards.dialogWidth,
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              const SizedBox(height: BackofficeFormStandards.fieldGap),
               AppInput(label: l10n.nameField, controller: _nameController),
-              const SizedBox(height: 8),
+              const SizedBox(height: BackofficeFormStandards.fieldGap),
               DropdownButtonFormField<String?>(
                 decoration: InputDecoration(labelText: l10n.paymentParentField),
                 initialValue: _parentId,
@@ -107,7 +109,7 @@ class _CreatePaymentMethodDialogState extends State<CreatePaymentMethodDialog> {
                 ],
                 onChanged: (value) => setState(() => _parentId = value),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: BackofficeFormStandards.fieldGap),
               CheckboxListTile(
                 contentPadding: EdgeInsets.zero,
                 title: AppText(l10n.paymentFinalOptionField),
@@ -127,7 +129,7 @@ class _CreatePaymentMethodDialogState extends State<CreatePaymentMethodDialog> {
                   label: l10n.currencyCodeField,
                   controller: _currencyController,
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: BackofficeFormStandards.fieldGap),
                 CheckboxListTile(
                   contentPadding: EdgeInsets.zero,
                   title: AppText(l10n.cashAffectsRegister),
