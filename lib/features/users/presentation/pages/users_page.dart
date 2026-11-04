@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smoo_control/core/design_system/app_empty_state.dart';
+import 'package:smoo_control/core/design_system/backoffice_action_feedback.dart';
 import 'package:smoo_control/core/design_system/app_loading_page.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
@@ -30,11 +31,34 @@ class UsersPage extends StatelessWidget {
       child: Builder(
         builder: (context) => AppPageScaffold(
           title: l10n.moduleUsers,
-          body: BlocBuilder<UsersBloc, UsersState>(
+          body: BlocConsumer<UsersBloc, UsersState>(
+            listenWhen: (_, current) =>
+                current is UsersActionSucceeded || current is UsersActionFailed,
+            listener: (context, state) {
+              switch (state) {
+                case UsersActionSucceeded(:final displayName):
+                  BackofficeActionFeedback.show(
+                    context,
+                    outcome: BackofficeActionOutcome.success,
+                    message: 'Usuario «$displayName» guardado correctamente.',
+                  );
+                case UsersActionFailed(:final failure):
+                  BackofficeActionFeedback.show(
+                    context,
+                    outcome: BackofficeActionOutcome.error,
+                    message: 'No se pudo guardar el usuario: ${failure.message}',
+                  );
+                default:
+                  break;
+              }
+            },
             builder: (context, state) {
               return switch (state) {
-                UsersInitial() || UsersLoading() => const AppLoadingPage(),
-                UsersFailure(:final failure) => AppEmptyState(
+                UsersInitial() ||
+                UsersLoading() ||
+                UsersActionSucceeded() => const AppLoadingPage(),
+                UsersFailure(:final failure) ||
+                UsersActionFailed(:final failure) => AppEmptyState(
                   icon: Icons.error_outline,
                   message: failure.message,
                   title: l10n.moduleUsers,
