@@ -59,7 +59,7 @@ class _InventoryAdjustmentDialogState
         maxLines: 2,
       ),
       content: SizedBox(
-        width: isCompact ? double.maxFinite : 760,
+        width: isCompact ? double.maxFinite : BackofficeFormStandards.wideDialogWidth,
         height: _batchDialogHeight(mediaSize, isCompact),
         child: Column(
           children: [
@@ -68,9 +68,9 @@ class _InventoryAdjustmentDialogState
               controller: _filterController,
               onChanged: (_) => setState(() {}),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: BackofficeFormStandards.fieldGap),
             _InventoryAdjustmentSummary(rows: _rows),
-            const SizedBox(height: 12),
+            const SizedBox(height: BackofficeFormStandards.fieldGap),
             Expanded(
               child: visibleRows.isEmpty
                   ? AppEmptyState(
@@ -88,7 +88,7 @@ class _InventoryAdjustmentDialogState
                     ),
             ),
             if (_error != null) ...[
-              const SizedBox(height: 12),
+              const SizedBox(height: BackofficeFormStandards.fieldGap),
               AppText(_error!, maxLines: 3),
             ],
           ],
