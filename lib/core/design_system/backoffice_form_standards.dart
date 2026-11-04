@@ -17,7 +17,7 @@ abstract final class BackofficeFormStandards {
   /// Maximum width of selector fields in a toolbar.
   static const double filterWidth = 260;
 
-  /// Constrains a control to a predictable desktop width without harming mobile.
+  /// Constrains control width on desktop without harming mobile.
   static Widget control({
     required Widget child,
     required double maxWidth,
