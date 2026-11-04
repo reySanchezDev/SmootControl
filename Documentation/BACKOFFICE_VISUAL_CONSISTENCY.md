@@ -159,3 +159,13 @@ El propietario aprobó visualmente el lote de Gastos, Usuarios y Roles salvo el 
 **QA requerido:** `flutter analyze`, pruebas `roles_bloc_test.dart` (incluye confirmación posterior a ambas escrituras y posible fallo parcial), prueba de feedback modal, inspección del campo «Nombre» en desktop y ancho 390px. Si pasa todo, build oficial y actualizar **8081 en la misma ejecución**. Ningún guardado de prueba debe tocar Supabase real.
 
 **Pendiente siguiente:** correlación equivalente para los guardados y eliminaciones de **Usuarios** y **Gastos**, que todavía no presentan diálogos de éxito/fracaso ligados a su persistencia. No declarar cumplimiento integral de UX-041.
+
+## F3 — UX-041 en Usuarios y Gastos (2026-11-04)
+
+Base validada por Codex para Roles: `c48b2b1319b13970c400227520cc33233b67c08e`; análisis limpio, Roles 4/4, feedback modal 4/4 y preview Web `8081` actualizado. La revisión de escritorio/móvil de la etiqueta flotante «Nombre» sigue pendiente en navegador.
+
+**Usuarios:** se incorporaron `UsersActionSucceeded` y `UsersActionFailed`, diferenciados de `UsersLoaded` y `UsersFailure`. `UsersBloc` solo emite éxito de guardado después de `_usersRepository.saveUser` con `AppSuccess`; el evento inicial de lectura nunca genera confirmación. `UsersPage` utiliza `BlocConsumer` para presentar exclusivamente el diálogo modal UX-041 de éxito o error. La desactivación usa el mismo flujo `UserSaved` y conserva su confirmación previa. Sin cambio de permisos, reglas PIN o repositorios.
+
+**Gastos:** se incorporaron `ExpensesActionSucceeded` y `ExpensesActionFailed` para categoría guardada, categoría eliminada y gasto registrado, después del resultado explícito del repositorio y antes de la recarga del catálogo. `ExpensesPage` escucha solo estos resultados para diálogos modales UX-041. Las lecturas iniciales y fallas de carga conservan sus estados sin mostrar éxito. La confirmación previa de eliminación permanece. Sin cambios en los repositorios ni en los importes/persistencia.
+
+Se ampliaron las pruebas focalizadas de `users_bloc_test.dart` (éxito/fallo de escritura) y `expenses_bloc_test.dart` (éxitos de cada operación y fallo sin éxito). Todo está **pendiente de ejecución por Codex**. La aprobación no podrá declararse hasta ejecutar `flutter analyze`, estas pruebas y la prueba del feedback modal. Si pasa todo, aplicar formato focalizado, publicar y reconstruir **8081 en esa misma ejecución** usando el build Web oficial. Preservar worktree original, 17 stashes, 8080, main, POS, producción y datos reales. No ejecutar operaciones reales de prueba.
