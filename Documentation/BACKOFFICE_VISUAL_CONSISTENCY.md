@@ -70,3 +70,17 @@ Base anterior confirmada por Codex: `deafa566c0817d5a0adfd830424c3877294fb608`, 
 **Tasas de cambio:** navegación entre meses mediante controles con icono y etiqueta visible dentro del módulo (en vez de flechas aisladas en el encabezado). El período sigue siendo visible; el campo de tasa mensual deja de expandirse indefinidamente y utiliza máximo de filtro compartido de 260 px en escritorio. Se conservaron `_previousMonth`, `_nextMonth`, `_applyMonthRate`, `_saveRate` y sus repositorios. La edición de importes diarios no se modificó.
 
 **QA incremental requerido:** formatear solo archivos tocados de Caja/Tasas, ejecutar `flutter analyze` y pruebas focalizadas existentes de vistas de Caja/Tasas sin datos reales. No ejecutar regresión general ni build hasta cerrar el lote visual. Continúa pendiente auditoría del resto de diálogos de nómina, Gastos, inventario, roles y permisos, usuarios y reportes; no declarar F3 concluida.
+
+## Excepción funcional autorizada — Tasas de cambio como hoja de cálculo (2026-11-04)
+
+El propietario autorizó explícitamente modificar **solo el guardado diario de tasas** para que cada campo se persista automáticamente al abandonar la celda (clic en otra celda, Tab o Enter), sin botón Guardar por registro. Se preserva **Aplicar al mes** como acción manual para asignar una tasa única a todo el mes.
+
+Implementación en `ExchangeRateTile` y `ExchangeRatesPage`:
+- Guarda únicamente valores modificados, numéricos y positivos, sin duplicar solicitudes al salir del campo y pulsar Enter.
+- Mantiene el valor escrito en caso de error, mostrando una explicación visible en el propio campo. Muestra `Guardando…` y `Guardado` solo después de recibir un resultado remoto correcto.
+- No ejecuta `_load()` después de guardar una tasa individual, para no perder foco ni interrumpir la edición de la siguiente celda.
+- Si el usuario edita de nuevo mientras existe una petición, los cambios se envían en secuencia al terminar la anterior, sin sobrescribir el último valor silenciosamente.
+- El cambio de mes y la operación masiva esperan las escrituras diarias en curso antes de proceder. `fillMonth` sigue siendo explícito y muestra los errores del servidor.
+- Se conserva el repositorio `saveRate`, modelo `ExchangeRate`, validaciones de moneda y transacciones existentes, sin cambiar API ni SQL.
+
+**QA focalizado:** `test/features/exchange_rates/presentation/pages/exchange_rate_tile_test.dart`: autoguardado al perder foco, ausencia de guardado si no se cambia el valor, falla remota preservando el texto y rechazo de valor cero. Pendientes de ejecución por Codex. Además revisar manualmente Tab/Enter, navegación mensual, concurrencia y las pantallas compactas 390 px antes de aprobar. No afirmar validación sin resultado de pruebas.
