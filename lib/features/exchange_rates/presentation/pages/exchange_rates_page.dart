@@ -30,6 +30,8 @@ class _ExchangeRatesPageState extends State<ExchangeRatesPage> {
   static const _currencyCode = 'USD';
 
   final _monthlyRateController = TextEditingController();
+  String? _monthlyRateError;
+  bool _applyingMonth = false;
   final List<FocusNode> _dailyRateFocusNodes = List.generate(
     31,
     (index) => FocusNode(debugLabel: 'Tasa diaria ${index + 1}'),
@@ -120,12 +122,19 @@ class _ExchangeRatesPageState extends State<ExchangeRatesPage> {
               controller: _monthlyRateController,
               decoration: InputDecoration(
                 labelText: l10n.exchangeRateMonthlyField,
+                errorText: _monthlyRateError,
+                helperText: 'Hasta 4 decimales',
               ),
-              keyboardType: TextInputType.number,
+              onChanged: (_) {
+                if (_monthlyRateError != null) {
+                  setState(() => _monthlyRateError = null);
+                }
+              },
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
             );
             final action = AppButton(
-              label: l10n.exchangeRateApplyMonthAction,
-              onPressed: _applyMonthRate,
+              label: _applyingMonth ? 'Aplicando…' : l10n.exchangeRateApplyMonthAction,
+              onPressed: _applyingMonth ? null : _applyMonthRate,
             );
 
             if (isCompact) {
@@ -215,38 +224,58 @@ class _ExchangeRatesPageState extends State<ExchangeRatesPage> {
   }
 
   Future<void> _applyMonthRate() async {
-    final rateInCents = MoneyFormatter.parseToCents(
-      _monthlyRateController.text,
-    );
-    if (rateInCents == null || rateInCents <= 0) return;
-
-    await _waitForDailySaves();
-    if (!mounted) return;
-    final result = await _repository.fillMonth(
-      currencyCode: _currencyCode,
-      month: _month,
-      rateInCents: rateInCents,
-    );
-    if (!mounted) return;
-    switch (result) {
-      case AppSuccess():
-        _load();
-      case AppFailureResult(:final error):
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(error.message)),
-        );
+    final preciseRate = _parseExchangeRate(_monthlyRateController.text);
+    if (preciseRate == null) {
+      setState(() {
+        _monthlyRateError = 'Ingresá una tasa positiva de hasta 4 decimales.';
+      });
+      return;
+    }
+    setState(() {
+      _monthlyRateError = null;
+      _applyingMonth = true;
+    });
+    try {
+      await _waitForDailySaves();
+      if (!mounted) return;
+      final result = await _repository.fillMonth(
+        currencyCode: _currencyCode,
+        month: _month,
+        rateInCents: (preciseRate / 100).round(),
+        rateInTenThousandths: preciseRate,
+      );
+      if (!mounted) return;
+      switch (result) {
+        case AppSuccess():
+          _load();
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Tasa aplicada al mes correctamente.')),
+          );
+        case AppFailureResult(:final error):
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(error.message)),
+          );
+      }
+    } on Object catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No se pudo aplicar la tasa al mes.')),
+      );
+    } finally {
+      if (mounted) setState(() => _applyingMonth = false);
     }
   }
 
   Future<AppResult<ExchangeRate>> _saveRate(
     DateTime date,
-    int rateInCents,
+    int rateInTenThousandths,
   ) async {
     final operation = _repository.saveRate(
       ExchangeRate(
         currencyCode: _currencyCode,
         businessDate: date,
-        rateInCents: rateInCents,
+        rateInCents: (rateInTenThousandths / 100).round(),
+        rateInTenThousandths: rateInTenThousandths,
       ),
     );
     _pendingDailySaves.add(operation);
@@ -256,4 +285,19 @@ class _ExchangeRatesPageState extends State<ExchangeRatesPage> {
       _pendingDailySaves.remove(operation);
     }
   }
+}
+
+/// Fixed-point parser matching Supabase exchange_rates.rate numeric(15,4).
+/// Returns units of 1/10000; never silently rounds away entered precision.
+int? _parseExchangeRate(String input) {
+  final value = input.trim().replaceAll(',', '.');
+  if (!RegExp(r'^\\d+(\\.\\d{1,4})?$').hasMatch(value)) return null;
+  final parts = value.split('.');
+  final whole = int.tryParse(parts.first);
+  final fraction = int.tryParse(
+    parts.length == 1 ? '0' : parts.last.padRight(4, '0'),
+  );
+  if (whole == null || fraction == null) return null;
+  final result = whole * 10000 + fraction;
+  return result > 0 && result <= 999999999999999 ? result : null;
 }
