@@ -53,3 +53,27 @@ final class UsersFailure extends UsersState {
   @override
   List<Object?> get props => [failure];
 }
+
+/// Confirmed result of a user mutation (not an initial data load).
+final class UsersActionSucceeded extends UsersState {
+  /// Creates a persisted user outcome.
+  const UsersActionSucceeded(this.displayName);
+
+  /// Name of the saved user.
+  final String displayName;
+
+  @override
+  List<Object?> get props => [displayName];
+}
+
+/// Failure of an attempted user mutation.
+final class UsersActionFailed extends UsersState {
+  /// Creates a mutation-specific error state.
+  const UsersActionFailed(this.failure);
+
+  /// Persistence error.
+  final AppFailure failure;
+
+  @override
+  List<Object?> get props => [failure];
+}
