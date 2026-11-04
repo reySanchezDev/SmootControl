@@ -68,11 +68,7 @@ class _MeasurementUnitsPageState extends State<MeasurementUnitsPage> {
             emptyTitle: 'Sin resultados',
             emptyMessage: 'No hay unidades que coincidan con la búsqueda.',
             compactBuilder: (_, unit) => Card(
-              child: _UnitTile(
-                onEdit: () => _openDialog(unit: unit),
-                onToggle: () => _toggle(unit),
-                unit: unit,
-              ),
+              child: _UnitTile(unit: unit),
             ),
             columns: [
               BackofficeListColumn(
@@ -202,13 +198,9 @@ class _MeasurementUnitsPageState extends State<MeasurementUnitsPage> {
 
 class _UnitTile extends StatelessWidget {
   const _UnitTile({
-    required this.onEdit,
-    required this.onToggle,
     required this.unit,
   });
 
-  final VoidCallback onEdit;
-  final VoidCallback onToggle;
   final MeasurementUnit unit;
 
   @override
@@ -223,19 +215,7 @@ class _UnitTile extends StatelessWidget {
         '${_groupName(unit.unitGroup)} - Factor ${unit.baseFactor}',
         variant: AppTextVariant.label,
       ),
-      trailing: Wrap(
-        spacing: 2,
-        children: [
-          IconButton(
-            icon: Icon(unit.isActive ? Icons.visibility_off : Icons.visibility),
-            onPressed: onToggle,
-          ),
-          IconButton(
-            icon: const Icon(Icons.edit_outlined),
-            onPressed: onEdit,
-          ),
-        ],
-      ),
+
     );
   }
 }
