@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smoo_control/core/design_system/app_empty_state.dart';
+import 'package:smoo_control/core/design_system/backoffice_action_feedback.dart';
 import 'package:smoo_control/core/design_system/app_loading_page.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
@@ -30,11 +31,38 @@ class RolesPage extends StatelessWidget {
       child: Builder(
         builder: (context) => AppPageScaffold(
           title: l10n.moduleRoles,
-          body: BlocBuilder<RolesBloc, RolesState>(
+          body: BlocConsumer<RolesBloc, RolesState>(
+            listenWhen: (_, current) =>
+                current is RolesActionSucceeded || current is RolesActionFailed,
+            listener: (context, state) {
+              switch (state) {
+                case RolesActionSucceeded(:final roleName):
+                  BackofficeActionFeedback.show(
+                    context,
+                    outcome: BackofficeActionOutcome.success,
+                    message: 'Rol «$roleName» y sus permisos guardados correctamente.',
+                  );
+                case RolesActionFailed(:final failure, :final mayBePartial):
+                  BackofficeActionFeedback.show(
+                    context,
+                    outcome: BackofficeActionOutcome.error,
+                    message: mayBePartial
+                        ? 'El rol pudo guardarse, pero sus permisos no se '
+                              'completaron: ${failure.message}. Revisá el rol '
+                              'antes de reintentar.'
+                        : 'No se pudo guardar el rol: ${failure.message}',
+                  );
+                default:
+                  break;
+              }
+            },
             builder: (context, state) {
               return switch (state) {
-                RolesInitial() || RolesLoading() => const AppLoadingPage(),
-                RolesFailure(:final failure) => AppEmptyState(
+                RolesInitial() ||
+                RolesLoading() ||
+                RolesActionSucceeded() => const AppLoadingPage(),
+                RolesFailure(:final failure) ||
+                RolesActionFailed(:final failure) => AppEmptyState(
                   icon: Icons.error_outline,
                   message: failure.message,
                   title: l10n.moduleRoles,
