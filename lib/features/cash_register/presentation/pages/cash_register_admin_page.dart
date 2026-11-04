@@ -8,6 +8,7 @@ import 'package:smoo_control/core/design_system/app_input.dart';
 import 'package:smoo_control/core/design_system/app_message_dialog.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
+import 'package:smoo_control/core/design_system/backoffice_form_standards.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/core/formatters/money_formatter.dart';
 import 'package:smoo_control/core/result/app_result.dart';
@@ -198,20 +199,26 @@ class _DateFilter extends StatelessWidget {
   Widget build(BuildContext context) {
     final dateFormat = DateFormat('dd/MM/yyyy');
     return Wrap(
-      runSpacing: 8,
-      spacing: 8,
+      runSpacing: BackofficeFormStandards.filterGap,
+      spacing: BackofficeFormStandards.filterGap,
       children: [
-        AppButton(
-          icon: Icons.calendar_month_outlined,
-          label: dateFormat.format(from),
-          onPressed: onFrom,
-          primary: false,
+        SizedBox(
+          width: BackofficeFormStandards.dateWidth,
+          child: AppButton(
+            icon: Icons.calendar_month_outlined,
+            label: 'Desde ${dateFormat.format(from)}',
+            onPressed: onFrom,
+            primary: false,
+          ),
         ),
-        AppButton(
-          icon: Icons.event_available_outlined,
-          label: dateFormat.format(to),
-          onPressed: onTo,
-          primary: false,
+        SizedBox(
+          width: BackofficeFormStandards.dateWidth,
+          child: AppButton(
+            icon: Icons.event_available_outlined,
+            label: 'Hasta ${dateFormat.format(to)}',
+            onPressed: onTo,
+            primary: false,
+          ),
         ),
       ],
     );
