@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:smoo_control/core/design_system/app_button.dart';
+import 'package:smoo_control/core/design_system/backoffice_action_feedback.dart';
+import 'package:smoo_control/core/design_system/backoffice_form_standards.dart';
 import 'package:smoo_control/core/design_system/app_empty_state.dart';
 import 'package:smoo_control/core/design_system/app_input.dart';
 import 'package:smoo_control/core/design_system/app_loading_page.dart';
@@ -116,8 +118,10 @@ class _InventoryPageState extends State<InventoryPage>
       AppFailureResult() => <InventoryStockItem>[],
     };
     if (items.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.inventoryAdjustmentNoProducts)),
+      BackofficeActionFeedback.show(
+        context,
+        outcome: BackofficeActionOutcome.warning,
+        message: l10n.inventoryAdjustmentNoProducts,
       );
       return;
     }
@@ -146,10 +150,10 @@ class _InventoryPageState extends State<InventoryPage>
       AppFailureResult() => <InventoryStockItem>[],
     };
     if (items.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No hay productos que controlen inventario.'),
-        ),
+      BackofficeActionFeedback.show(
+        context,
+        outcome: BackofficeActionOutcome.warning,
+        message: 'No hay productos que controlen inventario.',
       );
       return;
     }
@@ -173,8 +177,10 @@ class _InventoryPageState extends State<InventoryPage>
       AppFailureResult() => <PackagingStockItem>[],
     };
     if (items.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No hay empaques activos.')),
+      BackofficeActionFeedback.show(
+        context,
+        outcome: BackofficeActionOutcome.warning,
+        message: 'No hay empaques activos.',
       );
       return;
     }
