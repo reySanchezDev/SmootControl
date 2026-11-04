@@ -65,7 +65,7 @@ class ReportsPage extends StatelessWidget {
                 routeName: AppRoutes.cashClosingReport,
                 subtitle:
                     'Arqueo: efectivo inicial, ventas, gastos de caja, '
-                    'conteo fisico y diferencia.',
+                    'conteo físico y diferencia.',
                 title: 'Arqueo de caja',
               ),
             ],
@@ -79,14 +79,14 @@ class ReportsPage extends StatelessWidget {
                 routeName: AppRoutes.dailySalesReport,
                 subtitle:
                     'Ventas, costos y utilidad bruta agrupados por fecha.',
-                title: 'Ventas al dia',
+                title: 'Ventas al día',
               ),
               _ReportOptionCard(
                 icon: Icons.restaurant_menu_outlined,
                 routeName: AppRoutes.productPerformanceReport,
                 subtitle:
-                    'Productos mas vendidos, mas rentables y oportunidades.',
-                title: 'Desempeno de productos',
+                    'Productos más vendidos, más rentables y oportunidades.',
+                title: 'Desempeño de productos',
               ),
               _ReportOptionCard(
                 icon: Icons.analytics_outlined,
@@ -111,9 +111,9 @@ class ReportsPage extends StatelessWidget {
                 icon: Icons.receipt_long_outlined,
                 routeName: AppRoutes.expensesReport,
                 subtitle:
-                    'Gastos operativos por dia y categoria para decidir '
+                    'Gastos operativos por día y categoría para decidir '
                     'donde ajustar.',
-                title: 'Gastos al dia',
+                title: 'Gastos al día',
               ),
             ],
           ),
@@ -167,7 +167,7 @@ class ReportsPage extends StatelessWidget {
                 icon: Icons.beach_access_outlined,
                 routeName: AppRoutes.vacationSummaryReport,
                 subtitle:
-                    'Dias acumulados, tomados, programados y saldo por '
+                    'Días acumulados, tomados, programados y saldo por '
                     'empleado.',
                 title: 'Vacaciones',
               ),
