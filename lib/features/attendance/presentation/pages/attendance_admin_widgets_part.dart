@@ -201,7 +201,7 @@ class _AttendanceEditorDialogState extends State<_AttendanceEditorDialog> {
             ListTile(
               contentPadding: EdgeInsets.zero,
               title: Text('Entrada ${_inTime.format(context)}'),
-              trailing: const Icon(Icons.login),
+              trailing: const Icon(Icons.login_rounded, size: 24),
               onTap: () => _pickTime(isIn: true),
             ),
             ListTile(
@@ -211,7 +211,12 @@ class _AttendanceEditorDialogState extends State<_AttendanceEditorDialog> {
                     ? 'Salida pendiente'
                     : 'Salida ${_outTime!.format(context)}',
               ),
-              trailing: const Icon(Icons.logout),
+              trailing: Icon(
+                _outTime == null
+                    ? Icons.pending_actions_rounded
+                    : Icons.logout_rounded,
+                size: 24,
+              ),
               onTap: () => _pickTime(isIn: false),
             ),
           ],
