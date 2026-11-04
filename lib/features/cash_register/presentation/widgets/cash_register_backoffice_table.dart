@@ -24,6 +24,8 @@ class CashRegisterBackofficeTable extends StatelessWidget {
 
   /// Reload command beside the selected-record operations.
   final VoidCallback onReload;
+
+  /// Whether reload is currently available.
   final bool reloadEnabled;
 
   /// Existing edit flow.
