@@ -55,14 +55,14 @@ void main() {
     await tester.tap(find.text('Otra celda'));
     await tester.pumpAndSettle();
 
-    expect(saved, [3675]);
+    expect(saved, [367500]);
     expect(find.text('Guardado'), findsOneWidget);
     expect(find.widgetWithText(OutlinedButton, 'Guardar'), findsNothing);
 
     await tester.tap(find.byType(TextField));
     await tester.tap(find.text('Otra celda'));
     await tester.pumpAndSettle();
-    expect(saved, [3675]);
+    expect(saved, [367500]);
   });
 
   testWidgets('unchanged rate never issues a save', (tester) async {
@@ -175,7 +175,7 @@ void main() {
     await tester.sendKeyEvent(LogicalKeyboardKey.tab);
     await tester.pumpAndSettle();
 
-    expect(saved[date.toIso8601String()], 3675);
+    expect(saved[date.toIso8601String()], 367500);
     expect(saved.containsKey(nextDate.toIso8601String()), isFalse);
     expect(tester.widget<TextField>(fields.at(1)).focusNode!.hasFocus, isTrue);
 
@@ -183,7 +183,7 @@ void main() {
     await tester.sendKeyEvent(LogicalKeyboardKey.tab);
     await tester.pumpAndSettle();
 
-    expect(saved[nextDate.toIso8601String()], 3680);
+    expect(saved[nextDate.toIso8601String()], 368000);
     expect(saved.length, 2);
   });
 
@@ -209,7 +209,7 @@ void main() {
     await tester.testTextInput.receiveAction(TextInputAction.next);
     await tester.pumpAndSettle();
 
-    expect(amounts, [3715]);
+    expect(amounts, [371500]);
     expect(find.text('Guardado'), findsOneWidget);
   });
   testWidgets('Tab stays in daily rates even with an earlier sidebar target', (
@@ -280,7 +280,7 @@ void main() {
     await tester.sendKeyEvent(LogicalKeyboardKey.tab);
     await tester.pumpAndSettle();
     expect(focusNodes[2].hasFocus, isTrue);
-    expect(persisted, [3671, 3672]);
+    expect(persisted, [367100, 367200]);
 
     await tester.sendKeyDownEvent(LogicalKeyboardKey.shiftLeft);
     await tester.sendKeyEvent(LogicalKeyboardKey.tab);
@@ -353,7 +353,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(second.hasFocus, isTrue);
-    expect(saved, [3675]);
+    expect(saved, [367500]);
   });
 
   testWidgets('keyboard navigation reaches rows beyond the viewport', (
