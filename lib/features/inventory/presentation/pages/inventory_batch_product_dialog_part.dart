@@ -58,7 +58,9 @@ class _BatchProductPurchaseDialogState
         maxLines: 2,
       ),
       content: SizedBox(
-        width: isCompact ? double.maxFinite : BackofficeFormStandards.wideDialogWidth,
+        width: isCompact
+            ? double.maxFinite
+            : BackofficeFormStandards.wideDialogWidth,
         height: _batchDialogHeight(mediaSize, isCompact),
         child: Column(
           children: [

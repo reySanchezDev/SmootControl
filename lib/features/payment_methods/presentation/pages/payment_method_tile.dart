@@ -44,7 +44,6 @@ class _PaymentMethodTile extends StatelessWidget {
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
-
         );
       },
     );

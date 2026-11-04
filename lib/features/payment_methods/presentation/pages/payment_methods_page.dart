@@ -33,7 +33,6 @@ class PaymentMethodsPage extends StatelessWidget {
             ..add(const PaymentMethodsLoadRequested()),
       child: Builder(
         builder: (context) => AppPageScaffold(
-
           title: l10n.modulePaymentMethods,
           body: BlocBuilder<PaymentMethodsBloc, PaymentMethodsState>(
             builder: (context, state) {
@@ -53,8 +52,7 @@ class PaymentMethodsPage extends StatelessWidget {
                     onEdit: (method) => _openEditDialog(context, method),
                     onDeactivate: (method) =>
                         _deactivateMethod(context, method),
-                    onRemove: (method) =>
-                        _confirmRemoveLevel(context, method),
+                    onRemove: (method) => _confirmRemoveLevel(context, method),
                     compactBuilder: (context, method) => _PaymentMethodTile(
                       depth: _depthFor(method, methods),
                       method: method,
@@ -161,9 +159,10 @@ class PaymentMethodsPage extends StatelessWidget {
           : l10n.removePaymentLevelTitle,
       message: isRootLeaf
           ? 'Se eliminará el método «${method.name}». '
-              'Si ya tiene ventas vinculadas, la eliminación puede rechazarse.'
+                'Si ya tiene ventas vinculadas, la eliminación puede '
+                'rechazarse.'
           : '${l10n.removePaymentLevelMessage(method.name)}\n\n'
-              '${l10n.removePaymentLevelWithChildrenMessage}',
+                '${l10n.removePaymentLevelWithChildrenMessage}',
       confirmLabel: isRootLeaf
           ? l10n.deleteAction
           : l10n.removePaymentLevelConfirm,
