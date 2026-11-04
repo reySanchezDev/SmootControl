@@ -26,14 +26,15 @@ políticas universales sin ratificar el cambio en el repositorio central.
   posiciones coherentes mediante componentes compartidos para todos los módulos.
 - UX-039: asegurar legibilidad y contraste WCAG AA frente al fondo efectivo,
   incluidos temas estacionales, overlays y gradientes; verificar en todos los estados.
-- UX-041: toda acción del Backoffice debe comunicar resultado por tipo:
-  progreso visible durante la operación; éxito solo tras confirmación real;
-  rechazo de validación con instrucción para corregir; fallo remoto o parcial
-  inequívoco, sin éxito engañoso. Aplicar el patrón compartido
-  `BackofficeActionFeedback` para avisos no bloqueantes y feedback local
-  por campo en ediciones repetitivas. Consultar
-  `Documentation/BACKOFFICE_VISUAL_CONSISTENCY.md`. No cambiar POS ni lógica
-  de negocio bajo pretexto de feedback.
+- UX-041: toda acción explícita del Backoffice debe comunicar su
+  resultado mediante **diálogo modal tipificado** (éxito, advertencia, error
+  o información), con icono, título, mensaje y botón Aceptar; no utilizar
+  Snackbars inferiores para reemplazar el diálogo. Mostrar progreso durante
+  la operación y éxito solo tras confirmación real de persistencia. Los
+  campos de edición continua tipo Excel conservan feedback local para no
+  interrumpir cada celda. Usar `BackofficeActionFeedback` y consultar
+  `Documentation/BACKOFFICE_VISUAL_CONSISTENCY.md`. No modificar POS ni
+  lógica de negocio bajo pretexto de feedback.
 - UX-040: las operaciones se presentan con texto preciso y visible; no ocultar
   acciones bajo «Más», «…», «Opciones» ni iconos sin etiqueta. Mantener
   legibilidad responsive y permisos; no introducir agrupaciones ambiguas.
