@@ -326,7 +326,7 @@ void main() {
     await tester.sendKeyEvent(LogicalKeyboardKey.tab);
     await tester.pumpAndSettle();
     expect(focusNodes[1].hasFocus, isTrue);
-    expect(persisted, [3671]);
+    expect(persisted, [367100]);
 
     await tester.enterText(fields.at(1), '36.72');
     await tester.sendKeyEvent(LogicalKeyboardKey.tab);
