@@ -23,5 +23,6 @@ abstract interface class IExchangeRateRepository {
     required String currencyCode,
     required DateTime month,
     required int rateInCents,
+    int? rateInTenThousandths,
   });
 }
