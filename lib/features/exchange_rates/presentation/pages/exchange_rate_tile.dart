@@ -176,11 +176,9 @@ class _ExchangeRateTileState extends State<ExchangeRateTile> {
     final l10n = AppLocalizations.of(context);
     final statusText = _saving
         ? 'Guardando…'
-        : _error != null
-        ? _error!
         : _savedFeedback
         ? 'Guardado'
-        : 'Se guarda al salir del campo';
+        : null;
     return TextField(
       controller: _controller,
       focusNode: _focusNode,
