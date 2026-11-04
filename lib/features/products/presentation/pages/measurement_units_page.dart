@@ -216,7 +216,6 @@ class _UnitTile extends StatelessWidget {
         '${_groupName(unit.unitGroup)} - Factor ${unit.baseFactor}',
         variant: AppTextVariant.label,
       ),
-
     );
   }
 }

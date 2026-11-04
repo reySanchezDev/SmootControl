@@ -57,39 +57,39 @@ class _MeasurementUnitDialogState extends State<_MeasurementUnitDialog> {
         width: BackofficeFormStandards.dialogWidth,
         child: SingleChildScrollView(
           child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: _code,
-              decoration: const InputDecoration(labelText: 'Código'),
-            ),
-            const SizedBox(height: BackofficeFormStandards.fieldGap),
-            TextField(
-              controller: _name,
-              decoration: const InputDecoration(labelText: 'Nombre'),
-            ),
-            const SizedBox(height: BackofficeFormStandards.fieldGap),
-            DropdownButtonFormField<String>(
-              initialValue: _draft.group,
-              decoration: const InputDecoration(labelText: 'Tipo'),
-              items: const [
-                DropdownMenuItem(value: 'count', child: Text('Conteo')),
-                DropdownMenuItem(value: 'mass', child: Text('Masa')),
-                DropdownMenuItem(value: 'volume', child: Text('Volumen')),
-              ],
-              onChanged: (value) => _draft.group = value ?? 'count',
-            ),
-            const SizedBox(height: BackofficeFormStandards.fieldGap),
-            TextField(
-              controller: _factor,
-              decoration: const InputDecoration(labelText: 'Factor base'),
-            ),
-            if (_error != null) ...[
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: _code,
+                decoration: const InputDecoration(labelText: 'Código'),
+              ),
               const SizedBox(height: BackofficeFormStandards.fieldGap),
-              AppText(_error!, maxLines: 3),
+              TextField(
+                controller: _name,
+                decoration: const InputDecoration(labelText: 'Nombre'),
+              ),
+              const SizedBox(height: BackofficeFormStandards.fieldGap),
+              DropdownButtonFormField<String>(
+                initialValue: _draft.group,
+                decoration: const InputDecoration(labelText: 'Tipo'),
+                items: const [
+                  DropdownMenuItem(value: 'count', child: Text('Conteo')),
+                  DropdownMenuItem(value: 'mass', child: Text('Masa')),
+                  DropdownMenuItem(value: 'volume', child: Text('Volumen')),
+                ],
+                onChanged: (value) => _draft.group = value ?? 'count',
+              ),
+              const SizedBox(height: BackofficeFormStandards.fieldGap),
+              TextField(
+                controller: _factor,
+                decoration: const InputDecoration(labelText: 'Factor base'),
+              ),
+              if (_error != null) ...[
+                const SizedBox(height: BackofficeFormStandards.fieldGap),
+                AppText(_error!, maxLines: 3),
+              ],
             ],
-          ],
-        ),
+          ),
         ),
       ),
       actions: [

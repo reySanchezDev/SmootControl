@@ -172,88 +172,88 @@ class _EmployeeDialogState extends State<_EmployeeDialog> {
         width: BackofficeFormStandards.dialogWidth,
         child: SingleChildScrollView(
           child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: _name,
-              decoration: const InputDecoration(labelText: 'Nombre *'),
-            ),
-            const SizedBox(height: BackofficeFormStandards.fieldGap),
-            DropdownButtonFormField<String>(
-              initialValue: _positionId,
-              isExpanded: true,
-              decoration: const InputDecoration(labelText: 'Puesto'),
-              items: [
-                for (final position in widget.positions.where(
-                  (position) => position.isActive,
-                ))
-                  DropdownMenuItem(
-                    value: position.id,
-                    child: Text(position.name),
-                  ),
-              ],
-              onChanged: (value) => setState(() => _positionId = value),
-            ),
-            const SizedBox(height: BackofficeFormStandards.fieldGap),
-            DropdownButtonFormField<String>(
-              initialValue: _shiftId,
-              isExpanded: true,
-              decoration: const InputDecoration(labelText: 'Turno'),
-              items: [
-                const DropdownMenuItem(child: Text('Sin turno')),
-                for (final shift in widget.shifts.where(
-                  (shift) => shift.isActive,
-                ))
-                  DropdownMenuItem(
-                    value: shift.id,
-                    child: Text(
-                      '${shift.name} (${shift.startTime} - ${shift.endTime})',
-                    ),
-                  ),
-              ],
-              onChanged: (value) => setState(() => _shiftId = value),
-            ),
-            const SizedBox(height: BackofficeFormStandards.fieldGap),
-            TextField(
-              controller: _salary,
-              decoration: const InputDecoration(
-                labelText: 'Salario quincenal *',
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: _name,
+                decoration: const InputDecoration(labelText: 'Nombre *'),
               ),
-              keyboardType: TextInputType.number,
-            ),
-            const SizedBox(height: BackofficeFormStandards.fieldGap),
-            TextField(
-              controller: _photoUrl,
-              decoration: const InputDecoration(labelText: 'Foto URL'),
-            ),
-            const SizedBox(height: BackofficeFormStandards.sectionGap),
-            SwitchListTile(
-              contentPadding: EdgeInsets.zero,
-              title: const Text('Activo'),
-              value: _active,
-              onChanged: (value) => setState(() {
-                _active = value;
-                if (!value) _showInTimeClock = false;
-              }),
-            ),
-            SwitchListTile(
-              contentPadding: EdgeInsets.zero,
-              title: const Text('Marca asistencia'),
-              subtitle: const Text('Si esta activo, aparece en el marcador.'),
-              value: _showInTimeClock,
-              onChanged: (value) {
-                setState(() => _showInTimeClock = value);
-              },
-            ),
-            if (_error != null) ...[
               const SizedBox(height: BackofficeFormStandards.fieldGap),
-              Text(
-                _error!,
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              DropdownButtonFormField<String>(
+                initialValue: _positionId,
+                isExpanded: true,
+                decoration: const InputDecoration(labelText: 'Puesto'),
+                items: [
+                  for (final position in widget.positions.where(
+                    (position) => position.isActive,
+                  ))
+                    DropdownMenuItem(
+                      value: position.id,
+                      child: Text(position.name),
+                    ),
+                ],
+                onChanged: (value) => setState(() => _positionId = value),
               ),
+              const SizedBox(height: BackofficeFormStandards.fieldGap),
+              DropdownButtonFormField<String>(
+                initialValue: _shiftId,
+                isExpanded: true,
+                decoration: const InputDecoration(labelText: 'Turno'),
+                items: [
+                  const DropdownMenuItem(child: Text('Sin turno')),
+                  for (final shift in widget.shifts.where(
+                    (shift) => shift.isActive,
+                  ))
+                    DropdownMenuItem(
+                      value: shift.id,
+                      child: Text(
+                        '${shift.name} (${shift.startTime} - ${shift.endTime})',
+                      ),
+                    ),
+                ],
+                onChanged: (value) => setState(() => _shiftId = value),
+              ),
+              const SizedBox(height: BackofficeFormStandards.fieldGap),
+              TextField(
+                controller: _salary,
+                decoration: const InputDecoration(
+                  labelText: 'Salario quincenal *',
+                ),
+                keyboardType: TextInputType.number,
+              ),
+              const SizedBox(height: BackofficeFormStandards.fieldGap),
+              TextField(
+                controller: _photoUrl,
+                decoration: const InputDecoration(labelText: 'Foto URL'),
+              ),
+              const SizedBox(height: BackofficeFormStandards.sectionGap),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Activo'),
+                value: _active,
+                onChanged: (value) => setState(() {
+                  _active = value;
+                  if (!value) _showInTimeClock = false;
+                }),
+              ),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Marca asistencia'),
+                subtitle: const Text('Si esta activo, aparece en el marcador.'),
+                value: _showInTimeClock,
+                onChanged: (value) {
+                  setState(() => _showInTimeClock = value);
+                },
+              ),
+              if (_error != null) ...[
+                const SizedBox(height: BackofficeFormStandards.fieldGap),
+                Text(
+                  _error!,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
+              ],
             ],
-          ],
-        ),
+          ),
         ),
       ),
       actions: [

@@ -71,7 +71,6 @@ class _AttendanceFilters extends StatelessWidget {
       ),
     );
   }
-
 }
 
 class _AttendanceEntryCard extends StatelessWidget {
@@ -107,7 +106,6 @@ class _AttendanceEntryCard extends StatelessWidget {
                     variant: AppTextVariant.titleMedium,
                   ),
                 ),
-
               ],
             ),
             const SizedBox(height: 8),
@@ -183,47 +181,47 @@ class _AttendanceEditorDialogState extends State<_AttendanceEditorDialog> {
         width: BackofficeFormStandards.dialogWidth,
         child: SingleChildScrollView(
           child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            DropdownButtonFormField<Employee>(
-              initialValue: _employee,
-              decoration: const InputDecoration(labelText: 'Empleado'),
-              items: [
-                for (final item in widget.employees)
-                  DropdownMenuItem(value: item, child: Text(item.fullName)),
-              ],
-              onChanged: (value) => setState(() => _employee = value!),
-            ),
-            const SizedBox(height: BackofficeFormStandards.fieldGap),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              title: Text('Fecha ${_fmt(_workDate)}'),
-              trailing: const Icon(Icons.calendar_month_outlined),
-              onTap: _pickDate,
-            ),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              title: Text('Entrada ${_inTime.format(context)}'),
-              trailing: const Icon(Icons.login_rounded, size: 24),
-              onTap: () => _pickTime(isIn: true),
-            ),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              title: Text(
-                _outTime == null
-                    ? 'Salida pendiente'
-                    : 'Salida ${_outTime!.format(context)}',
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              DropdownButtonFormField<Employee>(
+                initialValue: _employee,
+                decoration: const InputDecoration(labelText: 'Empleado'),
+                items: [
+                  for (final item in widget.employees)
+                    DropdownMenuItem(value: item, child: Text(item.fullName)),
+                ],
+                onChanged: (value) => setState(() => _employee = value!),
               ),
-              trailing: Icon(
-                _outTime == null
-                    ? Icons.pending_actions_rounded
-                    : Icons.logout_rounded,
-                size: 24,
+              const SizedBox(height: BackofficeFormStandards.fieldGap),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                title: Text('Fecha ${_fmt(_workDate)}'),
+                trailing: const Icon(Icons.calendar_month_outlined),
+                onTap: _pickDate,
               ),
-              onTap: () => _pickTime(isIn: false),
-            ),
-          ],
-        ),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                title: Text('Entrada ${_inTime.format(context)}'),
+                trailing: const Icon(Icons.login_rounded, size: 24),
+                onTap: () => _pickTime(isIn: true),
+              ),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                title: Text(
+                  _outTime == null
+                      ? 'Salida pendiente'
+                      : 'Salida ${_outTime!.format(context)}',
+                ),
+                trailing: Icon(
+                  _outTime == null
+                      ? Icons.pending_actions_rounded
+                      : Icons.logout_rounded,
+                  size: 24,
+                ),
+                onTap: () => _pickTime(isIn: false),
+              ),
+            ],
+          ),
         ),
       ),
       actions: [

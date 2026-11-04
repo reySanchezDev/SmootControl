@@ -32,62 +32,62 @@ class _VacationFormDialogState extends State<_VacationFormDialog> {
         width: BackofficeFormStandards.dialogWidth,
         child: SingleChildScrollView(
           child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            DropdownButtonFormField<String>(
-              initialValue: _employeeId,
-              decoration: const InputDecoration(labelText: 'Empleado'),
-              items: [
-                for (final employee in widget.employees)
-                  DropdownMenuItem(
-                    value: employee.id,
-                    child: Text(employee.fullName),
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              DropdownButtonFormField<String>(
+                initialValue: _employeeId,
+                decoration: const InputDecoration(labelText: 'Empleado'),
+                items: [
+                  for (final employee in widget.employees)
+                    DropdownMenuItem(
+                      value: employee.id,
+                      child: Text(employee.fullName),
+                    ),
+                ],
+                onChanged: (value) => setState(() => _employeeId = value!),
+              ),
+              const SizedBox(height: BackofficeFormStandards.fieldGap),
+              Row(
+                children: [
+                  Expanded(
+                    child: ActionChip(
+                      label: Text('Desde ${_fmt(_from)}'),
+                      onPressed: () => _pick(true),
+                    ),
                   ),
-              ],
-              onChanged: (value) => setState(() => _employeeId = value!),
-            ),
-            const SizedBox(height: BackofficeFormStandards.fieldGap),
-            Row(
-              children: [
-                Expanded(
-                  child: ActionChip(
-                    label: Text('Desde ${_fmt(_from)}'),
-                    onPressed: () => _pick(true),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: ActionChip(
+                      label: Text('Hasta ${_fmt(_to)}'),
+                      onPressed: () => _pick(false),
+                    ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: ActionChip(
-                    label: Text('Hasta ${_fmt(_to)}'),
-                    onPressed: () => _pick(false),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: BackofficeFormStandards.fieldGap),
-            DropdownButtonFormField<String>(
-              initialValue: _type,
-              decoration: const InputDecoration(labelText: 'Tipo'),
-              items: const [
-                DropdownMenuItem(value: 'planned', child: Text('Programado')),
-                DropdownMenuItem(value: 'taken', child: Text('Ya tomado')),
-              ],
-              onChanged: (value) => setState(() => _type = value!),
-            ),
-            const SizedBox(height: BackofficeFormStandards.sectionGap),
-            CheckboxListTile(
-              value: _approved,
-              title: const Text('Crear aprobado'),
-              onChanged: (value) => setState(() => _approved = value ?? true),
-            ),
-            const SizedBox(height: BackofficeFormStandards.fieldGap),
-            TextField(
-              controller: _note,
-              decoration: const InputDecoration(labelText: 'Nota'),
-              maxLines: 2,
-            ),
-          ],
-        ),
+                ],
+              ),
+              const SizedBox(height: BackofficeFormStandards.fieldGap),
+              DropdownButtonFormField<String>(
+                initialValue: _type,
+                decoration: const InputDecoration(labelText: 'Tipo'),
+                items: const [
+                  DropdownMenuItem(value: 'planned', child: Text('Programado')),
+                  DropdownMenuItem(value: 'taken', child: Text('Ya tomado')),
+                ],
+                onChanged: (value) => setState(() => _type = value!),
+              ),
+              const SizedBox(height: BackofficeFormStandards.sectionGap),
+              CheckboxListTile(
+                value: _approved,
+                title: const Text('Crear aprobado'),
+                onChanged: (value) => setState(() => _approved = value ?? true),
+              ),
+              const SizedBox(height: BackofficeFormStandards.fieldGap),
+              TextField(
+                controller: _note,
+                decoration: const InputDecoration(labelText: 'Nota'),
+                maxLines: 2,
+              ),
+            ],
+          ),
         ),
       ),
       actions: [
