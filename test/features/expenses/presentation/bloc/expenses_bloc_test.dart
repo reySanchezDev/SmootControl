@@ -58,6 +58,7 @@ void main() {
       act: (bloc) => bloc.add(ExpenseSaved(expense)),
       expect: () => [
         const ExpensesLoading(),
+        const ExpensesActionSucceeded('Gasto registrado correctamente.'),
         const ExpensesOverviewLoaded(categories: []),
       ],
       verify: (_) {
@@ -81,6 +82,7 @@ void main() {
       act: (bloc) => bloc.add(const ExpenseCategorySaved(category)),
       expect: () => const [
         ExpensesLoading(),
+        ExpensesActionSucceeded('Categoría «Nomina» guardada correctamente.'),
         ExpensesOverviewLoaded(categories: [category]),
       ],
       verify: (_) {
@@ -101,12 +103,34 @@ void main() {
       act: (bloc) => bloc.add(const ExpenseCategoryDeleted(category)),
       expect: () => const [
         ExpensesLoading(),
+        ExpensesActionSucceeded('Categoría «Nomina» eliminada correctamente.'),
         ExpensesOverviewLoaded(categories: []),
       ],
       verify: (_) {
         expect(audit.entries.single.action, 'expenses.category.delete');
         expect(audit.entries.single.entityId, 'category-1');
       },
+    );
+
+    blocTest<ExpensesBloc, ExpensesState>(
+      'emits mutation failure without a success notification',
+      build: () => ExpensesBloc(
+        repository: _ExpensesRepositoryFake(
+          saveResult: const AppFailureResult(
+            AppFailure(code: 'write', message: 'No se pudo registrar'),
+          ),
+        ),
+        auditLogRepository: AuditLogRepositoryFake(),
+      ),
+      act: (bloc) => bloc.add(ExpenseSaved(expense)),
+      expect: () => [
+        const ExpensesLoading(),
+        isA<ExpensesActionFailed>().having(
+          (state) => state.failure.message,
+          'error',
+          'No se pudo registrar',
+        ),
+      ],
     );
 
     blocTest<ExpensesBloc, ExpensesState>(
