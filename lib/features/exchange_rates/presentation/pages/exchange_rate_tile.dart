@@ -7,6 +7,9 @@ class ExchangeRateTile extends StatefulWidget {
     required this.currencyCode,
     required this.date,
     required this.onSaved,
+    this.focusNode,
+    this.nextFocusNode,
+    this.previousFocusNode,
     this.rate,
     super.key,
   });
@@ -20,6 +23,15 @@ class ExchangeRateTile extends StatefulWidget {
   /// Persisted rate, if one exists.
   final ExchangeRate? rate;
 
+  /// Stable focus for this day; owned by the parent when provided.
+  final FocusNode? focusNode;
+
+  /// Explicit next daily cell, independent of workspace/sidebar tab order.
+  final FocusNode? nextFocusNode;
+
+  /// Explicit previous daily cell for Shift+Tab.
+  final FocusNode? previousFocusNode;
+
   /// Preserves the repository's explicit success/failure result.
   final Future<AppResult<ExchangeRate>> Function(DateTime, int) onSaved;
 
@@ -30,6 +42,7 @@ class ExchangeRateTile extends StatefulWidget {
 class _ExchangeRateTileState extends State<ExchangeRateTile> {
   late final TextEditingController _controller;
   late final FocusNode _focusNode;
+  late final bool _ownsFocusNode;
   int? _lastSavedCents;
   bool _dirty = false;
   bool _saving = false;
@@ -41,7 +54,9 @@ class _ExchangeRateTileState extends State<ExchangeRateTile> {
     super.initState();
     _lastSavedCents = widget.rate?.rateInCents;
     _controller = TextEditingController(text: _rateText);
-    _focusNode = FocusNode()..addListener(_handleFocus);
+    _ownsFocusNode = widget.focusNode == null;
+    _focusNode = widget.focusNode ?? FocusNode();
+    _focusNode.addListener(_handleFocus);
   }
 
   @override
@@ -59,9 +74,8 @@ class _ExchangeRateTileState extends State<ExchangeRateTile> {
 
   @override
   void dispose() {
-    _focusNode
-      ..removeListener(_handleFocus)
-      ..dispose();
+    _focusNode.removeListener(_handleFocus);
+    if (_ownsFocusNode) _focusNode.dispose();
     _controller.dispose();
     super.dispose();
   }
@@ -178,7 +192,22 @@ class _ExchangeRateTileState extends State<ExchangeRateTile> {
         : _savedFeedback
         ? 'Guardado'
         : null;
-    return TextField(
+    return Focus(
+      canRequestFocus: false,
+      skipTraversal: true,
+      onKeyEvent: (_, event) {
+        if (event is! KeyDownEvent ||
+            event.logicalKey != LogicalKeyboardKey.tab) {
+          return KeyEventResult.ignored;
+        }
+        final target = HardwareKeyboard.instance.isShiftPressed
+            ? widget.previousFocusNode
+            : widget.nextFocusNode;
+        if (target == null) return KeyEventResult.ignored;
+        target.requestFocus();
+        return KeyEventResult.handled;
+      },
+      child: TextField(
       controller: _controller,
       focusNode: _focusNode,
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -189,7 +218,11 @@ class _ExchangeRateTileState extends State<ExchangeRateTile> {
         unawaited(_commit());
       },
       onSubmitted: (_) {
-        FocusScope.of(context).nextFocus();
+        if (widget.nextFocusNode case final next?) {
+          next.requestFocus();
+        } else {
+          FocusScope.of(context).nextFocus();
+        }
         unawaited(_commit());
       },
       decoration: InputDecoration(
@@ -209,6 +242,7 @@ class _ExchangeRateTileState extends State<ExchangeRateTile> {
             : _savedFeedback
             ? const Icon(Icons.check_circle_outline, size: 20)
             : null,
+      ),
       ),
     );
   }
