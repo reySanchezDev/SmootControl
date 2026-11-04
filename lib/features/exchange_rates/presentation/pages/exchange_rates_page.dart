@@ -263,7 +263,7 @@ class _ExchangeRatesPageState extends State<ExchangeRatesPage> {
           BackofficeActionFeedback.show(
             context,
             outcome: BackofficeActionOutcome.error,
-            message: 'No se pudo completar el mes: ${error.message}',
+            message: 'No se completó toda la operación: ${error.message}. Algunos días podrían haberse actualizado; recargá para verificar.',
           );
       }
     } on Object catch (_) {
@@ -271,7 +271,7 @@ class _ExchangeRatesPageState extends State<ExchangeRatesPage> {
       BackofficeActionFeedback.show(
         context,
         outcome: BackofficeActionOutcome.error,
-        message: 'No se pudo aplicar la tasa al mes. Revisá la conexión e intentá nuevamente.',
+        message: 'No se pudo completar la operación. Algunos días podrían haberse actualizado; recargá para verificar antes de reintentar.',
       );
     } finally {
       if (mounted) setState(() => _applyingMonth = false);
