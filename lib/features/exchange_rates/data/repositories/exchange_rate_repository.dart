@@ -88,6 +88,7 @@ final class ExchangeRateRepository implements IExchangeRateRepository {
     required String currencyCode,
     required DateTime month,
     required int rateInCents,
+    int? rateInTenThousandths,
   }) async {
     try {
       final days = DateTime(month.year, month.month + 1, 0).day;
