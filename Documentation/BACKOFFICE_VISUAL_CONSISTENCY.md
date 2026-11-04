@@ -43,3 +43,20 @@ En cada lote: comprobar `git diff` por archivo contra la base y separar mejoras 
 **Pruebas añadidas (pendientes de ejecución):** empleados activos, empleados inactivos históricos, ID inexistente y catálogo vacío. La certificación del defecto requiere además abrir el formulario en Web V2 con un registro real **sin pulsar Guardar**, revisar ID/identidad, campos y Cancelar; pruebas de escritura solamente con datos ficticios.
 
 No utilizar esta excepción como autorización para cambiar flujos de otras pantallas.
+
+## F3 — Lote de consistencia global de diálogos y comandos (2026-11-04)
+
+La inspección de componentes compartidos detectó problemas de ancho y espaciado en formularios de **Personal**, **Unidades**, **Vacaciones** y **Marcadas**, además de comandos móviles duplicados y exclusivamente icónicos en **Unidades**. Se aplicaron las siguientes reglas reutilizables:
+
+- `BackofficeFormStandards.dialogWidth = 520` px lógicos (límite preferido, no ancho mínimo en móvil), `wideDialogWidth = 680`, `fieldGap = 12`, `sectionGap = 16`.
+- Los cuatro diálogos administrativos mencionados contienen su área desplazable dentro de `SizedBox(width: dialogWidth)`, permitiendo que `AlertDialog` se ajuste al espacio disponible en móvil.
+- El formulario de Personal incorpora separadores entre Nombre, Puesto, Turno, Salario, Foto y bloque de estado.
+- Vacaciones incorpora separación entre selector, rango de fechas, Tipo, aprobación y Nota.
+- Unidades conserva su lógica y campos, pero utiliza ancho común; en móvil las tarjetas ya no ofrecen `IconButton` Editar/Inactivar duplicados: se usan las acciones explícitas de la barra de selección.
+- Marcadas conserva íntegros la selección de empleado, fecha, hora, `_save` y callbacks: solo se ajusta ancho y el primer espacio entre controles.
+
+**Inventario de auditoría de componentes inspeccionados:** `AppPageScaffold`, `AppSearchField`, `BackofficeCollectionView`, `BackofficeSelectionToolbar`, `BackofficeFormStandards`, `ResponsiveTouchDialogFrame`; vistas: Unidades, Personal, Marcadas, Vacaciones, Configuración, Caja y Reportes. En especial, `AppPageScaffold.actions` y `BackofficeCollectionView.selectionActions` pueden crear dos zonas de comandos en otras vistas; esta deuda debe resolverse por pantalla para no mover operaciones del POS ni confundir acciones globales con acciones seleccionadas.
+
+**No se declara cobertura global terminada:** continúan pendientes de inspección pantalla por pantalla Caja, Tasas, varios diálogos de personal, reportes, empaques y movimientos. La revisión visual en 390/1366/1920 sigue pendiente. No usar este lote para afirmar regresión funcional aprobada.
+
+**QA proporcional requerido ahora:** `dart format` sobre archivos del lote, `flutter analyze`, y pruebas focalizadas de diálogos y selección móvil de Unidades. No repetir 138 pruebas ni construir Web por cambios de espaciado; compilar una vez al preparar revisión visual del lote completo. No publicar si falla el análisis. Ningún servicio ni repositorio fue modificado en este lote.
