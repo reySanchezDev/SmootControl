@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:smoo_control/core/design_system/app_button.dart';
+import 'package:smoo_control/core/design_system/backoffice_action_feedback.dart';
 import 'package:smoo_control/core/design_system/app_empty_state.dart';
 import 'package:smoo_control/core/design_system/app_loading_page.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
@@ -229,6 +230,11 @@ class _ExchangeRatesPageState extends State<ExchangeRatesPage> {
       setState(() {
         _monthlyRateError = 'Ingresá una tasa positiva de hasta 4 decimales.';
       });
+      BackofficeActionFeedback.show(
+        context,
+        outcome: BackofficeActionOutcome.warning,
+        message: 'No se aplicó la tasa: ingresá un valor positivo con hasta 4 decimales.',
+      );
       return;
     }
     setState(() {
@@ -248,18 +254,24 @@ class _ExchangeRatesPageState extends State<ExchangeRatesPage> {
       switch (result) {
         case AppSuccess():
           _load();
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Tasa aplicada al mes correctamente.')),
+          BackofficeActionFeedback.show(
+            context,
+            outcome: BackofficeActionOutcome.success,
+            message: 'Tasa aplicada correctamente a todos los días de ${_month.month}/${_month.year}.',
           );
         case AppFailureResult(:final error):
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(error.message)),
+          BackofficeActionFeedback.show(
+            context,
+            outcome: BackofficeActionOutcome.error,
+            message: 'No se pudo completar el mes: ${error.message}',
           );
       }
     } on Object catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No se pudo aplicar la tasa al mes.')),
+      BackofficeActionFeedback.show(
+        context,
+        outcome: BackofficeActionOutcome.error,
+        message: 'No se pudo aplicar la tasa al mes. Revisá la conexión e intentá nuevamente.',
       );
     } finally {
       if (mounted) setState(() => _applyingMonth = false);
