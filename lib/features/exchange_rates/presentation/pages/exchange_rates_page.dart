@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:smoo_control/core/design_system/app_button.dart';
 import 'package:smoo_control/core/design_system/app_empty_state.dart';
 import 'package:smoo_control/core/design_system/app_loading_page.dart';
@@ -29,6 +30,10 @@ class _ExchangeRatesPageState extends State<ExchangeRatesPage> {
   static const _currencyCode = 'USD';
 
   final _monthlyRateController = TextEditingController();
+  final List<FocusNode> _dailyRateFocusNodes = List.generate(
+    31,
+    (index) => FocusNode(debugLabel: 'Tasa diaria ${index + 1}'),
+  );
   final SupabaseAdminRepository _repository =
       serviceLocator<SupabaseAdminRepository>();
   late DateTime _month;
@@ -46,6 +51,9 @@ class _ExchangeRatesPageState extends State<ExchangeRatesPage> {
   @override
   void dispose() {
     _monthlyRateController.dispose();
+    for (final node in _dailyRateFocusNodes) {
+      node.dispose();
+    }
     super.dispose();
   }
 
@@ -160,6 +168,9 @@ class _ExchangeRatesPageState extends State<ExchangeRatesPage> {
             date: DateTime(_month.year, _month.month, day),
             rate: byDay[day],
             onSaved: _saveRate,
+            focusNode: _dailyRateFocusNodes[day - 1],
+            previousFocusNode: day > 1 ? _dailyRateFocusNodes[day - 2] : null,
+            nextFocusNode: day < days ? _dailyRateFocusNodes[day] : null,
           ),
       ],
     );
