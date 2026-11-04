@@ -179,8 +179,10 @@ class _AttendanceEditorDialogState extends State<_AttendanceEditorDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text(widget.entry == null ? 'Crear marcada' : 'Editar marcada'),
-      content: SingleChildScrollView(
-        child: Column(
+      content: SizedBox(
+        width: BackofficeFormStandards.dialogWidth,
+        child: SingleChildScrollView(
+          child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             DropdownButtonFormField<Employee>(
@@ -192,6 +194,7 @@ class _AttendanceEditorDialogState extends State<_AttendanceEditorDialog> {
               ],
               onChanged: (value) => setState(() => _employee = value!),
             ),
+            const SizedBox(height: BackofficeFormStandards.fieldGap),
             ListTile(
               contentPadding: EdgeInsets.zero,
               title: Text('Fecha ${_fmt(_workDate)}'),
@@ -220,6 +223,7 @@ class _AttendanceEditorDialogState extends State<_AttendanceEditorDialog> {
               onTap: () => _pickTime(isIn: false),
             ),
           ],
+        ),
         ),
       ),
       actions: [
