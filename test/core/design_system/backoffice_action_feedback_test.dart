@@ -25,22 +25,26 @@ void main() {
       ),
     );
     await tester.tap(find.text('Acción'));
-    await tester.pump();
+    await tester.pumpAndSettle();
   }
 
-  testWidgets('success is explicitly identified only when requested', (
-    tester,
-  ) async {
+  testWidgets('success is a modal dialog, never a snackbar', (tester) async {
     await show(
       tester,
       BackofficeActionOutcome.success,
       'Tasa aplicada correctamente.',
     );
-    expect(find.text('Correcto: Tasa aplicada correctamente.'), findsOneWidget);
+    expect(find.byType(AlertDialog), findsOneWidget);
+    expect(find.text('Operación exitosa'), findsOneWidget);
+    expect(find.text('Tasa aplicada correctamente.'), findsOneWidget);
     expect(find.byIcon(Icons.check_circle_outline), findsOneWidget);
+    expect(find.byType(SnackBar), findsNothing);
+    await tester.tap(find.text('Aceptar'));
+    await tester.pumpAndSettle();
+    expect(find.byType(AlertDialog), findsNothing);
   });
 
-  testWidgets('validation rejection is a warning, not a success', (
+  testWidgets('validation rejection displays warning dialog', (
     tester,
   ) async {
     await show(
@@ -48,19 +52,34 @@ void main() {
       BackofficeActionOutcome.warning,
       'Ingresá una tasa válida.',
     );
-    expect(find.text('Atención: Ingresá una tasa válida.'), findsOneWidget);
-    expect(find.textContaining('Correcto:'), findsNothing);
+    expect(find.byType(AlertDialog), findsOneWidget);
+    expect(find.text('Atención'), findsOneWidget);
+    expect(find.text('Ingresá una tasa válida.'), findsOneWidget);
+    expect(find.text('Operación exitosa'), findsNothing);
   });
 
-  testWidgets('server failure is explicitly identified as error', (
-    tester,
-  ) async {
+  testWidgets('remote failure displays error dialog', (tester) async {
     await show(
       tester,
       BackofficeActionOutcome.error,
       'No se completó el mes.',
     );
-    expect(find.text('Error: No se completó el mes.'), findsOneWidget);
+    expect(find.byType(AlertDialog), findsOneWidget);
+    expect(find.text('Error'), findsOneWidget);
+    expect(find.text('No se completó el mes.'), findsOneWidget);
     expect(find.byIcon(Icons.error_outline), findsOneWidget);
+  });
+
+  testWidgets('neutral information uses a separate dialog type', (
+    tester,
+  ) async {
+    await show(
+      tester,
+      BackofficeActionOutcome.info,
+      'Los registros están sincronizados.',
+    );
+    expect(find.byType(AlertDialog), findsOneWidget);
+    expect(find.text('Información'), findsOneWidget);
+    expect(find.byIcon(Icons.info_outline), findsOneWidget);
   });
 }
