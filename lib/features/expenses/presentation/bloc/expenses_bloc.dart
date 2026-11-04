@@ -56,9 +56,10 @@ final class ExpensesBloc extends Bloc<ExpensesEvent, ExpensesState> {
             occurredAt: DateTime.now(),
           ),
         );
+        emit(ExpensesActionSucceeded('Categoría «${event.category.name}» guardada correctamente.'));
         await _emitOverview(emit);
       },
-      failure: (failure) async => emit(ExpensesFailure(failure)),
+      failure: (failure) async => emit(ExpensesActionFailed(failure)),
     );
   }
 
@@ -81,9 +82,10 @@ final class ExpensesBloc extends Bloc<ExpensesEvent, ExpensesState> {
             occurredAt: DateTime.now(),
           ),
         );
+        emit(ExpensesActionSucceeded('Categoría «${event.category.name}» eliminada correctamente.'));
         await _emitOverview(emit);
       },
-      failure: (failure) async => emit(ExpensesFailure(failure)),
+      failure: (failure) async => emit(ExpensesActionFailed(failure)),
     );
   }
 
@@ -109,9 +111,10 @@ final class ExpensesBloc extends Bloc<ExpensesEvent, ExpensesState> {
             occurredAt: DateTime.now(),
           ),
         );
+        emit(const ExpensesActionSucceeded('Gasto registrado correctamente.'));
         await _emitOverview(emit);
       },
-      failure: (failure) async => emit(ExpensesFailure(failure)),
+      failure: (failure) async => emit(ExpensesActionFailed(failure)),
     );
   }
 
