@@ -28,8 +28,10 @@ class _VacationFormDialogState extends State<_VacationFormDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: const Text('Registrar vacaciones'),
-      content: SingleChildScrollView(
-        child: Column(
+      content: SizedBox(
+        width: BackofficeFormStandards.dialogWidth,
+        child: SingleChildScrollView(
+          child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             DropdownButtonFormField<String>(
@@ -44,6 +46,7 @@ class _VacationFormDialogState extends State<_VacationFormDialog> {
               ],
               onChanged: (value) => setState(() => _employeeId = value!),
             ),
+            const SizedBox(height: BackofficeFormStandards.fieldGap),
             Row(
               children: [
                 Expanded(
@@ -61,6 +64,7 @@ class _VacationFormDialogState extends State<_VacationFormDialog> {
                 ),
               ],
             ),
+            const SizedBox(height: BackofficeFormStandards.fieldGap),
             DropdownButtonFormField<String>(
               initialValue: _type,
               decoration: const InputDecoration(labelText: 'Tipo'),
@@ -70,17 +74,20 @@ class _VacationFormDialogState extends State<_VacationFormDialog> {
               ],
               onChanged: (value) => setState(() => _type = value!),
             ),
+            const SizedBox(height: BackofficeFormStandards.sectionGap),
             CheckboxListTile(
               value: _approved,
               title: const Text('Crear aprobado'),
               onChanged: (value) => setState(() => _approved = value ?? true),
             ),
+            const SizedBox(height: BackofficeFormStandards.fieldGap),
             TextField(
               controller: _note,
               decoration: const InputDecoration(labelText: 'Nota'),
               maxLines: 2,
             ),
           ],
+        ),
         ),
       ),
       actions: [
