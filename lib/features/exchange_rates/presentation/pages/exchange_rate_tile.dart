@@ -138,8 +138,7 @@ class _ExchangeRateTileState extends State<ExchangeRateTile> {
 
   @override
   Widget build(BuildContext context) {
-    final title =
-        '${widget.date.day}/${widget.date.month}/${widget.date.year}';
+    final title = '${widget.date.day}/${widget.date.month}/${widget.date.year}';
     final subtitle = '${widget.currencyCode} → ${MoneyFormatter.symbol}';
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
