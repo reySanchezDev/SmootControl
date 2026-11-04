@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smoo_control/core/design_system/app_empty_state.dart';
+import 'package:smoo_control/core/design_system/backoffice_action_feedback.dart';
 import 'package:smoo_control/core/design_system/app_loading_page.dart';
 import 'package:smoo_control/core/design_system/app_message_dialog.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
@@ -31,12 +32,35 @@ class ExpensesPage extends StatelessWidget {
       child: Builder(
         builder: (context) => AppPageScaffold(
           title: l10n.moduleExpenses,
-          body: BlocBuilder<ExpensesBloc, ExpensesState>(
+          body: BlocConsumer<ExpensesBloc, ExpensesState>(
+            listenWhen: (_, current) =>
+                current is ExpensesActionSucceeded ||
+                current is ExpensesActionFailed,
+            listener: (context, state) {
+              switch (state) {
+                case ExpensesActionSucceeded(:final message):
+                  BackofficeActionFeedback.show(
+                    context,
+                    outcome: BackofficeActionOutcome.success,
+                    message: message,
+                  );
+                case ExpensesActionFailed(:final failure):
+                  BackofficeActionFeedback.show(
+                    context,
+                    outcome: BackofficeActionOutcome.error,
+                    message: 'No se completó la operación: ${failure.message}',
+                  );
+                default:
+                  break;
+              }
+            },
             builder: (context, state) {
               return switch (state) {
                 ExpensesInitial() ||
-                ExpensesLoading() => const AppLoadingPage(),
-                ExpensesFailure(:final failure) => AppEmptyState(
+                ExpensesLoading() ||
+                ExpensesActionSucceeded() => const AppLoadingPage(),
+                ExpensesFailure(:final failure) ||
+                ExpensesActionFailed(:final failure) => AppEmptyState(
                   icon: Icons.error_outline,
                   message: failure.message,
                   title: l10n.moduleExpenses,
