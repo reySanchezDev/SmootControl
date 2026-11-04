@@ -58,7 +58,7 @@ final class UsersBloc extends Bloc<UsersEvent, UsersState> {
     );
     switch (saveResult) {
       case AppFailureResult(:final error):
-        emit(UsersFailure(error));
+        emit(UsersActionFailed(error));
         return;
       case AppSuccess():
         await _auditLogRepository.saveEntry(
@@ -74,6 +74,7 @@ final class UsersBloc extends Bloc<UsersEvent, UsersState> {
             occurredAt: DateTime.now(),
           ),
         );
+        emit(UsersActionSucceeded(event.user.displayName));
         await _load(emit);
     }
   }
