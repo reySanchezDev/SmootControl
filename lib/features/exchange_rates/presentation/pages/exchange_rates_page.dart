@@ -161,17 +161,25 @@ class _ExchangeRatesPageState extends State<ExchangeRatesPage> {
           'Las tasas diarias se guardan automáticamente al salir del campo.',
         ),
         const SizedBox(height: 8),
-        for (var day = 1; day <= days; day += 1)
-          ExchangeRateTile(
-            key: ValueKey(DateTime(_month.year, _month.month, day)),
-            currencyCode: _currencyCode,
-            date: DateTime(_month.year, _month.month, day),
-            rate: byDay[day],
-            onSaved: _saveRate,
-            focusNode: _dailyRateFocusNodes[day - 1],
-            previousFocusNode: day > 1 ? _dailyRateFocusNodes[day - 2] : null,
-            nextFocusNode: day < days ? _dailyRateFocusNodes[day] : null,
-          ),
+        // Keep all 28–31 editors mounted so keyboard focus can reach
+        // the next day even when it starts outside the viewport.
+        Column(
+          children: [
+            for (var day = 1; day <= days; day += 1)
+              ExchangeRateTile(
+                key: ValueKey(DateTime(_month.year, _month.month, day)),
+                currencyCode: _currencyCode,
+                date: DateTime(_month.year, _month.month, day),
+                rate: byDay[day],
+                onSaved: _saveRate,
+                focusNode: _dailyRateFocusNodes[day - 1],
+                previousFocusNode:
+                    day > 1 ? _dailyRateFocusNodes[day - 2] : null,
+                nextFocusNode:
+                    day < days ? _dailyRateFocusNodes[day] : null,
+              ),
+          ],
+        ),
       ],
     );
   }
