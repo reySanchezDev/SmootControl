@@ -50,8 +50,8 @@ try {
 
   Write-Host "Kivo Web preparado en $stage"
   Write-Host 'No se ha desplegado en Vercel.'
-  Write-Host "Usa 'vercel link --cwd \"$stage\"' una sola vez para vincular un proyecto DIFERENTE de la web corporativa."
-  Write-Host "Luego, tras revisar el sitio: vercel deploy --prod --cwd \"$stage\""
+  Write-Host ('Vincular proyecto nuevo: vercel link --cwd "{0}"' -f $stage)
+  Write-Host ('Publicar sitio validado: vercel deploy --prod --cwd "{0}"' -f $stage)
 } finally {
   Pop-Location
 }
