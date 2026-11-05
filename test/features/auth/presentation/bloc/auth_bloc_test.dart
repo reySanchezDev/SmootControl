@@ -29,6 +29,66 @@ void main() {
     );
 
     blocTest<AuthBloc, AuthState>(
+      'Web opens remote admin login without calling POS setup',
+      build: () => AuthBloc(
+        const _AuthRepositoryFake(
+          setupResult: AppFailureResult(
+            AppFailure(code: 'unexpected_pos_setup', message: 'POS setup called'),
+          ),
+        ),
+        adminOnlyWeb: true,
+      ),
+      act: (bloc) => bloc.add(const AuthSessionRequested()),
+      expect: () => const [AuthLoading(), Unauthenticated()],
+    );
+
+    blocTest<AuthBloc, AuthState>(
+      'Web rejects a locally cached POS session',
+      build: () => AuthBloc(
+        const _AuthRepositoryFake(
+          currentSession: AuthSession(
+            userId: 'pos-user',
+            email: 'pos@example.com',
+            roleId: 'role-cashier',
+            isPosUser: true,
+            displayName: 'POS',
+          ),
+        ),
+        adminOnlyWeb: true,
+      ),
+      act: (bloc) => bloc.add(const AuthSessionRequested()),
+      expect: () => const [AuthLoading(), Unauthenticated()],
+    );
+
+    blocTest<AuthBloc, AuthState>(
+      'Web rejects local PIN sign in',
+      build: () => AuthBloc(
+        const _AuthRepositoryFake(),
+        adminOnlyWeb: true,
+      ),
+      act: (bloc) => bloc.add(const AuthPinSignInRequested(
+        email: 'pos@example.com',
+        pin: '1234',
+      )),
+      expect: () => const [
+        AuthFailure(AppFailure(
+          code: 'auth_pos_not_available_on_web',
+          message: 'El POS local no esta disponible en el navegador.',
+        )),
+      ],
+    );
+
+    blocTest<AuthBloc, AuthState>(
+      'Android retains existing clean-device bootstrap',
+      build: () => AuthBloc(
+        const _AuthRepositoryFake(setupRequired: true),
+        adminOnlyWeb: false,
+      ),
+      act: (bloc) => bloc.add(const AuthSessionRequested()),
+      expect: () => const [AuthLoading(), AuthInitialSetupRequired()],
+    );
+
+    blocTest<AuthBloc, AuthState>(
       'emits failure when Google Auth is not configured',
       build: () => AuthBloc(
         const _AuthRepositoryFake(
@@ -52,10 +112,14 @@ final class _AuthRepositoryFake implements IAuthRepository {
   const _AuthRepositoryFake({
     this.currentSession,
     this.signInResult,
+    this.setupRequired = false,
+    this.setupResult,
   });
 
   final AuthSession? currentSession;
   final AppResult<AuthSession>? signInResult;
+  final bool setupRequired;
+  final AppResult<bool>? setupResult;
 
   @override
   Future<AppResult<AuthSession?>> getCurrentSession() async {
@@ -64,7 +128,7 @@ final class _AuthRepositoryFake implements IAuthRepository {
 
   @override
   Future<AppResult<bool>> isInitialSetupRequired() async {
-    return const AppSuccess(false);
+    return setupResult ?? AppSuccess(setupRequired);
   }
 
   @override
