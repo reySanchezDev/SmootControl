@@ -1,5 +1,6 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:smoo_control/core/result/app_failure.dart';
 import 'package:smoo_control/core/result/app_result.dart';
 import 'package:smoo_control/features/sync/domain/entities/sync_queue_item.dart';
 import 'package:smoo_control/features/sync/domain/entities/sync_settings.dart';
@@ -71,6 +72,82 @@ void main() {
             .having((state) => state.lastSummary?.processed, 'processed', 1)
             .having((state) => state.lastSummary?.succeeded, 'succeeded', 1)
             .having((state) => state.lastSummary?.failed, 'failed', 0),
+      ],
+    );
+
+    blocTest<SyncBloc, SyncState>(
+      'confirms settings only after persistence succeeds',
+      build: () {
+        final repository = _SyncQueueRepositoryFake(items: []);
+        final settingsRepository = _SyncSettingsRepositoryFake();
+        final processor = SyncQueueProcessor(
+          repository: repository,
+          remoteSender: const _SuccessfulRemoteSenderFake(),
+        );
+
+        return SyncBloc(
+          repository: repository,
+          settingsRepository: settingsRepository,
+          processor: processor,
+          scheduler: SyncSchedulerService(
+            settingsRepository: settingsRepository,
+            processor: processor,
+          ),
+        );
+      },
+      act: (bloc) => bloc.add(
+        const SyncSettingsSaved(
+          SyncSettings(
+            autoSyncEnabled: false,
+            intervalMinutes: 15,
+          ),
+        ),
+      ),
+      expect: () => const [
+        SyncLoading(),
+        SyncLoaded(
+          items: [],
+          settings: SyncSettings(
+            autoSyncEnabled: false,
+            intervalMinutes: 15,
+          ),
+          settingsSaved: true,
+        ),
+      ],
+    );
+
+    blocTest<SyncBloc, SyncState>(
+      'does not confirm settings when persistence fails',
+      build: () {
+        final repository = _SyncQueueRepositoryFake(items: []);
+        final settingsRepository = _SyncSettingsRepositoryFake(
+          saveResult: const AppFailureResult(
+            AppFailure(code: 'save_failed', message: 'No se pudo guardar'),
+          ),
+        );
+        final processor = SyncQueueProcessor(
+          repository: repository,
+          remoteSender: const _SuccessfulRemoteSenderFake(),
+        );
+
+        return SyncBloc(
+          repository: repository,
+          settingsRepository: settingsRepository,
+          processor: processor,
+          scheduler: SyncSchedulerService(
+            settingsRepository: settingsRepository,
+            processor: processor,
+          ),
+        );
+      },
+      act: (bloc) => bloc.add(
+        const SyncSettingsSaved(SyncSettings(autoSyncEnabled: false)),
+      ),
+      expect: () => const [
+        SyncLoading(),
+        SyncFailure(
+          AppFailure(code: 'save_failed', message: 'No se pudo guardar'),
+        ),
       ],
     );
   });
@@ -182,7 +259,10 @@ final class _SuccessfulRemoteSenderFake implements ISyncRemoteSender {
 }
 
 final class _SyncSettingsRepositoryFake implements ISyncSettingsRepository {
+  _SyncSettingsRepositoryFake({this.saveResult});
+
   SyncSettings settings = const SyncSettings();
+  final AppResult<SyncSettings>? saveResult;
 
   @override
   Future<AppResult<SyncSettings>> getSettings() async {
@@ -191,6 +271,7 @@ final class _SyncSettingsRepositoryFake implements ISyncSettingsRepository {
 
   @override
   Future<AppResult<SyncSettings>> saveSettings(SyncSettings settings) async {
+    if (saveResult case final result?) return result;
     this.settings = settings;
 
     return AppSuccess(settings);
