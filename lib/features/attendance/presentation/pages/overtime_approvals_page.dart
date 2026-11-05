@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:smoo_control/core/design_system/app_empty_state.dart';
+import 'package:smoo_control/core/design_system/backoffice_action_feedback.dart';
 import 'package:smoo_control/core/design_system/app_loading_page.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
 import 'package:smoo_control/core/design_system/backoffice_collection_view.dart';
@@ -193,17 +194,17 @@ class _OvertimeApprovalsPageState extends State<OvertimeApprovalsPage> {
     if (!mounted) return;
     switch (result) {
       case AppSuccess():
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              approve ? 'Hora extra autorizada.' : 'Hora extra rechazada.',
-            ),
-          ),
+        BackofficeActionFeedback.show(
+          context,
+          outcome: BackofficeActionOutcome.success,
+          message: approve ? 'Hora extra autorizada.' : 'Hora extra rechazada.',
         );
         await _load();
       case AppFailureResult(:final error):
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(error.message)),
+        BackofficeActionFeedback.show(
+          context,
+          outcome: BackofficeActionOutcome.error,
+          message: error.message,
         );
     }
   }
