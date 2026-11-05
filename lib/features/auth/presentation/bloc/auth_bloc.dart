@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smoo_control/core/result/app_failure.dart';
 import 'package:smoo_control/core/result/app_result.dart';
@@ -16,7 +17,9 @@ final class AuthBloc extends Bloc<AuthEvent, AuthState> {
     this._repository, {
     DeviceInitializationService? deviceInitializationService,
     CurrentRemoteSessionService? remoteSessionService,
-  }) : _deviceInitializationService = deviceInitializationService,
+    bool adminOnlyWeb = kIsWeb,
+  }) : _adminOnlyWeb = adminOnlyWeb,
+       _deviceInitializationService = deviceInitializationService,
        _remoteSessionService = remoteSessionService,
        super(const AuthInitial()) {
     on<AuthSessionRequested>(_onSessionRequested);
@@ -28,6 +31,7 @@ final class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }
 
   final IAuthRepository _repository;
+  final bool _adminOnlyWeb;
   final DeviceInitializationService? _deviceInitializationService;
   final CurrentRemoteSessionService? _remoteSessionService;
 
@@ -41,6 +45,17 @@ final class AuthBloc extends Bloc<AuthEvent, AuthState> {
       case AppFailureResult(:final error):
         emit(AuthFailure(error));
       case AppSuccess(:final value):
+        // Browser sessions never bootstrap a local POS device or use PIN login.
+        // Remote admin sessions remain valid only while their Supabase token is.
+        if (_adminOnlyWeb) {
+          if (value != null && !value.isPosUser &&
+              (_remoteSessionService?.hasUsableToken ?? false)) {
+            emit(Authenticated(value));
+          } else {
+            emit(const Unauthenticated());
+          }
+          return;
+        }
         if (value != null) {
           emit(Authenticated(value));
           return;
