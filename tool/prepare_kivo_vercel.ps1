@@ -31,6 +31,19 @@ try {
   New-Item -ItemType Directory -Force -Path $public | Out-Null
   Copy-Item -Path (Join-Path $distribution '*') -Destination $public -Recurse -Force
 
+  # Bind the artifact to the dedicated Kivo project, never pagina-quantix.
+  $vercelMeta = Join-Path $stage '.vercel'
+  New-Item -ItemType Directory -Force -Path $vercelMeta | Out-Null
+  $projectJson = @{
+    orgId = 'team_t77G3g4opjNGFPfq5FHkyxEi'
+    projectId = 'prj_bVasfmpCuDeKPqgSAzLrBVEWNNsK'
+  } | ConvertTo-Json
+  [System.IO.File]::WriteAllText(
+    (Join-Path $vercelMeta 'project.json'),
+    $projectJson,
+    [System.Text.UTF8Encoding]::new($false)
+  )
+
   # Deploy only the precompiled static site. Vercel must not rebuild Flutter.
   $config = @{
     '$schema' = 'https://openapi.vercel.sh/vercel.json'
@@ -50,8 +63,9 @@ try {
 
   Write-Host "Kivo Web preparado en $stage"
   Write-Host 'No se ha desplegado en Vercel.'
-  Write-Host ('Vincular proyecto nuevo: vercel link --cwd "{0}"' -f $stage)
-  Write-Host ('Publicar sitio validado: vercel deploy --prod --cwd "{0}"' -f $stage)
+  Write-Host 'El paquete queda vinculado exclusivamente al proyecto Vercel Kivo.'
+  Write-Host ('Preview: vercel deploy --cwd "{0}" --scope team_t77G3g4opjNGFPfq5FHkyxEi' -f $stage)
+  Write-Host ('Produccion, tras QA: vercel deploy --prod --cwd "{0}" --scope team_t77G3g4opjNGFPfq5FHkyxEi' -f $stage)
 } finally {
   Pop-Location
 }
