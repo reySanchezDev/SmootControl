@@ -132,8 +132,10 @@ class _RawMaterialConsumptionsPageState
     switch (result) {
       case AppSuccess():
         setState(() => _future = _load());
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Consumo eliminado.')),
+        BackofficeActionFeedback.show(
+          context,
+          outcome: BackofficeActionOutcome.success,
+          message: 'Consumo eliminado.',
         );
       case AppFailureResult(:final error):
         await showAppMessageDialog(context: context, message: error.message);
