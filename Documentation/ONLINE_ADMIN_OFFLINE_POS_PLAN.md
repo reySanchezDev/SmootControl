@@ -315,3 +315,12 @@ Cierre de salida a produccion documentado:
 - Una tableta nueva puede restaurar datos centrales desde Supabase.
 - Una actualizacion APK mantiene `applicationId`, firma release y migraciones no
   destructivas.
+
+## Decisión Kivo Web / Android / Windows — 2026-11-05
+
+Consultar `Documentation/KIVO_ACCESS_ARCHITECTURE_AND_WINDOWS_MIGRATION.md`:
+Backoffice Web inicia por autenticación administrativa remota sin bootstrap POS;
+Android mantiene sus flujos operativos actuales; la migración POS a Windows
+táctil está aprobada como dirección futura, pero requiere auditoría y pruebas
+antes de ejecutarse. Los apartados históricos anteriores describen fases ya
+implementadas y no autorizan reactivar inicialización POS en navegador.
