@@ -113,6 +113,13 @@ final class AuthBloc extends Bloc<AuthEvent, AuthState> {
     AuthPinSignInRequested event,
     Emitter<AuthState> emit,
   ) async {
+    if (_adminOnlyWeb) {
+      emit(const AuthFailure(AppFailure(
+        code: 'auth_pos_not_available_on_web',
+        message: 'El POS local no esta disponible en el navegador.',
+      )));
+      return;
+    }
     emit(const AuthLoading());
     final result = await _repository.signInWithPin(
       email: event.email,
