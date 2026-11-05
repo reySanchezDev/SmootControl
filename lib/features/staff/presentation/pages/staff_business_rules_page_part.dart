@@ -80,7 +80,11 @@ class _BusinessRulesPageState extends State<BusinessRulesPage> {
         );
         setState(() => _future = _load());
       case AppFailureResult(:final error):
-        await showAppMessageDialog(context: context, message: error.message);
+        BackofficeActionFeedback.show(
+          context,
+          outcome: BackofficeActionOutcome.error,
+          message: error.message,
+        );
     }
   }
 
@@ -96,7 +100,11 @@ class _BusinessRulesPageState extends State<BusinessRulesPage> {
         );
         setState(() => _future = _load());
       case AppFailureResult(:final error):
-        await showAppMessageDialog(context: context, message: error.message);
+        BackofficeActionFeedback.show(
+          context,
+          outcome: BackofficeActionOutcome.error,
+          message: error.message,
+        );
     }
   }
 }
