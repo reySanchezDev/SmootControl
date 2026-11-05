@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:smoo_control/core/design_system/app_empty_state.dart';
-import 'package:smoo_control/core/design_system/backoffice_action_feedback.dart';
 import 'package:smoo_control/core/design_system/app_loading_page.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
+import 'package:smoo_control/core/design_system/backoffice_action_feedback.dart';
 import 'package:smoo_control/core/design_system/backoffice_collection_view.dart';
 import 'package:smoo_control/core/design_system/backoffice_selection_toolbar.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
@@ -77,74 +77,72 @@ class _OvertimeApprovalsPageState extends State<OvertimeApprovalsPage> {
                     title: 'Horas extra',
                   )
                 : _items == null
-                    ? const AppLoadingPage()
-                    : BackofficeCollectionView<OvertimeCandidate>(
-                        items: _items!,
-                        rowKey: (item) => item.id,
-                        rowLabel: (item) => item.employeeName,
-                        selectionActions: [
-                          BackofficeSelectionAction<OvertimeCandidate>(
-                            label: 'Autorizar',
-                            icon: Icons.check_outlined,
-                            onPressed: (item) =>
-                                unawaited(_act(item, approve: true)),
-                          ),
-                          BackofficeSelectionAction<OvertimeCandidate>(
-                            label: 'Rechazar',
-                            icon: Icons.close_outlined,
-                            onPressed: (item) =>
-                                unawaited(_act(item, approve: false)),
-                          ),
-                        ],
-                        searchLabel: 'Buscar empleado o fecha',
-                        searchTextFor: (item) =>
-                            '${item.employeeName} ${_fmt(item.workedDate)}',
-                        emptyTitle: 'Sin pendientes',
-                        emptyMessage: 'No hay horas extra pendientes.',
-                        compactBuilder: (context, item) => ListTile(
-                          title: Text(item.employeeName),
-                          subtitle: Text(
-                            '${_fmt(item.workedDate)} · '
-                            '${item.hours.toStringAsFixed(2)} horas',
-                          ),
-                          trailing: Text(
-                            MoneyFormatter.format(item.totalInCents),
-                          ),
-                        ),
-                        columns: [
-                          BackofficeListColumn<OvertimeCandidate>(
-                            label: 'Empleado',
-                            width: 280,
-                            compare: (a, b) =>
-                                a.employeeName.compareTo(b.employeeName),
-                            cell: (_, item) => Text(item.employeeName),
-                          ),
-                          BackofficeListColumn<OvertimeCandidate>(
-                            label: 'Fecha',
-                            width: 160,
-                            compare: (a, b) =>
-                                a.workedDate.compareTo(b.workedDate),
-                            cell: (_, item) => Text(_fmt(item.workedDate)),
-                          ),
-                          BackofficeListColumn<OvertimeCandidate>(
-                            label: 'Horas',
-                            width: 130,
-                            alignment: Alignment.centerRight,
-                            compare: (a, b) => a.hours.compareTo(b.hours),
-                            cell: (_, item) =>
-                                Text(item.hours.toStringAsFixed(2)),
-                          ),
-                          BackofficeListColumn<OvertimeCandidate>(
-                            label: 'Monto',
-                            width: 170,
-                            alignment: Alignment.centerRight,
-                            compare: (a, b) =>
-                                a.totalInCents.compareTo(b.totalInCents),
-                            cell: (_, item) =>
-                                Text(MoneyFormatter.format(item.totalInCents)),
-                          ),
-                        ],
+                ? const AppLoadingPage()
+                : BackofficeCollectionView<OvertimeCandidate>(
+                    items: _items!,
+                    rowKey: (item) => item.id,
+                    rowLabel: (item) => item.employeeName,
+                    selectionActions: [
+                      BackofficeSelectionAction<OvertimeCandidate>(
+                        label: 'Autorizar',
+                        icon: Icons.check_outlined,
+                        onPressed: (item) =>
+                            unawaited(_act(item, approve: true)),
                       ),
+                      BackofficeSelectionAction<OvertimeCandidate>(
+                        label: 'Rechazar',
+                        icon: Icons.close_outlined,
+                        onPressed: (item) =>
+                            unawaited(_act(item, approve: false)),
+                      ),
+                    ],
+                    searchLabel: 'Buscar empleado o fecha',
+                    searchTextFor: (item) =>
+                        '${item.employeeName} ${_fmt(item.workedDate)}',
+                    emptyTitle: 'Sin pendientes',
+                    emptyMessage: 'No hay horas extra pendientes.',
+                    compactBuilder: (context, item) => ListTile(
+                      title: Text(item.employeeName),
+                      subtitle: Text(
+                        '${_fmt(item.workedDate)} · '
+                        '${item.hours.toStringAsFixed(2)} horas',
+                      ),
+                      trailing: Text(
+                        MoneyFormatter.format(item.totalInCents),
+                      ),
+                    ),
+                    columns: [
+                      BackofficeListColumn<OvertimeCandidate>(
+                        label: 'Empleado',
+                        width: 280,
+                        compare: (a, b) =>
+                            a.employeeName.compareTo(b.employeeName),
+                        cell: (_, item) => Text(item.employeeName),
+                      ),
+                      BackofficeListColumn<OvertimeCandidate>(
+                        label: 'Fecha',
+                        width: 160,
+                        compare: (a, b) => a.workedDate.compareTo(b.workedDate),
+                        cell: (_, item) => Text(_fmt(item.workedDate)),
+                      ),
+                      BackofficeListColumn<OvertimeCandidate>(
+                        label: 'Horas',
+                        width: 130,
+                        alignment: Alignment.centerRight,
+                        compare: (a, b) => a.hours.compareTo(b.hours),
+                        cell: (_, item) => Text(item.hours.toStringAsFixed(2)),
+                      ),
+                      BackofficeListColumn<OvertimeCandidate>(
+                        label: 'Monto',
+                        width: 170,
+                        alignment: Alignment.centerRight,
+                        compare: (a, b) =>
+                            a.totalInCents.compareTo(b.totalInCents),
+                        cell: (_, item) =>
+                            Text(MoneyFormatter.format(item.totalInCents)),
+                      ),
+                    ],
+                  ),
           ),
         ],
       ),

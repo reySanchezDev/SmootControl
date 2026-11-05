@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smoo_control/core/design_system/app_empty_state.dart';
-import 'package:smoo_control/core/design_system/backoffice_action_feedback.dart';
 import 'package:smoo_control/core/design_system/app_loading_page.dart';
 import 'package:smoo_control/core/design_system/app_message_dialog.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
 import 'package:smoo_control/core/design_system/app_search_field.dart';
+import 'package:smoo_control/core/design_system/backoffice_action_feedback.dart';
 import 'package:smoo_control/core/design_system/backoffice_selection_toolbar.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/features/catalog/domain/entities/product_category.dart';
@@ -132,7 +132,8 @@ class CatalogPage extends StatelessWidget {
     final confirmed = await showAppConfirmationDialog(
       context,
       title: l10n.removeCategoryLevelTitle,
-      message: '${l10n.removeCategoryLevelMessage(category.name)}\n\n'
+      message:
+          '${l10n.removeCategoryLevelMessage(category.name)}\n\n'
           '${l10n.removeCategoryLevelWithChildrenMessage}',
       confirmLabel: l10n.removeCategoryLevelConfirm,
       cancelLabel: l10n.cancelAction,
