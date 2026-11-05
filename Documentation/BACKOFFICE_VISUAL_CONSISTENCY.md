@@ -206,3 +206,16 @@ Se agrupa para **una sola validación posterior** el siguiente lote exclusivamen
 - **Reportes:** ortografía profesional de textos visibles (ventas, desempeño, costos, gastos y vacaciones), sin tocar rutas, generación de PDF ni cálculos.
 
 **Pruebas exigidas:** `dart format` solo de los cuatro archivos modificados, `flutter analyze`, pruebas focalizadas disponibles de Caja, Auditoría, Movimientos, Reportes, feedback modal y selección. Si faltan tests widget de estas pantallas, reportarlo; no afirmar cobertura visual inexistente. Validar que `part of` de Movimientos dispone de `BackofficeFormStandards` importado en `inventory_movements_page.dart`. Si todo es correcto, publicar exclusivamente formato/lint y compilar Web para actualizar únicamente `8081` **en la misma ejecución**. No modificar 8080, main, POS, producción, stashes ni datos reales. Inspección responsive desktop 1366×768 /1920×1080 y móvil 390px queda como control de aceptación final.
+
+## F3 — Remediación focalizada del hallazgo UX-041 de auditoría final (2026-11-05)
+
+Auditoría de Codex sobre `6ba466dda7e892cc629c2c6ca0a67bbdd1ce1ec8`: `flutter analyze` limpio, 90 pruebas focalizadas aprobadas; **no** se certificó QA visual en navegador. Se detectaron Snackbars de resultados explícitos en Categorías, Aprobaciones de horas extra, Consumos de Personal, Reglas/Turnos de Personal y Sincronización. El preview 8081 fue levantado sin rebuild; 8080 no estaba escuchando y no fue modificado.
+
+**Remediación publicada (todavía no probada por Flutter):**
+- Categorías: el listener `CatalogLoaded(notice: ...)` emite diálogo modal de éxito, solo para avisos creados tras un resultado `AppSuccess`. `CatalogFailure` se muestra como error, sin reescribir `CatalogBloc` ni afirmar éxito al cargar datos.
+- Aprobaciones de horas extra: éxito/error según `AppSuccess/AppFailureResult` de `approveOvertimeCandidate` o `rejectOvertimeCandidate`, recarga intacta.
+- Consumos de materia prima de Personal: eliminación confirmada previamente y diálogo de éxito solo después de `AppSuccess`; error sigue reportado en el diálogo existente.
+- Reglas y turnos de Personal: éxito/error en diálogo tipificado según resultado real de `saveBusinessRule` y `saveWorkShift`.
+- Sincronización: diálogo modal de éxito exclusivamente en estado `SyncLoaded(settingsSaved: true)`, manteniendo la lógica actual de confirmación del Bloc.
+
+Se reutiliza `BackofficeActionFeedback` sin modificar repositorios, contratos de persistencia, permisos, base de datos ni POS. Los estados de carga no generan diálogos de éxito. **No declarar F3 cerrada** hasta análisis Flutter, pruebas focalizadas secuenciales, build/preview 8081 si pasa, y aceptación visual responsive 390×844 / 1366×768 /1920×1080. Reportar cualquier falta de cobertura widget. `8080` detenido es un hallazgo de infraestructura separado y no se debe reiniciar sin autorización.
