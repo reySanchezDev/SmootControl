@@ -73,8 +73,10 @@ class _BusinessRulesPageState extends State<BusinessRulesPage> {
     if (!mounted) return;
     switch (result) {
       case AppSuccess():
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Regla guardada.')),
+        BackofficeActionFeedback.show(
+          context,
+          outcome: BackofficeActionOutcome.success,
+          message: 'Regla guardada.',
         );
         setState(() => _future = _load());
       case AppFailureResult(:final error):
@@ -87,8 +89,10 @@ class _BusinessRulesPageState extends State<BusinessRulesPage> {
     if (!mounted) return;
     switch (result) {
       case AppSuccess():
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Turno guardado.')),
+        BackofficeActionFeedback.show(
+          context,
+          outcome: BackofficeActionOutcome.success,
+          message: 'Turno guardado.',
         );
         setState(() => _future = _load());
       case AppFailureResult(:final error):
