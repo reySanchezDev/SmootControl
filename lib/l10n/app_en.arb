@@ -1,6 +1,6 @@
 {
   "@@locale": "en",
-  "appTitle": "SmooControl",
+  "appTitle": "Kivo",
   "dashboardTitle": "Operations dashboard",
   "dashboardSubtitle": "Initial foundation ready for sales, cash register, expenses, and sync.",
   "primaryAction": "Open POS",
