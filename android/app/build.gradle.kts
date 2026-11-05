@@ -42,7 +42,7 @@ android {
         create("production") {
             dimension = "app"
             applicationId = "com.smoocontrol.pos"
-            resValue("string", "app_name", "SmooControl")
+            resValue("string", "app_name", "Kivo")
         }
         create("timeClock") {
             dimension = "app"
