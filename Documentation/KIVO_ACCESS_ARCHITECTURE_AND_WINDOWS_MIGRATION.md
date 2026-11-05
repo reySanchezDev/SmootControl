@@ -59,6 +59,8 @@ Flutter Web -> AuthSessionRequested
 ```
 
 - No consultar `getStartupMode()` para una sesión Web sin autenticar.
+- No iniciar `SyncSchedulerService` en Flutter Web: el programador procesa la
+  cola local del POS y no corresponde a un Backoffice online-first.
 - No exponer POS/PIN, creación de admin local ni inicialización de dispositivo
   al navegador.
 - Rechazar un evento PIN local en Web, aunque se invoque por error desde UI.
