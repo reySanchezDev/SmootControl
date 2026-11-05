@@ -1,11 +1,11 @@
 {
-  "name": "SmooControl",
-  "short_name": "SmooControl",
+  "name": "Kivo by Quantix",
+  "short_name": "Kivo",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#0175C2",
   "theme_color": "#0175C2",
-  "description": "Administración y punto de venta para restaurante.",
+  "description": "Kivo by Quantix: gestión integral para restaurantes.",
   "orientation": "portrait-primary",
   "prefer_related_applications": false,
   "icons": [
