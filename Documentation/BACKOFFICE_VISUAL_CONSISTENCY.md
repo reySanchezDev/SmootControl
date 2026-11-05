@@ -219,3 +219,32 @@ Auditoría de Codex sobre `6ba466dda7e892cc629c2c6ca0a67bbdd1ce1ec8`: `flutter a
 - Sincronización: diálogo modal de éxito exclusivamente en estado `SyncLoaded(settingsSaved: true)`, manteniendo la lógica actual de confirmación del Bloc.
 
 Se reutiliza `BackofficeActionFeedback` sin modificar repositorios, contratos de persistencia, permisos, base de datos ni POS. Los estados de carga no generan diálogos de éxito. **No declarar F3 cerrada** hasta análisis Flutter, pruebas focalizadas secuenciales, build/preview 8081 si pasa, y aceptación visual responsive 390×844 / 1366×768 /1920×1080. Reportar cualquier falta de cobertura widget. `8080` detenido es un hallazgo de infraestructura separado y no se debe reiniciar sin autorización.
+
+## F3 — ACTA DE CIERRE FUNCIONAL Y VISUAL CON RIESGOS RESIDUALES (2026-11-05)
+
+**Estado: F3 cerrada y aceptada por el propietario para el alcance funcional/visual del Backoffice V2.** Esta acta sustituye el estado «pendiente de cierre» de secciones históricas anteriores, pero **no certifica cobertura automatizada integral ni autoriza integrar a `main`**.
+
+### Evidencia de aceptación
+
+- **SHA de código aceptado:** `ab4ad3aed6d510d6e1a2e55afef7a675c5c5dd3a` sobre `develop/backoffice-stabilization-integration`, antes del commit exclusivo de documentación de esta acta. `HEAD` y `origin` coincidían en ese SHA según reporte local de Codex.
+- **Calidad automatizada:** `flutter analyze` correcto y 27 pruebas focalizadas aprobadas en el último ciclo, incluyendo nuevas verificaciones de `SyncBloc` (guardado confirmado, fallo sin éxito falso y recarga). En auditoría previa también se reportaron 90 pruebas focalizadas aprobadas; son ejecuciones distintas, no un total acumulable.
+- **Build/preview:** compilación Web oficial correcta con credenciales configuradas sin divulgarlas y assets Supabase/Drift. El preview `http://127.0.0.1:8081/` sirvió el SHA aceptado y recursos `/`, `flutter_bootstrap.js`, `main.dart.js`, `drift_worker.js` con HTTP 200 según el último reporte local.
+- **Aceptación visual y funcional manual:** el propietario confirmó **siete puntos en desktop** (sidebar, pestañas, listas, filtros, selección, formularios, diálogos, inventario, flujos de personal y ausencia de overflow) y posteriormente confirmó **seis puntos en móvil 390×844** (navegación, selección, scroll, legibilidad, diálogos y ausencia de overflow). No hay capturas ni sesión de navegador automatizado autenticado asociadas a estas aprobaciones; **son aceptación manual**, no certificación automatizada de todos los tamaños de pantalla.
+- **Protección:** 17 stashes preservados; tres archivos de localización generados y `web/drift_worker.js` fuera de commit; `main`, POS, SQL/repositorios, producción, datos reales y worktrees originales intactos. El puerto 8080 continuaba sin escucha y queda como incidencia de infraestructura independiente, no bloqueante para el cierre de F3.
+
+### Riesgos residuales aceptados (no se ocultan ni se marcan como resueltos)
+
+| ID | Riesgo | Severidad de seguimiento | Acción futura |
+| --- | --- | --- | --- |
+| F3-R01 | Sin test widget aislado de aprobación/rechazo de horas extra: callbacks privados y dependencia directa de `serviceLocator`. No se prueba automáticamente diálogo duplicado o fallo de persistencia desde la pantalla. | Media | Implementar harness con inyección controlada o prueba de integración con fakes; sin cambiar la lógica de negocio solo por la prueba. |
+| F3-R02 | Sin test widget aislado de guardar reglas y turnos de Personal por la misma dificultad de dependencias concretas. | Media | Añadir pruebas de presentación/integración cuando exista harness reutilizable, incluyendo éxitos y errores. |
+| F3-R03 | Sin test widget aislado de eliminación de consumos de materia prima y su diálogo de confirmación/resultado. | Media | Probar confirmación, cancelación, éxito, error y no duplicación cuando exista harness. |
+| F3-R04 | Sin pruebas widget específicas de los tres diálogos de Inventario ni de Movimientos; responsive global no está cubierto por screenshots automáticos. | Media | Añadir regresión widget y visual automatizada por resoluciones al mejorar infraestructura QA, sin revocar la aceptación manual existente. |
+| F3-R05 | `8080` sin escucha durante la auditoría. No fue intervenido. | Operativa, externa a F3 | Diagnóstico separado, sin levantar ni modificar POS/servidor original sin autorización. |
+
+### Condiciones y límites del cierre
+
+1. **Se cierra F3 funcional/visual**, con los riesgos enumerados expresamente aceptados para seguimiento; ningún hallazgo conocido de la aceptación manual fue señalado como bloqueante.
+2. Este cierre **no equivale a release a producción**, despliegue POS o integración a `main`.
+3. **Próxima acción condicionada:** revisión de diferencias desde la base de `main`, protección de archivos locales/stashes, regresión proporcional a la integración, aprobación explícita del propietario y luego integración controlada. No ejecutar merge ni build productivo por registrar esta acta.
+4. Si un riesgo residual se materializa como defecto reproducible, abrir una incidencia focalizada con evidencia y corregirla sin deshacer arbitrariamente el cierre de las demás áreas.
