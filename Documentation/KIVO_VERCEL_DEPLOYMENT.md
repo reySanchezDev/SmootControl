@@ -53,3 +53,10 @@ builds de Android son independientes.
 Kivo es nombre elegido por el propietario. El uso público/comercial debe ir
 acompañado de una comprobación de marcas y riesgos de confusión por país.
 Este documento no acredita exclusividad del signo.
+
+## Reglas de acceso y futuras plataformas
+
+El flujo Web administrativo no puede aprovisionar dispositivos POS; ver
+`Documentation/KIVO_ACCESS_ARCHITECTURE_AND_WINDOWS_MIGRATION.md`.
+Para publicar cambios de autenticación se exige probar navegador limpio y
+login remoto real antes de declarar el lanzamiento funcionalmente validado.
