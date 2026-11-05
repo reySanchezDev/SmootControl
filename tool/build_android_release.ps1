@@ -1,5 +1,5 @@
 param(
-  [string]$OutputName = "SmooControl-produccion.apk",
+  [string]$OutputName = "Kivo-produccion.apk",
   [string]$CredentialsPath = "Requerimiento/CredencialesSupabase.md"
 )
 
@@ -88,7 +88,7 @@ if ($sqliteNativeLibrary -ne "PRESENTE") {
 }
 
 @"
-SmooControl Android Release Build
+Kivo Android Release Build
 GeneratedAt=$(Get-Date -Format o)
 Output=$apkPath
 PubspecVersion=$pubspecVersion
