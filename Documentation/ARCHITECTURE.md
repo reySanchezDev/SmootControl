@@ -135,3 +135,10 @@ BLoCs implementados con estados explicitos de carga, datos y error:
 - Usar `mcp__dart.analyze_files` acotado a `lib` y `test`.
 - Usar `mcp__dart.run_tests` acotado a `test`.
 - Evitar formato/analisis amplio si aparecen carpetas externas de referencia dentro del workspace.
+
+## Arquitectura comercial Kivo (decisión 2026-11-05)
+
+La separación oficial de login Web administrativo / aprovisionamiento POS, el
+resguardo Android y la futura transición a Windows táctil están formalizados en
+`Documentation/KIVO_ACCESS_ARCHITECTURE_AND_WINDOWS_MIGRATION.md`.
+**El acceso Backoffice Web no puede ejecutar inicialización ni descarga POS.**
