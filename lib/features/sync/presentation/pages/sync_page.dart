@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smoo_control/core/design_system/app_button.dart';
+import 'package:smoo_control/core/design_system/backoffice_action_feedback.dart';
 import 'package:smoo_control/core/design_system/app_empty_state.dart';
 import 'package:smoo_control/core/design_system/app_loading_page.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
@@ -33,10 +34,10 @@ class SyncPage extends StatelessWidget {
         body: BlocConsumer<SyncBloc, SyncState>(
           listener: (context, state) {
             if (state case SyncLoaded(settingsSaved: true)) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Configuracion de sincronizacion guardada.'),
-                ),
+              BackofficeActionFeedback.show(
+                context,
+                outcome: BackofficeActionOutcome.success,
+                message: 'Configuración de sincronización guardada.',
               );
             }
           },
