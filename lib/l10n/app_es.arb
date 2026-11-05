@@ -1,6 +1,6 @@
 {
   "@@locale": "es",
-  "appTitle": "SmooControl",
+  "appTitle": "Kivo",
   "dashboardTitle": "Panel operativo",
   "dashboardSubtitle": "Base inicial lista para ventas, caja, gastos y sincronización.",
   "primaryAction": "Abrir POS",

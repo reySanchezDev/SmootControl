@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -17,6 +18,7 @@ class LoginPage extends StatefulWidget {
   const LoginPage({
     this.failure,
     this.setupRequired = false,
+    this.adminOnly = kIsWeb,
     super.key,
   });
 
@@ -25,6 +27,9 @@ class LoginPage extends StatefulWidget {
 
   /// Whether the first administrator must be created.
   final bool setupRequired;
+
+  /// Restricts the browser experience to online Backoffice access.
+  final bool adminOnly;
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -45,7 +50,8 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void initState() {
     super.initState();
-    unawaited(_loadRememberedPosEmail());
+    _remoteAdminMode = widget.adminOnly;
+    if (!widget.adminOnly) unawaited(_loadRememberedPosEmail());
   }
 
   @override
@@ -84,7 +90,9 @@ class _LoginPageState extends State<LoginPage> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       Icon(
-                        Icons.point_of_sale_outlined,
+                        widget.adminOnly
+                            ? Icons.admin_panel_settings_outlined
+                            : Icons.point_of_sale_outlined,
                         color: colorScheme.primary,
                         size: 40,
                       ),
@@ -101,12 +109,14 @@ class _LoginPageState extends State<LoginPage> {
                       AppText(
                         widget.setupRequired
                             ? l10n.initialAdminMessage
+                            : widget.adminOnly
+                            ? 'Accede al Backoffice de Kivo con tu correo y clave.'
                             : l10n.loginMessage,
                         maxLines: 3,
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 24),
-                      if (!widget.setupRequired) ...[
+                      if (!widget.setupRequired && !widget.adminOnly) ...[
                         SegmentedButton<bool>(
                           segments: const [
                             ButtonSegment<bool>(
@@ -139,7 +149,8 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         const SizedBox(height: 12),
                       ],
-                      if (!widget.setupRequired && !_remoteAdminMode) ...[
+                      if (!widget.setupRequired && !_remoteAdminMode &&
+                          !widget.adminOnly) ...[
                         CheckboxListTile(
                           contentPadding: EdgeInsets.zero,
                           controlAffinity: ListTileControlAffinity.leading,
