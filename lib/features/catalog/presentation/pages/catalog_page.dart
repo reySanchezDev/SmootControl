@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smoo_control/core/design_system/app_empty_state.dart';
+import 'package:smoo_control/core/design_system/backoffice_action_feedback.dart';
 import 'package:smoo_control/core/design_system/app_loading_page.dart';
 import 'package:smoo_control/core/design_system/app_message_dialog.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
@@ -33,13 +34,18 @@ class CatalogPage extends StatelessWidget {
           title: l10n.moduleCatalog,
           body: BlocConsumer<CatalogBloc, CatalogState>(
             listener: (context, state) {
-              final messenger = ScaffoldMessenger.of(context);
               switch (state) {
                 case CatalogLoaded(:final notice) when notice != null:
-                  messenger.showSnackBar(SnackBar(content: Text(notice)));
+                  BackofficeActionFeedback.show(
+                    context,
+                    outcome: BackofficeActionOutcome.success,
+                    message: notice,
+                  );
                 case CatalogFailure(:final failure):
-                  messenger.showSnackBar(
-                    SnackBar(content: Text(failure.message)),
+                  BackofficeActionFeedback.show(
+                    context,
+                    outcome: BackofficeActionOutcome.error,
+                    message: failure.message,
                   );
                 default:
                   break;
