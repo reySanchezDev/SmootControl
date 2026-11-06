@@ -254,3 +254,36 @@ ejecutado y PostgreSQL/Auth/REST/Studio aún no verificables. La causa residual
 es la lentitud/estancamiento de la transferencia de capas grandes desde el
 registro/CDN a través del proxy interno de Docker Desktop; el reinicio resolvió
 el HTTP 500 inicial, pero no completó la descarga de la pila.
+
+### Cierre de la comprobación de descarga
+
+La rama `audit/kivo-local-lab` se verificó nuevamente en el commit
+`0b0fdcb2a7eca7d08075d69168141de1b20f344f`, sin cambios locales y conservando
+los 17 stashes. El espacio libre observado en `C:` fue de aproximadamente
+6.44 GB. No se capturó un error explícito `ENOSPC`, pero este margen es
+insuficiente para considerar segura otra descarga completa de la pila.
+
+Las opciones de Supabase CLI 2.90.0 confirmaron `--network-id` y
+`--exclude`; `supabase db --help` confirmó los comandos locales y remotos, sin
+ejecutar operaciones remotas.
+
+Se reintentó `public.ecr.aws/supabase/postgres:17.6.1.106` con supervisión y se
+canceló después de permanecer sin avance observable. La imagen no se consideró
+descargada. El intento de pila mínima con exclusiones compatibles también quedó
+detenido esperando PostgreSQL y Studio. No se iniciaron contenedores Supabase,
+por lo que las migraciones siguen en **0/83**, el seed no se ejecutó y no hay
+resultados locales de Auth, REST/RPC o PostgreSQL que certificar.
+
+Como comprobación independiente del PR #9 se preparó un worktree separado,
+`SmooControl-packaging-e2e-lab`, desde
+`origin/feature/packaging-e2e-rule-consumption`, sin modificar su rama. Se
+identificaron como pruebas pertinentes las de repositorio y servicio de
+inventario; no existen pruebas con nombre específico de Empaques en esa rama.
+`flutter pub get` completó, pero `flutter analyze` no produjo salida final
+dentro de la ventana de ejecución y fue cancelado de forma controlada; por ello
+no se declara éxito ni regresión en las pruebas Flutter del PR.
+
+No se aplicaron cambios de proxy, firewall, TLS, imágenes, volúmenes,
+contenedores ni redes ajenas. La corrección comprobada fue el reinicio oficial
+de Docker Desktop, que eliminó el HTTP 500 inicial para las descargas pequeñas
+pero no resolvió la transferencia de las capas grandes.
