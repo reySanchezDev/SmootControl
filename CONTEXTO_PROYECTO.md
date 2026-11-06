@@ -101,6 +101,10 @@
 - **Gate G-NUM añadido** al [plan por fases](Documentation/Planes/PLAN-2026-11-06-TERMINALES-POS-FASES-AUDITABLES.md). Antes de migrar: demostrar coherencia de folios e idempotencia mediante simulación sintética, revisar rutas RPC/legacy, impresión y normativa fiscal; no elegir series fiscales por terminal sin verificación jurídica.
 - Separar UUID de orden, referencia operativa, ID venta y número definitivo de documento. Las otras numeraciones (KOT, compra, nota de crédito, devolución, recibo de personal) no deben compartir forzosamente el contador de factura.
 
+## LS Central: statement y folios — 2026-11-06
+- [AUD-2026-11-06-006](Documentation/Auditorias/AUD-2026-11-06-006-ls-central-statement-y-numeracion.md): la documentación oficial distingue transacción POS, recibo, statement y documento contable/fiscal. El momento de folio legal depende de configuración/localización; ejemplo oficial España asigna en transacción, no durante statement. **Pendiente SQL real de Casa del Café** y legislación aplicable Nicaragua.
+- Mantener G-NUM bloqueante hasta validar el ciclo documentario, simular cierres y definir autoridad de numeración sin alterar comprobantes entregados.
+
 ## Cómo continuar en un chat nuevo
 1. Leer este archivo y los documentos de arquitectura/reglas citados.
 2. Consultar la rama activa y los commits más recientes; no asumir que `main` contiene todo el desarrollo V2.
