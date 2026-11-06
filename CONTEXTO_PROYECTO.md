@@ -113,6 +113,11 @@
 - Riesgos adicionales: ruta Empaques accesible por cualquiera de dos permisos aunque ofrece tres editores; `sales_types.is_default` remoto tiene índice único y el upsert de Admin guarda una fila sin limpiar anterior; pull marca faltantes como inactivos, lo que no debe confundirse con filtro de terminal.
 - Plan E0–E6 con gates independientes: primero snapshot de reglas/comportamiento actual, luego nueva UI con tablas/UUID intactos, después correcciones de motor y finalmente terminales con G-NUM/G-CON. No hubo cambios de código ni Supabase.
 
+
+## Norma global IDs y E0 Empaques — 2026-11-06
+- [QuantixEngineeringStandar](https://github.com/reySanchezDev/QuantixEngineeringStandar) v0.1.6, reglas ENG-008/UX-041 aprobadas: PK/UUID/IDs de tabla generados por sistema, no ingresados ni expuestos al usuario; códigos comerciales distintos de PK. Integración versionada del estándar en proyectos pendiente de implementación explícita.
+- [FE-E0-2026-11-06](Documentation/Auditorias/FasesEmpaques/FE-E0-2026-11-06.md): baseline de esquema/código de empaques y seis escenarios sintéticos lógicos; no se ejecutó código Flutter/SQL. **Gate G0-A sigue PENDIENTE** por falta de snapshot real y pruebas en clon aislado. No cambiar pantalla todavía.
+
 ## Cómo continuar en un chat nuevo
 1. Leer este archivo y los documentos de arquitectura/reglas citados.
 2. Consultar la rama activa y los commits más recientes; no asumir que `main` contiene todo el desarrollo V2.
