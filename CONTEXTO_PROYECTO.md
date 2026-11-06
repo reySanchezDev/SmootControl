@@ -105,6 +105,9 @@
 - [AUD-2026-11-06-006](Documentation/Auditorias/AUD-2026-11-06-006-ls-central-statement-y-numeracion.md): la documentación oficial distingue transacción POS, recibo, statement y documento contable/fiscal. El momento de folio legal depende de configuración/localización; ejemplo oficial España asigna en transacción, no durante statement. **Pendiente SQL real de Casa del Café** y legislación aplicable Nicaragua.
 - Mantener G-NUM bloqueante hasta validar el ciclo documentario, simular cierres y definir autoridad de numeración sin alterar comprobantes entregados.
 
+
+- Documento Codex [10-numeracion-pos-statement-facturacion](https://drive.google.com/file/d/11qNUM61Jobh5oIaz7VBRkX_6y-rESGxO/view): 9,792 transacciones con recibo único, **0 statements y 0 facturas contabilizadas** en BD de prueba. **No demuestra momento de folio fiscal.** [AUD-006](Documentation/Auditorias/AUD-2026-11-06-006-ls-central-statement-y-numeracion.md) actualizada; G-NUM sigue abierto. Separar recibo POS, transacción, factura fiscal y statement.
+
 ## Cómo continuar en un chat nuevo
 1. Leer este archivo y los documentos de arquitectura/reglas citados.
 2. Consultar la rama activa y los commits más recientes; no asumir que `main` contiene todo el desarrollo V2.
