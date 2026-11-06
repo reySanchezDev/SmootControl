@@ -88,6 +88,13 @@
 - Faltan modalidades N:M por terminal, predeterminado de terminal, permisos/configuración administrativa, proyección en pull de catálogo y validaciones POS/backend; sucursales todavía no están modeladas como alcance operativo del circuito examinado.
 - **Decisión propuesta:** evolucionar la identidad `pos_devices` sin duplicarla; respetar UUID/cola offline e introducir herencia de sucursal y modalidades permitidas por terminal. No migrar ni publicar sin aprobación.
 
+
+## Plan por fases auditables y simulables — Terminales POS (2026-11-06)
+- Plan aprobado como **documento propuesto, NO ejecución**: [PLAN-2026-11-06-TERMINALES-POS-FASES-AUDITABLES](Documentation/Planes/PLAN-2026-11-06-TERMINALES-POS-FASES-AUDITABLES.md).
+- Fases F0–F8 con *gate* de aprobación por etapa: línea base, simulador UX, contratos, migración ensayada en clon, backend, offline, UI, QA integral, rollout canario.
+- Exigencia: simulaciones con casos adversos y resultados reproducibles antes de aplicar cada fase; acta en `Documentation/Auditorias/FasesTerminales/FT-XX-<fecha>.md`; detener ante fallas o vacíos, no avanzar automáticamente.
+- Prioridad próxima: F0, verificar en solo lectura diferencia entre esquema realmente aplicado y repo/ramas, más dispositivos y consumidores; no ejecutar SQL mutador ni despliegue sin autorización.
+
 ## Cómo continuar en un chat nuevo
 1. Leer este archivo y los documentos de arquitectura/reglas citados.
 2. Consultar la rama activa y los commits más recientes; no asumir que `main` contiene todo el desarrollo V2.
