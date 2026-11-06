@@ -37,12 +37,14 @@
 - Proteger los flujos existentes de ventas, caja y sincronización. Verificar por separado la aplicación efectiva de migraciones Supabase.
 - Compilaciones entregables Android solo con los scripts aprobados descritos en el README, no con un build genérico sin configuración.
 
-## Trabajo activo — favicon Kivo
-- El favicon del sitio aún muestra el logo predeterminado de Flutter según reporte del usuario.
-- Se pidió generar **propuestas visuales de icono Kivo** y mostrarlas antes de implementarlas.
-- Dirección visual conversada: símbolo K reconocible, elegante y legible a 16×16, coherente con el Backoffice Ivory; evitar exceso de detalle.
-- **BLOQUEO DE APROBACIÓN:** NO modificar favicon, assets de marca en aplicación, despliegue Vercel ni producción hasta que el usuario apruebe expresamente una propuesta.
-- Una vez aprobado: implementar favicon web (incluyendo tamaños y cache busting necesarios), probar en el navegador y publicar solo con autorización separada si hace falta.
+## Favicon Kivo — diseño aprobado (2026-11-05)
+- **Aprobación expresa recibida:** usar únicamente el gorro de chef minimalista de línea blanca, fondo café oscuro y acento dorado. No usar monogramas K ni iconografía gastronómica adicional.
+- **Alcance autorizado:** actualizar exclusivamente el favicon y lugares que referencian el icono del sitio; no tocar flujos, estilos, título, configuración funcional ni otros elementos.
+- Referencia aprobada del usuario: imagen final de gorro de chef blanco sobre fondo café y acento naranja/dorado en esta conversación. La imagen original generada se conserva en el chat; no asumir que GitHub contiene el raster original.
+- **Implementado en rama `main` de GitHub:** `web/icons/kivo-chef.svg`, referencia `rel=icon` en `web/index.html`, icono de acceso directo y dos usos en `web/manifest.json` (normal y maskable). Los archivos PNG preexistentes de Flutter permanecen intactos y no se usan en esas referencias.
+- **Limitación pendiente:** los dispositivos iOS pueden no aceptar SVG para `apple-touch-icon`; preparar/subir PNG de 180 o 192 antes de declarar compatibilidad total. Comprobar favicon real a 16×16.
+- **Producción pendiente:** el deployment Vercel verificado `dpl_8gLvhQxeFfWkf46KjrqqJx7NJJY2` tiene `source=cli`; los commits en GitHub por sí solos **no prueban** que el sitio publicado se haya actualizado. Requiere reconstruir/publicar los archivos Flutter Web actualizados y validar en `https://kivo.quantix.software`.
+- No se autoriza cambiar otra cosa durante esta tarea.
 
 ## Cómo continuar en un chat nuevo
 1. Leer este archivo y los documentos de arquitectura/reglas citados.
