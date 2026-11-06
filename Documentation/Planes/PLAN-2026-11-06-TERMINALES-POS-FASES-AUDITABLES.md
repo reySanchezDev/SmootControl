@@ -168,6 +168,9 @@ Cada fase incluye **al menos un escenario adverso** diseñado deliberadamente pa
 
 La [AUD-2026-11-06-006](../Auditorias/AUD-2026-11-06-006-ls-central-statement-y-numeracion.md) demuestra con documentación oficial que transacción POS, recibo, statement y documento fiscal son entidades distintas; la numeración fiscal **no se asigna universalmente al contabilizar el statement**. Comprobar reglas reales de la base SQL de prueba mediante Codex antes de elegir política fiscal; simular separación de POS receipt, documento fiscal y reconciliación de statement.
 
+
+**Actualización evidencia 10 (Codex):** las 9,792 transacciones POS analizadas tienen recibos únicos; las tablas de statements y facturas contabilizadas tienen 0 filas, así que no demuestran momento de emisión de factura ni ciclo de cierre. [AUD-006 actualizada](../Auditorias/AUD-2026-11-06-006-ls-central-statement-y-numeracion.md). **G-NUM sigue abierto**; diseñar una prueba aislada de tiempos de asignación y reconciliación. 
+
 ## Compuerta de entrada inmediata
 
 **Estado actual: F0 PENDIENTE de ejecución**, aunque AUD-004 adelantó evidencia estática. El primer trabajo autorizado por este documento es **auditoría read-only de diferencia entre código versionado y esquema realmente aplicado** y un reporte de línea base. No aprobar fases futuras por silencio; avanzar solo tras confirmación del usuario.
