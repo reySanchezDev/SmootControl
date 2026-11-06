@@ -13,4 +13,6 @@ Las auditorías se preservan con ID, fecha, rama/commit, alcance, evidencias por
 
 | [AUD-2026-11-06-004](AUD-2026-11-06-004-backend-terminales-pos.md) | Dispositivos POS existentes, caja, sync y brechas de terminal configurable | Auditoría estática terminada; esquema real y QA pendientes |
 
+| [AUD-2026-11-06-005](AUD-2026-11-06-005-numeraciones-consecutivos-documentos.md) | Facturas, folios, offline, doble emisión y documentos omnicanal | Riesgo bloqueante G-NUM; simulación y verificación fiscal pendientes |
+
 **Próxima comprobación pendiente:** catálogo de dependencias completo y contraste con esquema/datos reales y clientes POS activos, sin implementación hasta autorización explícita.
