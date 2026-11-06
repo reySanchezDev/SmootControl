@@ -11,4 +11,6 @@ Las auditorías se preservan con ID, fecha, rama/commit, alcance, evidencias por
 
 | [AUD-2026-11-06-003](AUD-2026-11-06-003-referencia-ls-central-drive.md) | Referencia LS Central documentada en Google Drive y preguntas SQL para Codex | Revisión documental; comportamiento real pendiente |
 
+| [AUD-2026-11-06-004](AUD-2026-11-06-004-backend-terminales-pos.md) | Dispositivos POS existentes, caja, sync y brechas de terminal configurable | Auditoría estática terminada; esquema real y QA pendientes |
+
 **Próxima comprobación pendiente:** catálogo de dependencias completo y contraste con esquema/datos reales y clientes POS activos, sin implementación hasta autorización explícita.
