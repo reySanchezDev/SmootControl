@@ -83,6 +83,95 @@ Cada orden debe registrar, desde su creación, como mínimo:
 
 **No equivalen a funcionalidades aprobadas para el primer lanzamiento.** Son exigencias a considerar para que las decisiones actuales no bloqueen su incorporación futura.
 
+## 5A. Disponibilidad comercial temporal, estacional y contextual — requisito esencial
+
+**Decisión de producto:** la disponibilidad comercial de un artículo NO es sinónimo de `is_active`, ni del stock actual, ni del horario de apertura. Se calcula con reglas explícitas, reutilizables, versionadas y auditables; debe funcionar igual en POS, QR, web, app de cliente e integraciones. Las configuraciones pueden existir antes de que se implemente cada canal.
+
+### Escenarios indispensables
+
+| Escenario | Regla de ejemplo | Resultado esperado |
+|---|---|---|
+| Desayuno | Lunes-viernes 06:00–11:00, sábados-domingos 07:00–12:00 | Fuera de horario no aceptar nuevas líneas; pedidos existentes permanecen auditables |
+| Almuerzo/cena | 11:00–15:00 / 17:00–22:00, incluida ruptura entre turnos | Visibilidad y capacidad de pedido distintas |
+| Franja que cruza medianoche | Viernes 20:00–sábado 02:00 | Interpretar ventana por día de inicio, sin cortar a 00:00 |
+| Temporada fija | Mango: 15 marzo–30 junio de un año, según cada negocio | Activación futura y expiración automática, sin borrar artículo |
+| Temporada recurrente anual | Mango: marzo–junio cada año | Ventana anual configurable; **no asumir** disponibilidad por clima real |
+| Temporada variable | Administrador habilita/deshabilita cosecha por campaña | Estado manual con inicio/fin opcionales y precedencia explícita |
+| Fechas especiales | Navidad, Semana Santa, feriado local, evento o aniversario | Sobrescribir horarios regulares mediante excepción fechada |
+| Sucursal | Desayuno en sucursal A, no disponible en B | No confundir catálogo global con publicación por local |
+| Canal | Disponible en salón, no en delivery; promo exclusiva QR | Publicación filtrada; un canal no filtra disponibilidad de otro |
+| Modalidad | Smoothie para llevar con presentación distinta; delivery con empaque obligatorio | Aplicar reglas de packaging y precio después de elegibilidad |
+| Stock/ingrediente agotado | Temporada activa, pero no hay mango | Marcar **agotado temporalmente**, sin desactivar campaña |
+| Capacidad | Solo 30 unidades al día o capacidad limitada de cocina | Cupo y reservas consistentes bajo concurrencia; no usar flag estático |
+| Preparación | Cocina de desayunos cierra 10:45 para órdenes nuevas | Distinguir ventana de **admisión**, preparación y entrega |
+| Pedidos anticipados | Solicitar hoy para mañana a las 09:00 | Evaluar disponibilidad en hora de cumplimiento y reglas de anticipación |
+| Variantes | Tamaño grande solo de 09:00–12:00; toppings por campaña | La regla puede afectar SKU/variante/grupo, no solo producto padre |
+| Menú completo | Menú de desayuno agrupa varios artículos con restricciones propias | Componer disponibilidad del menú y componentes; no crear copias de producto |
+| Suspensión urgente | Agotado, equipo averiado, cierre de cocina, alerta de alérgenos | Suspensión inmediata, visible en todos los canales conectados |
+| Horarios con zona | Sucursal en otro país o zona horaria; cambio de hora | Evaluar en zona IANA de sucursal, persistiendo instantes UTC |
+
+### Diseño UX: no multiplicar pantallas
+Dentro de la ficha de artículo incluir una sección **«Disponibilidad»** con controles claros:
+- `Siempre disponible` (valor predeterminado cuando no exista ninguna restricción).
+- `Por horario`: días de la semana + franjas con apertura/cierre.
+- `Por temporada`: intervalo de fechas único, repetición anual u opción **«Activación manual»**.
+- `Reglas adicionales`: sucursal, canal, modalidad, variante, cupo diario y calendario de excepciones.
+- `Pausar temporalmente`: suspender pedidos sin editar la programación normal, con motivo y fecha de restablecimiento opcional.
+- **Vista previa** visible: «Disponible ahora / No disponible / Próxima disponibilidad», comprobable por sucursal, canal y fecha/hora. Para administradores, mostrar cuál regla bloquea la venta.
+- Plantillas reutilizables (Desayunos, Almuerzos, Temporada de mango, Fin de semana), seleccionables al configurar uno o varios artículos; administrar plantillas desde el mismo editor, no obligar a abrir catálogos separados.
+- Para POS y clientes, comunicar una razón sencilla y consistente: «Disponible desde las 6:00 a. m.», «Solo por temporada», «Agotado hoy» o «No disponible para delivery». Las restricciones relevantes deben ser explícitas; no ocultarlas tras menús «Más».
+
+### Esquema lógico propuesto (NO migración)
+
+```text
+availability_policy
+  id, restaurant_id, name, is_active, version, priority
+availability_rule
+  id, policy_id, rule_kind (weekly_window|date_range|annual_season|exception|manual|quota)
+  timezone_source, day_of_week, start_local_time, end_local_time
+  valid_from, valid_until, annual_start_month_day, annual_end_month_day
+  allow_or_block, priority, rule_payload_validated
+availability_assignment
+  policy_id, target_type (item|variant|modifier|menu), target_id
+  location_id?, channel_id?, service_mode_id?
+availability_override
+  target_id, location_id?, channel_id?, reason_code
+  blocked, starts_at_utc, ends_at_utc?, created_by, created_at
+availability_capacity
+  target_id, location_id, service_date, limit_quantity, reserved_quantity, consumed_quantity
+order_line_eligibility_snapshot
+  order_line_id, evaluated_at_utc, requested_fulfillment_at_utc
+  policy_version, decision, reason_code, rule_ids
+```
+
+**Nota:** esta es la forma funcional mínima para discusión; evitar una tabla por cada caso si una política con reglas tipadas resuelve el requisito. No usar JSON opaco sin validaciones, índices, autorización y reglas de consistencia.
+
+### Semántica obligatoria del motor de elegibilidad
+
+1. Evaluar en este orden: existencia del artículo y restaurante → estado activo → publicación por sucursal/canal → horario del negocio y estación de cocina → suspensión urgente → bloqueos explícitos/fechas especiales → temporada vigente → día/franja habilitada → variante/opciones → inventario/cupo → posibilidad de fulfillment. **Un bloqueo explícito de seguridad/cocina prevalece sobre permisos ordinarios.**
+2. Distinción de respuestas: `visible`, `orderable_now`, `orderable_for_requested_time`, `next_available_at`, `reason_code`. Un artículo estacional puede aparecer como «Próximamente» sin poder añadirse al carrito. La política de mostrar u ocultar debe ser configurable.
+3. Toda validación de disponibilidad para pedido se repite **en el servidor al confirmar**; no basta deshabilitar un botón en UI. Para POS offline usar políticas cacheadas con versión y reglas de caducidad/gracia; registrar aceptación offline y resolver conflictos al sincronizar sin crear ventas duplicadas.
+4. El instante decisivo se define por canal y operación: pedido inmediato → momento de aceptación; programado → horario solicitado de preparación/entrega; pedido iniciado antes del cierre pero enviado después → validar al enviar. Evitar cobros por órdenes que no pueden cumplirse (o gestionar captura/autorización diferida y compensaciones).
+5. Guardar snapshot de regla efectiva y horario solicitado en la línea; cambios posteriores de temporada o precio no pueden alterar retroactivamente la venta. Para aumento de cantidad, cambio de producto u horario, revalidar solamente la parte modificada.
+6. Política de conflictos clara: excepción fechada > semanal ordinaria; bloqueo urgente > habilitación temporal; políticas de alcance más específico (variante/sucursal/canal) deben tener resolución determinista documentada. No usar «la última regla que llegó gana».
+7. Validar intervalos cerrados-abiertos `[inicio, fin)`, cruces de medianoche, leap day, límites anuales que cruzan diciembre, duplicación de ventanas, DST y cierre de negocio que excede 24:00; los días calendario se calculan con `business_date` por sucursal.
+8. Cupos simultáneos requieren reserva/reducción transaccional y expiración, con idempotencia por `order_id`; **no prometer inventario o cuota global estricta con POS offline** sin protocolo de reservas o límites exclusivos por dispositivo.
+9. Grupos de modificadores/recetas: si «leche de almendra» está fuera de temporada, la opción se oculta/deshabilita, pero se puede vender la bebida con otras opciones; sustituciones deben revalidar elegibilidad y consumo sin doble descuento.
+10. Historial operativo: registrar quién creó/cambió calendario, cuándo entró en vigor, de qué versión provino la decisión y motivo de rechazo; separar reportes de ventas reales de demanda rechazada, respetando privacidad.
+
+### Casos de aceptación iniciales
+
+- A las 10:59 desayuno elegible y 11:00 deja de aceptar nuevas órdenes, con límites definidos por zona y sucursal.
+- Temporada de mango recurrente se habilita cada año y puede pausarse manualmente por falta de materia prima, sin borrar ni duplicar el artículo.
+- Orden web programada para mañana 09:00 es válida aun si el producto no es vendible en el momento de crearla, según reglas de anticipación.
+- Cambio de temporada durante pago se revalida; no cobrar dos veces al reintentar.
+- POS offline con calendario cacheado funciona y sincroniza sin duplicados; reglas antiguas se registran en snapshot y conflicto es resoluble.
+- Variantes, combos, opciones y empaques usan el contexto correcto de canal, sucursal y modalidad.
+- Suspensión por mantenimiento de cocina bloquea nuevos pedidos pero conserva las órdenes ya aceptadas y crea tareas de excepción si no pueden completarse.
+- Un feriado sobrescribe las franjas de desayuno sin modificar los horarios semanales de los días siguientes.
+
+**Alcance inicial recomendado:** disponibilidad semanal, fechas/temporada, sucursal y canal, suspensión temporal y vista previa. Preparar contratos para cupos, pedidos programados y canal público, sin declarar esas capacidades ya implementadas.
+
 ## 6. Reglas técnicas indispensables
 
 1. **Una única máquina de estados** con transiciones autorizadas: borrador → enviada → aceptada → preparación → lista → entregada/completada; cancelación/rechazo/reembolso modelados aparte y según estado. Pago y cocina evolucionan en estados independientes.
