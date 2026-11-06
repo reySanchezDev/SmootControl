@@ -179,3 +179,42 @@ arrancar: falta disponibilidad del Engine y un conjunto de datos sintéticos
 completo, y el script Web requiere una ruta local específica. No se clonó
 producción, no se descargaron datos reales, no se ejecutaron migraciones y no
 se tocaron los servicios ni puertos existentes.
+
+## Ejecución de puesta en marcha — resultado verificable
+
+En una segunda revisión se inició Docker Desktop. El Engine quedó disponible
+con cliente/servidor Docker `29.5.2`. El inventario previo a Supabase mostró:
+
+- `tentrix_minio` y `tentrix_postgres`, pertenecientes a otro proyecto;
+- volúmenes `tentrix_minio_data` y `tentrix_postgres_data`;
+- redes estándar y `tentrix_default`;
+- ningún contenedor Supabase;
+- ningún conflicto observado en los puertos configurados de Supabase.
+
+Se creó exclusivamente la red `smoo-kivo-lab` para el laboratorio y se invocó
+la CLI oficial con `supabase start --network-id smoo-kivo-lab`. La CLI comenzó a
+descargar la pila, pero terminó con:
+
+```text
+unable to get image 'public.ecr.aws/supabase/storage-api:v1.48.28':
+request returned 500 Internal Server Error for API route
+```
+
+La CLI retiró sus recursos temporales incompletos (`Pruned containers: []`,
+`Pruned network: []`); no eliminó ni modificó `tentrix_*`. La prueba de descarga
+de `hello-world` tampoco alcanzó una respuesta concluyente y quedó bloqueada en
+el cliente Docker, por lo que no se puede atribuir el fallo a una migración o a
+una imagen concreta con certeza.
+
+Resultado de migraciones: **0/83 aplicadas**. No se creó una base Supabase
+operativa, no se ejecutó el seed y no se realizaron consultas de verificación.
+El laboratorio no debe considerarse listo.
+
+### Bloqueo pendiente
+
+Revisar Docker Desktop/WSL2 y la conectividad al registro `public.ecr.aws`
+(proxy, DNS, autenticación o estado del backend), y repetir primero una prueba
+de descarga aislada. Después de obtener todas las imágenes, deberá repetirse
+`supabase start` y recién entonces validar las 83 migraciones y el seed. No es
+necesario modificar código, migraciones ni producción para resolver este
+bloqueo.
