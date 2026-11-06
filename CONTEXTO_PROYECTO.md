@@ -82,6 +82,12 @@
 - **Estado:** únicamente propuesta documental. No hay autorización de cambio de esquema/código ni ejecución de limpieza.
 - **Disponibilidad temporal y estacional (requisito explícito):** desayunos por día/franja, almuerzos/cenas, ventanas nocturnas, temporada de mango anual o por campaña, excepciones festivas, pausa por falta de ingrediente, sucursal/canal/variante, vista previa, órdenes programadas y validación omnicanal. Ver apartado 5A del diseño. **No confundir disponibilidad comercial con stock o estado activo.**
 
+
+## Auditoría 004 — capacidad de terminales POS (2026-11-06)
+- [AUD-2026-11-06-004](Documentation/Auditorias/AUD-2026-11-06-004-backend-terminales-pos.md): Kivo **ya tiene** `public.pos_devices`, registro de dispositivos, credenciales y trazabilidad en ventas/caja/inventario, además de renombrado y utilidades de prueba.
+- Faltan modalidades N:M por terminal, predeterminado de terminal, permisos/configuración administrativa, proyección en pull de catálogo y validaciones POS/backend; sucursales todavía no están modeladas como alcance operativo del circuito examinado.
+- **Decisión propuesta:** evolucionar la identidad `pos_devices` sin duplicarla; respetar UUID/cola offline e introducir herencia de sucursal y modalidades permitidas por terminal. No migrar ni publicar sin aprobación.
+
 ## Cómo continuar en un chat nuevo
 1. Leer este archivo y los documentos de arquitectura/reglas citados.
 2. Consultar la rama activa y los commits más recientes; no asumir que `main` contiene todo el desarrollo V2.
