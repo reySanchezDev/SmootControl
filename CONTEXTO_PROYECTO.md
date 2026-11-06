@@ -64,6 +64,15 @@
 - **Punto crítico:** coordinar el reinicio de Supabase y todos los POS offline para impedir reenvío de operaciones viejas. Crear respaldo restaurable, identificar todos los dispositivos, verificar colas, migraciones, referencias y reconstrucción de saldos; usar utilidades modulares existentes sólo tras auditarlas.
 - **Estado:** decisión funcional documentada; NO se ejecutaron comandos SQL, resets, cambios de código ni despliegues. Próxima fase: especificación y simulación de limpieza solo de operaciones, con lista de preservación y rollback antes de solicitar autorización de ejecución.
 
+
+## Corrección de alcance — nueva versión estable tras piloto (2026-11-06)
+- **Decisión explícita posterior del usuario; prevalece sobre la nota anterior:** el inventario y las existencias del piloto están desactualizados y NO interesa conservarlos, reconciliarlos, contarlos ni hacer ajustes para recuperarlos. El piloto fue para probar el sistema y familiarizar al personal.
+- **Conservar únicamente maestros de negocio útiles:** productos y categorías, precios configurados, recetas, empaques, modificadores, tipos de venta y sus reglas; preservar configuraciones técnicas/identidades que sean imprescindibles para seguridad y continuidad, validando sus dependencias.
+- **Descartar operativa piloto:** saldos de inventario, movimientos de inventario, ventas de prueba, anulaciones, cobros, caja y demás registros operativos de prueba sujetos a evaluación de retención obligatoria y dependencias técnicas. El inventario de la nueva versión arrancará limpio; definir el proceso de carga inicial cuando llegue el inicio real, sin invertir esfuerzo ahora en conciliar stock viejo.
+- **Meta prioritaria:** nueva versión comercial estable, segura y bien estructurada con catálogo maestro de artículos, empaques y modificadores correctamente modelados, POS offline robusto, sincronización idempotente y contratos SQL seguros.
+- **Orden:** diseñar/implementar y probar nueva arquitectura; luego reinicio controlado de operaciones con coordinación de los POS para impedir que reenvíen datos antiguos. Respaldos técnicos preventivos permitidos, sin comprometer a recuperar inventario viejo.
+- **Estado:** solo decisión/documentación. No hay autorización para borrar datos, migrar esquema ni publicar cambios.
+
 ## Cómo continuar en un chat nuevo
 1. Leer este archivo y los documentos de arquitectura/reglas citados.
 2. Consultar la rama activa y los commits más recientes; no asumir que `main` contiene todo el desarrollo V2.
