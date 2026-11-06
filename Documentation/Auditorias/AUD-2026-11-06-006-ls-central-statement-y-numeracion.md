@@ -50,3 +50,24 @@ F. No escribir/ejecutar DML, DDL, posting ni operaciones fiscales. No pedirle a 
 
 ## Gate antes de implementación de terminales
 **G-NUM** de [plan de terminales](../Planes/PLAN-2026-11-06-TERMINALES-POS-FASES-AUDITABLES.md) sigue bloqueado hasta elegir política probada. No asumir que emitir al statement es mejor; tampoco imponer asignación de folio fiscal al cobrar. Delimitar documento fiscal vs recibo POS según normativa local y operacional, revisar definiciones del servidor real y simular reconciliación.
+
+## Addendum — resultado de Codex, archivo 10 (2026-11-06)
+
+**Fuente:** [10-numeracion-pos-statement-facturacion.md](https://drive.google.com/file/d/11qNUM61Jobh5oIaz7VBRkX_6y-rESGxO/view). Investigación SELECT de la BD `POS` de prueba; no hubo operaciones de venta, cálculo o contabilización durante la investigación.
+
+### Confirmaciones observadas
+- `LSC Transaction Header`: 9,792 cabeceras con clave compuesta `Store No_, POS Terminal No_, Transaction No_`, todas con `Receipt No_` informado y **sin duplicados de recibo en la muestra**. Recibo distinto de número técnico.
+- `Statement Code` informado en todas, pero `Statement No_ - NOT USED` vacío en todas. No tomar ese campo legado como vínculo al statement.
+- `LSC Statement` y `LSC Posted Statement`: **0 filas**. No se demostró correlación transacción → statement mediante registros reales.
+- La estructura `LSC Statement` contiene `No_`, `No_ Series`, `Posting No_ Series`, `Posting No_`, estados y fechas; la numeración del statement y del posting son conceptos independientes.
+- `LSC Store`: 38 tiendas, 30 con `Statement Nos_`, 29 con política de un statement por día; 0 con `No_ Series` de transacción configurada. `LSC POS Terminal`: 105 terminales, 0 con `No_ Series` informado. No inferir que toda numeración de recibo proviene de `No_ Series`.
+- `Sales Invoice Header` y `Sales Cr_Memo Header`: **0 filas**; no se puede observar factura fiscal o nota de crédito a partir de una transacción POS en esta instancia.
+- Hay 9 transacciones con `Refund Receipt No_` informado; no deducir tipo y política fiscal sin enum/lógica real.
+
+### Deducciones y límites
+- Es compatible con que el POS tenga transacciones/recibos antes de que un statement esté contabilizado; **no demuestra el instante preciso** de asignación del recibo. Tampoco prueba el momento de asignación de factura fiscal ni que todas las transacciones generen una factura estándar.
+- **G-NUM permanece PENDIENTE**. La auditoría SQL reduce la ambigüedad estructural, pero no autoriza decisión fiscal ni implementación en Kivo.
+- Próxima prueba de mayor valor: laboratorio **descartable y explícitamente autorizado** que capture momentos antes/después de completar venta, calcular statement y contabilizar, comparando referencias sin tocar base operativa. Alternativamente, si no hay laboratorio, diseñar Kivo conservando la incertidumbre y optar por numeración operativa separada de emisión fiscal sujeto a normativa.
+
+### Recomendación para Kivo
+Identidad UUID de pedido, transacción POS, recibo comercial, documento fiscal y statement como conceptos independientes. No esperar al cierre para hacer válida una venta, ni cambiar referencias emitidas al contabilizar. Implementar primero un simulador de emisión, reintento, offline y cierre, con registro de folios no usados y reconciliación. No duplicar series por terminal automáticamente.
