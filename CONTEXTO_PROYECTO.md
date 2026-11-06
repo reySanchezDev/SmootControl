@@ -118,6 +118,13 @@
 - [QuantixEngineeringStandar](https://github.com/reySanchezDev/QuantixEngineeringStandar) v0.1.6, reglas ENG-008/UX-041 aprobadas: PK/UUID/IDs de tabla generados por sistema, no ingresados ni expuestos al usuario; códigos comerciales distintos de PK. Integración versionada del estándar en proyectos pendiente de implementación explícita.
 - [FE-E0-2026-11-06](Documentation/Auditorias/FasesEmpaques/FE-E0-2026-11-06.md): baseline de esquema/código de empaques y seis escenarios sintéticos lógicos; no se ejecutó código Flutter/SQL. **Gate G0-A sigue PENDIENTE** por falta de snapshot real y pruebas en clon aislado. No cambiar pantalla todavía.
 
+
+## Protocolo de colaboración GitHub + Codex local — 2026-11-06
+- Fuente de verdad: [QuantixEngineeringStandar](https://github.com/reySanchezDev/QuantixEngineeringStandar) **v0.1.7, ENG-009 y SMO-010**. Flujo aprobado por el propietario: **ChatGPT** analiza, investiga, diseña, programa y escribe cambios en GitHub (ramas, commits, PR y documentación) cuando sus herramientas lo permitan; **Codex en máquina local** sincroniza HEAD exacto y realiza `dart format`, `flutter analyze`, `flutter test`, compilaciones, comprobaciones sobre entorno local/clon autorizado y devoluciones de fallos con evidencia. ChatGPT examina resultados, aplica correcciones y repite el ciclo. Usuario aprueba UX y gates sensibles. No delegar toda la programación a Codex por comodidad.
+- Cada handoff indica repo, rama, SHA, archivos, propósito, comandos y pruebas esperadas, límites del entorno, resultados y bloqueos; Codex nunca debe sobrescribir cambios remotos sin `fetch`/rebase consensuado. Si ambos trabajan, usar commits/ramas separadas o coordinación explícita.
+- **Trabajo actual:** `feature/packaging-e2e-rule-consumption`, creada desde `develop/backoffice-stabilization-integration`. ChatGPT ya modificó motor de empaques para utilizar reglas explícitas en vez de depender de `to_go`, añadió tests en `sales_repository_test.dart`, creó [orden de ejecución](Documentation/Planes/EJECUCION-CODEX-EMPAQUES-END-TO-END.md). **Tests y compilaciones NO ejecutados todavía.** Revisar impacto retroactivo de reglas `dine_in` y no desplegar sin gates. HEAD al terminar esos commits: `ede5bb1ab076e32cd48af7fb0bd240f7e88aa6f2` (verificar remoto antes de trabajar).
+- No modificar producción, hacer migraciones, limpiar piloto ni fusionar sin autorización expresamente aplicable.
+
 ## Cómo continuar en un chat nuevo
 1. Leer este archivo y los documentos de arquitectura/reglas citados.
 2. Consultar la rama activa y los commits más recientes; no asumir que `main` contiene todo el desarrollo V2.
