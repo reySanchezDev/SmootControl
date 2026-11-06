@@ -153,6 +153,17 @@ Siguiente fase autorizada y límites:
 
 Cada fase incluye **al menos un escenario adverso** diseñado deliberadamente para revelar huecos. Si el ensayo revela un caso no contemplado, registrar nueva hipótesis, extender matriz y repetir la prueba **antes** de aprobación.
 
+
+## Dependencia bloqueante nueva — G-NUM: numeración documental (AUD-005)
+
+**Referencia:** [AUD-2026-11-06-005](../Auditorias/AUD-2026-11-06-005-numeraciones-consecutivos-documentos.md). Debe cerrarse **antes de aprobar F2/F3**: el sistema hoy genera folio local y Supabase puede asignar otro al sincronizar; varias terminales offline, reimpresión y cierre de piloto afectan integridad de documentos. **No** diseñar serie fiscal por terminal sin validar requisitos regulatorios.
+
+**Extensión F0:** inventariar cursor local, configuración `invoice_number_settings`, autoridad efectiva del RPC tras migraciones, rutas legacy, conciliación al volver del servidor, PDF, split payment, anulaciones, numeraciones de recibos internos y cleanup. Comprobar esquema real y consultas read-only.
+
+**Extensión F1/F2:** simular decisión de 3 IDs (orden/venta/documento fiscal) y las estrategias online definitiva vs bloques reservados offline vs series físicas autorizadas. No confundir origen y tipo de servicio con serie legal.
+
+**Ensayo independiente G-NUM (en simulador sintético aislado):** dos sucursales, cinco terminales, 50 ventas paralelas, tickets offline, respuesta RPC perdida, reintentos, cambio de serie y restauración; demostrar cero números definitivos duplicados, cero ventas perdidas, reimpresiones consistentes y folios no usados auditables. Registrar acta `Documentation/Auditorias/FasesTerminales/FT-NUM-<fecha>.md` con matriz de seguridad/compatibilidad y decisión explícita. Si el ensayo falla, bloquear F3 y rediseñar.
+
 ## Compuerta de entrada inmediata
 
 **Estado actual: F0 PENDIENTE de ejecución**, aunque AUD-004 adelantó evidencia estática. El primer trabajo autorizado por este documento es **auditoría read-only de diferencia entre código versionado y esquema realmente aplicado** y un reporte de línea base. No aprobar fases futuras por silencio; avanzar solo tras confirmación del usuario.
