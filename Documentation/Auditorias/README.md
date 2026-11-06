@@ -15,4 +15,6 @@ Las auditorías se preservan con ID, fecha, rama/commit, alcance, evidencias por
 
 | [AUD-2026-11-06-005](AUD-2026-11-06-005-numeraciones-consecutivos-documentos.md) | Facturas, folios, offline, doble emisión y documentos omnicanal | Riesgo bloqueante G-NUM; simulación y verificación fiscal pendientes |
 
+| [AUD-2026-11-06-006](AUD-2026-11-06-006-ls-central-statement-y-numeracion.md) | LS Central: transacción, recibo, statement, contabilización y folio fiscal | Documentación oficial contrastada; SQL de caso real pendiente |
+
 **Próxima comprobación pendiente:** catálogo de dependencias completo y contraste con esquema/datos reales y clientes POS activos, sin implementación hasta autorización explícita.
