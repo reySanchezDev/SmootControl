@@ -1,0 +1,114 @@
+# KIVO — Diseño funcional omnicanal y Centro de Artículos (V1)
+
+**Fecha:** 2026-11-06. **Estado:** propuesta de arquitectura para revisión, NO implementación aprobada. **Alcance:** restaurantes de mesa, cafeterías, panaderías, locales de comida rápida, food trucks, dark kitchens y demás comercios de alimentos. Preparar la plataforma para pedidos web/QR, app de clientes y repartidores, delivery propio y terceros.
+
+Referencias: auditorías [001](../Auditorias/AUD-2026-11-06-001-maestro-articulos.md), [002](../Auditorias/AUD-2026-11-06-002-dependencias-y-migracion-articulos.md), [003](../Auditorias/AUD-2026-11-06-003-referencia-ls-central-drive.md), [reglas de negocio](../BUSINESS_RULES.md), [recetas e inventario](../RECETAS_MATERIA_PRIMA_PLAN.md).
+
+## 1. Objetivo y reglas innegociables
+
+- **Experiencia simple sobre dominio robusto:** una pantalla principal de Artículos y una ficha contextual, sin catálogo separado por cada tipo físico ni pasos escondidos en «… Más».
+- **Misma autoridad de órdenes y precios para todos los canales:** POS, mesero, QR, web, app, integración de terceros, llamada/carga manual; el cliente web/app jamás usa directamente la base POS local.
+- **Origen de orden obligatorio e inmutable en cuanto a procedencia inicial**, con historial de cambios posterior y correlación externa. Nunca deducir el origen a partir del tipo de entrega.
+- **Separar origen/canal de modo de servicio**: web + recoger, web + delivery, QR mesa + consumir aquí, POS + llevar, tercero + delivery, etc.
+- Integridad transaccional, aislamiento por restaurante/sucursal, historial y snapshots; eventos idempotentes y offline-first en POS.
+- Los datos operativos del piloto y saldos antiguos no necesitan conservarse. **Sí** preservar productos, precios, recetas, empaques, modificadores y configuración útil. El borrado/cutover será una operación futura **expresamente autorizada**, no parte de este diseño.
+
+## 2. UX: Centro de Artículos
+
+Una lista filtrable: Todos / Venta / Ingredientes / Empaques / Preparaciones / Servicios. Una sola identidad de artículo, con capacidades independientes (vendible, receta, stock, compras, personalizable, publicación por canal); no inferir capacidad solo del tipo. Código, nombre, estado, precio y disponibilidad visibles. Selección + barra de acciones explícitas.
+
+**Ficha única con configuración progresiva**: Identidad → Venta/precio/impuestos → Receta/variantes → Opciones/modificadores → Empaque/consumo → Inventario/unidades/compras → Disponibilidad por canal/sucursal/horario → Vista previa POS/QR/web. Solo presentar secciones pertinentes, sin crear siete pantallas separadas. Permitir plantillas «Cafetería», «Hamburguesería», «Restaurante», «Panadería», sin imponer límites de negocio.
+
+Los configuradores reutilizables (grupos de opciones, impuestos, listas de precios, horarios, unidades) podrán tener administración masiva cuando haya necesidad real; evitar duplicidad de datos maestros.
+
+## 3. Identidad y procedencia de órdenes: CONTRATO PRINCIPAL
+
+Cada orden debe registrar, desde su creación, como mínimo:
+
+| Campo lógico | Regla |
+|---|---|
+| `order_id` | UUID global estable, también offline |
+| `tenant_id` / `restaurant_id`, `location_id` | Obligatorios; seguridad y ámbito |
+| `origin_channel` | Código **inmutable**: `pos`, `waiter`, `table_qr`, `web`, `customer_app`, `delivery_partner`, `phone`, `admin`, `integration`. Catálogo extensible; no imponer lista cerrada en clientes |
+| `origin_source_id` | Identificador del terminal, sitio, app, integración o partner que inició la orden |
+| `origin_actor_id` | Usuario/cliente/operador cuando corresponda; permitir invitado seguro |
+| `origin_device_id` y `origin_session_id` | Opcionales según canal, obligatorios por política en POS |
+| `external_order_id` / `external_provider` | Referencia única por proveedor/tenant para pedidos de terceros |
+| `service_mode` | `dine_in`, `takeaway`, `pickup`, `delivery`, `drive_thru` u otro extensible; **independiente del canal** |
+| `fulfillment_mode`, `fulfillment_group_id` | Permiten pedido mixto o cumplimiento por líneas en futuro |
+| `table_id`, `qr_session_id` | Solo si aplica; QR verificable, sin exponer IDs adivinables |
+| `created_at_utc`, `accepted_at_utc`, `business_date`, `time_zone` | Auditoría, corte local de negocio, horario de tienda y programación |
+| `client_request_id` / `idempotency_key` | Deduplicación de reintentos offline y online |
+| `schema_version`, `pricing_snapshot_version` | Compatibilidad y reproducibilidad |
+| `status`, `status_version`, `revision` | Máquina de estados con concurrencia optimista |
+| `origin_metadata` | Campos adicionales tipados y validados; nunca sustituye columnas clave ni almacena secretos |
+
+**Modelo de procedencia enriquecida:** `order_source_event`/historial (creación, transferencia, edición, reenvío, cambio de canal de atención). Preservar origen original aunque un pedido web sea editado por caja. No confundir `created_by`, `accepted_by`, `prepared_by`, `delivered_by` con `origin_channel`. El POS debe mostrar badges claros de origen, pero no depende de su presentación para lógica de negocio. Filtros y reportes por canal, modo, sucursal, operador, tipo de entrega y proveedor.
+
+**Ejemplos:** POS/tableta → `pos + dine_in`; QR en mesa → `table_qr + dine_in`; sitio para recoger → `web + pickup`; app cliente con repartidor → `customer_app + delivery`; pedido telefónico que carga cajero → `phone + delivery`; agregador → `delivery_partner + delivery`. QR puede tener origen QR aunque mesero finalice el cobro.
+
+## 4. Núcleo de dominio (esquema lógico, no SQL aprobado)
+
+- `item`, `item_unit`, `item_price`, `item_capability`, `item_availability`, `menu_publication`, `item_media`. Multi-sucursal, moneda e impuestos; disponibilidad específica por franja/canal.
+- `recipe`, `recipe_version`, `recipe_component` con merma, rendimiento, unidad y prevención de ciclos. `modifier_group`, `modifier_option`, `item_modifier_assignment`; selección obligatoria, min/max, multiselección, incompatibilidades y valores por defecto.
+- Modificador **instrucción** (p. ej. bien cocido), **exclusión** (sin azúcar), **adición** (extra queso), **sustitución** (leche vegetal), **porción/variación**. Si hay receta, los ajustes afectan consumo con reglas deterministas; si no hay ingrediente presente, validar en lugar de restar inventario arbitrario.
+- `service_mode`, `sales_channel`, `packaging_rule` o `consumption_rule`: empaque como artículo real, regla por producto/variante/modo/canal/sucursal y paquete por línea o por pedido. Una sola autoridad que computa consumo para evitar dobles rebajas.
+- `order`, `order_line`, `order_line_modifier`, `order_line_component_snapshot`, `order_line_packaging_snapshot`, `order_event`. Mantener variantes, precios, impuestos, descuentos, alergénicos declarados, observaciones, versión de receta y reglas efectivamente aplicadas.
+- `kitchen_ticket`, `kitchen_ticket_line`, `kitchen_station`, `fulfillment`, `pickup_handoff`; cocina independiente de cobro/recibo; soporte KDS e impresoras con deduplicación.
+- `payment_intent`, `payment`, `refund`, `sale`, `receipt`, `cash_session`; servicio no equivale a pago ni al origen. Pago parcial/anticipado/contraentrega/tips sujetos a reglas.
+- `inventory_movement`, `inventory_balance`, `inventory_location`, `purchase`, `stock_count`; inventario derivado de eventos con costo/unidad histórica. No invertir consumos recalculando recetas actuales.
+- `delivery_job` separado, más adelante: área/cobertura, costos, asignación, prueba de entrega, intentos fallidos, conductor, ubicación y privacidad, sin acoplar la venta a un proveedor.
+- `outbox`, `inbox_deduplication`, `external_integration`, `audit_event`; contratos versionados e idempotentes.
+
+## 5. Matriz de escenarios que deben diseñarse y probarse
+
+| Familia | Casos que debe cubrir |
+|---|---|
+| Tipos de negocio | servicio a mesa, mostrador, autoservicio, food truck, panadería por peso/unidad, cafetería por tamaños, bar de bebidas, dark kitchen, varias cocinas |
+| Producto | simple, elaborado, subreceta, combo, menú ejecutivo, pizza ½ y ½, tamaños, complementos, variantes, venta por peso, productos agotados |
+| Modificadores | sin azúcar/cebolla, extra ingrediente, sustitución, cocción, hielo, niveles de picante, alergias, min/max/default, repetición por cantidad y combinaciones inválidas |
+| Empaques | caja por plato, vaso por bebida, bolsa por pedido, servilleta por ítem, delivery contra pickup, unidad y costo, devoluciones; evitar doble consumo |
+| Venta | mesa, cuenta separada, cuentas compartidas, pedidos por ronda, cambios, descuentos, combos, promociones, impuestos, propina, cancelación parcial, devolución y reembolso |
+| Omnicanal | POS offline, mesero, QR mesa, sitio web pickup/delivery, app de cliente, pedidos telefónicos, app repartidor, marketplace externo, integración API |
+| Captura del origen | origen inicial inmutable, terminal/QR/app/proveedor, quién confirmó, quién modificó, ID externo, correlación, trazabilidad y reportes filtrables |
+| Tiempo y capacidad | múltiples zonas horarias comerciales, turnos, cierre, horarios por canal, pedidos programados, tiempos estimados, límites de órdenes simultáneas |
+| Cocina | estaciones, notas, alérgenos (aviso, no garantía), tickets KDS/KOT, reimpresión, parcial, retrasos, cancelaciones mientras se prepara |
+| Fulfillment | comer aquí, para llevar, pickup, drive-through, delivery, pedido mixto, entrega parcial, conductor propio/tercero, prueba de entrega |
+| Pagos | cobro en POS/online/contra entrega, efectivo, tarjeta, transferencia, pagos mixtos, fallidos/reintentados, reembolsos parciales y conciliación |
+| Concurrencia | dos terminales en la misma mesa, cambio de precio mientras carrito abierto, doble clic, mismo pedido recibido dos veces, pedidos offline al reconectar |
+| Inventario | unidades y decimales, agotados, artículos sin control, materia prima negativa según política, devolución, ajustes, trazabilidad por sucursal |
+| Seguridad | tenant/RLS, autorización de canal/rol, endpoint QR público seguro, rate limiting, abuso/spam, logs sin PII innecesaria, aislamiento por sucursal |
+| Experiencia | mensajes claros, configuración guiada, accesibilidad, idioma/moneda, errores recuperables, acciones explícitas sin menús ocultos |
+| Operación y escalabilidad | API backward compatible, observabilidad, eventos reintentables, sincronización multi-dispositivo, backups/restore, gestión de versiones y rollout |
+
+**No equivalen a funcionalidades aprobadas para el primer lanzamiento.** Son exigencias a considerar para que las decisiones actuales no bloqueen su incorporación futura.
+
+## 6. Reglas técnicas indispensables
+
+1. **Una única máquina de estados** con transiciones autorizadas: borrador → enviada → aceptada → preparación → lista → entregada/completada; cancelación/rechazo/reembolso modelados aparte y según estado. Pago y cocina evolucionan en estados independientes.
+2. **Un identificador de orden estable**, código visual por sucursal distinto de UUID técnico. Idempotencia por tenant + canal/proveedor + referencia externa o clave de petición; mantener el mismo ID al reintentar.
+3. **Offline-first POS** usa cola duradera con orden causal, reconciliación y políticas de conflicto; web y app solo envían comandos a API backend con autenticación/validación.
+4. **No vender desde precios del dispositivo** sin reglas de confirmación; guardar snapshot final y aplicar resolución de tarifas determinista.
+5. **Inventario y anulaciones** referenciados a movimientos originales; no consumir receta más empaque dos veces.
+6. **Publicación de catálogo** es proyección pública limitada, nunca exponer secretos, costo interno, compras, permisos ni datos entre restaurantes.
+7. **Arquitectura evolutiva:** modular monolith/backends por dominios antes de distribuir microservicios; desacoplar clientes con APIs y eventos, no crear bases duplicadas.
+8. **Transición del piloto:** conservar maestros; datos de operaciones y existencias del piloto descartables; sincronización antigua debe quedar aislada antes del reinicio autorizado, sin recobro automático.
+
+## 7. Propuesta de fases (sin fechas ni implementación automática)
+
+- **Diseño:** validar modelo, decisión fuente de orden, invariantes, variantes, pricing, estados y contratos de API; elaborar diagramas/casos de aceptación.
+- **Fundación:** catálogo maestro y capacidades; recetas, modificadores y empaques; migración de catálogos existentes en copia.
+- **POS estable:** motor de órdenes/ventas, inventario y caja, sincronización y pruebas exhaustivas; cerrar piloto y reinicio controlado.
+- **Autoservicio web/QR:** catálogo publicado, carrito, órdenes autenticadas o de invitado, pagos si se habilitan, estados en tiempo real.
+- **Delivery:** dispatch, zonas, tarifas, asignación, conductor y tracking, protección de datos.
+- **Integraciones:** terceros, marketplaces, fidelización y analítica omnicanal.
+
+## 8. Pendientes de decisión explícita (no bloquear modelado base)
+- Qué capacidades entran en primera liberación y cuáles quedan solo preparadas.
+- Origen de verdad definitivo para precios/impuestos/inventario al coexistir dispositivos offline y web.
+- Política de inventario al agotarse ingrediente y reservas para órdenes web.
+- Régimen fiscal local, comprobante y reembolsos aplicables.
+- Política de canales, branding, restaurantes/sucursales y franquicias.
+- Fecha real y plan aprobado de corte del piloto.
+
+**Próxima acción:** revisión de este diseño con el usuario y matriz de aceptación; después una propuesta de cambios técnicos contra código actual (sin ejecutarlos sin autorización). No afirmar que estos componentes ya existen.
