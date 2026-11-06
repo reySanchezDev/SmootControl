@@ -80,6 +80,7 @@
 - Prever desde el diseño restaurantes, cafeterías, comida rápida, pedidos por mesa/QR, pickup, web, app de clientes, app de repartidores, integraciones, delivery y múltiples sucursales.
 - El usuario pide **proactividad de análisis**: identificar escenarios futuros y necesidades de negocio/seguridad sin depender de que enumere cada campo. Minimizar pantallas, no capacidades.
 - **Estado:** únicamente propuesta documental. No hay autorización de cambio de esquema/código ni ejecución de limpieza.
+- **Disponibilidad temporal y estacional (requisito explícito):** desayunos por día/franja, almuerzos/cenas, ventanas nocturnas, temporada de mango anual o por campaña, excepciones festivas, pausa por falta de ingrediente, sucursal/canal/variante, vista previa, órdenes programadas y validación omnicanal. Ver apartado 5A del diseño. **No confundir disponibilidad comercial con stock o estado activo.**
 
 ## Cómo continuar en un chat nuevo
 1. Leer este archivo y los documentos de arquitectura/reglas citados.
