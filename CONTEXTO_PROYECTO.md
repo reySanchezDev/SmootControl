@@ -46,6 +46,14 @@
 - **Producción pendiente:** el deployment Vercel verificado `dpl_8gLvhQxeFfWkf46KjrqqJx7NJJY2` tiene `source=cli`; los commits en GitHub por sí solos **no prueban** que el sitio publicado se haya actualizado. Requiere reconstruir/publicar los archivos Flutter Web actualizados y validar en `https://kivo.quantix.software`.
 - No se autoriza cambiar otra cosa durante esta tarea.
 
+
+## Auditorías técnicas permanentes (2026-11-06)
+- Índice maestro: [Documentation/Auditorias/README.md](Documentation/Auditorias/README.md).
+- Primera auditoría: [AUD-2026-11-06-001 — maestro unificado de artículos](Documentation/Auditorias/AUD-2026-11-06-001-maestro-articulos.md).
+- Resultado: dirección funcional favorable a consolidar artículos físicos y servicios en un maestro; empaques actuales tienen kardex, reglas, stock y sync propios. Modificadores y tipos de venta no deben confundirse con productos físicos.
+- Estado: solo documentación; **sin cambios de aplicación, migraciones ni datos**. Revisión exhaustiva de dependencias y plan reversible aún pendientes.
+- Política: registrar futuras auditorías con ID, evidencia, rama, alcance, límites y decisiones. Reutilizar auditorías anteriores y revisar deltas entre commits, no repetir inspecciones sin causa.
+
 ## Cómo continuar en un chat nuevo
 1. Leer este archivo y los documentos de arquitectura/reglas citados.
 2. Consultar la rama activa y los commits más recientes; no asumir que `main` contiene todo el desarrollo V2.
