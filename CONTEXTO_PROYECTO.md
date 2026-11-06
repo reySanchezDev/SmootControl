@@ -55,6 +55,15 @@
 - Estado: solo documentación; **sin cambios de aplicación, migraciones ni datos**. Identificadas dependencias POS/Drift/RPC/sync/recetas y estrategia reversible; la verificación integral de referencias, esquema y datos reales continúa pendiente. No autorizar migración.
 - Política: registrar futuras auditorías con ID, evidencia, rama, alcance, límites y decisiones. Reutilizar auditorías anteriores y revisar deltas entre commits, no repetir inspecciones sin causa.
 
+
+## Decisión de limpieza del piloto — 2026-11-06
+- El restaurante utiliza Kivo en una fase piloto y el usuario **autorizó conceptualmente conservar los catálogos y limpiar únicamente las operaciones**, NO ejecutar la limpieza ahora.
+- **Preservar:** productos, categorías, precios, costos configurados, recetas/componentes, empaques, reglas de empaque, modificadores, tipos de venta y configuración de identidad/seguridad (restaurante, usuarios, roles, permisos, dispositivos, según análisis de dependencias).
+- **Candidatos a limpieza:** ventas y líneas, anulaciones, cobros, sesiones de caja, gastos operativos de prueba, movimientos y documentos operativos, logs de sincronización y colas pendientes, sujeto a auditoría de FKs y ciclos de vida. No borrar registros fiscales/legales que deban conservarse.
+- **Existencias:** aún sin decisión final; propuesta de conteo físico y ajuste a saldo inicial confiable, sin borrar definición de artículo ni costo. No equiparar limpieza de movimientos con eliminación automática de saldo.
+- **Punto crítico:** coordinar el reinicio de Supabase y todos los POS offline para impedir reenvío de operaciones viejas. Crear respaldo restaurable, identificar todos los dispositivos, verificar colas, migraciones, referencias y reconstrucción de saldos; usar utilidades modulares existentes sólo tras auditarlas.
+- **Estado:** decisión funcional documentada; NO se ejecutaron comandos SQL, resets, cambios de código ni despliegues. Próxima fase: especificación y simulación de limpieza solo de operaciones, con lista de preservación y rollback antes de solicitar autorización de ejecución.
+
 ## Cómo continuar en un chat nuevo
 1. Leer este archivo y los documentos de arquitectura/reglas citados.
 2. Consultar la rama activa y los commits más recientes; no asumir que `main` contiene todo el desarrollo V2.
