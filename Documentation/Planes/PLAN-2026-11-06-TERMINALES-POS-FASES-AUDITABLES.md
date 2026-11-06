@@ -171,6 +171,31 @@ La [AUD-2026-11-06-006](../Auditorias/AUD-2026-11-06-006-ls-central-statement-y-
 
 **Actualización evidencia 10 (Codex):** las 9,792 transacciones POS analizadas tienen recibos únicos; las tablas de statements y facturas contabilizadas tienen 0 filas, así que no demuestran momento de emisión de factura ni ciclo de cierre. [AUD-006 actualizada](../Auditorias/AUD-2026-11-06-006-ls-central-statement-y-numeracion.md). **G-NUM sigue abierto**; diseñar una prueba aislada de tiempos de asignación y reconciliación. 
 
+
+## G-CON — Compuerta crítica: aislamiento de transacciones y concurrencia multterminal
+
+**Requisito explícito del usuario:** varias terminales de una sucursal no pueden mezclar ventas, cobros, cajas, movimientos ni duplicar pedidos, aunque haya desconexión o reintentos. **Bloquea F3 y el despliegue**, junto con G-NUM. La presencia de `pos_device_id` y de idempotencia parcial NO prueba este resultado.
+
+### Invariantes por demostrar
+1. `order_id`, `sale_id`, `payment_id`, `cash_session_id` y `inventory_movement_id` identifican operaciones diferentes; cada una tiene `restaurant_id`, `location_id` cuando aplique, y `device_id`/actor como procedencia verificable, no como identidad de venta.
+2. En el servidor, **una orden solo puede pasar a pagada una vez**; dos terminales intentando cobrar la misma orden compiten mediante actualización condicional con versión o bloqueo transaccional; una sola confirma, la otra obtiene conflicto recuperable sin cargo duplicado.
+3. Idempotencia duradera vinculada al payload, scope y clave: mismo reintento devuelve resultado original; reutilizar la misma clave con payload distinto es error; la clave no debe depender del nuevo dispositivo usado para recuperar una orden.
+4. El comprobante fiscal/recibo no se duplica por reintento; nunca se cambia el folio entregado después de un statement.
+5. Caja por terminal + sesión + turno/operador: ventas y pagos deben pertenecer a la sesión y terminal efectiva; un cobro en otra terminal requiere transferencia explícita de orden, sin trasladar retroactivamente movimientos.
+6. Una orden compartida entre meseros/cajas necesita **autoridad central, bloqueo/versión y reconciliación**, no solo copias locales de la mesa. **En offline estricto, no puede garantizarse exclusión simultánea de la misma mesa entre dos dispositivos desconectados** sin asignación exclusiva previa: definir política de propietario, transferencias y conflictos, y restringir checkout compartido si no hay comunicación.
+7. Venta, líneas, impuestos/precios históricos, pagos, movimientos de stock/empaque y evento outbox se registran atómicamente según frontera de cada subsistema. No deducir el consumo de la receta actual al reintentar ni recontabilizar al hacer cierre.
+8. El cierre de caja/statement consolida operaciones previamente aceptadas y no crea ventas nuevamente; debe soportar retrasos offline y ajustes excepcionales documentados.
+9. La desactivación o reinstalación de dispositivo no borra colas pendientes; la recuperación requiere procedimiento autorizado y no debe reusar secretos/identidades sin control.
+10. Sincronización de eventos fuera de orden, caída antes/después de commit, doble clic, misma orden web recogida en dos POS y dos terminales con el mismo cajero: resultados deterministas y auditables.
+
+### Simulador adversarial obligatorio (clon aislado, datos sintéticos)
+Matriz mínima: 1 sucursal, 3–5 terminales, 2 cajeros, un pedido compartido, 100 cobros concurrentes; interrumpir red **antes** y **después** de commit remoto; repetir mensajes con IDs iguales, claves diferentes y payload alterado; pagos parciales, división de cuentas, anulación concurrente, traslado entre terminales, varios cierres y reimpresión. Variar POS A online / B offline / C online y luego reconectar B.
+
+**Métricas duras:** 0 ventas y pagos duplicados, 0 cobros compartidos dos veces, 0 sesiones de caja mezcladas, 0 consumos de empaque/inventario duplicados, 0 folios definitivos duplicados, 0 pérdidas silenciosas. Los conflictos offline identificados deben producir estado **pendiente de revisión**, no falsos éxitos; registrar invariantes, payloads sintéticos, métricas, fallos inducidos y trazas comparables.
+
+**Gate G-CON:** NO APROBADO hasta tener simulación ejecutada con resultados repetibles, pruebas de autorización tenant y pertenencia a caja/terminal, protocolo offline aprobado y revisión de contratos. Toda falla bloquea avance y abre una corrección específica antes de repetir simulación.
+
+
 ## Compuerta de entrada inmediata
 
 **Estado actual: F0 PENDIENTE de ejecución**, aunque AUD-004 adelantó evidencia estática. El primer trabajo autorizado por este documento es **auditoría read-only de diferencia entre código versionado y esquema realmente aplicado** y un reporte de línea base. No aprobar fases futuras por silencio; avanzar solo tras confirmación del usuario.
