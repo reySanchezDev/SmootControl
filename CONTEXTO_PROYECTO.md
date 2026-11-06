@@ -95,6 +95,12 @@
 - Exigencia: simulaciones con casos adversos y resultados reproducibles antes de aplicar cada fase; acta en `Documentation/Auditorias/FasesTerminales/FT-XX-<fecha>.md`; detener ante fallas o vacíos, no avanzar automáticamente.
 - Prioridad próxima: F0, verificar en solo lectura diferencia entre esquema realmente aplicado y repo/ramas, más dispositivos y consumidores; no ejecutar SQL mutador ni despliegue sin autorización.
 
+
+## Numeración documental y dependencia de terminales — 2026-11-06
+- [AUD-2026-11-06-005](Documentation/Auditorias/AUD-2026-11-06-005-numeraciones-consecutivos-documentos.md): generación provisional local de número, autoridad Supabase RPC, riesgo de números diferentes en varias cajas offline, PDF provisional, reintentos, anulaciones y serie del cierre de piloto.
+- **Gate G-NUM añadido** al [plan por fases](Documentation/Planes/PLAN-2026-11-06-TERMINALES-POS-FASES-AUDITABLES.md). Antes de migrar: demostrar coherencia de folios e idempotencia mediante simulación sintética, revisar rutas RPC/legacy, impresión y normativa fiscal; no elegir series fiscales por terminal sin verificación jurídica.
+- Separar UUID de orden, referencia operativa, ID venta y número definitivo de documento. Las otras numeraciones (KOT, compra, nota de crédito, devolución, recibo de personal) no deben compartir forzosamente el contador de factura.
+
 ## Cómo continuar en un chat nuevo
 1. Leer este archivo y los documentos de arquitectura/reglas citados.
 2. Consultar la rama activa y los commits más recientes; no asumir que `main` contiene todo el desarrollo V2.
