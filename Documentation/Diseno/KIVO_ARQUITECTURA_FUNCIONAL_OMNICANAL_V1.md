@@ -47,6 +47,23 @@ Cada orden debe registrar, desde su creación, como mínimo:
 
 **Ejemplos:** POS/tableta → `pos + dine_in`; QR en mesa → `table_qr + dine_in`; sitio para recoger → `web + pickup`; app cliente con repartidor → `customer_app + delivery`; pedido telefónico que carga cajero → `phone + delivery`; agregador → `delivery_partner + delivery`. QR puede tener origen QR aunque mesero finalice el cobro.
 
+## 3A. Modalidades de servicio por sucursal y terminal (requisito confirmado)
+
+**Regla obligatoria:** una misma terminal POS puede tener **varios Sales Types / modalidades de servicio habilitados** y **exactamente uno predeterminado cuando existe al menos una modalidad permitida**. El predeterminado no impide seleccionar cualquiera de los otros autorizados. Referencia funcional: capturas de LS Central aportadas por el usuario donde un terminal tiene `Default Sales Type` y `Sales Type Filter`, y pantalla POS con opciones TO GO, SERVICIO DELIVERY, APP y CONSUMO. **No copiar la codificación ni equiparar necesariamente APP con delivery**; diferenciar siempre origen de pedido vs modalidad.
+
+- `service_mode`: catálogo reutilizable del negocio, con código estable, etiqueta y estado; opciones representativas `dine_in`, `takeaway`, `delivery`, `pickup`, `drive_thru`, ampliables.
+- `location_service_mode`: modalidades habilitadas por sucursal; una terminal **no puede habilitar** modalidades deshabilitadas en su sucursal.
+- `terminal_service_mode`: relación **N:M** terminal↔modalidad, no FK única en `terminal`; herencia inicial de sucursal y posibilidad de restringir por terminal.
+- `terminal.default_service_mode_id`: referencia a una modalidad incluida en el conjunto permitido; validar transaccionalmente que permanece activa y permitida. Cambiar permisos debe resolver predeterminado inválido; impedir terminal sin modalidades operativas, salvo estado explícito suspendido.
+- Las terminales sin overrides heredan automáticamente reglas actuales de sucursal; las que tienen configuración explícita no deben recibir nuevas modalidades silenciosamente sin regla documentada.
+- UX Backoffice: Configuración del negocio → Modalidades; Sucursales → Modalidades habilitadas; Dispositivos POS → «Modalidades permitidas» (selección múltiple) y «Predeterminada» (selección única del subconjunto). Sin cadenas delimitadas del tipo `A|B|C` ni pantallas/catálogos redundantes.
+- UX POS: accesos visibles y táctiles a **todas** las modalidades habilitadas para el terminal, con actual destacada; cuando solo hay una, evitar selector innecesario; el flujo de nuevo pedido aplica la predeterminada y permite cambio autorizado antes de cerrar, con validación/revisión de precio, impuestos y empaque si se cambia.
+- Captura de órdenes QR, web y app no depende de las modalidades de una terminal física: recibe modalidades autorizadas por sucursal, canal, cobertura y reglas de fulfillment; al tomar una orden web en una caja, **no sobrescribir** `origin_channel` ni modificar automáticamente `service_mode`.
+- Las modalidades usadas en pedidos anteriores deben conservar código/nombre snapshot aunque sean desactivadas o renombradas posteriormente. Sin hardcodeo de `APP` como modo de servicio.
+- Aplicar control del servidor y validación offline en el POS usando versión de configuración y revalidación de eventos; no confiar solo en ocultar botones.
+
+**QA obligatorio:** terminal con 3 modalidades / un predeterminado; terminal con una modalidad; sucursal que deshabilita modo; cambio de predeterminado; activación de modo adicional; terminal offline con catálogo previo; pedido web entregado a POS; modificación de modalidad y recalculado de empaques sin doble consumo; simultaneidad de varias cajas de una sucursal.
+
 ## 4. Núcleo de dominio (esquema lógico, no SQL aprobado)
 
 - `item`, `item_unit`, `item_price`, `item_capability`, `item_availability`, `menu_publication`, `item_media`. Multi-sucursal, moneda e impuestos; disponibilidad específica por franja/canal.
