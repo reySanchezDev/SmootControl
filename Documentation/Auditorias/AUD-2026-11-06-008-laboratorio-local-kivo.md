@@ -218,3 +218,39 @@ de descarga aislada. Después de obtener todas las imágenes, deberá repetirse
 `supabase start` y recién entonces validar las 83 migraciones y el seed. No es
 necesario modificar código, migraciones ni producción para resolver este
 bloqueo.
+
+## Seguimiento de conectividad y descargas
+
+Se repitió el diagnóstico con la rama sincronizada y el mismo worktree. Windows
+resolvió `public.ecr.aws`, `registry-1.docker.io` y `auth.docker.io`; las
+respuestas HTTPS fueron las esperadas (`401` de los endpoints de registry y
+`405` en el token consultado por `HEAD`). No había variables de proxy de
+Windows ni proxy WinHTTP configurado.
+
+`docker info` confirmó Docker `29.5.2` y un proxy interno de Docker Desktop. El
+reinicio oficial mediante `docker desktop restart` corrigió la falla inicial:
+
+- `docker pull hello-world`: **éxito**, digest
+  `sha256:c567b231f65614688711a75f31518a064258a51d442117a3e771a3a8fdba78ef`;
+- `docker pull public.ecr.aws/supabase/storage-api:v1.48.28`: **éxito**, digest
+  `sha256:38850bce7c3056ef76acdc4c6357aa474b3124b22d383ed86843b765a1efe242`.
+
+Al intentar la pila completa, la mayoría de imágenes auxiliares descargó, pero
+PostgreSQL y Studio quedaron en transferencia durante varios minutos. El log de
+Docker Desktop registró una capa de CloudFront de 337,581,343 bytes en
+8m01s y conexiones ECR con aproximadamente 30s por respuesta. Esto evidencia
+conectividad funcional pero una transferencia inestable o extremadamente lenta
+de capas grandes; no se obtuvo un error de migración ni de PostgreSQL.
+
+Se reintentó el núcleo oficial excluyendo temporalmente `realtime`, `vector`,
+`edge-runtime`, `imgproxy` y `logflare`. La CLI siguió esperando las imágenes
+`public.ecr.aws/supabase/postgres:17.6.1.106` y Studio. El pull directo de
+PostgreSQL tampoco terminó durante la ventana de diagnóstico y fue cancelado de
+forma controlada. No se usó `system prune`, no se borraron imágenes, volúmenes,
+contenedores ni redes.
+
+Resultado actualizado: **0/83 migraciones**, Supabase no iniciado, seed no
+ejecutado y PostgreSQL/Auth/REST/Studio aún no verificables. La causa residual
+es la lentitud/estancamiento de la transferencia de capas grandes desde el
+registro/CDN a través del proxy interno de Docker Desktop; el reinicio resolvió
+el HTTP 500 inicial, pero no completó la descarga de la pila.
