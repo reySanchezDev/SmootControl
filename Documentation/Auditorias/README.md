@@ -17,4 +17,6 @@ Las auditorías se preservan con ID, fecha, rama/commit, alcance, evidencias por
 
 | [AUD-2026-11-06-006](AUD-2026-11-06-006-ls-central-statement-y-numeracion.md) | LS Central: transacción, recibo, statement, contabilización y folio fiscal | Documentación oficial contrastada; SQL de caso real pendiente |
 
+| [AUD-2026-11-06-007](AUD-2026-11-06-007-integracion-reorganizacion-empaques.md) | Auditoría E2E de reorganización de Empaques, dependencias críticas POS/sync y mitigaciones | Estática terminada; E0 real y pruebas pendientes |
+
 **Próxima comprobación pendiente:** catálogo de dependencias completo y contraste con esquema/datos reales y clientes POS activos, sin implementación hasta autorización explícita.
