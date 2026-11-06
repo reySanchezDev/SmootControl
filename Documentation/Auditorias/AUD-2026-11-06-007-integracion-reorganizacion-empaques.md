@@ -124,3 +124,8 @@
 ## Próximo paso recomendado
 
 **E0: snapshot y prueba de equivalencia de comportamiento actual en clon aislado**. Capturar conteos de reglas por `sales_type.code`, defaults, uso de empaque, stock, integridad referencial, permisos y compatibilidad de POS offline; generar acta `Documentation/Auditorias/FasesEmpaques/FE-E0-<fecha>.md`. Ejecutar únicamente con autorización específica. La presente auditoría es **solo estática** y sus hallazgos prioritarios sirven para organizar la investigación.
+
+## Ejecución parcial de E0 — 2026-11-06
+- [Acta FE-E0-2026-11-06](FasesEmpaques/FE-E0-2026-11-06.md): línea base del esquema versionado y matriz de 12 flujos; simulación sintética de seis escenarios acorde con condicional `to_go`, **no test real del POS**.
+- **G0-A pendiente:** falta consultar Supabase desplegado, clonar DB/Drift y ejecutar regresión con evidencias. No pasar a E1/E2 ni declarar integración certificada.
+- Norma central QuantixEngineeringStandar v0.1.6: **ENG-008/UX-041**, IDs internos autogenerados, invisibles en UI; preservar UUID físicos al reorganizar catálogos. Los códigos `dine_in`/`to_go` no son PKs.
