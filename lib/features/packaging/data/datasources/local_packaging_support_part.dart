@@ -99,7 +99,7 @@ abstract class _LocalPackagingDataSourceBase {
     return required;
   }
 
-  Future<bool> _salesTypeConsumesPackaging(String salesTypeId) async {
+  Future<bool> _isSalesTypeActive(String salesTypeId) async {
     final salesType =
         await (_database.select(_database.localSalesTypes)..where(
               (row) => row.id.equals(salesTypeId) & row.isActive.equals(true),
@@ -107,7 +107,7 @@ abstract class _LocalPackagingDataSourceBase {
             .getSingleOrNull();
     if (salesType == null) return false;
 
-    return salesType.code.trim().toLowerCase() == 'to_go';
+    // Packaging is consumed only when explicit active product rules exist.\n    // The commercial sales type code must not determine inventory behavior.\n    return true;
   }
 
   Future<LocalPackagingItem?> _packagingItem(String id) {
