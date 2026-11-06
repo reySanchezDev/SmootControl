@@ -73,6 +73,14 @@
 - **Orden:** diseñar/implementar y probar nueva arquitectura; luego reinicio controlado de operaciones con coordinación de los POS para impedir que reenvíen datos antiguos. Respaldos técnicos preventivos permitidos, sin comprometer a recuperar inventario viejo.
 - **Estado:** solo decisión/documentación. No hay autorización para borrar datos, migrar esquema ni publicar cambios.
 
+
+## Diseño funcional omnicanal V1 — 2026-11-06
+- Documento rector propuesto: [KIVO — Centro de Artículos y órdenes omnicanal](Documentation/Diseno/KIVO_ARQUITECTURA_FUNCIONAL_OMNICANAL_V1.md).
+- Regla explícita: **toda orden debe conservar origen verificable y auditable** (canal, fuente, dispositivo/QR/proveedor, actor, identificador externo y correlación cuando aplique) sin confundirlo con tipo de servicio, pago ni preparación. Origen original inmutable; cambios registrados mediante eventos.
+- Prever desde el diseño restaurantes, cafeterías, comida rápida, pedidos por mesa/QR, pickup, web, app de clientes, app de repartidores, integraciones, delivery y múltiples sucursales.
+- El usuario pide **proactividad de análisis**: identificar escenarios futuros y necesidades de negocio/seguridad sin depender de que enumere cada campo. Minimizar pantallas, no capacidades.
+- **Estado:** únicamente propuesta documental. No hay autorización de cambio de esquema/código ni ejecución de limpieza.
+
 ## Cómo continuar en un chat nuevo
 1. Leer este archivo y los documentos de arquitectura/reglas citados.
 2. Consultar la rama activa y los commits más recientes; no asumir que `main` contiene todo el desarrollo V2.
