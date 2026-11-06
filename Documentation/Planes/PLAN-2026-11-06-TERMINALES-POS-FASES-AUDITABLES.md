@@ -164,6 +164,10 @@ Cada fase incluye **al menos un escenario adverso** diseñado deliberadamente pa
 
 **Ensayo independiente G-NUM (en simulador sintético aislado):** dos sucursales, cinco terminales, 50 ventas paralelas, tickets offline, respuesta RPC perdida, reintentos, cambio de serie y restauración; demostrar cero números definitivos duplicados, cero ventas perdidas, reimpresiones consistentes y folios no usados auditables. Registrar acta `Documentation/Auditorias/FasesTerminales/FT-NUM-<fecha>.md` con matriz de seguridad/compatibilidad y decisión explícita. Si el ensayo falla, bloquear F3 y rediseñar.
 
+### Evidencia de LS Central para G-NUM
+
+La [AUD-2026-11-06-006](../Auditorias/AUD-2026-11-06-006-ls-central-statement-y-numeracion.md) demuestra con documentación oficial que transacción POS, recibo, statement y documento fiscal son entidades distintas; la numeración fiscal **no se asigna universalmente al contabilizar el statement**. Comprobar reglas reales de la base SQL de prueba mediante Codex antes de elegir política fiscal; simular separación de POS receipt, documento fiscal y reconciliación de statement.
+
 ## Compuerta de entrada inmediata
 
 **Estado actual: F0 PENDIENTE de ejecución**, aunque AUD-004 adelantó evidencia estática. El primer trabajo autorizado por este documento es **auditoría read-only de diferencia entre código versionado y esquema realmente aplicado** y un reporte de línea base. No aprobar fases futuras por silencio; avanzar solo tras confirmación del usuario.
