@@ -6,6 +6,7 @@ Las auditorías se preservan con ID, fecha, rama/commit, alcance, evidencias por
 
 | ID | Tema | Estado |
 |---|---|---|
-| [AUD-2026-11-06-001](AUD-2026-11-06-001-maestro-articulos.md) | Productos, empaques, modificadores, recetas y POS | Revisión estática inicial terminada; riesgos y verificación exhaustiva pendientes |
+| [AUD-2026-11-06-001](AUD-2026-11-06-001-maestro-articulos.md) | Productos, empaques, modificadores, recetas y POS | Revisión estática inicial terminada; riesgos abiertos |
+| [AUD-2026-11-06-002](AUD-2026-11-06-002-dependencias-y-migracion-articulos.md) | Drift, Supabase, ventas, sync, pruebas y transición reversible | Mapa principal documentado; esquema y datos reales pendientes |
 
-**Próxima:** AUD-2026-11-06-002, matriz completa de dependencias y plan de migración reversible (sin implementación).
+**Próxima comprobación pendiente:** catálogo de dependencias completo y contraste con esquema/datos reales y clientes POS activos, sin implementación hasta autorización explícita.
