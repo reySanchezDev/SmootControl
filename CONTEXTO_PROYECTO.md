@@ -108,6 +108,11 @@
 
 - Documento Codex [10-numeracion-pos-statement-facturacion](https://drive.google.com/file/d/11qNUM61Jobh5oIaz7VBRkX_6y-rESGxO/view): 9,792 transacciones con recibo único, **0 statements y 0 facturas contabilizadas** en BD de prueba. **No demuestra momento de folio fiscal.** [AUD-006](Documentation/Auditorias/AUD-2026-11-06-006-ls-central-statement-y-numeracion.md) actualizada; G-NUM sigue abierto. Separar recibo POS, transacción, factura fiscal y statement.
 
+## Auditoría 007 — separación de Empaques (2026-11-06)
+- [AUD-2026-11-06-007](Documentation/Auditorias/AUD-2026-11-06-007-integracion-reorganizacion-empaques.md): mapa de impacto desde Backoffice hasta POS, ventas, empaques, inventario, anulaciones, pull y cola. **Hallazgo crítico**: `_salesTypeConsumesPackaging` usa hardcode `code == 'to_go'`, así que nuevos tipos `delivery/pickup` no consumirán por sí mismos empaques.
+- Riesgos adicionales: ruta Empaques accesible por cualquiera de dos permisos aunque ofrece tres editores; `sales_types.is_default` remoto tiene índice único y el upsert de Admin guarda una fila sin limpiar anterior; pull marca faltantes como inactivos, lo que no debe confundirse con filtro de terminal.
+- Plan E0–E6 con gates independientes: primero snapshot de reglas/comportamiento actual, luego nueva UI con tablas/UUID intactos, después correcciones de motor y finalmente terminales con G-NUM/G-CON. No hubo cambios de código ni Supabase.
+
 ## Cómo continuar en un chat nuevo
 1. Leer este archivo y los documentos de arquitectura/reglas citados.
 2. Consultar la rama activa y los commits más recientes; no asumir que `main` contiene todo el desarrollo V2.
