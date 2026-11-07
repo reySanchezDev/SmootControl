@@ -107,7 +107,9 @@ abstract class _LocalPackagingDataSourceBase {
             .getSingleOrNull();
     if (salesType == null) return false;
 
-    // Packaging is consumed only when explicit active product rules exist.\n    // The commercial sales type code must not determine inventory behavior.\n    return true;
+    // Packaging is consumed only when explicit active product rules exist.
+    // The commercial sales type code must not determine inventory behavior.
+    return true;
   }
 
   Future<LocalPackagingItem?> _packagingItem(String id) {
