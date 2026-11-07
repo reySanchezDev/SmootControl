@@ -329,3 +329,51 @@ habilitó ni deshabilitó el firewall global ni se aplicaron cambios de segurida
 La intervención pendiente es habilitar una política de firewall local que
 bloquee esos dos puertos desde redes externas, o usar una configuración de
 Docker Desktop aprobada por el propietario; debe hacerse sin afectar Tentrix.
+
+### Auditoría de aislamiento y fixtures pendientes
+
+La configuración de `smoo-kivo-lab-loopback` contiene correctamente
+`com.docker.network.bridge.host_binding_ipv4=127.0.0.1`. Sin embargo, Docker
+Desktop 29.5.2 y Supabase CLI 2.90.0 crearon los bindings de Kong y PostgreSQL
+con `HostIp=""`; Docker documenta que esa forma publica en todas las
+interfaces. La CLI no expone en `supabase start` una opción de host-IP por
+servicio y cambiar una opción global de Docker afectaría otros proyectos.
+Referencias: https://docs.docker.com/engine/network/port-publishing/ y
+https://supabase.com/docs/guides/local-development.
+
+Se comprobó el comportamiento real: `127.0.0.1:54321` y `127.0.0.1:54324`
+responden, pero también aceptan conexiones TCP hacia direcciones IPv4 no
+loopback del host. `docker inspect`, `docker ps` y `netstat` muestran
+`0.0.0.0:54321` y `0.0.0.0:54324`, incluyendo escucha IPv6 `::`. Los perfiles
+de Windows Defender Firewall están deshabilitados. No se creó una regla que no
+tendría efecto y no se habilitó el firewall global; la verificación desde otra
+máquina física queda pendiente, aunque la exposición local no loopback ya
+demuestra que el aislamiento no está garantizado.
+
+La corrección segura pendiente requiere una de estas intervenciones aisladas:
+recrear únicamente los contenedores del laboratorio con publish explícito
+`127.0.0.1:54321:8000` y `127.0.0.1:54324:5432`, o habilitar una política de
+Windows Defender Firewall limitada a esos puertos y perfiles activos. No se
+debe modificar la configuración global de Docker ni Tentrix sin una decisión
+explícita. Los datos del laboratorio están en volúmenes Supabase y no se
+ejecutó reset.
+
+Se preparó la propuesta de fixtures, sin cargarla:
+
+1. Restaurante sintético con UUID generado por la base y un administrador Auth
+   creado exclusivamente en el laboratorio; el perfil y rol se relacionan por
+   las claves generadas por el sistema.
+2. Catálogos mínimos: dos categorías, productos vendibles y materias primas,
+   unidades, reglas de receta y dos empaques con movimientos de inventario.
+3. Dos terminales sintéticas registradas por el flujo de aprovisionamiento,
+   nunca con IDs escritos manualmente por el usuario.
+4. Escenarios de venta: venta directa, venta con empaque, anulación/reintento
+   e idempotencia entre terminales, usando fechas y UUIDs generados en el
+   fixture.
+5. Casos de RLS: administrador permitido, usuario de otro restaurante
+   rechazado y terminal sin permiso de escritura.
+
+La propuesta respeta ENG-008 y UX-041: los identificadores internos, claves de
+relación y números operativos deben ser generados por la base o por los
+servicios del laboratorio; los formularios no reciben IDs manuales. No se
+realizaron escrituras de fixtures en esta fase.
