@@ -287,3 +287,45 @@ No se aplicaron cambios de proxy, firewall, TLS, imágenes, volúmenes,
 contenedores ni redes ajenas. La corrección comprobada fue el reinicio oficial
 de Docker Desktop, que eliminó el HTTP 500 inicial para las descargas pequeñas
 pero no resolvió la transferencia de las capas grandes.
+
+### Puesta en marcha posterior
+
+Se verificaron las unidades locales: `C:` quedó con aproximadamente 8.95 GB
+libres al inicio de esta pasada y `D:` no tenía espacio disponible. Docker
+Desktop usa `C:\Users\reyre\AppData\Local\Docker\wsl\disk\docker_data.vhdx`,
+un VHDX dinámico con capacidad virtual de 1 TB y tamaño físico aproximado de
+10.87 GB. Dentro del entorno Linux de Docker, el volumen de sistema informó
+aproximadamente 947 GB disponibles. Los volúmenes de Tentrix continuaron
+intactos: PostgreSQL ocupaba aproximadamente 64.9 MB y MinIO 104 KB.
+
+No se trasladó el disco Docker: `D:` no es una ubicación viable y no existe
+otra unidad local con espacio adecuado verificado. No se sobrescribió ningún
+VHDX ni se modificaron contenedores o volúmenes de Tentrix.
+
+El reintento supervisado de `public.ecr.aws/supabase/postgres:17.6.1.106`
+terminó correctamente con digest
+`sha256:21ab971149317ea9cd12a8126fe4ebb34def08c8972956b0958cba0924409dab`.
+El consumo de imágenes pasó a aproximadamente 8.57 GB y quedaron 8.29 GB
+libres en `C:`.
+
+Se inició el laboratorio con la CLI 2.90.0 usando las exclusiones compatibles
+`realtime,storage-api,imgproxy,mailpit,studio,edge-runtime,logflare,vector,supavisor`.
+Las migraciones **001–083 (83/83)** se aplicaron y el seed terminó. La consulta
+local verificó 83 registros de migración, 55 tablas públicas, 56 políticas RLS
+y 99 funciones públicas. Las filas sintéticas/base del seed incluyeron 3 roles,
+9 métodos de pago y 8 categorías de gastos.
+
+PostgreSQL quedó saludable en el contenedor local; REST respondió HTTP 200 en
+`/rest/v1/` y Auth respondió HTTP 200 en `/auth/v1/health`. El catálogo de RPC
+quedó presente, sin ejecutar RPC mutantes ni escrituras de negocio. Studio se
+excluyó deliberadamente.
+
+La red `smoo-kivo-lab-loopback` se creó con la opción oficial
+`com.docker.network.bridge.host_binding_ipv4=127.0.0.1`, pero la CLI 2.90.0
+reutilizó bindings explícitos `0.0.0.0` para Kong y PostgreSQL. La salida de
+Docker confirmó `0.0.0.0:54321` y `0.0.0.0:54324`; por tanto el laboratorio
+funciona, pero no se certifica todavía el aislamiento de red requerido. No se
+habilitó ni deshabilitó el firewall global ni se aplicaron cambios de seguridad.
+La intervención pendiente es habilitar una política de firewall local que
+bloquee esos dos puertos desde redes externas, o usar una configuración de
+Docker Desktop aprobada por el propietario; debe hacerse sin afectar Tentrix.
