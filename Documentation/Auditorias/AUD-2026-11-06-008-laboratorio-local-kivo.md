@@ -377,3 +377,40 @@ La propuesta respeta ENG-008 y UX-041: los identificadores internos, claves de
 relación y números operativos deben ser generados por la base o por los
 servicios del laboratorio; los formularios no reciben IDs manuales. No se
 realizaron escrituras de fixtures en esta fase.
+
+### Cierre de aislamiento y carga sintética
+
+La documentación de Docker Desktop confirma que el binding explícito de
+localhost debe declararse como `127.0.0.1:HOST:CONTAINER`; el ajuste de red
+predeterminado no fue suficiente para los bindings generados por Supabase CLI
+2.90.0. No se modificó una configuración global de Docker Desktop porque
+afectaría a Tentrix y a otros proyectos.
+
+Se recrearon únicamente los contenedores del laboratorio `supabase_db_smoo_control`
+y `supabase_kong_smoo_control`, conservando los anteriores como respaldos
+detenidos y sin tocar sus volúmenes. La nueva publicación quedó explícitamente
+en `127.0.0.1:54324:5432` y `127.0.0.1:54321:8000`. La imagen local de respaldo
+de Kong se conservó para permitir reversión; no se eliminaron imágenes ni
+contenedores existentes.
+
+Verificación efectiva:
+
+- `docker inspect` reportó `HostIp=127.0.0.1` para ambos puertos.
+- `127.0.0.1:54321` y `127.0.0.1:54324` aceptaron conexiones.
+- La interfaz IPv4 no loopback disponible (`172.17.254.129`) rechazó ambos
+  puertos.
+- No había una dirección IPv6 unicast no loopback disponible para realizar una
+  prueba externa IPv6; el binding no publica `::`.
+- REST respondió HTTP 200 y Auth `/health` HTTP 200.
+- El login del usuario Auth sintético local fue exitoso.
+- PostgreSQL permaneció saludable y registró **83 migraciones** aplicadas.
+
+Después de confirmar el aislamiento se cargaron fixtures exclusivamente
+sintéticos en la base local: 1 restaurante, 1 perfil administrador Auth, 2
+categorías jerárquicas, 2 unidades, 2 productos (vendible y materia prima), 1
+modalidad de venta, 2 empaques, 1 regla de empaque, inventario inicial y 2
+terminales POS. Las claves UUID fueron generadas por `gen_random_uuid()` dentro
+de PostgreSQL; el usuario Auth fue creado en el endpoint local de administración
+y no existe en producción. Las consultas de verificación confirmaron las
+cantidades anteriores y las relaciones de empaque, producto, restaurante y
+terminales. No se cargaron datos reales ni se ejecutaron operaciones de venta.
