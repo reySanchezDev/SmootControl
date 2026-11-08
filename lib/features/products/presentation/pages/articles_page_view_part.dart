@@ -35,8 +35,7 @@ extension _ArticlesPageView on _ArticlesPageState {
                     isExpanded: true,
                     decoration: const InputDecoration(isDense: true),
                     items: [
-                      if (snapshot.canProducts && snapshot.canPackaging)
-                        const DropdownMenuItem(value: 'all', child: Text('Todos')),
+                      const DropdownMenuItem(value: 'all', child: Text('Todos')),
                       if (snapshot.canProducts) ...[
                         const DropdownMenuItem(value: 'sale',
                             child: Text('Productos de venta')),
