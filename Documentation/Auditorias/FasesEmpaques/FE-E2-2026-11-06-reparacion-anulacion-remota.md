@@ -42,6 +42,8 @@ Worktree: `SmooControl-packaging-void-lab`. Destino exclusivo: Supabase Docker l
 - Venta sintetica y anulacion mediante `pos_sync_sale`: aprobadas.
 - `sale_voids` conservó importe, metodo, referencia y sesion de caja originales.
 - Stock de empaque reintegrado de 7 a 8 con un movimiento `packaging_sale_void`.
+- Inventario de producto verificado aparte: 10 → 9 en la venta y 9 → 10 al anular,
+  con un único movimiento `sale_void`.
 - Reenvio idempotente: una fila de `sale_voids`, un movimiento de reversa y sin cambio adicional de saldo.
 - Referencia cruzada de restaurante rechazada por el trigger.
 - Reenvio exacto sin alteracion del snapshot historico.
