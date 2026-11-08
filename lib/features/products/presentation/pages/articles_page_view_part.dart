@@ -20,6 +20,20 @@ extension _ArticlesPageView on _ArticlesPageState {
 
     return Column(
       children: [
+        if (snapshot.warning != null)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+            child: ListTile(
+              leading: const Icon(Icons.info_outline),
+              title: const Text('Algunos artículos no están disponibles'),
+              subtitle: Text(snapshot.warning!),
+              trailing: IconButton(
+                tooltip: 'Reintentar carga',
+                icon: const Icon(Icons.refresh_outlined),
+                onPressed: _reload,
+              ),
+            ),
+          ),
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
           child: Row(
