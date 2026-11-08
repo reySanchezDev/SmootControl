@@ -23,6 +23,15 @@ Se introduce modo explícito `SMOO_APP_MODE=backoffice`, sin cambiar el modo pre
 
 ## Validación Codex
 
+### Diagnóstico del perfil remoto y corrección del laboratorio
+
+- La cuenta Auth sintética admin está confirmada, activa y no bloqueada. `auth.users.id` coincide con `profiles.id`; el `role_id` apunta al rol `admin` y `is_active=true`.
+- La causa exacta fue de configuración del preview: 8092 se inició con el restaurante fixture `Kivo Otro Restaurante`, mientras el admin sintético pertenece a `Kivo Laboratorio`. Por eso `_profileFor` filtraba por un restaurante distinto y devolvía cero filas aunque el JWT fuera válido.
+- Con JWT del usuario y rol `authenticated`, la consulta equivalente a `_profileFor` por `restaurant_id + id` devuelve una fila; el fallback por `restaurant_id + email` también devuelve una fila. No se usó `service_role` para esas consultas.
+- `current_restaurant_id()` respondió HTTP 200 y coincide con el restaurante del perfil. La política `profiles_self_or_same_restaurant` está presente; no se relajó RLS. Las migraciones 086 y 087 permanecen aplicadas.
+- Se reinició únicamente el Web 8092 con `SMOO_APP_MODE=backoffice`, Supabase local y el restaurante sintético del administrador. No se modificaron perfiles, migraciones, producción ni otros servicios.
+- Flujo Auth local: contraseña válida -> JWT HTTP 200 -> `/auth/v1/user` HTTP 200 -> `_profileFor` por ID/correo -> perfil admin visible bajo RLS. La validación visual completa en Flutter queda pendiente por falta de navegador controlable.
+
 ### Corrección de credenciales y texto Backoffice
 
 - Supabase/Auth fueron inspeccionados únicamente en Docker local. La cuenta sintética admin existe, está confirmada, activa, no bloqueada, no es usuario POS y su perfil está asociado al restaurante sintético correcto.
