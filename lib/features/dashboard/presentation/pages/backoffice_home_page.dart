@@ -80,20 +80,6 @@ class _BackofficeHomePageState extends State<BackofficeHomePage> {
       group: 'Catálogos',
     ),
     BackofficeWorkspaceItem(
-      id: 'packaging-items',
-      label: 'Empaques',
-      route: AppRoutes.packagingItems,
-      icon: Icons.takeout_dining_outlined,
-      group: 'Catálogos',
-    ),
-    BackofficeWorkspaceItem(
-      id: 'packaging-rules',
-      label: 'Reglas de empaque',
-      route: AppRoutes.packagingRules,
-      icon: Icons.rule_outlined,
-      group: 'Catálogos',
-    ),
-    BackofficeWorkspaceItem(
       id: 'home',
       label: 'Inicio',
       route: AppRoutes.dashboard,
@@ -175,6 +161,13 @@ class _BackofficeHomePageState extends State<BackofficeHomePage> {
       label: 'Configuración',
       route: AppRoutes.settings,
       icon: Icons.settings_outlined,
+      group: 'Administración',
+    ),
+    BackofficeWorkspaceItem(
+      id: 'packaging-rules',
+      label: 'Reglas de consumo',
+      route: AppRoutes.packagingRules,
+      icon: Icons.rule_outlined,
       group: 'Administración',
     ),
     BackofficeWorkspaceItem(
