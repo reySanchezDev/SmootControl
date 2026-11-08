@@ -26,6 +26,7 @@ import 'package:smoo_control/features/payment_methods/presentation/pages/payment
 import 'package:smoo_control/features/pos/presentation/pages/pos_page.dart';
 import 'package:smoo_control/features/products/presentation/pages/measurement_units_page.dart';
 import 'package:smoo_control/features/products/presentation/pages/products_page.dart';
+import 'package:smoo_control/features/products/presentation/pages/articles_page.dart';
 import 'package:smoo_control/features/recipes/presentation/pages/recipes_page.dart';
 import 'package:smoo_control/features/reports/presentation/pages/inventory_value_report_page.dart';
 import 'package:smoo_control/features/reports/presentation/pages/monthly_operational_report_page.dart';
@@ -104,7 +105,7 @@ Widget _guardedPage(String? routeName) {
     AppRoutes.attendanceReport => const AttendanceAdminPage(readOnly: true),
     AppRoutes.vacationSummaryReport => const VacationSummaryReportPage(),
     AppRoutes.catalog => const CatalogPage(),
-    AppRoutes.products => const ProductsPage(),
+    AppRoutes.products => const ArticlesPage(),
     AppRoutes.recipes => const RecipesPage(),
     AppRoutes.measurementUnits => const MeasurementUnitsPage(),
     AppRoutes.inventory => const InventoryPage(),
@@ -113,9 +114,7 @@ Widget _guardedPage(String? routeName) {
     AppRoutes.salesTypes => const PackagingPage(
       view: PackagingPageView.salesTypes,
     ),
-    AppRoutes.packagingItems => const PackagingPage(
-      view: PackagingPageView.items,
-    ),
+    AppRoutes.packagingItems => const ArticlesPage(initialType: 'packaging'),
     AppRoutes.packagingRules => const PackagingPage(
       view: PackagingPageView.rules,
     ),
