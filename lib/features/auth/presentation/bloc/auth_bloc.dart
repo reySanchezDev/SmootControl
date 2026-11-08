@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:smoo_control/core/config/app_run_mode.dart';
 import 'package:smoo_control/core/result/app_failure.dart';
 import 'package:smoo_control/core/result/app_result.dart';
 import 'package:smoo_control/core/session/current_operator_service.dart';
@@ -36,6 +37,11 @@ final class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     emit(const AuthLoading());
+    if (AppRunMode.isBackoffice) {
+      // Backoffice authenticates remotely; local POS restoration is irrelevant.
+      emit(const Unauthenticated());
+      return;
+    }
     final result = await _repository.getCurrentSession();
     switch (result) {
       case AppFailureResult(:final error):

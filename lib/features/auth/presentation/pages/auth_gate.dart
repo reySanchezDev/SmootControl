@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:smoo_control/core/config/app_run_mode.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smoo_control/core/design_system/app_loading_page.dart';
 import 'package:smoo_control/core/navigation/app_routes.dart';
@@ -42,6 +43,11 @@ class AuthGate extends StatelessWidget {
   }
 
   Widget _startPageFor(AuthSession session) {
+    if (AppRunMode.isBackoffice && session.isPosUser) {
+      return const Scaffold(
+        body: Center(child: Text('Acceso no autorizado en Backoffice')),
+      );
+    }
     if (session.isPosUser) {
       return RouteAccessGuard(
         anyPermissions: RouteAccess.anyPermissionsFor(AppRoutes.pos),
