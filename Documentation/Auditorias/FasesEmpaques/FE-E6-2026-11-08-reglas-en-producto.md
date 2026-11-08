@@ -72,4 +72,13 @@ Fecha: 2026-11-08. Worktree aislado: `SmooControl-product-packaging-rules-lab`.
 
 ## Restricciones
 
+## Preview Web local para QA
+
+- Fecha: 2026-11-08. Worktree: `SmooControl-product-packaging-rules-lab`; SHA servido: `61af278cb719698fd25bb9703be255bcc3f64070`.
+- Supabase local verificado en `127.0.0.1:54321`, PostgreSQL en `127.0.0.1:54324` y 87 migraciones aplicadas. La configuracion Web se inyecto solo mediante `--dart-define` durante el proceso, usando valores sinteticos del laboratorio; no se guardaron ni imprimieron.
+- Se levanto Flutter Web en modo desarrollo sobre `http://127.0.0.1:8092/`, sin usar `tool/build_web_release.ps1` ni modificar los previews 8080/8081.
+- Comprobaciones HTTP: `/`, `/flutter_bootstrap.js`, `/main.dart.js`, `/drift_worker.js` y `/sqlite3.wasm` respondieron 200. Los assets Drift/SQLite estuvieron disponibles y el HTML no contenia el mensaje de Supabase no configurado.
+- No se ejecutaron operaciones CRUD automaticas. No hay navegador controlable disponible en esta sesion, por lo que login administrativo, carga inicial del Backoffice y QA visual no quedan certificados; el propietario debe abrir la URL y autenticarse con el administrador sintetico del laboratorio.
+- Procedimiento reproducible: desde este worktree obtener `supabase status --output json` y el primer `public.restaurants.id` local solo en memoria; ejecutar `flutter run -d web-server --web-hostname 127.0.0.1 --web-port 8092` con `SMOO_SUPABASE_URL`, `SMOO_SUPABASE_PUBLISHABLE_KEY` y `SMOO_RESTAURANT_ID` como defines; comprobar los cinco recursos HTTP anteriores sin registrar los defines.
+
 No fusionar PR, no publicar, no tocar `main`, datos reales, Tentrix ni producción. La futura política de consumo por pedido (bolsa única) se diseña aparte; el editor actual configura consumo por unidad de producto.
