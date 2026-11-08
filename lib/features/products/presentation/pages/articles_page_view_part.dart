@@ -2,8 +2,14 @@ part of 'articles_page.dart';
 
 extension _ArticlesPageView on _ArticlesPageState {
   Widget _articlesContent(_ArticlesSnapshot snapshot) {
+    final availableTypes = <String>{
+      'all',
+      if (snapshot.canProducts) ...['sale', 'raw'],
+      if (snapshot.canPackaging) 'packaging',
+    };
+    final activeType = availableTypes.contains(_type) ? _type : 'all';
     final visible = snapshot.items.where((item) {
-      return switch (_type) {
+      return switch (activeType) {
         'sale' => item.product != null && !item.product!.isRawMaterial,
         'raw' => item.product?.isRawMaterial ?? false,
         'packaging' => item.packaging != null,
@@ -44,8 +50,8 @@ extension _ArticlesPageView on _ArticlesPageState {
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 270),
                   child: DropdownButtonFormField<String>(
-                    key: ValueKey(_type),
-                    initialValue: _type,
+                    key: ValueKey(activeType),
+                    initialValue: activeType,
                     isExpanded: true,
                     decoration: const InputDecoration(isDense: true),
                     items: [
@@ -77,7 +83,7 @@ extension _ArticlesPageView on _ArticlesPageState {
         ),
         Expanded(
           child: BackofficeCollectionView<_Article>(
-            key: ValueKey('articles-$_type'),
+            key: ValueKey('articles-$activeType'),
             items: visible,
             onCreate: null,
             globalActions: [
