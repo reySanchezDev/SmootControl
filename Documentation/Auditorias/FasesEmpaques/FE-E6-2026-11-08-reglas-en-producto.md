@@ -28,6 +28,38 @@ Parte de `fix/packaging-legacy-route-isolation` @ `a85eeb5896479697d20535ceb1d8b
 8. Hay un **riesgo conocido**: la lógica de permiso UI se consulta en apertura del editor, no subscrita continuamente a cambios de rol. Backend debe seguir rechazando cada escritura al revocar permisos. Validar cierre/reapertura y sesión.
 9. No declarar QA visual aprobado por simulación; corresponde al usuario.
 
+## Validación Codex
+
+Fecha: 2026-11-08. Worktree aislado: `SmooControl-product-packaging-rules-lab`.
+
+- Base verificada: `4c01949140195e28546a1f291c46c27d9aadc2be`. Se preservaron los
+  17 stashes, `main`, los worktrees existentes y las localizaciones generadas.
+- `dart format` se ejecutó sobre el lote y se repitió tras las correcciones.
+  No se modificaron SQL, migraciones, POS, repositorios ni permisos.
+- Se agregaron pruebas widget del acceso y editor: producto nuevo sin sección,
+  visibilidad por `empaques.gestionar`, estado deshabilitado con cambios
+  pendientes, filtrado por `product.id`, creación, edición/identidad, rechazo de
+  duplicados, ausencia de UUID visibles y error remoto sin diálogo de éxito.
+  Resultado: 8/8.
+- Se corrigieron dos defectos reproducibles: el editor enviaba un `Future` como
+  callback de `setState`, y el estado de prueba accedía al repositorio del
+  service locator aunque se hubieran inyectado loaders aislados. Se corrigieron
+  de forma acotada, sin alterar el flujo predeterminado.
+- Regresión: Productos 17/17; navegación 8/8; Design System/Backoffice 35/35;
+  Ventas 23/23; Inventario 7/7; Sincronización 48/48.
+- Laboratorio Supabase: REST HTTP 200, API `127.0.0.1:54321`, PostgreSQL
+  `127.0.0.1:54324`, 87 migraciones (`087`). CRUD local con JWT sintético
+  autorizado POST/PATCH/DELETE aprobado y fila eliminada; usuario solo de
+  modalidades y usuario sin permiso rechazados sin filas creadas. No se usó
+  producción ni se ejecutaron resets.
+- `dart analyze` y `flutter analyze --no-pub` volvieron a bloquearse sin salida
+  ni diagnóstico. Se registró el análisis aislado del lote con el mismo
+  comportamiento; los procesos propios fueron detenidos selectivamente. No se
+  declara el análisis aprobado.
+- No se ejecutó QA visual autenticado ni se certificó la pantalla transversal
+  mediante navegador. El consumo, stock y anulación quedan cubiertos por la
+  suite de Ventas existente, no por escrituras reales adicionales.
+
 ## Restricciones
 
 No fusionar PR, no publicar, no tocar `main`, datos reales, Tentrix ni producción. La futura política de consumo por pedido (bolsa única) se diseña aparte; el editor actual configura consumo por unidad de producto.

@@ -14,6 +14,7 @@ class ProductPackagingRulesAction extends StatefulWidget {
   const ProductPackagingRulesAction({
     required this.product,
     required this.enabled,
+    this.permissionLoader,
     super.key,
   });
 
@@ -23,6 +24,9 @@ class ProductPackagingRulesAction extends StatefulWidget {
   /// False when the surrounding product editor has unsaved changes.
   final bool enabled;
 
+  /// Optional permission loader used by isolated widget tests.
+  final Future<AppResult<bool>> Function()? permissionLoader;
+
   @override
   State<ProductPackagingRulesAction> createState() =>
       _ProductPackagingRulesActionState();
@@ -30,7 +34,13 @@ class ProductPackagingRulesAction extends StatefulWidget {
 
 class _ProductPackagingRulesActionState
     extends State<ProductPackagingRulesAction> {
-  late Future<AppResult<bool>> _permission = _checkPermission();
+  late Future<AppResult<bool>> _permission;
+
+  @override
+  void initState() {
+    super.initState();
+    _permission = widget.permissionLoader?.call() ?? _checkPermission();
+  }
 
   Future<AppResult<bool>> _checkPermission() async {
     final session = serviceLocator<CurrentOperatorService>().session;
@@ -62,9 +72,11 @@ class _ProductPackagingRulesActionState
                 child: ListTile(
                   leading: const Icon(Icons.inventory_2_outlined),
                   title: const Text('Empaque y consumo'),
-                  subtitle: Text(widget.enabled
-                      ? 'Administrá los empaques utilizados según la modalidad de venta.'
-                      : 'Guardá los cambios del producto antes de editar sus reglas.'),
+                  subtitle: Text(
+                    widget.enabled
+                        ? 'Administrá los empaques utilizados según la modalidad de venta.'
+                        : 'Guardá los cambios del producto antes de editar sus reglas.',
+                  ),
                   trailing: const Icon(Icons.chevron_right),
                   enabled: widget.enabled,
                   onTap: widget.enabled

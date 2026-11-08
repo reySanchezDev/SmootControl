@@ -62,7 +62,8 @@ extension _CreateProductDialogLayout on _CreateProductDialogState {
                         controller: _nameController,
                         focusNode: _nameFocus,
                         requiredField: true,
-                        errorText: _showValidation &&
+                        errorText:
+                            _showValidation &&
                                 _nameController.text.trim().isEmpty
                             ? l10n.fieldRequiredError
                             : null,
