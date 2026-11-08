@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:smoo_control/core/config/app_run_mode.dart';
 import 'package:smoo_control/core/design_system/app_empty_state.dart';
 import 'package:smoo_control/core/design_system/app_loading_page.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
+import 'package:smoo_control/features/admin_remote/data/repositories/supabase_admin_repository.dart';
 import 'package:smoo_control/core/navigation/app_routes.dart';
 import 'package:smoo_control/core/result/app_result.dart';
 import 'package:smoo_control/core/session/current_operator_service.dart';
@@ -106,10 +108,7 @@ class RouteAccessGuard extends StatelessWidget {
     }
 
     return FutureBuilder<AppResult<bool>>(
-      future: serviceLocator<AccessControlService>().hasAnyPermission(
-        roleId: session.roleId,
-        permissionCodes: anyPermissions,
-      ),
+      future: _hasAnyPermission(session.roleId),
       builder: (context, snapshot) {
         final result = snapshot.data;
         if (result == null) return const AppLoadingPage();
@@ -124,6 +123,26 @@ class RouteAccessGuard extends StatelessWidget {
           failure: (failure) => _AccessDenied(message: failure.message),
         );
       },
+    );
+  }
+
+  Future<AppResult<bool>> _hasAnyPermission(String roleId) async {
+    if (AppRunMode.isBackoffice) {
+      // Admin workspace and its route guard must both check Supabase.
+      // Local Drift permission rows belong to the offline POS experience.
+      final result = await serviceLocator<SupabaseAdminRepository>()
+          .getPermissionCodesForRole(roleId);
+      return result.when(
+        success: (codes) {
+          final assigned = codes.toSet();
+          return AppSuccess(anyPermissions.any(assigned.contains));
+        },
+        failure: AppFailureResult.new,
+      );
+    }
+    return serviceLocator<AccessControlService>().hasAnyPermission(
+      roleId: roleId,
+      permissionCodes: anyPermissions,
     );
   }
 
