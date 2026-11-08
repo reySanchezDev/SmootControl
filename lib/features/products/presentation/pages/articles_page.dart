@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:smoo_control/core/design_system/app_message_dialog.dart';
+import 'package:smoo_control/core/design_system/backoffice_collection_view.dart';
+import 'package:smoo_control/core/design_system/backoffice_selection_toolbar.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/core/formatters/money_formatter.dart';
@@ -7,6 +9,7 @@ import 'package:smoo_control/core/result/app_result.dart';
 import 'package:smoo_control/core/session/current_operator_service.dart';
 import 'package:smoo_control/features/admin_remote/data/repositories/supabase_admin_repository.dart';
 import 'package:smoo_control/features/catalog/domain/entities/product_category.dart';
+import 'package:smoo_control/features/modifiers/domain/entities/modifier_catalog.dart';
 import 'package:smoo_control/features/modifiers/domain/entities/modifier_group.dart';
 import 'package:smoo_control/features/packaging/domain/entities/packaging_item.dart';
 import 'package:smoo_control/features/products/domain/entities/measurement_unit.dart';
@@ -155,8 +158,7 @@ class _ArticlesPageState extends State<ArticlesPage> {
       await _message('No se pudo abrir el formulario', error.message);
       return;
     }
-    final groupList = (groups as AppSuccess).value.groups
-        as List<ModifierGroup>;
+    final groupList = (groups as AppSuccess<ModifierCatalog>).value.groups;
     final unitList = (units as AppSuccess<List<MeasurementUnit>>).value;
     if (!mounted) return;
     final saved = await showDialog<Product>(
