@@ -31,8 +31,8 @@ abstract final class RouteAccess {
       AppRoutes.salaryAdvancesReport => const ['planilla.gestionar'],
       AppRoutes.attendanceReport => const ['reportes.marcadas.ver'],
       AppRoutes.vacationSummaryReport => const ['reportes.vacaciones.ver'],
+      AppRoutes.products => const ['productos.gestionar', 'empaques.gestionar'],
       AppRoutes.catalog ||
-      AppRoutes.products ||
       AppRoutes.recipes ||
       AppRoutes.measurementUnits => const ['productos.gestionar'],
       AppRoutes.inventory ||
