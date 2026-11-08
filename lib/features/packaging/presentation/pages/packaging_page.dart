@@ -68,6 +68,35 @@ class _PackagingPageState extends State<PackagingPage> {
   }
 
   Future<AppResult<_PackagingSnapshot>> _loadSnapshot() async {
+    // Keep independent destinations usable if an unrelated catalog is down.
+    if (widget.view == PackagingPageView.salesTypes) {
+      final result = await _repository.getSalesTypes();
+      return switch (result) {
+        AppSuccess(:final value) => AppSuccess(
+          _PackagingSnapshot(
+            salesTypes: value,
+            packagingItems: const [],
+            rules: const [],
+            products: const [],
+          ),
+        ),
+        AppFailureResult(:final error) => AppFailureResult(error),
+      };
+    }
+    if (widget.view == PackagingPageView.items) {
+      final result = await _repository.getPackagingItems();
+      return switch (result) {
+        AppSuccess(:final value) => AppSuccess(
+          _PackagingSnapshot(
+            salesTypes: const [],
+            packagingItems: value,
+            rules: const [],
+            products: const [],
+          ),
+        ),
+        AppFailureResult(:final error) => AppFailureResult(error),
+      };
+    }
     final salesTypes = await _repository.getSalesTypes();
     final packagingItems = await _repository.getPackagingItems();
     final rules = await _repository.getRules();
