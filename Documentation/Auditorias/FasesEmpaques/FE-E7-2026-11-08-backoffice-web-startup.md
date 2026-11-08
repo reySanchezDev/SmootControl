@@ -23,6 +23,16 @@ Se introduce modo explícito `SMOO_APP_MODE=backoffice`, sin cambiar el modo pre
 
 ## Validación Codex
 
+### Ejecución Codex 2026-11-08
+
+- Rama sincronizada: `fix/backoffice-web-auth-startup` en `828623f21730772d884693ccc1555d71acff3a80`; 17 stashes preservados y worktrees ajenos intactos.
+- Se detuvo únicamente el servidor anterior de `127.0.0.1:8092` y se levantó Flutter Web en modo desarrollo con `SMOO_APP_MODE=backoffice` y configuración sintética local inyectada en memoria. No se usó el script de release.
+- Supabase local: API `127.0.0.1:54321`, PostgreSQL `127.0.0.1:54324`, 87 migraciones. No se ejecutaron CRUD ni escrituras de prueba.
+- Recursos Web `/`, `/flutter_bootstrap.js`, `/main.dart.js`, `/drift_worker.js` y `/sqlite3.wasm`: HTTP 200. El HTML no contiene el mensaje de Supabase no configurado ni textos de aprovisionamiento POS.
+- Pruebas: AuthBloc 2/2, inicialización de dispositivo 5/5, rutas 3/3, workspace 4/4 y sidebar 3/3. Se conserva el comportamiento `standard` de inicialización POS y se rechazan rutas cruzadas POS/Backoffice en las pruebas.
+- No hay navegador controlable disponible en esta sesión: no se certifican visualmente el formulario inicial, login remoto real, carga de Productos ni cierre de sesión. El propietario debe abrir `http://127.0.0.1:8092/` y autenticar con el administrador sintético del laboratorio.
+- `flutter analyze` no se ejecutó en esta validación; continúa pendiente por el bloqueo del analysis server documentado en FE-E6.
+
 1. Sincronizar `fix/backoffice-web-auth-startup`, confirmar los 17 stashes y archivos locales preservados.
 2. Confirmar que `http://127.0.0.1:8092/` sirve el SHA anterior y detener **solo** ese servidor si es necesario para recompilar; no tocar ningún otro preview.
 3. Verificar que Supabase local sigue en `127.0.0.1:54321/54324`, 87 migraciones y URL/clave/restaurante sintéticos locales.
