@@ -15,11 +15,7 @@ import 'package:smoo_control/l10n/app_localizations.dart';
 /// Local login page for POS operators and administrators.
 class LoginPage extends StatefulWidget {
   /// Creates the login page.
-  const LoginPage({
-    this.failure,
-    this.setupRequired = false,
-    super.key,
-  });
+  const LoginPage({this.failure, this.setupRequired = false, super.key});
 
   /// Failure message to show.
   final String? failure;

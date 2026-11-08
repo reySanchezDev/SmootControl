@@ -102,7 +102,7 @@ class _PackagingLegacyEntryPageState extends State<PackagingLegacyEntryPage> {
                     _destination(
                       context,
                       icon: Icons.rule_outlined,
-                      title: 'Reglas de empaque',
+                      title: 'Reglas de consumo',
                       subtitle: 'Asociá empaques con productos y modalidades.',
                       route: AppRoutes.packagingRules,
                     ),

@@ -80,20 +80,6 @@ class _BackofficeHomePageState extends State<BackofficeHomePage> {
       group: 'Catálogos',
     ),
     BackofficeWorkspaceItem(
-      id: 'packaging-items',
-      label: 'Empaques',
-      route: AppRoutes.packagingItems,
-      icon: Icons.takeout_dining_outlined,
-      group: 'Catálogos',
-    ),
-    BackofficeWorkspaceItem(
-      id: 'packaging-rules',
-      label: 'Reglas de empaque',
-      route: AppRoutes.packagingRules,
-      icon: Icons.rule_outlined,
-      group: 'Catálogos',
-    ),
-    BackofficeWorkspaceItem(
       id: 'home',
       label: 'Inicio',
       route: AppRoutes.dashboard,
@@ -175,14 +161,21 @@ class _BackofficeHomePageState extends State<BackofficeHomePage> {
       label: 'Configuración',
       route: AppRoutes.settings,
       icon: Icons.settings_outlined,
-      group: 'Administración',
+      group: 'Configuración',
+    ),
+    BackofficeWorkspaceItem(
+      id: 'packaging-rules',
+      label: 'Reglas de consumo',
+      route: AppRoutes.packagingRules,
+      icon: Icons.rule_outlined,
+      group: 'Configuración',
     ),
     BackofficeWorkspaceItem(
       id: 'sales-types',
       label: 'Modalidades de servicio',
       route: AppRoutes.salesTypes,
       icon: Icons.room_service_outlined,
-      group: 'Administración',
+      group: 'Configuración',
     ),
     BackofficeWorkspaceItem(
       id: 'exchange',
@@ -243,9 +236,8 @@ class _BackofficeHomePageState extends State<BackofficeHomePage> {
           );
         }
         return snapshot.data!.when(
-          failure: (failure) => Scaffold(
-            body: Center(child: Text(failure.message)),
-          ),
+          failure: (failure) =>
+              Scaffold(body: Center(child: Text(failure.message))),
           success: (permissions) {
             final isAdmin = widget.session.roleId == DefaultAccessRoles.adminId;
             final destinations = _destinations

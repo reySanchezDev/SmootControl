@@ -20,9 +20,7 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(
-      _host(
-        permissionLoader: () async => const AppSuccess(true),
-      ),
+      _host(permissionLoader: () async => const AppSuccess(true)),
     );
     await tester.pumpAndSettle();
 
@@ -33,9 +31,7 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(
-      _host(
-        permissionLoader: () async => const AppSuccess(false),
-      ),
+      _host(permissionLoader: () async => const AppSuccess(false)),
     );
     await tester.pumpAndSettle();
 
@@ -67,10 +63,7 @@ void main() {
       MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        home: CreateProductDialog(
-          categories: [],
-          modifierGroups: [],
-        ),
+        home: CreateProductDialog(categories: [], modifierGroups: []),
       ),
     );
 

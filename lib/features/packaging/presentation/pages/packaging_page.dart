@@ -133,7 +133,7 @@ class _PackagingPageState extends State<PackagingPage> {
       final title = switch (widget.view) {
         PackagingPageView.salesTypes => 'Modalidades de servicio',
         PackagingPageView.items => 'Empaques',
-        PackagingPageView.rules => 'Reglas de empaque',
+        PackagingPageView.rules => 'Reglas de consumo',
         PackagingPageView.all => 'Empaques',
       };
       return AppPageScaffold(
