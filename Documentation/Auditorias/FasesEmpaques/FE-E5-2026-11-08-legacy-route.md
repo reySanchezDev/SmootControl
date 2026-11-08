@@ -23,3 +23,34 @@ Codex aplicó 87/87 migraciones en Docker local y validó REST CRUD por rol, rec
 8. QA visual autenticado por el usuario sigue pendiente; ficha del producto y reglas por pedido permanecen fuera de este cambio.
 
 El gate FE-E5 sigue **pendiente** hasta recibir evidencia de Codex. No fusionar ni desplegar.
+
+## Validación Codex
+
+Fecha: 2026-11-08. Worktree: `SmooControl-packaging-legacy-lab`.
+
+- El worktree se creó desde `origin/fix/packaging-legacy-route-isolation` en
+  `11e0f462c9847e2ed2764ecfdc4be7d3c9932943`. No se modificaron `main`, los
+  worktrees existentes ni los 17 stashes.
+- `dart format` se ejecutó sobre los tres Dart del lote y sobre la prueba nueva;
+  solo produjo cambios equivalentes de formato en la página heredada.
+- Se agregó una inyección opcional de lector de permisos exclusivamente para
+  pruebas aisladas; el comportamiento de producción continúa usando el lector
+  remoto por defecto. La prueba widget cubre administrador completo,
+  `tipos_venta.gestionar`, `empaques.gestionar` y ausencia de permisos. En los
+  cuatro casos el editor combinado no se monta y no aparecen destinos ajenos.
+- Pruebas focalizadas: widget/legacy y navegación 10/10; diseño compartido y
+  Backoffice 35/35; Ventas 23/23; Inventario 7/7; Sincronización 48/48.
+- `dart analyze` y `flutter analyze --no-pub` no concluyeron. Ambos quedaron
+  bloqueados en el análisis sin producir diagnóstico; los procesos fueron
+  identificados por la línea de comandos de esta ejecución (el servidor Dart
+  llegó a aproximadamente 362 MB y 14 s de CPU) y se detuvieron sin tocar los
+  procesos persistentes de VS Code/Flutter. Por ello el análisis está pendiente
+  y no se declara aprobado.
+- El laboratorio local respondió REST HTTP 200 en `127.0.0.1:54321`, PostgreSQL
+  quedó publicado solo en `127.0.0.1:54324`, la base conserva 87 migraciones y
+  las políticas/RPC de `sales_types`, `packaging_items` y
+  `product_packaging_rules` siguen presentes. No se hicieron escrituras.
+- No se realizó QA visual autenticado en navegador ni se verificaron sesiones
+  reales, deep links interactivos o cierre de sesión; quedan pendientes para
+  revisión manual. Las pruebas automatizadas sí cubren clasificación de ruta,
+  filtrado de destinos y no montaje del editor combinado.

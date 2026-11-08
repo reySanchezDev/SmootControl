@@ -13,7 +13,13 @@ import 'package:smoo_control/features/roles/domain/services/default_access_roles
 /// guarded by its route and by the database permissions.
 class PackagingLegacyEntryPage extends StatefulWidget {
   /// Creates the transitional catalog chooser.
-  const PackagingLegacyEntryPage({super.key});
+  const PackagingLegacyEntryPage({this.permissionsLoader, super.key});
+
+  /// Optional loader used by isolated widget tests.
+  ///
+  /// Production callers keep the default loader, which reads the authenticated
+  /// operator permissions from the remote repository.
+  final Future<AppResult<Set<String>>> Function()? permissionsLoader;
 
   @override
   State<PackagingLegacyEntryPage> createState() =>
@@ -21,7 +27,13 @@ class PackagingLegacyEntryPage extends StatefulWidget {
 }
 
 class _PackagingLegacyEntryPageState extends State<PackagingLegacyEntryPage> {
-  late final Future<AppResult<Set<String>>> _permissions = _loadPermissions();
+  late final Future<AppResult<Set<String>>> _permissions;
+
+  @override
+  void initState() {
+    super.initState();
+    _permissions = widget.permissionsLoader?.call() ?? _loadPermissions();
+  }
 
   Future<AppResult<Set<String>>> _loadPermissions() async {
     final session = serviceLocator<CurrentOperatorService>().session;
@@ -55,10 +67,12 @@ class _PackagingLegacyEntryPageState extends State<PackagingLegacyEntryPage> {
           return snapshot.data!.when(
             failure: (failure) => Center(child: Text(failure.message)),
             success: (permissions) {
-              final canManageTypes =
-                  permissions.contains('tipos_venta.gestionar');
-              final canManagePackaging =
-                  permissions.contains('empaques.gestionar');
+              final canManageTypes = permissions.contains(
+                'tipos_venta.gestionar',
+              );
+              final canManagePackaging = permissions.contains(
+                'empaques.gestionar',
+              );
               if (!canManageTypes && !canManagePackaging) {
                 return const Center(child: Text('Acceso no autorizado'));
               }
