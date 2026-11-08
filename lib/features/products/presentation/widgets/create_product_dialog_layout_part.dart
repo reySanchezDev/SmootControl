@@ -147,6 +147,11 @@ extension _CreateProductDialogLayout on _CreateProductDialogState {
                           });
                         },
                       ),
+                      if (widget.product != null)
+                        ProductPackagingRulesAction(
+                          product: widget.product!,
+                          enabled: !_hasChanges,
+                        ),
                       if (_error != null)
                         Padding(
                           padding: const EdgeInsets.only(top: 12),
