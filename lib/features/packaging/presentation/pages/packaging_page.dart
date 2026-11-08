@@ -24,10 +24,28 @@ part 'packaging_responsive_dialog_part.dart';
 part 'packaging_tab_shell_part.dart';
 part 'packaging_tabs_part.dart';
 
+/// Scopes packaging administration without changing its persisted entities.
+enum PackagingPageView {
+  /// Presents the legacy combined catalog.
+  all,
+
+  /// Presents service modalities.
+  salesTypes,
+
+  /// Presents packaging items.
+  items,
+
+  /// Presents product packaging rules.
+  rules,
+}
+
 /// Manages sales types, packaging items and product packaging rules.
 class PackagingPage extends StatefulWidget {
   /// Creates the page.
-  const PackagingPage({super.key});
+  const PackagingPage({this.view = PackagingPageView.all, super.key});
+
+  /// Which catalog is presented; legacy route retains the combined view.
+  final PackagingPageView view;
 
   @override
   State<PackagingPage> createState() => _PackagingPageState();
@@ -82,6 +100,31 @@ class _PackagingPageState extends State<PackagingPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.view != PackagingPageView.all) {
+      final title = switch (widget.view) {
+        PackagingPageView.salesTypes => 'Modalidades de servicio',
+        PackagingPageView.items => 'Empaques',
+        PackagingPageView.rules => 'Reglas de empaque',
+        PackagingPageView.all => 'Empaques',
+      };
+      return AppPageScaffold(
+        title: title,
+        body: FutureBuilder<AppResult<_PackagingSnapshot>>(
+          future: _future,
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) return const AppLoadingPage();
+            return switch (snapshot.data!) {
+              AppFailureResult(:final error) => AppEmptyState(
+                icon: Icons.error_outline,
+                title: title,
+                message: error.message,
+              ),
+              AppSuccess(:final value) => _scopedContent(value),
+            };
+          },
+        ),
+      );
+    }
     return DefaultTabController(
       length: 3,
       child: AppPageScaffold(
@@ -133,6 +176,27 @@ class _PackagingPageState extends State<PackagingPage> {
         ),
       ),
     );
+  }
+
+  Widget _scopedContent(_PackagingSnapshot value) {
+    return switch (widget.view) {
+      PackagingPageView.salesTypes => _SalesTypesTab(
+        salesTypes: value.salesTypes,
+        onSave: _saveSalesType,
+      ),
+      PackagingPageView.items => _PackagingItemsTab(
+        items: value.packagingItems,
+        onSave: _savePackagingItem,
+      ),
+      PackagingPageView.rules => _RulesTab(
+        packagingItems: value.packagingItems,
+        products: value.products,
+        rules: value.rules,
+        salesTypes: value.salesTypes,
+        onSave: _saveRule,
+      ),
+      PackagingPageView.all => const SizedBox.shrink(),
+    };
   }
 
   Future<void> _saveSalesType(SalesType? salesType) async {

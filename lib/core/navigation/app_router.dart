@@ -109,6 +109,15 @@ Widget _guardedPage(String? routeName) {
     AppRoutes.inventory => const InventoryPage(),
     AppRoutes.inventoryMovements => const InventoryMovementsPage(),
     AppRoutes.packaging => const PackagingPage(),
+    AppRoutes.salesTypes => const PackagingPage(
+      view: PackagingPageView.salesTypes,
+    ),
+    AppRoutes.packagingItems => const PackagingPage(
+      view: PackagingPageView.items,
+    ),
+    AppRoutes.packagingRules => const PackagingPage(
+      view: PackagingPageView.rules,
+    ),
     AppRoutes.modifiers => const ModifiersPage(),
     AppRoutes.paymentMethods => const PaymentMethodsPage(),
     AppRoutes.tables => const TablesPage(),
@@ -171,6 +180,9 @@ bool _requiresOnlineAdmin(String? routeName) {
     AppRoutes.inventory ||
     AppRoutes.inventoryMovements ||
     AppRoutes.packaging ||
+    AppRoutes.salesTypes ||
+    AppRoutes.packagingItems ||
+    AppRoutes.packagingRules ||
     AppRoutes.modifiers ||
     AppRoutes.paymentMethods ||
     AppRoutes.tables ||
