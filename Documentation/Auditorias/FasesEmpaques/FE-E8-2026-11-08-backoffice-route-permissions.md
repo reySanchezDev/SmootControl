@@ -28,3 +28,12 @@ En `RouteAccessGuard`, cuando `AppRunMode.isBackoffice`, se consulta `SupabaseAd
 7. Inspeccionar además que `RoleAccessGuard` no permita asumir identidades admin por campos manipulables y que el backend sigue siendo autoridad final. Registrar riesgos no resueltos.
 
 No fusionar PR ni despliegues; producción, `main`, Tentrix y otros worktrees fuera de alcance.
+## Validación Codex — 2026-11-08
+
+- Se validó el worktree independiente de `fix/backoffice-remote-route-permissions`, preservando el worktree principal y sus 17 stashes.
+- `RouteAccessGuard` consulta Supabase en modo Backoffice y conserva `AccessControlService` sobre Drift en POS estándar. El error remoto permanece fail-closed; no se modificaron RLS, SQL ni migraciones.
+- Se agregó `test/core/navigation/route_access_guard_test.dart` con HTTP simulado: administrador, permiso parcial, ausencia de permiso y fallo remoto pasan 4/4 bajo `SMOO_APP_MODE=backoffice`.
+- Pasaron las pruebas focalizadas de autenticación, inicialización, navegación, workspace/sidebar, rutas de empaques, productos, reglas de empaques y permisos locales POS. Total registrado: 47 pruebas.
+- `dart format` no modificó el código existente y formateó la nueva prueba. `flutter analyze --no-pub` quedó inconcluso en `Analyzing ...` sin diagnóstico ni código de salida; se interrumpió de forma controlada.
+- Supabase Docker respondió HTTP 200; PostgreSQL y API permanecen en `127.0.0.1:54324` y `127.0.0.1:54321`. La base local reportó 87 migraciones aplicadas, última `087`.
+- Se reconstruyó el preview de esta rama en `http://127.0.0.1:8092/` con configuración sintética en memoria. HTTP 200 y bootstrap Flutter fueron comprobados. No hubo navegador controlable disponible; Inicio, Productos, Empaques y Usuarios quedan pendientes de QA visual manual.
