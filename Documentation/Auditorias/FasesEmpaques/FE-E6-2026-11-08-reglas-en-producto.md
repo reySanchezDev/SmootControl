@@ -60,6 +60,16 @@ Fecha: 2026-11-08. Worktree aislado: `SmooControl-product-packaging-rules-lab`.
   mediante navegador. El consumo, stock y anulación quedan cubiertos por la
   suite de Ventas existente, no por escrituras reales adicionales.
 
+## Diagnostico del analisis en Windows
+
+- Verificado en `feature/product-packaging-rules-editor` @ `e0a08609abe00e3b9ea1599ad4454a381df227bc` sin modificar los tres archivos de localizacion generados.
+- Herramientas: Flutter 3.41.7, Dart 3.11.5, Java 17.0.18, Android SDK 36.0.0; `flutter doctor -v` solo reporta licencias Android pendientes.
+- Un proyecto Dart minimo creado en `%TEMP%` completo `dart analyze --format machine` con codigo 0.
+- En Kivo, `dart analyze --format machine` y `flutter analyze --no-pub` permanecieron sin salida diagnostica. La salida de Flutter quedo en `Analyzing SmooControl-product-packaging-rules-lab...` y el proceso no termino dentro del limite controlado.
+- No habia otro analysis server concurrente ni raices de paquetes faltantes: `.dart_tool/package_config.json` resolvio 142 paquetes y 0 raices inexistentes. El arbol observado fue el unico `flutter_tools -> dart -> analysis_server`; el servidor alcanzo aproximadamente 362 MiB de memoria con actividad baja antes de ser detenido selectivamente.
+- No se borraron caches, instalaciones ni carpetas compartidas. No se pudo demostrar bloqueo de antivirus o archivo mediante herramientas disponibles. La causa exacta interna del bloqueo queda no determinada; el hecho reproducible es especifico del proyecto Kivo.
+- Procedimiento reproducible: desde este worktree ejecutar `dart analyze --format machine` o `flutter analyze --no-pub`; si permanece en `Analyzing...`, registrar el arbol de procesos y detener solo el arbol hijo de ese comando. El analisis no debe marcarse como aprobado mientras no devuelva codigo de salida.
+
 ## Restricciones
 
 No fusionar PR, no publicar, no tocar `main`, datos reales, Tentrix ni producción. La futura política de consumo por pedido (bolsa única) se diseña aparte; el editor actual configura consumo por unidad de producto.
