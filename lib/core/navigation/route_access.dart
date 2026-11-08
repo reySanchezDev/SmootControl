@@ -35,7 +35,10 @@ abstract final class RouteAccess {
       AppRoutes.measurementUnits => const ['productos.gestionar'],
       AppRoutes.inventory ||
       AppRoutes.inventoryMovements => const ['inventario.gestionar'],
-      AppRoutes.salesTypes => const ['tipos_venta.gestionar'],\n      AppRoutes.packagingItems ||\n      AppRoutes.packagingRules => const ['empaques.gestionar'],\n      AppRoutes.packaging => const [
+      AppRoutes.salesTypes => const ['tipos_venta.gestionar'],
+      AppRoutes.packagingItems ||
+      AppRoutes.packagingRules => const ['empaques.gestionar'],
+      AppRoutes.packaging => const [
         'empaques.gestionar',
         'tipos_venta.gestionar',
       ],
