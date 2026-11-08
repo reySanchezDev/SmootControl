@@ -57,11 +57,13 @@ class _ArticlesSnapshot {
     required this.categories,
     required this.canProducts,
     required this.canPackaging,
+    this.warning,
   });
   final List<_Article> items;
   final List<ProductCategory> categories;
   final bool canProducts;
   final bool canPackaging;
+  final String? warning;
 }
 
 class _ArticlesPageState extends State<ArticlesPage> {
@@ -95,33 +97,45 @@ class _ArticlesPageState extends State<ArticlesPage> {
     final canProducts = codes.contains('productos.gestionar');
     final canPackaging = codes.contains('empaques.gestionar');
     final items = <_Article>[];
+    final warnings = <String>[];
     var categories = <ProductCategory>[];
+    var productsReady = canProducts;
+    var packagingReady = canPackaging;
     if (canProducts) {
       final products = await _repo.getProducts();
-      if (products case AppFailureResult(:final error)) {
-        return AppFailureResult(error);
+      switch (products) {
+        case AppSuccess(:final value):
+          items.addAll(value.map(_Article.product));
+          final result = await _repo.getCategories();
+          switch (result) {
+            case AppSuccess(:final value):
+              categories = value;
+            case AppFailureResult(:final error):
+              warnings.add(error.message);
+              // A product may not be saved without its valid category.
+              productsReady = false;
+          }
+        case AppFailureResult(:final error):
+          warnings.add(error.message);
+          productsReady = false;
       }
-      items.addAll((products as AppSuccess<List<Product>>)
-          .value.map(_Article.product));
-      final result = await _repo.getCategories();
-      if (result case AppFailureResult(:final error)) {
-        return AppFailureResult(error);
-      }
-      categories = (result as AppSuccess<List<ProductCategory>>).value;
     }
     if (canPackaging) {
       final result = await _repo.getPackagingItems();
-      if (result case AppFailureResult(:final error)) {
-        return AppFailureResult(error);
+      switch (result) {
+        case AppSuccess(:final value):
+          items.addAll(value.map(_Article.packaging));
+        case AppFailureResult(:final error):
+          warnings.add(error.message);
+          packagingReady = false;
       }
-      items.addAll((result as AppSuccess<List<PackagingItem>>)
-          .value.map(_Article.packaging));
     }
     return AppSuccess(_ArticlesSnapshot(
       items: items,
       categories: categories,
-      canProducts: canProducts,
-      canPackaging: canPackaging,
+      canProducts: productsReady,
+      canPackaging: packagingReady,
+      warning: warnings.isEmpty ? null : warnings.join(' · '),
     ));
   }
 
