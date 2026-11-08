@@ -108,7 +108,10 @@ Widget _guardedPage(String? routeName) {
     AppRoutes.measurementUnits => const MeasurementUnitsPage(),
     AppRoutes.inventory => const InventoryPage(),
     AppRoutes.inventoryMovements => const InventoryMovementsPage(),
-    AppRoutes.packaging => const PackagingPage(),\n    AppRoutes.salesTypes => const PackagingPage(view: PackagingPageView.salesTypes),\n    AppRoutes.packagingItems => const PackagingPage(view: PackagingPageView.items),\n    AppRoutes.packagingRules => const PackagingPage(view: PackagingPageView.rules),
+    AppRoutes.packaging => const PackagingPage(),
+    AppRoutes.salesTypes => const PackagingPage(view: PackagingPageView.salesTypes),
+    AppRoutes.packagingItems => const PackagingPage(view: PackagingPageView.items),
+    AppRoutes.packagingRules => const PackagingPage(view: PackagingPageView.rules),
     AppRoutes.modifiers => const ModifiersPage(),
     AppRoutes.paymentMethods => const PaymentMethodsPage(),
     AppRoutes.tables => const TablesPage(),
@@ -170,7 +173,10 @@ bool _requiresOnlineAdmin(String? routeName) {
     AppRoutes.measurementUnits ||
     AppRoutes.inventory ||
     AppRoutes.inventoryMovements ||
-    AppRoutes.packaging ||\n    AppRoutes.salesTypes ||\n    AppRoutes.packagingItems ||\n    AppRoutes.packagingRules ||
+    AppRoutes.packaging ||
+    AppRoutes.salesTypes ||
+    AppRoutes.packagingItems ||
+    AppRoutes.packagingRules ||
     AppRoutes.modifiers ||
     AppRoutes.paymentMethods ||
     AppRoutes.tables ||
