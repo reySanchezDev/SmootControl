@@ -4,10 +4,7 @@ import 'package:smoo_control/core/result/app_result.dart';
 import 'package:smoo_control/features/packaging/presentation/pages/packaging_legacy_entry_page.dart';
 
 void main() {
-  Future<void> pumpEntry(
-    WidgetTester tester,
-    Set<String> permissions,
-  ) async {
+  Future<void> pumpEntry(WidgetTester tester, Set<String> permissions) async {
     await tester.pumpWidget(
       MaterialApp(
         home: PackagingLegacyEntryPage(
@@ -19,14 +16,11 @@ void main() {
   }
 
   testWidgets('full admin sees each independent destination', (tester) async {
-    await pumpEntry(tester, {
-      'tipos_venta.gestionar',
-      'empaques.gestionar',
-    });
+    await pumpEntry(tester, {'tipos_venta.gestionar', 'empaques.gestionar'});
 
     expect(find.text('Modalidades de servicio'), findsOneWidget);
     expect(find.text('Empaques'), findsOneWidget);
-    expect(find.text('Reglas de empaque'), findsOneWidget);
+    expect(find.text('Reglas de consumo'), findsOneWidget);
     expect(find.text('Tipos de venta'), findsNothing);
   });
 
@@ -37,7 +31,7 @@ void main() {
 
     expect(find.text('Modalidades de servicio'), findsOneWidget);
     expect(find.text('Empaques'), findsNothing);
-    expect(find.text('Reglas de empaque'), findsNothing);
+    expect(find.text('Reglas de consumo'), findsNothing);
   });
 
   testWidgets('packaging-only profile cannot see service modalities', (
@@ -47,7 +41,7 @@ void main() {
 
     expect(find.text('Modalidades de servicio'), findsNothing);
     expect(find.text('Empaques'), findsOneWidget);
-    expect(find.text('Reglas de empaque'), findsOneWidget);
+    expect(find.text('Reglas de consumo'), findsOneWidget);
   });
 
   testWidgets('empty permissions never mount an editor', (tester) async {

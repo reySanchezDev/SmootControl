@@ -61,10 +61,7 @@ void main() {
         createdAt: createdAt,
       );
 
-      final saveResult = await repository.saveSale(
-        sale: sale,
-        items: [item],
-      );
+      final saveResult = await repository.saveSale(sale: sale, items: [item]);
       final salesResult = await repository.getSales(
         from: DateTime(2026, 6, 23),
         to: DateTime(2026, 6, 24),
@@ -109,10 +106,7 @@ void main() {
 
         await repository.saveSale(sale: sale, items: [item]);
         var salesResult = await repository.getSalesByCashRegisterSession('');
-        expect(
-          (salesResult as AppSuccess<List<Sale>>).value,
-          isEmpty,
-        );
+        expect((salesResult as AppSuccess<List<Sale>>).value, isEmpty);
 
         final syncResult = await syncQueueRepository.getPendingItems();
         final syncItem =

@@ -1586,11 +1586,13 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get recipeSavedMessage => 'Receta guardada correctamente.';
+
   @override
   String get unsavedChangesTitle => 'Cambios sin guardar';
 
   @override
-  String get unsavedChangesMessage => 'Realizaste cambios que todavía no se han guardado. ¿Deseás descartarlos?';
+  String get unsavedChangesMessage =>
+      'Realizaste cambios que todavía no se han guardado. ¿Deseás descartarlos?';
 
   @override
   String get discardChangesAction => 'Descartar cambios';

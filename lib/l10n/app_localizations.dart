@@ -971,7 +971,7 @@ abstract class AppLocalizations {
   /// No description provided for @okAction.
   ///
   /// In es, this message translates to:
-  /// **'OK'**
+  /// **'Aceptar'**
   String get okAction;
 
   /// No description provided for @saveAction.
@@ -3050,40 +3050,40 @@ abstract class AppLocalizations {
   /// **'Receta guardada correctamente.'**
   String get recipeSavedMessage;
 
-  /// Localized unsavedChangesTitle message.
+  /// No description provided for @unsavedChangesTitle.
   ///
-  /// In en, this message translates to:
-  /// **'Unsaved changes'**
+  /// In es, this message translates to:
+  /// **'Cambios sin guardar'**
   String get unsavedChangesTitle;
 
-  /// Localized unsavedChangesMessage message.
+  /// No description provided for @unsavedChangesMessage.
   ///
-  /// In en, this message translates to:
-  /// **'You have unsaved changes. Do you want to discard them?'**
+  /// In es, this message translates to:
+  /// **'Realizaste cambios que todavía no se han guardado. ¿Deseás descartarlos?'**
   String get unsavedChangesMessage;
 
-  /// Localized discardChangesAction message.
+  /// No description provided for @discardChangesAction.
   ///
-  /// In en, this message translates to:
-  /// **'Discard changes'**
+  /// In es, this message translates to:
+  /// **'Descartar cambios'**
   String get discardChangesAction;
 
-  /// Localized continueEditingAction message.
+  /// No description provided for @continueEditingAction.
   ///
-  /// In en, this message translates to:
-  /// **'Keep editing'**
+  /// In es, this message translates to:
+  /// **'Seguir editando'**
   String get continueEditingAction;
 
-  /// Localized confirmChangesTitle message.
+  /// No description provided for @confirmChangesTitle.
   ///
-  /// In en, this message translates to:
-  /// **'Confirm changes'**
+  /// In es, this message translates to:
+  /// **'Confirmar cambios'**
   String get confirmChangesTitle;
 
-  /// Localized confirmChangesMessage message.
+  /// No description provided for @confirmChangesMessage.
   ///
-  /// In en, this message translates to:
-  /// **'Do you want to save your changes?'**
+  /// In es, this message translates to:
+  /// **'¿Deseás guardar los cambios realizados?'**
   String get confirmChangesMessage;
 }
 

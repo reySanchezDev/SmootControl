@@ -92,12 +92,10 @@ final class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) async {
     emit(const AuthLoading());
     final result = await _repository.signInWithGoogle();
-    emit(
-      switch (result) {
-        AppSuccess(:final value) => Authenticated(value),
-        AppFailureResult(:final error) => AuthFailure(error),
-      },
-    );
+    emit(switch (result) {
+      AppSuccess(:final value) => Authenticated(value),
+      AppFailureResult(:final error) => AuthFailure(error),
+    });
   }
 
   Future<void> _onPinSignInRequested(
@@ -109,12 +107,10 @@ final class AuthBloc extends Bloc<AuthEvent, AuthState> {
       email: event.email,
       pin: event.pin,
     );
-    emit(
-      switch (result) {
-        AppSuccess(:final value) => Authenticated(value),
-        AppFailureResult(:final error) => AuthFailure(error),
-      },
-    );
+    emit(switch (result) {
+      AppSuccess(:final value) => Authenticated(value),
+      AppFailureResult(:final error) => AuthFailure(error),
+    });
   }
 
   Future<void> _onRemoteAdminSignInRequested(
@@ -139,19 +135,17 @@ final class AuthBloc extends Bloc<AuthEvent, AuthState> {
       email: event.email,
       password: event.password,
     );
-    emit(
-      switch (result) {
-        AppSuccess(:final value) => Authenticated(
-          _setRemoteAdminSession(
-            userId: value.userId,
-            email: value.email,
-            roleId: value.roleId,
-            displayName: value.displayName,
-          ),
+    emit(switch (result) {
+      AppSuccess(:final value) => Authenticated(
+        _setRemoteAdminSession(
+          userId: value.userId,
+          email: value.email,
+          roleId: value.roleId,
+          displayName: value.displayName,
         ),
-        AppFailureResult(:final error) => AuthFailure(error),
-      },
-    );
+      ),
+      AppFailureResult(:final error) => AuthFailure(error),
+    });
   }
 
   Future<void> _onInitialAdminCreated(
@@ -164,15 +158,10 @@ final class AuthBloc extends Bloc<AuthEvent, AuthState> {
       email: event.email,
       pin: event.pin,
     );
-    emit(
-      switch (result) {
-        AppSuccess(:final value) => Authenticated(value),
-        AppFailureResult(:final error) => AuthFailure(
-          error,
-          setupRequired: true,
-        ),
-      },
-    );
+    emit(switch (result) {
+      AppSuccess(:final value) => Authenticated(value),
+      AppFailureResult(:final error) => AuthFailure(error, setupRequired: true),
+    });
   }
 
   Future<void> _onSignOutRequested(

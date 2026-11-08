@@ -55,16 +55,25 @@ extension _ArticlesPageView on _ArticlesPageState {
                     isExpanded: true,
                     decoration: const InputDecoration(isDense: true),
                     items: [
-                      const DropdownMenuItem(value: 'all', child: Text('Todos')),
+                      const DropdownMenuItem(
+                        value: 'all',
+                        child: Text('Todos'),
+                      ),
                       if (snapshot.canProducts) ...[
-                        const DropdownMenuItem(value: 'sale',
-                            child: Text('Productos de venta')),
-                        const DropdownMenuItem(value: 'raw',
-                            child: Text('Materias primas')),
+                        const DropdownMenuItem(
+                          value: 'sale',
+                          child: Text('Productos de venta'),
+                        ),
+                        const DropdownMenuItem(
+                          value: 'raw',
+                          child: Text('Materias primas'),
+                        ),
                       ],
                       if (snapshot.canPackaging)
-                        const DropdownMenuItem(value: 'packaging',
-                            child: Text('Empaques')),
+                        const DropdownMenuItem(
+                          value: 'packaging',
+                          child: Text('Empaques'),
+                        ),
                     ],
                     onChanged: (value) {
                       if (value != null) setState(() => _type = value);
@@ -107,7 +116,8 @@ extension _ArticlesPageView on _ArticlesPageState {
                 label: 'Editar',
                 icon: Icons.edit_outlined,
                 enabledWhen: (item) => item.packaging == null
-                    ? snapshot.canProducts : snapshot.canPackaging,
+                    ? snapshot.canProducts
+                    : snapshot.canPackaging,
                 onPressed: (item) {
                   if (item.product != null) {
                     _editProduct(item.product, snapshot);
@@ -119,9 +129,11 @@ extension _ArticlesPageView on _ArticlesPageState {
               BackofficeSelectionAction<_Article>(
                 label: 'Inactivar',
                 icon: Icons.toggle_off_outlined,
-                enabledWhen: (item) => item.active &&
+                enabledWhen: (item) =>
+                    item.active &&
                     (item.packaging == null
-                        ? snapshot.canProducts : snapshot.canPackaging),
+                        ? snapshot.canProducts
+                        : snapshot.canPackaging),
                 onPressed: _deactivate,
                 destructive: true,
               ),
@@ -136,55 +148,59 @@ extension _ArticlesPageView on _ArticlesPageState {
             compactBuilder: (_, item) => Card(
               child: ListTile(
                 title: Text(item.name),
-                subtitle: Text('${item.type} · ${category(item)} · '
-                    '${item.active ? 'Activo' : 'Inactivo'}'),
+                subtitle: Text(
+                  '${item.type} · ${category(item)} · '
+                  '${item.active ? 'Activo' : 'Inactivo'}',
+                ),
               ),
             ),
             columns: [
               BackofficeListColumn<_Article>(
                 label: 'Artículo',
                 width: 280,
-                compare: (a,b) => a.name.compareTo(b.name),
-                cell: (_,item) => Text(item.name),
+                compare: (a, b) => a.name.compareTo(b.name),
+                cell: (_, item) => Text(item.name),
               ),
               BackofficeListColumn<_Article>(
                 label: 'Tipo',
                 width: 180,
-                compare: (a,b) => a.type.compareTo(b.type),
-                cell: (_,item) => Text(item.type),
+                compare: (a, b) => a.type.compareTo(b.type),
+                cell: (_, item) => Text(item.type),
               ),
               BackofficeListColumn<_Article>(
                 label: 'Categoría',
                 width: 200,
-                compare: (a,b) => category(a).compareTo(category(b)),
-                cell: (_,item) => Text(category(item)),
+                compare: (a, b) => category(a).compareTo(category(b)),
+                cell: (_, item) => Text(category(item)),
               ),
               BackofficeListColumn<_Article>(
                 label: 'Precio venta',
                 width: 130,
                 alignment: Alignment.centerRight,
-                cell: (_,item) => Text(item.product?.isRawMaterial == false
-                    ? MoneyFormatter.format(item.product!.priceInCents)
-                    : '—'),
+                cell: (_, item) => Text(
+                  item.product?.isRawMaterial == false
+                      ? MoneyFormatter.format(item.product!.priceInCents)
+                      : '—',
+                ),
               ),
               BackofficeListColumn<_Article>(
                 label: 'Costo',
                 width: 130,
                 alignment: Alignment.centerRight,
-                compare: (a,b) => a.cost.compareTo(b.cost),
-                cell: (_,item) => Text(MoneyFormatter.format(item.cost)),
+                compare: (a, b) => a.cost.compareTo(b.cost),
+                cell: (_, item) => Text(MoneyFormatter.format(item.cost)),
               ),
               BackofficeListColumn<_Article>(
                 label: 'Inventario',
                 width: 130,
                 alignment: Alignment.center,
-                cell: (_,item) => Text(item.stock ? 'Sí' : 'No'),
+                cell: (_, item) => Text(item.stock ? 'Sí' : 'No'),
               ),
               BackofficeListColumn<_Article>(
                 label: 'Estado',
                 width: 130,
                 alignment: Alignment.center,
-                cell: (_,item) => Text(item.active ? 'Activo' : 'Inactivo'),
+                cell: (_, item) => Text(item.active ? 'Activo' : 'Inactivo'),
               ),
             ],
           ),
@@ -198,7 +214,8 @@ class _ArticlePackagingDialog extends StatefulWidget {
   const _ArticlePackagingDialog({this.item});
   final PackagingItem? item;
   @override
-  State<_ArticlePackagingDialog> createState() => _ArticlePackagingDialogState();
+  State<_ArticlePackagingDialog> createState() =>
+      _ArticlePackagingDialogState();
 }
 
 class _ArticlePackagingDialogState extends State<_ArticlePackagingDialog> {
@@ -213,8 +230,9 @@ class _ArticlePackagingDialogState extends State<_ArticlePackagingDialog> {
     super.initState();
     final item = widget.item;
     _name.text = item?.name ?? '';
-    _cost.text = item == null ? '' :
-        (item.costInCents / 100).toStringAsFixed(2);
+    _cost.text = item == null
+        ? ''
+        : (item.costInCents / 100).toStringAsFixed(2);
     _stock = item?.tracksStock ?? true;
     _active = item?.isActive ?? true;
   }
@@ -233,13 +251,16 @@ class _ArticlePackagingDialogState extends State<_ArticlePackagingDialog> {
       setState(() => _error = 'Ingresá nombre y un costo válido.');
       return;
     }
-    Navigator.pop(context, PackagingItem(
-      id: widget.item?.id ?? const Uuid().v4(),
-      name: name,
-      costInCents: cost,
-      tracksStock: _stock,
-      isActive: _active,
-    ));
+    Navigator.pop(
+      context,
+      PackagingItem(
+        id: widget.item?.id ?? const Uuid().v4(),
+        name: name,
+        costInCents: cost,
+        tracksStock: _stock,
+        isActive: _active,
+      ),
+    );
   }
 
   @override

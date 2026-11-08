@@ -62,9 +62,7 @@ Route<void> onGenerateAppRoute(RouteSettings settings) {
 /// APIs must enforce authorization and tenant boundaries independently.
 Widget _experienceGuardedPage(String? routeName) {
   if (AppRouteExperience.forRoute(routeName) == null) {
-    return const Scaffold(
-      body: Center(child: Text('Página no encontrada')),
-    );
+    return const Scaffold(body: Center(child: Text('Página no encontrada')));
   }
   if (AppRunMode.isTimeClock) {
     return const Scaffold(

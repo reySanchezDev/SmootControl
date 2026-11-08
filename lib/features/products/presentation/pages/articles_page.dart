@@ -39,13 +39,14 @@ class _Article {
   final Product? product;
   final PackagingItem? packaging;
 
-  String get id => product == null
-      ? 'packaging:${packaging!.id}'
-      : 'product:${product!.id}';
+  String get id =>
+      product == null ? 'packaging:${packaging!.id}' : 'product:${product!.id}';
   String get name => product?.name ?? packaging!.name;
   String get type => packaging != null
       ? 'Empaque'
-      : product!.isRawMaterial ? 'Materia prima' : 'Producto de venta';
+      : product!.isRawMaterial
+      ? 'Materia prima'
+      : 'Producto de venta';
   bool get active => product?.isActive ?? packaging!.isActive;
   bool get stock => product?.tracksInventory ?? packaging!.tracksStock;
   int get cost => product?.costInCents ?? packaging!.costInCents;
@@ -81,14 +82,21 @@ class _ArticlesPageState extends State<ArticlesPage> {
 
   Future<AppResult<_ArticlesSnapshot>> _load() async {
     final session = serviceLocator<CurrentOperatorService>().session;
-    if (session == null) return const AppSuccess(
-      _ArticlesSnapshot(
-        items: [], categories: [], canProducts: false, canPackaging: false,
-      ),
-    );
+    if (session == null)
+      return const AppSuccess(
+        _ArticlesSnapshot(
+          items: [],
+          categories: [],
+          canProducts: false,
+          canPackaging: false,
+        ),
+      );
     final isAdmin = session.roleId == DefaultAccessRoles.adminId;
     final rights = isAdmin
-        ? const AppSuccess(<String>['productos.gestionar','empaques.gestionar'])
+        ? const AppSuccess(<String>[
+            'productos.gestionar',
+            'empaques.gestionar',
+          ])
         : await _repo.getPermissionCodesForRole(session.roleId);
     if (rights case AppFailureResult(:final error)) {
       return AppFailureResult(error);
@@ -130,13 +138,15 @@ class _ArticlesPageState extends State<ArticlesPage> {
           packagingReady = false;
       }
     }
-    return AppSuccess(_ArticlesSnapshot(
-      items: items,
-      categories: categories,
-      canProducts: productsReady,
-      canPackaging: packagingReady,
-      warning: warnings.isEmpty ? null : warnings.join(' · '),
-    ));
+    return AppSuccess(
+      _ArticlesSnapshot(
+        items: items,
+        categories: categories,
+        canProducts: productsReady,
+        canPackaging: packagingReady,
+        warning: warnings.isEmpty ? null : warnings.join(' · '),
+      ),
+    );
   }
 
   void _reload() => setState(() => _future = _load());
@@ -144,7 +154,9 @@ class _ArticlesPageState extends State<ArticlesPage> {
   Future<void> _message(String title, String message) async {
     if (!mounted) return;
     await showAppMessageDialog(
-      context: context, title: title, message: message,
+      context: context,
+      title: title,
+      message: message,
     );
   }
 
@@ -177,8 +189,10 @@ class _ArticlesPageState extends State<ArticlesPage> {
     final saved = await showDialog<Product>(
       context: context,
       builder: (_) => CreateProductDialog(
-        categories: categories, modifierGroups: groupList,
-        units: unitList, product: item,
+        categories: categories,
+        modifierGroups: groupList,
+        units: unitList,
+        product: item,
       ),
     );
     if (saved == null || !mounted) return;
@@ -196,9 +210,10 @@ class _ArticlesPageState extends State<ArticlesPage> {
 
   Future<void> _deactivate(_Article article) async {
     final confirmed = await showAppConfirmationDialog(
-      context: context,
+      context,
       title: 'Inactivar artículo',
-      message: '¿Inactivar ${article.name}? Se conservarán su historial y sus movimientos.',
+      message:
+          '¿Inactivar ${article.name}? Se conservarán su historial y sus movimientos.',
       confirmLabel: 'Inactivar',
       cancelLabel: 'Cancelar',
       destructive: true,
@@ -206,27 +221,42 @@ class _ArticlesPageState extends State<ArticlesPage> {
     if (!confirmed || !mounted) return;
     final product = article.product;
     if (product != null) {
-      await _saved(await _repo.saveProduct(Product(
-        id: product.id, categoryId: product.categoryId,
-        name: product.name, priceInCents: product.priceInCents,
-        costInCents: product.costInCents, isActive: false,
-        isAvailableInPos: false, isRawMaterial: product.isRawMaterial,
-        usesRecipe: product.usesRecipe,
-        tracksInventory: product.tracksInventory,
-        purchaseUnitId: product.purchaseUnitId,
-        inventoryUnitId: product.inventoryUnitId,
-        recipeDefaultUnitId: product.recipeDefaultUnitId,
-        inventoryDisplayUnitId: product.inventoryDisplayUnitId,
-        purchaseToInventoryFactor: product.purchaseToInventoryFactor,
-        optionGroups: product.optionGroups,
-        modifierGroupIds: product.modifierGroupIds,
-      )));
+      await _saved(
+        await _repo.saveProduct(
+          Product(
+            id: product.id,
+            categoryId: product.categoryId,
+            name: product.name,
+            priceInCents: product.priceInCents,
+            costInCents: product.costInCents,
+            isActive: false,
+            isAvailableInPos: false,
+            isRawMaterial: product.isRawMaterial,
+            usesRecipe: product.usesRecipe,
+            tracksInventory: product.tracksInventory,
+            purchaseUnitId: product.purchaseUnitId,
+            inventoryUnitId: product.inventoryUnitId,
+            recipeDefaultUnitId: product.recipeDefaultUnitId,
+            inventoryDisplayUnitId: product.inventoryDisplayUnitId,
+            purchaseToInventoryFactor: product.purchaseToInventoryFactor,
+            optionGroups: product.optionGroups,
+            modifierGroupIds: product.modifierGroupIds,
+          ),
+        ),
+      );
     } else {
       final pack = article.packaging!;
-      await _saved(await _repo.savePackagingItem(PackagingItem(
-        id: pack.id, name: pack.name, costInCents: pack.costInCents,
-        tracksStock: pack.tracksStock, isActive: false,
-      )));
+      await _saved(
+        await _repo.savePackagingItem(
+          PackagingItem(
+            id: pack.id,
+            name: pack.name,
+            costInCents: pack.costInCents,
+            tracksStock: pack.tracksStock,
+            isActive: false,
+          ),
+        ),
+      );
     }
   }
 

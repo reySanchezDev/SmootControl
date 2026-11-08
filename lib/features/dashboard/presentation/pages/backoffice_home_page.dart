@@ -236,9 +236,8 @@ class _BackofficeHomePageState extends State<BackofficeHomePage> {
           );
         }
         return snapshot.data!.when(
-          failure: (failure) => Scaffold(
-            body: Center(child: Text(failure.message)),
-          ),
+          failure: (failure) =>
+              Scaffold(body: Center(child: Text(failure.message))),
           success: (permissions) {
             final isAdmin = widget.session.roleId == DefaultAccessRoles.adminId;
             final destinations = _destinations

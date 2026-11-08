@@ -50,3 +50,13 @@
 - La proyección de Artículos es virtual (dos tablas). Una **unificación física** requeriría migración transaccional y compatibilidad POS, no autorizada en esta fase.
 - El caso del default de modalidad A→B en SQL remoto no se certificó con las pruebas de empaques previas; verificarlo aparte antes de atribuirle estado aprobado.
 - Concurrencia multi-terminal simultánea y QA visual autenticado siguen sujetos a evidencia, no suposiciones.
+
+## Cierre de validación local
+
+- Se trabajó en el worktree independiente `SmooControl-articles-packaging-final-ux`; los 17 stashes y el worktree original se conservaron sin aplicar ni eliminar.
+- Se aplicó `dart format` a los Dart modificados del lote. La corrección funcional mínima fue pasar el `BuildContext` posicional requerido por `showAppConfirmationDialog` en la acción de inactivación de artículos. También se actualizaron expectativas obsoletas del test de ruta heredada para el nombre aprobado `Reglas de consumo`.
+- Pruebas focalizadas secuenciales: navegación/design system 20, productos 19, empaques 12, ventas 22, inventario 6 y sincronización 47. Resultado: 126/126 aprobadas.
+- `flutter analyze --no-pub` quedó inconcluso: permaneció en `Analyzing SmooControl-articles-packaging-final-ux...` sin salida ni código de finalización antes de detenerlo de forma no destructiva. No se declara análisis global aprobado.
+- El build oficial `tool/build_web_release.ps1` terminó correctamente. Se verificaron `index.html`, `flutter_bootstrap.js`, `main.dart.js`, `drift_worker.js` y `sqlite3.wasm` en `build/web`.
+- Supabase Docker local respondió con 87/087 migraciones. Con Auth sintético del laboratorio se verificó CRUD REST local de `packaging_items`: POST 201, PATCH 200, GET 200 y DELETE 200; la consulta posterior no dejó filas temporales. No se usó producción.
+- El preview 8092 debe actualizarse únicamente con esta rama y configuración `SMOO_APP_MODE=backoffice`; la validación visual autenticada queda pendiente si no hay navegador controlable. Las pruebas automatizadas de ventas cubren consumo, stock insuficiente, anulación e idempotencia sobre dobles sintéticos, pero no certifican una operación E2E remota multi-terminal.

@@ -10,10 +10,7 @@ void main() {
       AppRoutes.packagingItems,
       AppRoutes.packagingRules,
     ]) {
-      expect(
-        AppRouteExperience.forRoute(route),
-        SmooExperience.backoffice,
-      );
+      expect(AppRouteExperience.forRoute(route), SmooExperience.backoffice);
     }
     expect(
       AppRouteExperience.forRoute(AppRoutes.packaging),
@@ -26,32 +23,27 @@ void main() {
       RouteAccess.anyPermissionsFor(AppRoutes.products),
       containsAll(['productos.gestionar', 'empaques.gestionar']),
     );
-    expect(
-      RouteAccess.anyPermissionsFor(AppRoutes.packagingItems),
-      ['empaques.gestionar'],
-    );
-    expect(
-      RouteAccess.anyPermissionsFor(AppRoutes.packagingRules),
-      ['empaques.gestionar'],
-    );
+    expect(RouteAccess.anyPermissionsFor(AppRoutes.packagingItems), [
+      'empaques.gestionar',
+    ]);
+    expect(RouteAccess.anyPermissionsFor(AppRoutes.packagingRules), [
+      'empaques.gestionar',
+    ]);
   });
 
   test('service modalities cannot navigate with packaging-only permission', () {
-    expect(
-      RouteAccess.anyPermissionsFor(AppRoutes.salesTypes),
-      ['tipos_venta.gestionar'],
-    );
+    expect(RouteAccess.anyPermissionsFor(AppRoutes.salesTypes), [
+      'tipos_venta.gestionar',
+    ]);
   });
 
   test('packaging catalogs cannot navigate with types-only permission', () {
-    expect(
-      RouteAccess.anyPermissionsFor(AppRoutes.packagingItems),
-      ['empaques.gestionar'],
-    );
-    expect(
-      RouteAccess.anyPermissionsFor(AppRoutes.packagingRules),
-      ['empaques.gestionar'],
-    );
+    expect(RouteAccess.anyPermissionsFor(AppRoutes.packagingItems), [
+      'empaques.gestionar',
+    ]);
+    expect(RouteAccess.anyPermissionsFor(AppRoutes.packagingRules), [
+      'empaques.gestionar',
+    ]);
   });
 
   test('legacy path remains known during compatibility transition', () {
