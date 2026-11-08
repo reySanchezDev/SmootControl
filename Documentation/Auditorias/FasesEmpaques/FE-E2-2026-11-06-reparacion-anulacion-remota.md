@@ -31,6 +31,33 @@
 9. Mantener `QuantixEngineeringStandar` ENG-008/UX-041, y preservación de datos históricos e IDs. No usar datos de producción ni publicar secretos.
 10. No aplicar 084 a producción; no fusionar PR #9 sin revisión de resultados.
 
+## Resultado de ejecucion local — 2026-11-07
+
+Worktree: `SmooControl-packaging-void-lab`. Destino exclusivo: Supabase Docker local por loopback.
+
+- `supabase migration up --local --workdir . --yes`: completado sin reset.
+- Migraciones registradas: **84/84**.
+- Trigger `sale_voids_snapshot_originals_before_insert`: presente.
+- Puertos verificados: `127.0.0.1:54321` y `127.0.0.1:54324`.
+- Venta sintetica y anulacion mediante `pos_sync_sale`: aprobadas.
+- `sale_voids` conservó importe, metodo, referencia y sesion de caja originales.
+- Stock de empaque reintegrado de 7 a 8 con un movimiento `packaging_sale_void`.
+- Reenvio idempotente: una fila de `sale_voids`, un movimiento de reversa y sin cambio adicional de saldo.
+- Referencia cruzada de restaurante rechazada por el trigger.
+- Reenvio exacto sin alteracion del snapshot historico.
+- Permisos y politica existentes de `sale_voids` sin cambios.
+
+Validacion Flutter:
+
+- `flutter analyze --no-pub`: **OK, No issues found**.
+- Ventas: **22/22**.
+- Inventario: **7/7**.
+- Sincronizacion: **47/47**.
+
+No fue necesario modificar Flutter, repositorios, permisos ni migraciones adicionales. El gate queda aprobado para laboratorio local exclusivamente; no se aplico 084 a produccion.
+
 ## Gate
 
-**G-E2 pendiente**: el SQL y el plan están versionados en GitHub, pero **no se ha ejecutado la nueva migración ni su test en Supabase local**. La primera validación real corresponde a Codex local.
+**G-E2 aprobado para laboratorio local.** La migración 084 y el flujo RPC quedan
+validados únicamente con fixtures sintéticos en Docker local. No se aplicó ni se
+debe aplicar esta migración a producción desde esta ejecución.
