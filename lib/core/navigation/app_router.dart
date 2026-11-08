@@ -25,7 +25,6 @@ import 'package:smoo_control/features/packaging/presentation/pages/packaging_leg
 import 'package:smoo_control/features/payment_methods/presentation/pages/payment_methods_page.dart';
 import 'package:smoo_control/features/pos/presentation/pages/pos_page.dart';
 import 'package:smoo_control/features/products/presentation/pages/measurement_units_page.dart';
-import 'package:smoo_control/features/products/presentation/pages/products_page.dart';
 import 'package:smoo_control/features/products/presentation/pages/articles_page.dart';
 import 'package:smoo_control/features/recipes/presentation/pages/recipes_page.dart';
 import 'package:smoo_control/features/reports/presentation/pages/inventory_value_report_page.dart';
