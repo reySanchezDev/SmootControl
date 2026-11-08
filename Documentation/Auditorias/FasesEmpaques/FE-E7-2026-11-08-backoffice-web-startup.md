@@ -23,6 +23,17 @@ Se introduce modo explícito `SMOO_APP_MODE=backoffice`, sin cambiar el modo pre
 
 ## Validación Codex
 
+### Corrección de credenciales y texto Backoffice
+
+- Supabase/Auth fueron inspeccionados únicamente en Docker local. La cuenta sintética admin existe, está confirmada, activa, no bloqueada, no es usuario POS y su perfil está asociado al restaurante sintético correcto.
+- La causa operativa del rechazo era una contraseña sintética no válida/desconocida para la cuenta local. Se restableció exclusivamente esa cuenta mediante el endpoint administrativo local de Supabase; no se crearon duplicados ni se tocaron perfiles ajenos.
+- El flujo local `POST /auth/v1/token?grant_type=password` respondió HTTP 200. También respondieron correctamente `/auth/v1/user` y la consulta RLS del perfil. No se registraron cuerpos, contraseñas ni tokens.
+- Se corrigió `LoginPage` para que, solo en `SMOO_APP_MODE=backoffice`, el mensaje indique correo y contraseña remota. El texto y el flujo POS/PIN permanecen en `standard`.
+- `dart format` se aplicó a `login_page.dart`. Pruebas: AuthBloc 2/2, inicialización de dispositivo 5/5 y navegación 3/3.
+- El preview fue reiniciado únicamente en `127.0.0.1:8092` con `SMOO_APP_MODE=backoffice`; `/` responde HTTP 200 y los assets Web/Drift previamente verificados siguen disponibles.
+- El archivo local de recuperación de la cuenta se encuentra fuera del repositorio, bajo `%LOCALAPPDATA%\SmooControl\kivo-lab-admin-*.txt`, con permisos restringidos al usuario actual. La contraseña no se incluyó en GitHub, logs ni chat.
+- No hay navegador controlable en esta sesión: la autenticación completa mediante la UI, la pantalla observada y la carga de Productos no quedan certificadas visualmente.
+
 ### Ejecución Codex 2026-11-08
 
 - Rama sincronizada: `fix/backoffice-web-auth-startup` en `828623f21730772d884693ccc1555d71acff3a80`; 17 stashes preservados y worktrees ajenos intactos.

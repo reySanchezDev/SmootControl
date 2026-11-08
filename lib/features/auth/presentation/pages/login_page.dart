@@ -63,6 +63,9 @@ class _LoginPageState extends State<LoginPage> {
     final l10n = AppLocalizations.of(context);
     final colorScheme = Theme.of(context).colorScheme;
     final error = _localError ?? widget.failure;
+    final loginMessage = AppRunMode.isBackoffice
+        ? 'Ingresa con tu correo y contraseña remota para administrar SmooControl.'
+        : l10n.loginMessage;
 
     return Scaffold(
       backgroundColor: AppPalette.background,
@@ -102,12 +105,13 @@ class _LoginPageState extends State<LoginPage> {
                       AppText(
                         widget.setupRequired
                             ? l10n.initialAdminMessage
-                            : l10n.loginMessage,
+                            : loginMessage,
                         maxLines: 3,
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 24),
-                      if (!widget.setupRequired && !AppRunMode.isBackoffice) ...[
+                      if (!widget.setupRequired &&
+                          !AppRunMode.isBackoffice) ...[
                         SegmentedButton<bool>(
                           segments: const [
                             ButtonSegment<bool>(
