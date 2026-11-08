@@ -21,7 +21,7 @@
 
 ## Implementación GitHub
 
-- `ArticlesPage` es la única pantalla visible de Productos en Backoffice y proyecta ambas fuentes en filas tipadas con identificadores de selección prefijados (`product:` / `packaging:`). Los UUID subyacentes siguen intactos.
+- `ArticlesPage` es la única pantalla visible de Productos en Backoffice y proyecta ambas fuentes en filas tipadas con identificadores de selección prefijados (`product:` / `packaging:`). Los UUID subyacentes siguen intactos. La lectura de cada catálogo es independiente: un error parcial muestra aviso/reintento y no oculta la fuente que sí respondió; las acciones de la fuente fallida permanecen deshabilitadas.
 - Filtro de tipo con Todos, Productos de venta, Materias primas y Empaques. Búsqueda, ordenamiento, paginación, selección y comandos explícitos `Nuevo producto`, `Nuevo empaque`, `Editar`, `Inactivar`, sin `...` ni columna de acciones.
 - Edición de productos reutiliza `CreateProductDialog`, incluidas unidades y acceso contextual a reglas, y `SupabaseAdminRepository.saveProduct`; empaque edita los campos de `packaging_items` mediante su repositorio existente.
 - El catálogo verifica permisos de Supabase antes de cargar cada fuente: `productos.gestionar` para productos y `empaques.gestionar` para empaques. Una cuenta con permiso parcial ve únicamente filas y acciones de su ámbito. Los controles REST/RLS 085–087 continúan siendo autoridad de escritura.
