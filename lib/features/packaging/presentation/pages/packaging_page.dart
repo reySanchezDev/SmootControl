@@ -25,7 +25,19 @@ part 'packaging_tab_shell_part.dart';
 part 'packaging_tabs_part.dart';
 
 /// Scopes packaging administration without changing its persisted entities.
-enum PackagingPageView { all, salesTypes, items, rules }
+enum PackagingPageView {
+  /// Presents the legacy combined catalog.
+  all,
+
+  /// Presents service modalities.
+  salesTypes,
+
+  /// Presents packaging items.
+  items,
+
+  /// Presents product packaging rules.
+  rules,
+}
 
 /// Manages sales types, packaging items and product packaging rules.
 class PackagingPage extends StatefulWidget {
