@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:smoo_control/core/config/app_run_mode.dart';
 import 'package:smoo_control/core/design_system/app_button.dart';
 import 'package:smoo_control/core/design_system/app_input.dart';
 import 'package:smoo_control/core/design_system/app_text.dart';
@@ -38,7 +39,7 @@ class _LoginPageState extends State<LoginPage> {
   final _emailController = TextEditingController();
   final _pinController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _remoteAdminMode = false;
+  bool _remoteAdminMode = AppRunMode.isBackoffice;
   bool _rememberPosEmail = false;
   String? _localError;
 
@@ -106,7 +107,7 @@ class _LoginPageState extends State<LoginPage> {
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 24),
-                      if (!widget.setupRequired) ...[
+                      if (!widget.setupRequired && !AppRunMode.isBackoffice) ...[
                         SegmentedButton<bool>(
                           segments: const [
                             ButtonSegment<bool>(
