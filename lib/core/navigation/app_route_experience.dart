@@ -39,7 +39,7 @@ abstract final class AppRouteExperience {
     AppRoutes.measurementUnits,
     AppRoutes.inventory,
     AppRoutes.inventoryMovements,
-    AppRoutes.packaging,
+    AppRoutes.packaging,\n    AppRoutes.salesTypes,\n    AppRoutes.packagingItems,\n    AppRoutes.packagingRules,
     AppRoutes.modifiers,
     AppRoutes.paymentMethods,
     AppRoutes.tables,
