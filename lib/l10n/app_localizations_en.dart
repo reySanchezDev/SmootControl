@@ -1580,13 +1580,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get recipeSavedMessage => 'Recipe saved successfully.';
-
   @override
   String get unsavedChangesTitle => 'Unsaved changes';
 
   @override
-  String get unsavedChangesMessage =>
-      'You have unsaved changes. Do you want to discard them?';
+  String get unsavedChangesMessage => 'You have unsaved changes. Do you want to discard them?';
 
   @override
   String get discardChangesAction => 'Discard changes';
