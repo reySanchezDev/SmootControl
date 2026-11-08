@@ -10,7 +10,6 @@ import 'package:smoo_control/core/session/current_operator_service.dart';
 import 'package:smoo_control/features/admin_remote/data/repositories/supabase_admin_repository.dart';
 import 'package:smoo_control/features/catalog/domain/entities/product_category.dart';
 import 'package:smoo_control/features/modifiers/domain/entities/modifier_catalog.dart';
-import 'package:smoo_control/features/modifiers/domain/entities/modifier_group.dart';
 import 'package:smoo_control/features/packaging/domain/entities/packaging_item.dart';
 import 'package:smoo_control/features/products/domain/entities/measurement_unit.dart';
 import 'package:smoo_control/features/products/domain/entities/product.dart';
