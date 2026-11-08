@@ -62,7 +62,8 @@ extension _CreateProductDialogLayout on _CreateProductDialogState {
                         controller: _nameController,
                         focusNode: _nameFocus,
                         requiredField: true,
-                        errorText: _showValidation &&
+                        errorText:
+                            _showValidation &&
                                 _nameController.text.trim().isEmpty
                             ? l10n.fieldRequiredError
                             : null,
@@ -147,6 +148,11 @@ extension _CreateProductDialogLayout on _CreateProductDialogState {
                           });
                         },
                       ),
+                      if (widget.product != null)
+                        ProductPackagingRulesAction(
+                          product: widget.product!,
+                          enabled: !_hasChanges,
+                        ),
                       if (_error != null)
                         Padding(
                           padding: const EdgeInsets.only(top: 12),
