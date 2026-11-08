@@ -21,6 +21,21 @@ void main() {
     );
   });
 
+  test('Products is a virtual article catalog for products and packaging', () {
+    expect(
+      RouteAccess.anyPermissionsFor(AppRoutes.products),
+      containsAll(['productos.gestionar', 'empaques.gestionar']),
+    );
+    expect(
+      RouteAccess.anyPermissionsFor(AppRoutes.packagingItems),
+      ['empaques.gestionar'],
+    );
+    expect(
+      RouteAccess.anyPermissionsFor(AppRoutes.packagingRules),
+      ['empaques.gestionar'],
+    );
+  });
+
   test('service modalities cannot navigate with packaging-only permission', () {
     expect(
       RouteAccess.anyPermissionsFor(AppRoutes.salesTypes),
