@@ -4,6 +4,7 @@
 BEGIN;
 CREATE SCHEMA IF NOT EXISTS public;
 CREATE ROLE authenticated NOLOGIN;
+CREATE ROLE anon NOLOGIN;
 CREATE FUNCTION public.current_restaurant_id()
 RETURNS uuid LANGUAGE sql STABLE AS $$
   SELECT nullif(current_setting('app.test_restaurant',true),'')::uuid;
