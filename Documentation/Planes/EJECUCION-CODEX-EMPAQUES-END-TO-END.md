@@ -506,6 +506,24 @@ de claims/grants antes de cualquier corte. La 088 sigue congelada y no aplicada.
 
 **Commit publicado de esta ejecuciÃ³n:** `27b94c0`.
 
+### 10.12 F1.1 cierre de seguridad e integridad (2026-11-10)
+
+La auditoria F1.1 se ejecuto contra un PostgreSQL 16 desechable, con PostgREST 12.2.3 y JWT HS256 firmados. No se ejecuto el DDL/RPC en `supabase_db_smoo_control`; la consulta de solo lectura al laboratorio principal confirmo que no existen `public.items` ni `public.item_ledger_entries`, y que `supabase_migrations.schema_migrations` no contiene version `088`. La migracion 088 esta expresamente NO aplicada y permanece congelada.
+
+**Correcciones reproducibles aplicadas al borrador:** `app_item_has_write_access` ahora exige `auth.uid()`, `profiles`, `roles`, `role_permissions` y `permissions`, con usuario activo, rol activo, tenant exacto, no POS y permiso efectivo. `app_upsert_item` usa permiso `articulos.gestionar`; `apply_item_movement` usa `inventario.gestionar`. Se eliminaron los claims de permisos/tenant y el bypass `service_role`. Los `SECURITY DEFINER` fijan `search_path=public,pg_temp`, `row_security=off`, y se revocaron los helpers directos a roles cliente. El update parcial conserva atributos omitidos; se validan unidades activas, tenant/global scope, `unit_group`, conversion positiva y conversion base 1. Se bloquea cambiar tipo/unidad base despues de movimientos y desactivar con stock distinto de cero. El ledger calcula el digest canonico del contenido real, valida actor/dispositivo/origen, exige una sola reversa con cantidad y costo originales, usa lock de stock, bloquea negativos y verifica que la proyeccion coincide con `SUM(quantity_delta)`. Se agrego guardia append-only para UPDATE/DELETE.
+
+**Resultados numericos de laboratorio:** 1 DDL ejecutado con `ROLLBACK` y 1 materializacion temporal con `COMMIT` solo en contenedor desechable; 7 tablas nuevas, 23 restricciones declarativas, 9 indices, 7 politicas RLS y 3 funciones/RPC revisadas en el contrato. La suite F1.1 obtuvo 7 grupos PASS: alta, update parcial, idempotencia, reversa, no negativo, cambio de unidad bloqueado y append-only; ademas PASS para separacion de permisos y rechazo POS. PostgREST acepto una alta con JWT real (`HTTP 200`, fila `REST-F11` creada en el contenedor). Los JWT de prueba no transportaron permisos: la autorizacion provino de las tablas del laboratorio. La prueba previa de concurrencia F1.0 mantuvo 1 exito y 1 rechazo, con saldo final 1.
+
+**Dependencias no contempladas que siguen abiertas:** `products` y `packaging_items` aun tienen escritores y referencias legacy; faltan el corte de `product_recipes/product_recipe_lines`, `modifier_groups/options`, `sale_items`, compras, ajustes, consumo de personal/nomina, reportes y sincronizacion Drift. Tambien falta resolver el contrato de reglas `item_consumption_rules`/prioridad, snapshots de venta, origen POS/dispositivo en cada flujo, migracion de identidad de categorias y la auditoria completa de dependencias `pg_depend` antes de retirar tablas antiguas. Estas dependencias bloquean una activacion F2, aunque no invalidan la correccion aislada de los RPC F1.1.
+
+**Matriz definitiva F1.1:** crear en una migracion futura: `items`, `item_classifications`, `item_classification_links`, `item_units`, `item_stock`, `item_ledger_entries`, `item_consumption_rules` y sus politicas/RPC. Modificar en corte coordinado: `product_categories`, `sales_types`, `measurement_units`, `profiles/roles/permissions`, recetas, modificadores, ventas, compras, nomina y payload/sync Drift. Eliminar solo despues de `pg_depend` y cero escritores: `product_packaging_rules`, `inventory_stock`, `packaging_stock`, `inventory_movements`, `packaging_movements`, `packaging_items`, `products`. En F1.1 no se creo, altero ni elimino estructura real, ni se modifico dato del laboratorio principal.
+
+**Dart/Flutter:** `dart analyze`, `flutter analyze` y `flutter test` se ejecutaron una vez por comando y quedaron sin diagnostico despues de mas de 30 segundos; se detuvieron. La inspeccion de procesos mostro servidores Dart language-server, tooling-daemon, DevTools y un `flutter_tools` web-server concurrentes. No se repitieron indefinidamente ni se limpiaron caches; queda bloqueada la validacion completa en un entorno Dart limpio. Los cambios locales de UI/navegacion/auth/localizacion/tests permanecen sin stage.
+
+**Decision G1: NO APROBADO.** F1.1 queda cerrado como auditoria de seguridad/integridad en laboratorio desechable, pero G1 no puede declararse aprobado por el bloqueo reproducido de Dart/Flutter y por las dependencias de ventas, recetas, nomina y sync aun no migradas/ensayadas. No se autoriza migracion, activacion operacional ni F2 desde este resultado.
+
+**Cambios publicados:** RPC/test de diseno F1.1 y esta actualizacion documental; migracion 088, produccion, `main`, Tentrix, POS y pantallas no fueron tocados.
+
 ## 11. Referencias y precedencia documental
 
 1. **Este plan rector**: fuente operativa de arquitectura, etapas, gates y estado actual.
@@ -520,3 +538,6 @@ de claims/grants antes de cualquier corte. La 088 sigue congelada y no aplicada.
 ## 12. Próxima acción autorizada
 
 **Siguiente paso: validar el borrador DDL F1 sobre clon desechable con ROLLBACK, completar invariantes de unidades y permisos, y diseñar/ensayar `app_upsert_item` y `apply_item_movement` bajo aislamiento, antes de crear una migración efectiva.** Corregir el borrador con resultados de pruebas y documentarlos aquí. No aplicar la migración 088 espejo, ni tocar base real o pantallas.
+### 12.1 Estado operativo posterior a F1.1
+
+El siguiente paso autorizado queda condicionado a resolver G1: entorno Dart/Flutter limpio con `analyze` y `test` concluyentes, pruebas REST/concurrencia automatizadas y mapa completo de `pg_depend` para ventas, recetas, compras, nomina y sync Drift. No aplicar la migracion 088 espejo, no ejecutar migraciones en este cierre y no tocar base real, produccion o pantallas.
