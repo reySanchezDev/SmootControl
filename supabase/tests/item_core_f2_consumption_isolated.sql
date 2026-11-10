@@ -78,6 +78,27 @@ BEGIN
       v_rows,v_line_qty,v_order_qty;
   END IF;
 
+  -- More specific per-order source overrides global per-order without
+  -- consuming the order package twice, even at a worse priority.
+  INSERT INTO public.item_consumption_rules VALUES
+    ('40000000-0000-0000-0000-000000000005',
+     '00000000-0000-0000-0000-000000000001',
+     '30000000-0000-0000-0000-000000000001',
+     '30000000-0000-0000-0000-000000000003',
+     '20000000-0000-0000-0000-000000000001',
+     'per_order',3,'10000000-0000-0000-0000-000000000001',900,true);
+  SELECT count(*), max(quantity_base)
+    INTO v_rows, v_order_qty
+    FROM public.resolve_item_consumption(
+      '00000000-0000-0000-0000-000000000001',
+      '20000000-0000-0000-0000-000000000001',v_lines)
+    WHERE scope='per_order';
+  IF v_rows<>1 OR v_order_qty<>3 THEN
+    RAISE EXCEPTION 'order_source_precedence_failed';
+  END IF;
+  DELETE FROM public.item_consumption_rules
+   WHERE id='40000000-0000-0000-0000-000000000005';
+
   -- Duplicate best-ranked rules reject ambiguity instead of double counting.
   INSERT INTO public.item_consumption_rules VALUES
     ('40000000-0000-0000-0000-000000000004','00000000-0000-0000-0000-000000000001',
