@@ -142,6 +142,19 @@ jobs:
             -f supabase/tests/item_core_f2_internal_ledger_fixture.sql \
             -f supabase/design/ITEM_CORE_F2_INTERNAL_LEDGER_DRAFT.sql \
             -f supabase/tests/item_core_f2_internal_ledger_assert.sql
+      - name: POS V2 atomic sale + void contract (isolated rollback)
+        shell: bash
+        run: |
+          sed '/^BEGIN;$/d;/^ROLLBACK;$/d' \
+            supabase/design/ITEM_CORE_F2_SALE_SCHEMA_DRAFT.sql \
+            > "$RUNNER_TEMP/f2-sale-ddl.sql"
+          psql -X -v ON_ERROR_STOP=1 \
+            -f supabase/tests/item_core_f2_pos_sale_fixture.sql \
+            -f "$RUNNER_TEMP/f2-sale-ddl.sql" \
+            -f supabase/design/ITEM_CORE_F2_CONSUMPTION_DRAFT.sql \
+            -f supabase/design/ITEM_CORE_F2_INTERNAL_LEDGER_DRAFT.sql \
+            -f supabase/design/ITEM_CORE_F2_POS_SALE_RPC_DRAFT.sql \
+            -f supabase/tests/item_core_f2_pos_sale_assert.sql
 
   flutter-quality:
     needs: changed-code
