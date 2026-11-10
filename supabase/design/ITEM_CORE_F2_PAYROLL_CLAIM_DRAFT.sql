@@ -2,8 +2,8 @@
 -- No migration nor deployment. The live app_post_payroll_employee RPC
 -- must replace its separate GET TOTAL + MARK PAID calls with this SINGLE
 -- atomic claim result during the coordinated F2 payroll cutover.
--- Period boundaries are explicit UTC instants: [start, end_exclusive).
--- The caller must resolve the restaurant's business timezone beforehand.
+-- Period boundaries are explicit instants: [start, end_exclusive).
+-- The caller must resolve the restaurant's business timezone beforehand.\n-- The final payroll posting RPC MUST bind this window to the run's dates;\n-- this prototype MUST NOT be independently exposed before that gate.
 -- Required: F2 staff posted/voided status and employee advisory lock in
 -- ITEM_CORE_F2_STAFF_CONSUMPTION_DRAFT.sql.
 -- Historical payroll/accounting rows must not be mutated by this prototype.
@@ -51,7 +51,7 @@ BEGIN
   ) OR NOT EXISTS(
     SELECT 1 FROM public.payroll_runs r
     WHERE r.id=p_payroll_run_id AND r.restaurant_id=p_restaurant_id
-      AND r.status<>'voided'
+      AND r.status='draft'
   ) THEN
     RAISE EXCEPTION 'payroll_claim_employee_or_run_invalid'
       USING ERRCODE='23503';
