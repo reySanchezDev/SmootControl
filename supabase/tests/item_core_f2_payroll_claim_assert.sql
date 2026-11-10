@@ -49,7 +49,7 @@ BEGIN
     ))
   );
 
-  v_response:=public.app_claim_staff_consumptions_for_payroll_v2(
+  v_response:=item_core_internal.claim_staff_consumptions_for_payroll(
     v_tenant,v_employee,v_run,v_start,v_end
   );
   IF (v_response->>'total_amount')::numeric<>6
@@ -66,7 +66,7 @@ BEGIN
   THEN RAISE EXCEPTION 'payroll_claim_wrong_amount_or_window'; END IF;
 
   -- Calling again must return the same claim rather than subtracting twice.
-  v_response:=public.app_claim_staff_consumptions_for_payroll_v2(
+  v_response:=item_core_internal.claim_staff_consumptions_for_payroll(
     v_tenant,v_employee,v_run,v_start,v_end
   );
   v_details:=v_response->'consumptions';
@@ -78,7 +78,7 @@ BEGIN
 
   -- No second payroll run can silently claim a posted consumption.
   BEGIN
-    PERFORM public.app_claim_staff_consumptions_for_payroll_v2(
+    PERFORM item_core_internal.claim_staff_consumptions_for_payroll(
       v_tenant,v_employee,v_other_run,v_start,v_end
     );
     RAISE EXCEPTION 'second_payroll_run_claim_not_rejected';
@@ -99,7 +99,7 @@ BEGIN
   -- Payroll authorisation must not be inferred from staff rights.
   BEGIN
     PERFORM set_config('app.can_write_payroll','false',true);
-    PERFORM public.app_claim_staff_consumptions_for_payroll_v2(
+    PERFORM item_core_internal.claim_staff_consumptions_for_payroll(
       v_tenant,v_employee,v_run,v_start,v_end
     );
     RAISE EXCEPTION 'payroll_permission_not_enforced';
@@ -109,7 +109,7 @@ BEGIN
   PERFORM set_config('app.can_write_payroll','true',true);
 
   BEGIN
-    PERFORM public.app_claim_staff_consumptions_for_payroll_v2(
+    PERFORM item_core_internal.claim_staff_consumptions_for_payroll(
       v_tenant,v_employee,
       '62000000-0000-0000-0000-000000000003',v_start,v_end
     );
@@ -119,7 +119,7 @@ BEGIN
   END;
 
   BEGIN
-    PERFORM public.app_claim_staff_consumptions_for_payroll_v2(
+    PERFORM item_core_internal.claim_staff_consumptions_for_payroll(
       v_tenant,v_employee,v_run,v_end,v_start
     );
     RAISE EXCEPTION 'invalid_payroll_period_not_rejected';
@@ -130,13 +130,20 @@ BEGIN
   -- Claims must never be initiated or modified after a payroll run closes.
   UPDATE public.payroll_runs SET status='posted' WHERE id=v_run;
   BEGIN
-    PERFORM public.app_claim_staff_consumptions_for_payroll_v2(
+    PERFORM item_core_internal.claim_staff_consumptions_for_payroll(
       v_tenant,v_employee,v_run,v_start,v_end
     );
     RAISE EXCEPTION 'posted_payroll_run_claim_not_rejected';
   EXCEPTION WHEN foreign_key_violation THEN
     IF SQLERRM<>'payroll_claim_employee_or_run_invalid' THEN RAISE; END IF;
   END;
+
+  -- A normal client role must not be able to execute the internal claim.
+  IF has_function_privilege('authenticated',
+       'item_core_internal.claim_staff_consumptions_for_payroll(uuid,uuid,uuid,timestamptz,timestamptz)',
+       'EXECUTE') THEN
+    RAISE EXCEPTION 'authenticated_can_call_private_payroll_claim';
+  END IF;
 
   -- Only append-only ledger events for posted + voided + outside remain.
   IF (SELECT count(*) FROM public.item_ledger_entries)<>5
