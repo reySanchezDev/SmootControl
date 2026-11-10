@@ -504,6 +504,8 @@ formalizar la prueba REST/concurrencia en CI, completar invariantes de unidades,
 resolver consumo de reglas y contratos F2/Drift, y obtener revisiÃ³n de seguridad
 de claims/grants antes de cualquier corte. La 088 sigue congelada y no aplicada.
 
+**Commit publicado de esta ejecuciÃ³n:** `27b94c0`.
+
 ## 11. Referencias y precedencia documental
 
 1. **Este plan rector**: fuente operativa de arquitectura, etapas, gates y estado actual.
