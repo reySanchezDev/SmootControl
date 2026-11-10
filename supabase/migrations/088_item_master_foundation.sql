@@ -32,6 +32,10 @@ CREATE TABLE public.items (
   )),
   source_id uuid,
   category_id uuid REFERENCES public.product_categories(id),
+  base_unit_id uuid REFERENCES public.measurement_units(id),
+  purchase_unit_id uuid REFERENCES public.measurement_units(id),
+  purchase_to_base_factor numeric(18, 8)
+    CHECK (purchase_to_base_factor IS NULL OR purchase_to_base_factor > 0),
   unit_cost numeric(15,4) NOT NULL DEFAULT 0 CHECK (unit_cost >= 0),
   unit_price numeric(15,4) NOT NULL DEFAULT 0 CHECK (unit_price >= 0),
   is_sellable boolean NOT NULL DEFAULT false,
@@ -87,14 +91,18 @@ COMMENT ON COLUMN public.items.source_kind IS
 -- codes, unless an old product already used that exact value.
 INSERT INTO public.items (
   id, restaurant_id, code, name, item_type, item_class,
-  source_kind, source_id, category_id, unit_cost, unit_price,
+  source_kind, source_id, category_id,
+  base_unit_id, purchase_unit_id, purchase_to_base_factor,
+  unit_cost, unit_price,
   is_sellable, tracks_inventory, is_active, created_at, updated_at
 )
 SELECT
   p.id, p.restaurant_id, p.code, p.name,
   CASE WHEN p.tracks_inventory THEN 'inventory' ELSE 'non_inventory' END,
   CASE WHEN p.is_raw_material THEN 'raw_material' ELSE 'sale_product' END,
-  'product', p.id, p.category_id, p.cost, p.price,
+  'product', p.id, p.category_id,
+  p.inventory_unit_id, p.purchase_unit_id, p.purchase_to_inventory_factor,
+  p.cost, p.price,
   NOT p.is_raw_material, p.tracks_inventory, p.is_active,
   p.created_at, p.updated_at
 FROM public.products AS p;
@@ -132,14 +140,18 @@ BEGIN
   IF TG_ARGV[0] = 'product' THEN
     INSERT INTO public.items (
       id, restaurant_id, code, name, item_type, item_class,
-      source_kind, source_id, category_id, unit_cost, unit_price,
+      source_kind, source_id, category_id,
+      base_unit_id, purchase_unit_id, purchase_to_base_factor,
+      unit_cost, unit_price,
       is_sellable, tracks_inventory, is_active, created_at, updated_at
     )
     VALUES (
       NEW.id, NEW.restaurant_id, NEW.code, NEW.name,
       CASE WHEN NEW.tracks_inventory THEN 'inventory' ELSE 'non_inventory' END,
       CASE WHEN NEW.is_raw_material THEN 'raw_material' ELSE 'sale_product' END,
-      'product', NEW.id, NEW.category_id, NEW.cost, NEW.price,
+      'product', NEW.id, NEW.category_id,
+      NEW.inventory_unit_id, NEW.purchase_unit_id, NEW.purchase_to_inventory_factor,
+      NEW.cost, NEW.price,
       NOT NEW.is_raw_material, NEW.tracks_inventory, NEW.is_active,
       NEW.created_at, NEW.updated_at
     )
@@ -149,6 +161,9 @@ BEGIN
       item_type = excluded.item_type,
       item_class = excluded.item_class,
       category_id = excluded.category_id,
+      base_unit_id = excluded.base_unit_id,
+      purchase_unit_id = excluded.purchase_unit_id,
+      purchase_to_base_factor = excluded.purchase_to_base_factor,
       unit_cost = excluded.unit_cost,
       unit_price = excluded.unit_price,
       is_sellable = excluded.is_sellable,
@@ -251,8 +266,51 @@ WITH CHECK (
   AND public.can_create_native_service(restaurant_id)
 );
 
--- Never grant direct update/delete of master at this stage.
-GRANT SELECT, INSERT ON public.items TO authenticated;
+-- Legacy-linked rows cannot be altered through the generic item endpoint.
+-- Native services can be edited by a tenant's product administrator but cannot
+-- change ID, provenance, restaurant or item type in a single UPDATE.
+CREATE POLICY items_update_native_service ON public.items
+FOR UPDATE TO authenticated
+USING (
+  source_kind = 'native'
+  AND item_type = 'service'
+  AND public.can_create_native_service(restaurant_id)
+)
+WITH CHECK (
+  source_kind = 'native'
+  AND item_type = 'service'
+  AND item_class = 'service'
+  AND public.can_create_native_service(restaurant_id)
+);
+
+CREATE FUNCTION public.guard_item_master_identity()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $
+BEGIN
+  IF TG_OP = 'UPDATE' AND (
+    NEW.id IS DISTINCT FROM OLD.id OR
+    NEW.restaurant_id IS DISTINCT FROM OLD.restaurant_id OR
+    NEW.source_kind IS DISTINCT FROM OLD.source_kind OR
+    NEW.source_id IS DISTINCT FROM OLD.source_id
+  ) THEN
+    RAISE EXCEPTION 'Item identity and tenant are immutable'
+      USING ERRCODE = '23514';
+  END IF;
+  RETURN NEW;
+END;
+$;
+
+REVOKE ALL ON FUNCTION public.guard_item_master_identity() FROM PUBLIC;
+CREATE TRIGGER items_identity_guard
+BEFORE UPDATE ON public.items
+FOR EACH ROW EXECUTE FUNCTION public.guard_item_master_identity();
+
+-- Hard deletion is deliberately unsupported: historical accounting requires
+-- inactivation instead. Legacy source DELETE is synchronized by trusted trigger.
+GRANT SELECT, INSERT, UPDATE ON public.items TO authenticated;
 
 -- Cross-tenant category references must be validated even when inserted by
 -- security-definer code; standard FK alone would allow cross-tenant linkage.
