@@ -5,6 +5,7 @@ on:
     branches:
       - feature/item-master-db-foundation
   pull_request:
+    branches: [main]
     paths:
       - 'lib/**'
       - 'test/**'
