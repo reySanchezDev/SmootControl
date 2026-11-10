@@ -58,6 +58,11 @@ jobs:
           base="$PREVIOUS_SHA"
           if [ "$EVENT_NAME" = pull_request ]; then
             base="$BASE_SHA"
+          elif [ "$GITHUB_REF_NAME" != 'feature/item-master-db-foundation' ]; then
+            # On feature branches, test the ENTIRE branch diff, not only the
+            # last push commit (which may modify the workflow alone).
+            git fetch --no-tags origin feature/item-master-db-foundation
+            base="$(git merge-base HEAD origin/feature/item-master-db-foundation)"
           fi
           if [ -z "$base" ] || ! git cat-file -e "$base^{commit}" 2>/dev/null; then
             echo 'flutter=true' >> "$GITHUB_OUTPUT"
