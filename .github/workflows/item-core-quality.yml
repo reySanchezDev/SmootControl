@@ -4,6 +4,12 @@ on:
   push:
     branches:
       - feature/item-master-db-foundation
+    paths:
+      - 'lib/**'
+      - 'test/**'
+      - 'supabase/**'
+      - 'tool/audit_item_core_dependencies.py'
+      - '.github/workflows/item-core-quality.yml'
   pull_request:
     branches: [main]
     paths:
