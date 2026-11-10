@@ -1,5 +1,7 @@
 # FE-E10 — Fase 1: fundamento del maestro único de artículos en PostgreSQL
 
+> **AVISO DE ARQUITECTURA (2026-11-10): DOCUMENTO HISTÓRICO / PR #18 CONGELADO.** La migración 088 descrita aquí propone un maestro espejo sincronizado desde tablas legacy. La decisión posterior, tomada tras revisar la auditoría AL/SQL de LS Central, exige **una única autoridad canónica de artículos** y transición verificable del inventario y los demás consumidores. **No ejecutar la 088 ni utilizar este documento como orden operativa.** El único plan vigente, actualizable y con gates es [PLAN RECTOR VIVO — Core de artículos de Kivo](../../Planes/EJECUCION-CODEX-EMPAQUES-END-TO-END.md). Antes de modificar SQL se debe comprobar si 088 ya fue aplicada al laboratorio y cerrar F0/G0 del plan rector.
+
 **Fecha:** 2026-11-10. **Rama:** `feature/item-master-db-foundation`.  
 **Estado real:** migración 088, preflight y test SQL **versionados**. **Pendiente de ejecutar en el Supabase local del propietario**; no se ha accedido directamente desde GitHub a su Docker ni se ha alterado producción. No está aprobado para despliegue.
 
