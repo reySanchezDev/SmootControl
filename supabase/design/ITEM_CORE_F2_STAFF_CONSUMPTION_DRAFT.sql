@@ -59,6 +59,7 @@ DECLARE
   v_price_base numeric;
   v_total numeric := 0;
   v_count integer := 0;
+  v_business_timezone text;
 BEGIN
   PERFORM public.app_assert_admin_permission(
     p_restaurant_id,'personal.consumos_materia.registrar'
@@ -117,6 +118,34 @@ BEGIN
   ) THEN
     RAISE EXCEPTION 'staff_consumption_id_collision'
       USING ERRCODE='23505';
+  END IF;
+
+  -- A late/backdated consumption must not change an employee's already
+  -- established payroll period. The business date is resolved from a
+  -- server-owned IANA timezone, NEVER from a caller/session timezone.
+  SELECT b.text_value INTO v_business_timezone
+  FROM public.business_rules b
+  WHERE b.restaurant_id=p_restaurant_id
+    AND b.key='business_timezone';
+  IF v_business_timezone IS NULL OR NOT EXISTS (
+    SELECT 1 FROM pg_catalog.pg_timezone_names tz
+    WHERE tz.name=v_business_timezone
+  ) THEN
+    RAISE EXCEPTION 'staff_business_timezone_unconfigured'
+      USING ERRCODE='23514';
+  END IF;
+  IF EXISTS (
+    SELECT 1
+    FROM public.payroll_run_lines pl
+    JOIN public.payroll_runs pr ON pr.id=pl.payroll_run_id
+    WHERE pr.restaurant_id=p_restaurant_id
+      AND pl.employee_id=p_employee_id
+      AND pr.status IN ('draft','posted')
+      AND (p_consumed_at AT TIME ZONE v_business_timezone)::date
+          BETWEEN pr.period_start AND pr.period_end
+  ) THEN
+    RAISE EXCEPTION 'staff_consumption_payroll_period_closed'
+      USING ERRCODE='23514';
   END IF;
 
   IF EXISTS(
