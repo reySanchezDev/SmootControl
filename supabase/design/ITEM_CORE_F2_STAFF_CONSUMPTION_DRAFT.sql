@@ -48,6 +48,8 @@ DECLARE
   v_line jsonb;
   v_item public.items;
   v_unit public.item_units;
+  v_unit_name text;
+  v_unit_code text;
   v_classification_id uuid;
   v_line_id uuid;
   v_item_id uuid;
@@ -179,6 +181,14 @@ BEGIN
       RAISE EXCEPTION 'staff_consumption_unit_invalid'
         USING ERRCODE='23514';
     END IF;
+    SELECT name,code INTO v_unit_name,v_unit_code
+    FROM public.measurement_units
+    WHERE id=v_unit_id AND is_active
+      AND (restaurant_id IS NULL OR restaurant_id=p_restaurant_id);
+    IF v_unit_name IS NULL OR v_unit_code IS NULL THEN
+      RAISE EXCEPTION 'staff_consumption_measurement_unit_invalid'
+        USING ERRCODE='23514';
+    END IF;
     v_qty_base:=v_qty*v_unit.quantity_in_base;
     IF round(v_qty_base,6)<>v_qty_base THEN
       RAISE EXCEPTION 'staff_consumption_precision_loss'
@@ -191,7 +201,7 @@ BEGIN
       unit_id,unit_name,unit_code,unit_price,subtotal
     ) VALUES(
       v_line_id,p_consumption_id,v_item_id,v_item.name,v_qty,v_qty_base,
-      v_unit_id,v_unit.unit_name,v_unit.unit_code,
+      v_unit_id,v_unit_name,v_unit_code,
       v_price_base*v_unit.quantity_in_base,
       round(v_qty_base*v_price_base,4)
     );
