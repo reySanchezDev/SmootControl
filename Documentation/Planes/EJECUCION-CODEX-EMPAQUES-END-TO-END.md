@@ -2,7 +2,7 @@
 
 **Identificador:** KIVO-ITEM-CORE  
 **Última actualización:** 2026-11-10  
-**Estado:** F0/G0 CERRADO PARA DISEÑO DE F1; MIGRACIÓN 088 CONGELADA; EJECUCIÓN SQL Y PANTALLAS NO AUTORIZADAS  
+**Estado:** F0/G0 CERRADO; F1 DISEÑO RELACIONAL Y CONTRATOS ESPECIFICADOS; MIGRACIÓN 088 CONGELADA; SQL Y PANTALLAS NO AUTORIZADOS  
 **Repositorio:** `reySanchezDev/SmootControl`  
 **Documento único de planificación:** este archivo. Se actualiza en cada avance, sin crear un plan por PR/fase.
 
@@ -113,7 +113,7 @@ Este diagrama es la dirección de arquitectura. **Cada tabla se introducirá sol
 | 2026-11-08 | Catálogo visual de Artículos | PR #17, `d9a4db62000d6cb88a9cc119ef337abfa53971f6` | Codex informó 126/126 tests focalizados, build Web y preview 8092 | **Solo UX/proyección**, no core |
 | 2026-11-10 | Propuesta maestro espejo | PR #18 / migración 088 | Tabla nueva + triggers sobre fuentes legadas, sin auditoría real del lab aquí | **CONGELADA / NO APROBADA** |
 | 2026-11-10 | Auditoría externa LS Central | Drive carpeta POS, 4 ficheros | `Item` AL tabla 27; SQL BOM, vinculados, modificadores; límites expresos | **Decisión core único ratificada** |
-| 2026-11-10 | Plan rector actualizado | este documento | Objetivo autoritativo, gates F0–F4, no maquillaje UI | **F0 PENDIENTE** |\n| 2026-11-10 | Ajuste de alcance y auditoría de impacto | este documento / ADR-002 | Historia operativa del laboratorio no se conserva; clasificación de tablas, FKs, RPC, Drift, POS y estrategia de corte; script read-only ampliado | **F0 ESTÁTICA AVANZADA** |\n| 2026-11-10 | Auditoría real F0 y revisión del gate | `57d96aa995edfd704c62c31dccb6fb82f83c3690` | 55 relaciones, 143 FK, 70 funciones, 165 dependencias legacy; 8 preflights sin bloqueantes; 088 ausente | **G0 APROBADO SOLO PARA DISEÑO DE F1; migración NO autorizada** |
+| 2026-11-10 | Plan rector actualizado | este documento | Objetivo autoritativo, gates F0–F4, no maquillaje UI | **F0 PENDIENTE** |\n| 2026-11-10 | Ajuste de alcance y auditoría de impacto | este documento / ADR-002 | Historia operativa del laboratorio no se conserva; clasificación de tablas, FKs, RPC, Drift, POS y estrategia de corte; script read-only ampliado | **F0 ESTÁTICA AVANZADA** |\n| 2026-11-10 | Auditoría real F0 y revisión del gate | `57d96aa995edfd704c62c31dccb6fb82f83c3690` | 55 relaciones, 143 FK, 70 funciones, 165 dependencias legacy; 8 preflights sin bloqueantes; 088 ausente | **G0 APROBADO SOLO PARA DISEÑO DE F1; migración NO autorizada** |\n| 2026-11-10 | Diseño técnico F1 | Sección 10 del plan rector | Modelo de tablas/constraints, autoridad RPC, permisos, migración coordinada F1/F2, tests y puntos de corte | **Diseño especificado; revisión y SQL aún pendientes** |
 
 ### Plantilla obligatoria de actualización
 
@@ -323,7 +323,113 @@ Ninguna tabla se eliminó en F0.
 
 **Gate G0: APROBADO PARA DISEÑO DE F1, NO PARA MIGRACIÓN.** F0 se cerró con auditoría ejecutada contra PostgreSQL local, 8 verificaciones sin bloqueantes de integridad y censo real de dependencias. La ausencia de `items`, la migración 088 no aplicada, 12 FKs legacy y 165 dependencias **son el alcance de sustitución de F1/F2**, no fallas del censo G0. Los grants amplios y las RPC requieren plan de mínimo privilegio y pruebas de seguridad durante F1/F2. **Autorizado:** diseñar DDL definitivo, orden de dependencias, contratos, pruebas y reversión. **No autorizado:** aplicar la 088 congelada, ejecutar migraciones, eliminar tablas, alterar POS/pantallas ni tocar producción antes de validar y aprobar el diseño de F1.
 
-## 10. Referencias y precedencia documental
+## 10. Diseño técnico F1 — contrato de base de datos para implementación
+
+**Fecha de diseño:** 2026-11-10. **Estado:** diseño especificado para revisión técnica; **ningún SQL ejecutado ni migración autorizada**. Este diseño reemplaza la 088 en borrador; **no se reutiliza su esquema de maestro espejo**. Las 87 migraciones históricas siguen como referencia del esquema actualmente desplegado.
+
+### 10.1 Límites de la fase y decisiones cerradas
+
+- **F1 contiene**: una autoridad de artículos `items`; identidades/códigos, tipos y capacidades, categorías/unidades; permisos/RLS; reglas de integridad y contrato de escritura; backfill limitado a *maestros vigentes* de laboratorio; estructura del inventario canónico, pero **sin habilitar dos motores que escriban saldos**.
+- **F2 contiene**: migración funcional de los consumidores: reglas de empaque, recetas, modificaciones, compras/ajustes, ventas/void, consumo de personal/nómina, reportes, RPC de catálogo/POS, motores de inventario, Drift y sync. Si F1 requiere crear una tabla con FK `items` antes de convertir esos consumidores, quedará **sin autoridad de transacciones** hasta F2. **No eliminar legacy antes de F2 validada.**
+- **Autoridad única sin contradicción**: al habilitar el corte, solo el servicio/RPC de `items` podrá crear/modificar datos maestros; `products` y `packaging_items` permanecen exclusivamente como estructuras antiguas de compatibilidad *sin nuevos writes operativos*. Si todavía existe un cliente que escribe esas tablas, el corte **NO puede habilitarse**. No crear triggers de réplica bidireccional ni un espejo permanente.
+- **Laboratorio**: los históricos de prueba son descartables, pero los productos, empaques, categorías, unidades y reglas útiles deben mapearse para iniciar. Ningún reset debe alcanzarse por una ejecución automática de F1. Producción y `main` excluidos.
+
+### 10.2 Especificación de `items`
+
+| Columna / restricción | Diseño | Justificación |
+|---|---|---|
+| `id uuid primary key default gen_random_uuid()` | Inmutable | Identidad técnica única |
+| `restaurant_id uuid not null` | FK `restaurants`, `UNIQUE(restaurant_id,id)` | Aislamiento y FKs tenant-compuestas |
+| `code text not null` | `UNIQUE(restaurant_id, lower(btrim(code)))`; no vacío; control de longitud en contrato | Código comercial, no UUID obligatorio |
+| `name text not null` | no vacío; `search_name` derivado o índice para búsqueda, no segunda fuente | Nombre canónico |
+| `item_type text not null` | `inventory | non_inventory | service` | Política física de stock/costo |
+| `category_id uuid null` | FK compuesta tenant; jerarquía `item_categories` | Clasificación principal, distinta del tipo |
+| `is_active, can_sell, can_purchase, visible_in_pos, uses_recipe` | booleanos explícitos | Capacidades combinables; visibilidad POS no implica vendible |
+| `cost numeric(18,6), price numeric(18,4)` | no negativos, moneda/snapshot definidos en transacciones; evitar la confusión actual entre costo de compra y costo base | Semántica de valor estable |
+| `base_unit_id uuid not null` | unidad válida para tipo/tenant; inmóvil tras movimientos incompatibles | Cantidades normalizadas |
+| `created_at, updated_at` | timestamps auditables | Mantenimiento |
+
+**Reglas de negocio ejecutables:** `item_type=service` o `non_inventory` nunca permite stock físico ni asientos en el ledger; un producto elaborado puede venderse con `uses_recipe` y consumir ingredientes sin tener saldo de producto terminado; empaque es **capacidad/clasificación**, no un tipo técnico excluyente. `can_sell=false` impide agregar líneas de venta nuevas, pero no invalida una venta ya contabilizada. Desactivar en vez de borrar maestros usados.
+
+**Clasificación comercial**: las necesidades actuales `sale_product / raw_material / packaging` no son mutuamente excluyentes. Se elige **N:M explícita**: `item_classifications(id,restaurant_id,code,name,is_active)` e `item_classification_links(restaurant_id,item_id,classification_id)`, con FK compuesta e índices y valores iniciales de tipos de uso reales. `item_categories` sigue como jerarquía para navegación; una categoría no sustituye la clasificación funcional. Validar permisos de edición separados de la clasificación para no hacer de una etiqueta una autorización.
+
+### 10.3 Unidades, costo y conversiones
+
+Reusar `measurement_units` como catálogo de unidades global/tenant. Crear `item_units(restaurant_id,item_id,unit_id,quantity_in_base numeric(18,8), is_base, is_purchase, is_sale, is_active)`. PK/UNIQUE por restaurante+artículo+unidad; exactamente una unidad base por artículo (aplicar mediante RPC transaccional con validación diferida o atributo base en items y constraint); los roles venta/compra deben tener definición inequívoca; prevenir conversiones entre grupos `count/mass/volume`.
+
+`quantity_in_base` indica cuántas unidades base son **una** unidad del renglón. Ej.: caja 12 unidades => factor 12. El saldo y la receta trabajan en unidad base. `cost` del maestro es costo **por unidad base**, nunca precio de una caja; precio de venta también tiene una unidad explícita. Una compra en caja calcula cantidad/costo base, y la venta guarda snapshot de unidad, factor y precio. No reutilizar sin conversión el valor actual `products.cost`: la migración 063 lo documenta como costo por unidad de compra para materia prima.
+
+### 10.4 Inventario canónico (estructura F1, operaciones F2)
+
+| Objeto | Campos y restricciones mínimos |
+|---|---|
+| `item_stock` | `restaurant_id`, `item_id`, `location_id` (solo si se incorpora ubicación operativa; de lo contrario identificador de ubicación única definido explícitamente), `quantity_on_hand numeric(18,6)`, `version`, `updated_at`; UNIQUE tenant+item+ubicación |
+| `item_ledger_entries` | `id` identificador de movimiento, `restaurant_id`, `item_id`, ubicación, `movement_type`, `quantity_delta numeric(18,6)`, `unit_cost_base numeric(18,6)`, `source_type`, `source_id`, `operation_key`, `reversal_of_id`, `device_id`, `actor_id`, `occurred_at`, `recorded_at`; constraints FK tenant y UNIQUE por `operation_key` de la operación de negocio |
+| RPC `apply_item_movement` | Autoridad única sobre ledger y saldo, bajo transacción con lock de stock, chequeo de tipo, permisos/contexto de origen, idempotencia por operación, control de negativo y costo; el cliente NO puede INSERT/UPDATE/DELETE directamente en stock/ledger |
+
+**Política de movimiento:** append-only; reversión con nuevo movimiento cuya `reversal_of_id` referencia el original, cantidad opuesta y costo original; máximo una reversión efectiva por movimiento (salvo política explícita de reversión parcial); discrepancia de reintento con misma clave y diferente payload => conflicto, nunca éxito falso. Usar criterio único de saldo `SUM(quantity_delta)`, con `item_stock` como proyección aceleradora. Apertura de inventario = asientos iniciales por artículo/ubicación y **no** reimportar movimientos viejos; no exigir saldos históricos del laboratorio.
+
+**Ubicaciones:** Kivo hoy opera stock por restaurante. **No crear un módulo multi-almacén inventado**: en la primera implementación mantener ubicación lógica única por restaurante; diseñar `location_id` opcional solo con FK real a un catálogo de ubicaciones si existe y se decide activarlo. Nunca usar cadenas libres ambiguas como ubicación en claves.
+
+### 10.5 Consumo, recetas y exposición POS
+
+- `item_consumption_rules` sustituye `product_packaging_rules` después de F2, con `restaurant_id`, `source_item_id` nullable, `consumed_item_id` obligatorio, `sales_type_id` nullable, `scope` = `per_sale_line | per_order`, `quantity`, `unit_id`, `priority`, `is_active`. Una regla per-order se calcula **una vez por pedido**, no por línea; una per-line multiplica cantidad. Definir regla de prioridad ante varias coincidencias antes de activar (no sumar accidentalmente reglas globales y específicas). Se mantiene `sales_types` y el default de modalidad se cambia por RPC atómica.
+- `product_recipes` / `product_recipe_lines` conservan sus modelos útiles de versión, merma y unidades; se cambian FK de `product_id` / `component_product_id` a referencias `items`. Una receta tiene padre y N componentes; rechazar ciclos, componentes inactivos, unidades incompatibles y cambios destructivos después de consumos.
+- `modifier_groups/options` se conservan: una opción puede ser una instrucción textual o una referencia a artículo. Extras/sustituciones/exclusiones deben producir efectos explícitos sobre precio, inventario y mensaje de cocina, no alterar en silencio la receta maestra.
+- La exposición en POS es una capacidad/política distinta: el catálogo completo pertenece al restaurante; el terminal recibe *catálogo completo versionado* y una configuración separada de visibilidad. **No convertir artículo no visible en «faltante/inactivo»** durante un pull parcial.
+- `sale_items` tendrá FK `item_id` y snapshots de nombre, código, unidad, cantidad, precio, costo, modificadores/impuestos aplicables. La historia descartable del laboratorio **no** elimina la necesidad de snapshots en ventas nuevas.
+
+### 10.6 Seguridad y contratos de escritura
+
+- `items`, clasificaciones, unidades, reglas, stock y ledger: RLS `restaurant_id = current_restaurant_id()`, más FK compuestas para evitar relaciones cross-tenant aunque una RPC sea SECURITY DEFINER. Las unidades globales tienen validación particular de scope.
+- Matriz de permisos: `articulos.ver` / `articulos.gestionar`, `inventario.gestionar`, `recetas.gestionar`, `tipos_venta.gestionar` y `reglas_consumo.gestionar` donde sean necesarios. Mapear derechos `productos.gestionar` / `empaques.gestionar` de forma explícita, sin promoverlos automáticamente a administrador general.
+- Escritura del maestro solamente vía RPC `app_upsert_item` con actor/tenant/permiso, código normalizado, restricciones de tipo y validaciones; **denegar DML directo a roles cliente**. RPCs `SECURITY DEFINER` con `SET search_path = public, pg_temp`, grants de `EXECUTE` mínimos, sin permitir ejecución anónima ni elevación `service_role` desde el cliente. Registrar auditoría de cambios.
+- `item_stock` y `item_ledger_entries`: consultas acotadas al restaurante; escritura exclusivamente mediante `apply_item_movement` y contexto POS confiable/dispositivo habilitado. Crear pruebas para admin, solo artículos, solo inventario, POS, sin permisos, tenant externo y reintentos falsificados.
+- **Observación G0:** 1.155 grants reportados, 385 por rol `anon/authenticated/service_role`; una concesión de tabla no prueba lectura efectiva si RLS la niega, pero se requiere auditoría de grants, POLICY y definer antes de pasar G1.
+
+### 10.7 Secuencia SQL definitiva, sin ejecución aún
+
+**Secuencia recomendada para el laboratorio con corte limpio:**
+
+1. Registrar versión y huellas del schema (87 aplicadas, 088 ausente), exportar respaldo **local** de configuraciones, dos productos/tres empaques y datos indispensables; comprobar ausencia de operaciones pendientes de interés.
+2. Preparar una migración **nueva** posterior al conjunto aplicado (número 088 solo tras retirar/sustituir el borrador 088 no aplicado **en rama**, con acta, o 089 con nombre nuevo si el archivo 088 ya fue observado/aplicado fuera del laboratorio). No editar 001–087.
+3. Crear `items`, categorías/clasificaciones, unidades y restricciones seguras; portar maestros útiles conservando UUID cuando no colisionan; resolver código comercial de empaques (no tenían `code`) mediante numerador/serie **legible**, no `PKG-<UUID>` impuesto como código visible.
+4. Crear tablas canónicas de inventario y reglas, **sin** conectar simultáneamente el motor antiguo. Preparar contratos RPC y políticas con denominación única.
+5. Convertir FKs de recetas, modificadores, ventas, ajustes, consumos de personal y reglas para apuntar a `items`. Con historia descartable se pueden vaciar **solo transacciones de laboratorio** en un entorno aislado reproducible; no borrar usuarios, roles, permisos, configuraciones ni datos de otras aplicaciones.
+6. Actualizar todas las funciones finales de catálogo, compras, inventario, receta, POS, reportes y nómina; verificar el cuerpo efectivo de `pos_sync_sale` (múltiples redefiniciones). Retirar puntos de escritura legacy antes de activar el endpoint canónico.
+7. Actualizar en corte coordinado Drift v34 → nueva versión con `LocalItems/LocalItemStock/LocalItemLedgerEntries/LocalItemConsumptionRules`, payloads versionados, pull íntegro y reconexión de terminales de prueba. Ningún POS viejo puede continuar escribiendo el contrato anterior sin adaptador temporal probado.
+8. Una vez sin FK, trigger, view, policy, RPC, task o cliente que dependa de cada tabla vieja, retirar en orden de `pg_depend` `product_packaging_rules`, `inventory_stock`, `packaging_stock`, `inventory_movements`, `packaging_movements`, `packaging_items`, `products`. **Prohibido `DROP ... CASCADE`** como sustituto de inventario de dependencias.
+9. Sembrar fixtures de venta/receta/empaque/servicio y asientos de apertura; probar y cerrar G1/G2; únicamente entonces iniciar interfaz F3.
+
+**Nota de coordinación de fases:** la autoridad completa sobre stock y operaciones no existe hasta F2. Por ello la activación de `app_upsert_item` o el retiro de escrituras legacy debe ocurrir como **corte coordinado de F1+F2**, no con el Backoffice/POS antiguos ejecutándose. Un F1 «estructural» puede validarse en schema de laboratorio sin entrar en operación hasta completar F2.
+
+### 10.8 Especificación de pruebas antes de autorizar DDL
+
+| Suite | Aserciones obligatorias |
+|---|---|
+| Migración de catálogo | 2 productos/3 empaques vigentes mapeados o sustituidos deliberadamente; UUID sin colisión, categorías y códigos normalizados; cero huérfanos |
+| Tipos | inventario con stock, servicio sin ledger, no inventariado sin saldo; rechazar cambio de tipo con transacción incompatible |
+| Seguridad | tenant externo sin lectura/escritura, anon denegado, permisos parciales, RPC SECURITY DEFINER sin bypass |
+| Unidades | caja→unidad, kg→g, redondeo, dimensión incompatible, costo de materia prima por unidad de compra → costo base |
+| Inventario | compra, ajuste, receta, empaque, venta, movimiento simultáneo, stock insuficiente, duplicado idempotente, operación misma clave distinto payload |
+| Reglas | consumo `per_order` vs `per_sale_line`, modalidad `delivery/pickup/to_go/dine_in`, regla inactiva, superposición y prioridad |
+| Ventas/void | venta con receta, extras y empaque; anulación 1 vez revierte movimientos originales y costo snapshot; cambios posteriores en reglas no alteran la reversión |
+| Personal/nómina | descuento de materia prima, registro en ledger, nómina y reversión sin escritura en tabla legacy |
+| Sync/Drift | terminal v34 bloqueada o migrada expresamente; tickets/colas pendientes revisados; pull parcial no inactiva artículos legítimos, reintento offline sin doble descuento |
+| Dependencias | cero FK/RPC/trigger/view/app write contra maestros/ledgers legacy antes de DROP; compilación y suites completas sin excepciones ocultas |
+
+**Go/No-go para ejecutar F1:** DDL generado en una rama de implementación nueva y revisado contra este contrato, backup del laboratorio disponible, plan de reversión seguro, análisis de permisos y orden exacto de corte. **G1 no se aprueba por tener tablas creadas; debe demostrar autoridad única y pruebas.**
+
+### 10.9 Decisiones explícitamente diferidas (no son bloqueos para diseñar core)
+
+- Listas de precios avanzadas, promociones, múltiples almacenes y lotes/caducidad: no crear tablas por anticipación; diseñar extensión posterior con claves canónicas.
+- Política de costo (FIFO/promedio) y stock negativo por flujo: hoy el SQL mezcla costo de compra y costo base. **Antes de habilitar el nuevo motor F2**, seleccionar y probar una política operativa precisa. Inicialmente registrar costo por unidad base y snapshots de transacción; no afirmar FIFO si no se ha implementado.
+- Fiscalidad por país y multi-moneda: preservar capacidades existentes y snapshots; no crear ledger fiscal adicional en F1 sin requisito específico.
+- Servicios físicos o mano de obra: se admiten como artículos comerciales sin stock; asignación de técnicos/recursos se difiere a un dominio específico.
+
+---
+
+## 11. Referencias y precedencia documental
 
 1. **Este plan rector**: fuente operativa de arquitectura, etapas, gates y estado actual.
 2. **AUD-007** (`Documentation/Auditorias/AUD-2026-11-06-007-integracion-reorganizacion-empaques.md`): hallazgos originales y riesgos. La recomendación de catálogo virtual allí era **transitoria**; no prevalece sobre la decisión actual de core persistente.
@@ -334,6 +440,6 @@ Ninguna tabla se eliminó en F0.
 
 **Jerarquía de autoridad:** requisitos acordados del core y este plan > contratos de seguridad/integridad verificados > historial de auditoría > soluciones transitorias de interfaz. Un PR o Codex no modifica la arquitectura por su cuenta. Cualquier contradicción se documenta aquí antes de ejecutar código.
 
-## 11. Próxima acción autorizada
+## 12. Próxima acción autorizada
 
-**Siguiente paso: diseño ejecutable de F1 sin aplicar SQL todavía.** Usar la evidencia F0 cerrada para especificar DDL definitivo de `items`, unidades/clasificaciones, inventario canónico y referencias tenant-compuestas; decidir tratamiento de datos maestros vigentes y corte limpio de históricos del laboratorio; documentar secuencia de eliminación de FKs, RPC, Drift y contratos de sincronización; definir pruebas/rollback y un punto único de autoridad. La 088 actual permanece **congelada** y no debe ejecutarse. Actualizar exclusivamente este plan rector con el diseño y criterios de G1 antes de modificar base de datos o pantallas.
+**Siguiente paso: revisión de diseño F1 antes de autorizar su ejecución.** El contrato técnico se encuentra en la sección 10. Elaborar DDL de implementación únicamente después de revisar las restricciones definitivas (unidades, clasificación N:M, costos por unidad base, políticas RLS y secuencia coordinada F1/F2). La migración 088 espejo continúa **congelada** y no debe ejecutarse. No modificar base real ni pantallas durante la revisión.
