@@ -124,6 +124,26 @@ BEGIN
     IF SQLERRM<>'duplicate_stock_document_item' THEN RAISE; END IF;
   END;
 
+  -- Textual UUID variants must not evade the duplicate-item check.
+  BEGIN
+    PERFORM public.app_post_item_stock_document_v2(
+      v_tenant,'90000000-0000-0000-0000-000000000009',
+      'bad-uuid-alias','purchase',
+      jsonb_build_array(
+        jsonb_build_object(
+          'item_id',v_item::text,'unit_id',v_box,'quantity',1,'unit_cost',12
+        ),
+        jsonb_build_object(
+          'item_id',replace(v_item::text,'-',''),
+          'unit_id',v_box,'quantity',1,'unit_cost',12
+        )
+      ),v_time
+    );
+    RAISE EXCEPTION 'same_uuid_with_alternate_text_not_rejected';
+  EXCEPTION WHEN check_violation THEN
+    IF SQLERRM<>'duplicate_stock_document_item' THEN RAISE; END IF;
+  END;
+
   BEGIN
     PERFORM public.app_post_item_stock_document_v2(
       v_tenant,'90000000-0000-0000-0000-000000000007',
