@@ -1,18 +1,15 @@
 -- Extends the F2 internal-ledger + staff fixtures in one transaction.
 -- PostgreSQL disposable fixture only; not a deployed payroll schema.
-CREATE TABLE public.payroll_runs (
-  id uuid PRIMARY KEY,
-  restaurant_id uuid NOT NULL,
-  status text NOT NULL
-);
-
 INSERT INTO public.payroll_runs VALUES
  ('62000000-0000-0000-0000-000000000001',
-  '00000000-0000-0000-0000-000000000001','draft'),
+  '00000000-0000-0000-0000-000000000001',
+  '2026-11-01','2026-11-15','draft'),
  ('62000000-0000-0000-0000-000000000002',
-  '00000000-0000-0000-0000-000000000001','draft'),
+  '00000000-0000-0000-0000-000000000001',
+  '2026-11-01','2026-11-15','draft'),
  ('62000000-0000-0000-0000-000000000003',
-  '00000000-0000-0000-0000-000000000002','draft');
+  '00000000-0000-0000-0000-000000000002',
+  '2026-11-01','2026-11-15','draft');
 
 -- Override fixture-only admin permission stub; real functions require DB
 -- profile/role_permissions checks as tested independently by F1.1.

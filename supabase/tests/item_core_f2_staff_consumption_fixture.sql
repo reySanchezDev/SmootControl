@@ -36,6 +36,30 @@ CREATE TABLE public.employees(
   restaurant_id uuid NOT NULL,
   is_active boolean NOT NULL
 );
+-- Live payroll stores period_start/end as dates. Business timezone
+-- determines the calendar day associated with a timestamptz consumption.
+CREATE TABLE public.business_rules (
+  restaurant_id uuid NOT NULL,
+  key text NOT NULL,
+  text_value text,
+  PRIMARY KEY(restaurant_id,key)
+);
+INSERT INTO public.business_rules VALUES
+ ('00000000-0000-0000-0000-000000000001',
+  'business_timezone','America/Managua');
+CREATE TABLE public.payroll_runs (
+  id uuid PRIMARY KEY,
+  restaurant_id uuid NOT NULL,
+  period_start date NOT NULL,
+  period_end date NOT NULL,
+  status text NOT NULL
+);
+CREATE TABLE public.payroll_run_lines (
+  id uuid PRIMARY KEY,
+  payroll_run_id uuid NOT NULL REFERENCES public.payroll_runs(id),
+  employee_id uuid NOT NULL
+);
+
 CREATE TABLE public.employee_raw_material_consumptions(
   id uuid PRIMARY KEY,
   restaurant_id uuid NOT NULL,

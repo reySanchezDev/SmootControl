@@ -5,8 +5,8 @@ DECLARE
   v_employee uuid := '70000000-0000-0000-0000-000000000001';
   v_item uuid := '10000000-0000-0000-0000-000000000001';
   v_unit uuid := '80000000-0000-0000-0000-000000000001';
-  v_start timestamptz := '2026-11-01T00:00:00Z';
-  v_end timestamptz := '2026-11-16T00:00:00Z';
+  v_start timestamptz := '2026-11-01T06:00:00Z';
+  v_end timestamptz := '2026-11-16T06:00:00Z';
   v_run uuid := '62000000-0000-0000-0000-000000000001';
   v_other_run uuid := '62000000-0000-0000-0000-000000000002';
   v_posted uuid := '63000000-0000-0000-0000-000000000001';
@@ -42,7 +42,7 @@ BEGIN
 
   PERFORM public.app_post_staff_item_consumption_v2(
     v_tenant,v_outside,'payroll-staff-outside',v_employee,
-    '2026-11-16T00:00:00Z',
+    '2026-11-16T06:00:00Z',
     jsonb_build_array(jsonb_build_object(
       'line_id','64000000-0000-0000-0000-000000000003',
       'item_id',v_item,'unit_id',v_unit,'quantity',5
@@ -126,6 +126,40 @@ BEGIN
   EXCEPTION WHEN invalid_parameter_value THEN
     IF SQLERRM<>'invalid_payroll_claim_window' THEN RAISE; END IF;
   END;
+
+  -- A settled run line blocks backdated entries, even when the UTC
+  -- timestamp has already crossed midnight but Managua is still Nov 15.
+  INSERT INTO public.payroll_run_lines VALUES(
+    '65000000-0000-0000-0000-000000000001',v_run,v_employee
+  );
+  BEGIN
+    PERFORM public.app_post_staff_item_consumption_v2(
+      v_tenant,'63000000-0000-0000-0000-000000000004',
+      'backdated-after-payroll',v_employee,
+      '2026-11-16T05:59:00Z',
+      jsonb_build_array(jsonb_build_object(
+        'line_id','64000000-0000-0000-0000-000000000004',
+        'item_id',v_item,'unit_id',v_unit,'quantity',1
+      ))
+    );
+    RAISE EXCEPTION 'backdated_payroll_period_not_rejected';
+  EXCEPTION WHEN check_violation THEN
+    IF SQLERRM<>'staff_consumption_payroll_period_closed' THEN RAISE; END IF;
+  END;
+
+  -- Exact previously posted command remains safe to replay, even after
+  -- the period is closed: it is a no-op and does not change payroll.
+  v_response:=public.app_post_staff_item_consumption_v2(
+    v_tenant,v_posted,'payroll-staff-post',v_employee,
+    '2026-11-10T12:00:00Z',
+    jsonb_build_array(jsonb_build_object(
+      'line_id','64000000-0000-0000-0000-000000000001',
+      'item_id',v_item,'unit_id',v_unit,'quantity',2
+    ))
+  );
+  IF v_response->>'replayed'<>'true' THEN
+    RAISE EXCEPTION 'closed_period_replay_not_idempotent';
+  END IF;
 
   -- Claims must never be initiated or modified after a payroll run closes.
   UPDATE public.payroll_runs SET status='posted' WHERE id=v_run;

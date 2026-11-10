@@ -683,3 +683,17 @@ Se verifico la rama `feature/item-master-db-foundation` en `0d095ec718c234fe8d4c
 **Pruebas del contrato:** consumos válidos, anulados, fuera del límite superior, repetición, reclamación de otro run, permisos independientes, tenant cruzado, run ya publicado, void de consumo asignado, reconciliación del kardex. Solo afirmar PASS en el SHA cuyo job GitHub Actions tenga conclusión exitosa.
 
 **Gate G2:** sigue ABIERTO. La integración es un borrador SQL aislado y seguro por ausencia de despliegue; no autoriza modificaciones de UI, POS, base principal, `main` ni migración 088.
+
+### 12.9 F2.2 — Bloqueo de consumos retroactivos en períodos de nómina ya liquidados
+
+**Rama de trabajo:** `feature/item-core-f2-payroll-backdate-guard`. El contrato F2 de consumo de personal se amplió para consultar el calendario de `payroll_runs` + `payroll_run_lines` del empleado, bajo el mismo advisory lock que utiliza el claim de planilla. Si la fecha **local del restaurante** cae dentro de un período con línea de nómina `draft` o `posted`, rechaza nuevas altas retroactivas. Un replay exacto de un consumo previamente contabilizado devuelve el resultado original antes del guard, sin duplicar el ledger.
+
+**Zona horaria:** se lee exclusivamente de `business_rules(key='business_timezone', text_value=<IANA>)`, configurada por restaurante y validada contra `pg_timezone_names`. Si falta o es inválida, la RPC **falla cerrada**; se debe aprovisionar este valor en el futuro corte F2. No utilizar la zona horaria del dispositivo, la sesión SQL ni UTC como sustituto silencioso.
+
+**Prueba de borde real:** 2026-11-16 05:59 UTC equivale al 15 de noviembre a las 23:59 en `America/Managua` y **debe rechazarse** si esa quincena ya tiene línea de nómina. 2026-11-16 06:00 UTC es el inicio del 16 de noviembre local y no pertenece al período anterior. Tests de staff y claim ejecutados en PostgreSQL 16 desechable con ROLLBACK.
+
+**Límites:** la protección no pretende modificar ni borrar planillas antiguas; no sustituye la validación del rango temporal del run dentro del RPC de pago definitivo, ni pruebas de nóminas parciales y reversión de comprobantes. Los contratos `item_core_internal.claim_staff_consumptions_for_payroll`, `app_post_staff_item_consumption_v2` y `app_void_staff_item_consumption_v2` deben implantarse de forma coordinada y no autorizarse como endpoints nuevos antes de G2.
+
+**Validación GitHub Actions:** corrida `42918534477`; jobs staff consumption, payroll claim, consumo, compra/ajuste y recetas **PASS**. Flutter se omitió correctamente por no existir cambios Dart. Un commit documental posterior no modifica el comportamiento SQL verificado.
+
+**Gate G2:** ABIERTO. No se aplicó ninguna migración ni se modificaron tablas en el laboratorio/producción.
