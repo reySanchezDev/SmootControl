@@ -1,5 +1,13 @@
 -- Append to item_core_f2_internal_ledger_fixture.sql in one disposable DB.
 -- Existing fixture starts BEGIN and sets auth.uid() and inventory permission.
+CREATE TABLE public.restaurants (id uuid PRIMARY KEY);
+CREATE TABLE auth.users (id uuid PRIMARY KEY);
+INSERT INTO public.restaurants(id) VALUES
+ ('00000000-0000-0000-0000-000000000001'),
+ ('00000000-0000-0000-0000-000000000002');
+INSERT INTO auth.users(id) VALUES
+ ('30000000-0000-0000-0000-000000000001');
+
 ALTER TABLE public.items
   ADD COLUMN base_unit_id uuid,
   ADD COLUMN can_purchase boolean NOT NULL DEFAULT false,
