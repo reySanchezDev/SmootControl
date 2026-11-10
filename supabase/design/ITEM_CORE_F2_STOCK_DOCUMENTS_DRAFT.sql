@@ -9,13 +9,13 @@
 
 CREATE TABLE public.item_inventory_operations (
   id uuid PRIMARY KEY,
-  restaurant_id uuid NOT NULL,
+  restaurant_id uuid NOT NULL REFERENCES public.restaurants(id),
   operation_key text NOT NULL CHECK(length(btrim(operation_key)) > 0),
   operation_type text NOT NULL CHECK(
     operation_type IN ('purchase','adjustment')
   ),
   payload_digest text NOT NULL CHECK(length(payload_digest) > 0),
-  actor_id uuid NOT NULL,
+  actor_id uuid NOT NULL REFERENCES auth.users(id),
   created_at timestamptz NOT NULL DEFAULT now(),
   UNIQUE(restaurant_id, operation_key)
 );
