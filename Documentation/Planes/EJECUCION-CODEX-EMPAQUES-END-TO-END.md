@@ -648,3 +648,18 @@ Se verifico la rama `feature/item-master-db-foundation` en `0d095ec718c234fe8d4c
 **Límites explícitos:** este documento no implica compras listas para producción. No se han integrado proveedor, factura de compra, impuestos, multimoneda, autorización con JWT real en el esquema completo, almacenes ni POS/Drift. La fixture usa un adaptador sintético de permisos; no sustituye la validación F1.1 JWT y RLS. El DDL sigue **fuera de migraciones** y PR en borrador. No activar el contrato antes del corte integral F2 ni retirar tablas legacy.
 
 **Gate:** G2 continúa pendiente. La operación de inventario y el documento deben reconciliar saldos y permisos cuando se prueben sobre el esquema completo; la ruta de escritura antigua seguirá deshabilitada únicamente tras corte coordinado.
+
+### 12.7 F2.2 — Consumo de materias primas del personal, sin borrar el libro
+
+**PR técnico:** #20, `feature/item-core-f2-staff-consumption` hacia `feature/item-master-db-foundation`. Borrador `supabase/design/ITEM_CORE_F2_STAFF_CONSUMPTION_DRAFT.sql` y arnés `supabase/tests/item_core_f2_staff_consumption_{fixture,assert}.sql`, todos fuera de migraciones.
+
+**Cambio operativo definido:** la RPC antigua `app_save_raw_material_staff_consumption` (migración 074) modificaba el stock manualmente, borraba sus movimientos y líneas, y las volvía a insertar al editar. Esa semántica es **incompatible** con el ledger append-only y las anulaciones auditables del nuevo core. La sustitución F2 usa:
+- `app_post_staff_item_consumption_v2` — una operación idempotente por `restaurant_id+operation_key`, líneas por `item_id` con clasificación `raw_material`, unidad validada y conversión decimal, importe basado en costo unitario base del maestro, snapshots por línea y **movimiento del ledger** mediante `item_core_internal.post_movement`.
+- `app_void_staff_item_consumption_v2` — anulación idempotente que crea movimientos inversos de los **movimientos originales contabilizados**; no DELETE/UPDATE del ledger. Bloquea anulación si `payroll_run_id` está asignado; conserva `total_amount` como snapshot.
+- Encabezado existente `employee_raw_material_consumptions` se **extiende** con `status`, claves/digest de operación y void; las líneas se reconducen a `item_id` en corte coordinado, retirando FK y `product_id` antiguos. **No crear otro maestro de consumos ni cambiar manualmente registros de nómina históricos.**
+- Los RPC de nómina `app_get_employee_raw_material_payroll_total` y `app_mark_raw_material_consumptions_paid` deben considerar únicamente `status='posted'` y realizar validación de tenant/permiso y bloqueo de registros antes de asociar planilla. **Todavía no se ha modificado nómina**, por lo que el contrato no puede activarse.
+- Prueba SQL: consumo 2 cajas de 12 a costo 3 base = cantidad base 24, importe 72; replay sin duplicar; rechazo de payload alterado, usuario sin permiso, empleado cross-tenant, servicio como ingrediente; void revierte +24 sin borrar snapshot y no permite anular una línea asignada a planilla. Prueba contra schema **sintético**, no contra todos los payroll RPC efectivos.
+
+**CI:** GitHub Actions ejecuta job `F2 staff consumption and void - isolated PostgreSQL` con PostgreSQL 16 desechable y `ROLLBACK`. El primer resultado de este job fue PASS en la corrida `42915516379`; cualquier modificación posterior requiere una nueva corrida PASS antes de fusionar. Las validaciones SQL no sustituyen pruebas de payroll con permisos reales/JWT ni consistencia de pago final.
+
+**Estado:** contrato de diseño F2.2, no desplegado. No aplicar en base principal/producción ni habilitarlo desde UI/POS hasta que nómina, permisos efectivos, Drift y ventas completen G2.
