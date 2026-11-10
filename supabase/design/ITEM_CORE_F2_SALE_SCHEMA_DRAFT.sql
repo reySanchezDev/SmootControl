@@ -109,14 +109,48 @@ CREATE INDEX sale_consumption_snapshots_sale_idx
 CREATE UNIQUE INDEX sale_consumption_snapshot_movement_uq
   ON public.sale_consumption_snapshots(movement_id);
 
+-- Preserve every recipe leaf path/version at the moment of sale. An item may
+-- occur through several branches of a nested recipe; each leaf has its own
+-- snapshot, while the actual physical ledger is aggregated per line+item.
+CREATE TABLE public.sale_recipe_consumption_snapshots (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  restaurant_id uuid NOT NULL,
+  sale_id uuid NOT NULL,
+  sale_line_id uuid NOT NULL,
+  root_item_id uuid NOT NULL,
+  component_item_id uuid NOT NULL,
+  quantity_base numeric(18,6) NOT NULL CHECK(quantity_base>0),
+  unit_cost_base numeric(18,6) NOT NULL CHECK(unit_cost_base>=0),
+  recipe_trace jsonb NOT NULL
+    CHECK(jsonb_typeof(recipe_trace)='array' AND jsonb_array_length(recipe_trace)>0),
+  movement_id text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  FOREIGN KEY(restaurant_id,sale_id,sale_line_id)
+    REFERENCES public.sale_items(restaurant_id,sale_id,id),
+  FOREIGN KEY(restaurant_id,root_item_id)
+    REFERENCES public.items(restaurant_id,id),
+  FOREIGN KEY(restaurant_id,component_item_id)
+    REFERENCES public.items(restaurant_id,id),
+  FOREIGN KEY(restaurant_id,component_item_id,movement_id)
+    REFERENCES public.item_ledger_entries(restaurant_id,item_id,id)
+);
+CREATE INDEX sale_recipe_consumption_snapshots_sale_idx
+  ON public.sale_recipe_consumption_snapshots(restaurant_id,sale_id,sale_line_id);
+
 -- Tenant scoping must still be applied to the existing sales tables by F2.
 ALTER TABLE public.sale_consumption_snapshots ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.sale_recipe_consumption_snapshots ENABLE ROW LEVEL SECURITY;
 CREATE POLICY sale_consumption_snapshots_tenant_read
   ON public.sale_consumption_snapshots FOR SELECT TO authenticated
   USING(restaurant_id=public.current_restaurant_id());
-REVOKE ALL ON public.sale_consumption_snapshots
+CREATE POLICY sale_recipe_consumption_snapshots_tenant_read
+  ON public.sale_recipe_consumption_snapshots FOR SELECT TO authenticated
+  USING(restaurant_id=public.current_restaurant_id());
+REVOKE ALL ON public.sale_consumption_snapshots,
+  public.sale_recipe_consumption_snapshots
   FROM PUBLIC, anon, authenticated;
-GRANT SELECT ON public.sale_consumption_snapshots TO authenticated;
+GRANT SELECT ON public.sale_consumption_snapshots,
+  public.sale_recipe_consumption_snapshots TO authenticated;
 
 -- No backfill and no DML. A later POS sale RPC must make all these writes
 -- atomic, resolve rule snapshots, call the trusted stock engine and return
