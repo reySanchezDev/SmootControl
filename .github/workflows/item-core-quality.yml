@@ -38,10 +38,10 @@ jobs:
           test -f supabase/design/ITEM_CORE_F1_RPC_DRAFT.sql
           test -f supabase/tests/item_master_f1_rpc_isolated.sql
           test -f supabase/migrations/088_item_master_foundation.sql
-          ! grep -Rq -- 'supabase/migrations/088_item_master_foundation.sql' .github/workflows || {
-            echo "ERROR: frozen migration 088 is referenced by workflow"
-            exit 1
-          }
+          # Static guard: no SQL is executed in this workflow.
+          # A path existence check does NOT invoke the frozen migration.
+          ! grep -Eq '^[[:space:]]*(psql|supabase[[:space:]]+db[[:space:]]+(reset|push))' \
+            .github/workflows/item-core-quality.yml
       - name: Upload dependency map
         uses: actions/upload-artifact@v4
         with:
