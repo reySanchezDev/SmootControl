@@ -607,3 +607,15 @@ Se verifico la rama `feature/item-master-db-foundation` en `0d095ec718c234fe8d4c
 
 **Próxima acción ejecutable remotamente:** implementar el arnés de contrato para `pos_sync_sale_v2` y resolvedor de reglas en `supabase/design/`, fuera de migraciones, con test aislado y verificación GitHub Actions. No aplicar en el laboratorio real antes del ensayo de corte. Codex solo cuando haga falta acceder a Docker/Windows/terminales locales.
 
+
+### 12.4 Primer cierre de evidencia CI y diagnóstico remotos (2026-11-10)
+
+**GitHub Actions** `Kivo Item Core - Quality and Dependency Inventory`. Ejecución completada `42905566927` (commit anterior `f86b91dc...`) con inventario de dependencias **PASS** y calidad Flutter **FAIL por diagnósticos de análisis**, no por bloqueo ni por tests. Los logs muestran:
+
+- Flutter 3.41.7; `flutter analyze --no-pub` **terminó en 30.4 s**, exit **1** y **33 issues**, entre ellos un warning `invalid_use_of_protected_member` en `articles_page_view_part.dart:79` y el resto observaciones estilo/import/futures/tests. **No equivale a PASS**.
+- `flutter test --no-pub -j 2`: **392 tests PASS**, exit 0, sin fallos. Runner limpio Linux elimina la hipótesis de que el análisis no puede finalizar en ningún entorno; Windows sigue requiriendo diagnóstico propio.
+- La ejecución completa marcó FAIL correctamente en `Enforce quality without masking analyzer hangs`, porque el analizador devolvió código 1. No se aceptan los diagnósticos como nuevos defectos de F2 sin inspeccionar el baseline y el worktree local.
+- Se corrigió el workflow para **no ejecutar en commits de solo documentación** y evitar cancelaciones redundantes del trabajo de CI; `concurrency` ya reduce repeticiones en la misma rama. La corrida en el commit final del workflow debe consultarse antes de considerarla aprobada.
+- Las correcciones de estilo/UI **no se hicieron en GitHub** debido a los cambios locales existentes reportados en esos archivos. Se requiere comparar ramas y prevenir pérdida del trabajo no publicado antes de tocar los mismos archivos. La advertencia de miembro protegido es prioritaria y deberá solucionarse sin alterar UX.
+
+**Siguiente trabajo F2 bajo GitHub:** avanzar implementación aislada de contratos SQL de venta/void transaccional y resolución de consumo; tests en runners efímeros donde exista esquema sintético adecuado, sin migración a principal. Ejecutar diagnóstico detallado de las 33 incidencias en una rama de limpieza separada, sin alterar código local sin publicar.
