@@ -1,0 +1,118 @@
+name: Kivo Item Core - Quality and Dependency Inventory
+
+on:
+  push:
+    branches:
+      - feature/item-master-db-foundation
+  pull_request:
+    paths:
+      - 'lib/**'
+      - 'test/**'
+      - 'supabase/**'
+      - 'tool/audit_item_core_dependencies.py'
+      - '.github/workflows/item-core-quality.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: kivo-item-core-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  dependency-inventory:
+    name: Read-only F2 dependency inventory
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Generate static cross-module inventory
+        run: |
+          python3 tool/audit_item_core_dependencies.py \
+            --output "$RUNNER_TEMP/item-core-dependencies.md"
+          test -s "$RUNNER_TEMP/item-core-dependencies.md"
+      - name: Confirm frozen F1 draft is not auto-executed
+        run: |
+          test -f supabase/design/ITEM_CORE_F1_DDL_DRAFT.sql
+          test -f supabase/design/ITEM_CORE_F1_RPC_DRAFT.sql
+          test -f supabase/tests/item_master_f1_rpc_isolated.sql
+          test -f supabase/migrations/088_item_master_foundation.sql
+          ! grep -Rq -- 'supabase/migrations/088_item_master_foundation.sql' .github/workflows || {
+            echo "ERROR: frozen migration 088 is referenced by workflow"
+            exit 1
+          }
+      - name: Upload dependency map
+        uses: actions/upload-artifact@v4
+        with:
+          name: item-core-dependency-inventory
+          path: ${{ runner.temp }}/item-core-dependencies.md
+          retention-days: 14
+
+  flutter-quality:
+    name: Flutter tests and analyzer - bounded diagnostics
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - name: Flutter stable SDK
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.41.7'
+          channel: stable
+          cache: true
+      - name: Environment info
+        run: |
+          flutter --version
+          dart --version
+      - name: Resolve Flutter dependencies
+        run: flutter pub get
+      - name: Analyzer - capture reproducible timeout/failure
+        id: analyze
+        continue-on-error: true
+        shell: bash
+        run: |
+          set +e
+          timeout --signal=TERM --kill-after=10s 180s \
+            flutter analyze --no-pub > "$RUNNER_TEMP/flutter-analyze.log" 2>&1
+          status=$?
+          cat "$RUNNER_TEMP/flutter-analyze.log"
+          echo "exit_code=$status" >> "$GITHUB_OUTPUT"
+          echo "Flutter analyze exit: $status"
+          exit "$status"
+      - name: Run all Flutter tests even when analyze is blocked
+        id: tests
+        if: always()
+        continue-on-error: true
+        shell: bash
+        run: |
+          set +e
+          timeout --signal=TERM --kill-after=10s 1200s \
+            flutter test --no-pub -j 2 > "$RUNNER_TEMP/flutter-test.log" 2>&1
+          status=$?
+          tail -n 100 "$RUNNER_TEMP/flutter-test.log"
+          echo "exit_code=$status" >> "$GITHUB_OUTPUT"
+          exit "$status"
+      - name: Upload tooling logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: item-core-flutter-tooling-logs
+          path: |
+            ${{ runner.temp }}/flutter-analyze.log
+            ${{ runner.temp }}/flutter-test.log
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Enforce quality without masking analyzer hangs
+        if: always()
+        shell: bash
+        env:
+          ANALYZE_EXIT: ${{ steps.analyze.outputs.exit_code }}
+          TEST_EXIT: ${{ steps.tests.outputs.exit_code }}
+        run: |
+          echo "Analyzer exit: ${ANALYZE_EXIT:-not-run}"
+          echo "Tests exit: ${TEST_EXIT:-not-run}"
+          if [ "${ANALYZE_EXIT:-missing}" != 0 ] || [ "${TEST_EXIT:-missing}" != 0 ]; then
+            echo "Quality gate failed. Inspect uploaded analyzer/test logs."
+            exit 1
+          fi
