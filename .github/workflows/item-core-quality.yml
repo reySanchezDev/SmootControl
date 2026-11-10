@@ -8,6 +8,7 @@ on:
       - feature/item-core-f2-staff-consumption
       - feature/item-core-f2-payroll-claim
       - feature/item-core-f2-payroll-backdate-guard
+      - feature/item-core-f2-noninventory-consumption
     paths:
       - 'lib/**'
       - 'test/**'
