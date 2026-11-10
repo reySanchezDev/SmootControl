@@ -56,6 +56,37 @@ jobs:
           path: ${{ runner.temp }}/item-core-dependencies.md
           retention-days: 14
 
+  consumption-contract:
+    name: F2 consumption rule SQL - isolated PostgreSQL
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: f2_fixture_only
+          POSTGRES_DB: f2_item_contract
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d f2_item_contract"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: localhost
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGPASSWORD: f2_fixture_only
+      PGDATABASE: f2_item_contract
+    steps:
+      - uses: actions/checkout@v4
+      - name: PostgreSQL SQL contract test (rollback, isolated)
+        run: |
+          psql -X -v ON_ERROR_STOP=1 \
+            -f supabase/tests/item_core_f2_consumption_isolated.sql
+
   flutter-quality:
     name: Flutter tests and analyzer - bounded diagnostics
     runs-on: ubuntu-latest
