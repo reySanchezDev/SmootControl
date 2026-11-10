@@ -127,6 +127,17 @@ BEGIN
     IF SQLERRM<>'invalid_payroll_claim_window' THEN RAISE; END IF;
   END;
 
+  -- Claims must never be initiated or modified after a payroll run closes.
+  UPDATE public.payroll_runs SET status='posted' WHERE id=v_run;
+  BEGIN
+    PERFORM public.app_claim_staff_consumptions_for_payroll_v2(
+      v_tenant,v_employee,v_run,v_start,v_end
+    );
+    RAISE EXCEPTION 'posted_payroll_run_claim_not_rejected';
+  EXCEPTION WHEN foreign_key_violation THEN
+    IF SQLERRM<>'payroll_claim_employee_or_run_invalid' THEN RAISE; END IF;
+  END;
+
   -- Only append-only ledger events for posted + voided + outside remain.
   IF (SELECT count(*) FROM public.item_ledger_entries)<>5
      OR (SELECT quantity_on_hand FROM public.item_stock
