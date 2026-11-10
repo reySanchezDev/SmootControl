@@ -524,6 +524,22 @@ La auditoria F1.1 se ejecuto contra un PostgreSQL 16 desechable, con PostgREST 1
 
 **Cambios publicados:** RPC/test de diseno F1.1 y esta actualizacion documental; migracion 088, produccion, `main`, Tentrix, POS y pantallas no fueron tocados.
 
+### 10.13 F1.2 cierre de validaciones y separacion G1/F2 (2026-11-10)
+
+Se verifico la rama `feature/item-master-db-foundation` en `0d095ec718c234fe8d4cd610a486fb7806360124`, con remoto `origin` apuntando a `reySanchezDev/SmootControl`. Los cambios locales preexistentes de UI, navegacion, autenticacion, localizacion y tests permanecieron sin stage ni commit.
+
+**Diagnostico Dart/Flutter:** Dart 3.11.5 y Flutter 3.41.7 stable. En el worktree limpio `flutter pub get` termino correctamente. `dart analyze` quedo en `Analyzing...` sin diagnosticos despues de 90 segundos; `flutter analyze` repitio el mismo estado despues de 90 segundos; el analisis dirigido de los archivos modificados tambien quedo bloqueado. No se observaron locks persistentes en `.dart_tool`. En el worktree original habia un `flutter run` web sobre otro worktree, dos analysis servers, tooling-daemon, DevTools, MCP Dart y varios procesos VS Code/Codex concurrentes; no se finalizo ninguno. Esto demuestra una condicion del analizador/entorno que se reproduce tambien aislada, no un error de compilacion demostrado del codigo.
+
+**Resultados Flutter y formato:** `flutter test` en worktree limpio termino `All tests passed!`: 392 tests, 0 failures. Hubo una advertencia no fatal de hit-test en `pos_ready_view_test.dart`, sin fallo. `dart format --output=none --set-exit-if-changed .` termino exit 1 porque 40 archivos existentes requeririan formato; no se escribieron cambios. No se incorporaron modificaciones visuales ni se reabrieron los problemas locales no relacionados.
+
+**Automatizacion F1:** `supabase/tests/item_master_f1_rpc_isolated.sql` queda como suite reproducible con rollback y guardia `app.f1_isolated`. Cubre permisos efectivos, revocacion inmediata, tenant, POS, update parcial, unidades, cambios incompatibles, stock negativo, idempotencia, reversas, proyeccion, append-only y escritura directa. La validacion REST con JWT HS256 firmado se ejecuto en PostgREST efimero y creo `REST-F11` con HTTP 200; el permiso efectivo se obtuvo de las tablas, no de claims de permisos. La prueba concurrente previa mantuvo una sola venta exitosa y rechazo por saldo insuficiente. El contenedor y PostgREST temporales fueron eliminados.
+
+**Auditoria de seguridad final:** las funciones definer usan `auth.uid()`, `search_path=public,pg_temp` y `row_security=off`; los helpers de autorizacion no tienen EXECUTE para roles cliente; las RPC exigen permiso efectivo, usuario/rol activo, tenant exacto y no POS. No se acepta `service_role` ni permisos enviados por el cliente. El digest del ledger se calcula sobre el contenido canonico, el actor se ata a `auth.uid()`, el dispositivo se valida por tenant/estado, y los locks/constraint de operacion protegen idempotencia y reversas. No se detecto bypass reproducible en el contrato F1.1.
+
+**Separacion de gates:** G1 valida exclusivamente el diseño, la seguridad y los contratos aislados del maestro de articulos. F2 integra ventas, recetas, compras, nomina, POS y Drift; no es requisito para aprobar G1, pero su corte coordinado sigue siendo requisito para activar el core. Por ello: **G1 APROBADO PARA PREPARAR F2**. Esto no autoriza migraciones, aplicacion de 088, escrituras operativas, eliminacion de legacy ni activacion en el laboratorio principal/produccion.
+
+**Bloqueantes reales:** el analizador Dart/Flutter sigue sin resultado concluyente y el formato global tiene 40 archivos heredados; ambos quedan como higiene de toolchain antes de nuevos cambios de codigo. Para F2 siguen pendientes el mapa `pg_depend`, contratos de ventas/recetas/compras/nomina, snapshots, reglas de consumo, adaptador POS y sync Drift. Siguiente accion: preparar la matriz tecnica de corte F2 y resolver el entorno de analisis en una rama de implementacion separada, sin ejecutar migraciones.
+
 ## 11. Referencias y precedencia documental
 
 1. **Este plan rector**: fuente operativa de arquitectura, etapas, gates y estado actual.
