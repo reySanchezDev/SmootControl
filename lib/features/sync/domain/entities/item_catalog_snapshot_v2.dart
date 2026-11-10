@@ -126,24 +126,6 @@ final class ItemCatalogSnapshotV2 {
     required this.consumptionRules,
   });
 
-  /// Restaurant owning the entire snapshot.
-  final String restaurantId;
-
-  /// Stable identity of this snapshot for idempotent replays.
-  final String snapshotId;
-
-  /// Strictly increasing revision issued by the backend.
-  final int revision;
-
-  /// All canonical articles, never a paginated POS-only subset.
-  final List<ItemCatalogEntryV2> items;
-
-  /// Full unit conversions for the corresponding articles.
-  final List<ItemCatalogUnitV2> units;
-
-  /// Rules referencing the canonical article identifiers.
-  final List<ItemCatalogConsumptionRuleV2> consumptionRules;
-
   /// Validates and parses a full remote snapshot without changing local data.
   ///
   /// Throws [FormatException] if the payload is incomplete, stale-shaped,
@@ -296,6 +278,24 @@ final class ItemCatalogSnapshotV2 {
       consumptionRules: List.unmodifiable(rules),
     );
   }
+
+  /// Restaurant owning the entire snapshot.
+  final String restaurantId;
+
+  /// Stable identity of this snapshot for idempotent replays.
+  final String snapshotId;
+
+  /// Strictly increasing revision issued by the backend.
+  final int revision;
+
+  /// All canonical articles, never a paginated POS-only subset.
+  final List<ItemCatalogEntryV2> items;
+
+  /// Full unit conversions for the corresponding articles.
+  final List<ItemCatalogUnitV2> units;
+
+  /// Rules referencing the canonical article identifiers.
+  final List<ItemCatalogConsumptionRuleV2> consumptionRules;
 
   /// Rejects out-of-order snapshots and conflicting equal-revision payloads.
   ///
