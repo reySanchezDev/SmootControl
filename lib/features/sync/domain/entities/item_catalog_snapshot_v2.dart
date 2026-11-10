@@ -148,7 +148,7 @@ final class ItemCatalogSnapshotV2 {
   ///
   /// Throws [FormatException] if the payload is incomplete, stale-shaped,
   /// cross-tenant, has conflicting identifiers or contains invalid references.
-  static ItemCatalogSnapshotV2 fromJson(
+  factory ItemCatalogSnapshotV2.fromJson(
     Map<String, Object?> json, {
     required String expectedRestaurantId,
   }) {
