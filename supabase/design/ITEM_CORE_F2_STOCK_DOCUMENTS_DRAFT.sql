@@ -112,7 +112,7 @@ BEGIN
   -- ambiguous count/cost semantics and must be rejected explicitly.
   IF EXISTS(
     SELECT 1 FROM jsonb_array_elements(p_lines) l
-    GROUP BY l->>'item_id' HAVING count(*) > 1
+    GROUP BY (l->>'item_id')::uuid HAVING count(*) > 1
   ) THEN
     RAISE EXCEPTION 'duplicate_stock_document_item'
       USING ERRCODE='23514';
