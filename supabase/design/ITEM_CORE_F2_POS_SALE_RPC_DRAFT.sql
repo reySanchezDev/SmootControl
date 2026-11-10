@@ -273,6 +273,7 @@ BEGIN
       FROM jsonb_array_elements(v_consumption) entry
       JOIN public.items i ON i.id=(entry.value->>'consumed_item_id')::uuid
         AND i.restaurant_id=p_restaurant_id
+        AND i.item_type='inventory'
     )
     SELECT * FROM direct_sale
     UNION ALL SELECT * FROM rule_sale
@@ -291,15 +292,18 @@ BEGIN
   LOOP
     INSERT INTO public.sale_consumption_snapshots(
       restaurant_id,sale_id,sale_line_id,scope,consumed_item_id,rule_id,
-      quantity_base,unit_cost_base,movement_id
+      quantity_base,unit_cost_base,movement_id,is_inventory_consumption
     )
     SELECT p_restaurant_id,v_sale_id,
       NULLIF(v_c.value->>'sale_line_id','')::uuid,
       v_c.value->>'scope',(v_c.value->>'consumed_item_id')::uuid,
       (v_c.value->>'rule_id')::uuid,
       (v_c.value->>'quantity_base')::numeric,i.base_unit_cost,
-      'sale:'||v_sale_id::text||':rule:'||(v_c.value->>'rule_id')
+      CASE WHEN i.item_type='inventory' THEN
+        'sale:'||v_sale_id::text||':rule:'||(v_c.value->>'rule_id')
         ||':line:'||COALESCE(v_c.value->>'sale_line_id','order')
+      ELSE NULL END,
+      (i.item_type='inventory')
     FROM public.items i
     WHERE i.id=(v_c.value->>'consumed_item_id')::uuid
       AND i.restaurant_id=p_restaurant_id;
