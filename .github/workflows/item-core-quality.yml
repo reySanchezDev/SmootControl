@@ -192,6 +192,41 @@ jobs:
             -f supabase/design/ITEM_CORE_F2_STOCK_DOCUMENTS_DRAFT.sql \
             -f supabase/tests/item_core_f2_stock_document_assert.sql
 
+  staff-consumption-contract:
+    name: F2 staff consumption and void - isolated PostgreSQL
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: f2_staff_fixture_only
+          POSTGRES_DB: f2_staff_contract
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d f2_staff_contract"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: localhost
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGPASSWORD: f2_staff_fixture_only
+      PGDATABASE: f2_staff_contract
+    steps:
+      - uses: actions/checkout@v4
+      - name: Staff consumption and payroll-locked void (rollback)
+        run: |
+          psql -X -v ON_ERROR_STOP=1 \
+            -f supabase/tests/item_core_f2_internal_ledger_fixture.sql \
+            -f supabase/tests/item_core_f2_staff_consumption_fixture.sql \
+            -f supabase/design/ITEM_CORE_F2_INTERNAL_LEDGER_DRAFT.sql \
+            -f supabase/design/ITEM_CORE_F2_STAFF_CONSUMPTION_DRAFT.sql \
+            -f supabase/tests/item_core_f2_staff_consumption_assert.sql
+
   recipe-contract:
     name: F2 nested recipe SQL - isolated PostgreSQL
     runs-on: ubuntu-latest
