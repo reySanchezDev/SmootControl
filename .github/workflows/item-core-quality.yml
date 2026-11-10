@@ -9,6 +9,7 @@ on:
       - feature/item-core-f2-payroll-claim
       - feature/item-core-f2-payroll-backdate-guard
       - feature/item-core-f2-noninventory-consumption
+      - feature/item-core-f2-pos-catalog-validated
     paths:
       - 'lib/**'
       - 'test/**'
@@ -58,6 +59,9 @@ jobs:
           base="$PREVIOUS_SHA"
           if [ "$EVENT_NAME" = pull_request ]; then
             base="$BASE_SHA"
+          elif [ "$GITHUB_REF_NAME" != 'feature/item-master-db-foundation' ]; then
+            git fetch --no-tags origin feature/item-master-db-foundation
+            base="$(git merge-base HEAD origin/feature/item-master-db-foundation)"
           fi
           if [ -z "$base" ] || ! git cat-file -e "$base^{commit}" 2>/dev/null; then
             echo 'flutter=true' >> "$GITHUB_OUTPUT"
