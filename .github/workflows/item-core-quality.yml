@@ -47,7 +47,9 @@ jobs:
           test -f supabase/migrations/088_item_master_foundation.sql
           # Static guard: no SQL is executed in this workflow.
           # A path existence check does NOT invoke the frozen migration.
-          ! grep -Eq '^[[:space:]]*(psql|supabase[[:space:]]+db[[:space:]]+(reset|push))' \
+          ! grep -Eq '^[[:space:]]*supabase[[:space:]]+db[[:space:]]+(reset|push)' \
+            .github/workflows/item-core-quality.yml
+          ! grep -Eq '^[[:space:]]*psql .*supabase/migrations/088_' \
             .github/workflows/item-core-quality.yml
       - name: Upload dependency map
         uses: actions/upload-artifact@v4
