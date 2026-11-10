@@ -112,10 +112,10 @@ BEGIN
   ),
   -- Per-line requires explicit source; per-order can match an item in order.
   eligible AS (
-    SELECT *
-    FROM candidates
-    WHERE (scope = 'per_order')
-       OR (scope = 'per_sale_line' AND source_item_id IS NOT NULL)
+    SELECT candidate.*
+    FROM candidates candidate
+    WHERE (candidate.scope = 'per_order')
+       OR (candidate.scope = 'per_sale_line' AND candidate.source_item_id IS NOT NULL)
   ),
   ranked AS (
     SELECT e.*,
