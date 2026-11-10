@@ -258,6 +258,76 @@ Al completar trabajo, editar la fecha/estado de cabecera, la fila de fase y aña
 - **G0:** permanece **ABIERTO** hasta auditoría SQL de `pg_catalog` y diagnóstico de las discrepancias; ninguna decisión de DROP/productivo se ejecutará de manera anticipada. El script versionado `supabase/tests/item_master_preflight_readonly.sql` es el censo reproducible. **Sus resultados no se han ejecutado ni certificado desde GitHub**.
 
 
+### 9.9 Cierre F0 contra PostgreSQL local del laboratorio Kivo (2026-11-10)
+
+Se ejecutó `supabase/tests/item_master_preflight_readonly.sql` exclusivamente
+contra el contenedor local `supabase_db_smoo_control`, dentro de una transacción
+`BEGIN READ ONLY`/`COMMIT`. No se ejecutaron migraciones, DDL, reset, `DROP`,
+`DELETE`, `TRUNCATE` ni cambios de datos. El script terminó sin error
+reproducible y no requirió corrección.
+
+Resultados numéricos:
+
+- 55 relaciones públicas y 566 columnas públicas; 232 columnas fueron devueltas
+  por el filtro de entidades/campos de impacto.
+- 143 FKs validadas; 12 referencias directas hacia `products`/`packaging_items`
+  en stock, movimientos, reglas, recetas, modificadores, ventas, ajustes y
+  consumo de personal.
+- 155 restricciones de PK/UNIQUE/CHECK/EXCLUDE; 114 índices públicos, 12 de
+  ellos propios de los siete objetos legacy auditados.
+- 65 políticas RLS, 6 triggers no internos y 70 funciones/RPC relacionadas.
+- 1.155 grants: 385 para `anon`, 385 para `authenticated` y 385 para
+  `service_role`. RLS reduce el acceso efectivo en varias tablas, pero el grant
+  amplio no satisface todavía el contrato de mínimo privilegio.
+- Datos: `products` 2, `packaging_items` 3, `inventory_stock` 2,
+  `inventory_movements` 2, `packaging_stock` 1, `packaging_movements` 7 y
+  `product_packaging_rules` 4.
+- Los ocho checks de colisión, códigos, tenant y referencias cruzadas dieron
+  `0` bloqueantes.
+- `pg_depend` reportó 165 dependencias para los siete objetos legacy: 53
+  restricciones, 13 políticas, 4 triggers, 32 defaults/atributos y
+  dependencias de tipo/relación.
+
+**Migración 088:** NO está aplicada. El ledger local contiene exactamente
+001–087; no existe fila 088 ni migración `item_master`, y no existen
+`public.items`, `public.item_stock` ni `public.item_ledger_entries`.
+
+#### Matriz definitiva de impacto
+
+| Dominio | Impacto real confirmado | Decisión F1/F2 | Bloqueante |
+|---|---|---|---|
+| Productos y empaques | Dos maestros físicos, 5 filas y 12 FKs directas; no existe `items` | Crear `items` autoritativo y adaptar catálogos | Sí: consumidores y escritores legacy activos |
+| Inventario | Dos stocks y dos ledgers, 12 filas; RPC separadas para cada uno | Crear `item_stock` + `item_ledger_entries` y unificar costo, unidades e idempotencia | Sí: no existe libro canónico |
+| Ventas y cocina | `sale_items.product_id`, ventas/voids y RPC POS/receta usan producto | Cambiar a `item_id`, conservando snapshots y reversión original | Sí: contratos actuales activos |
+| Recetas y modificadores | Recetas, líneas y `product_modifier_groups` referencian `products` | Adaptar padre/componente/opción a `items` | Sí: FKs y RPC activas |
+| Nómina/personal | Líneas de consumo referencian `product_id`; la nómina debe conservarse | Cambiar la referencia material a `item_id` y conectar al ledger | Sí: consumo y payroll vigentes |
+| Sincronización/POS Drift | Drift v34, pulls separados y múltiples `pos_sync_*` vigentes | Versionar payload/pull y sustituir tablas locales por items/stock/ledger únicos | Sí: terminal viejo y pull parcial |
+| Seguridad | RLS presente, grants amplios y 70 `SECURITY DEFINER` relacionados | Revisar mínimo privilegio, tenant compuesto, JWT y guardas RPC | Sí para G1 |
+
+**Crear en F1, tras diseño y pruebas:** `items`, `item_units`, `item_stock`,
+`item_ledger_entries` y `item_consumption_rules`; `item_classifications` y sus
+enlaces solo si se confirma la necesidad N:M. Precios e inventario-policy quedan
+diferidos hasta ratificar sus reglas.
+
+**Modificar/reconducir:** `product_categories`, `sale_items`,
+`inventory_adjustment_lines`, `employee_raw_material_consumption_lines`,
+`product_recipes`, `product_recipe_lines`, `product_modifier_groups`,
+`product_packaging_rules`, sus RPC/reportes y los contratos de pull/sync POS.
+`sales`, `sale_voids`, nómina, empleados, mesas, dispositivos, numeradores y
+configuración se conservan; solo se adaptan referencias materiales.
+
+**Retirar después del corte, migración, pruebas y cero dependencias:**
+`products`, `packaging_items`, `inventory_stock`, `packaging_stock`,
+`inventory_movements`, `packaging_movements` y `product_packaging_rules`.
+Ninguna tabla se eliminó en F0.
+
+**Gate G0: NO APROBADO / BLOQUEADO.** F0 queda cerrado como auditoría y la
+evidencia permite diseñar F1, pero no declarar G0 aprobado: 088 no está aplicada,
+no existe el core `items`, permanecen 12 FKs directas, 165 dependencias, RPC y
+escritores legacy, contratos Drift/sync duales y grants amplios. No se autoriza
+F3 ni ninguna eliminación o migración hasta resolver estos bloqueantes en
+laboratorio y ratificar la matriz de seguridad/tenant.
+
 ## 10. Referencias y precedencia documental
 
 1. **Este plan rector**: fuente operativa de arquitectura, etapas, gates y estado actual.
