@@ -2,7 +2,7 @@
 
 **Identificador:** KIVO-ITEM-CORE  
 **Última actualización:** 2026-11-10  
-**Estado:** DECISIÓN DE CORE APROBADA; AUDITORÍA ESTÁTICA DE IMPACTO AMPLIADA; PRE-FLIGHT REAL PENDIENTE; MIGRACIÓN 088 CONGELADA  
+**Estado:** F0/G0 CERRADO PARA DISEÑO DE F1; MIGRACIÓN 088 CONGELADA; EJECUCIÓN SQL Y PANTALLAS NO AUTORIZADAS  
 **Repositorio:** `reySanchezDev/SmootControl`  
 **Documento único de planificación:** este archivo. Se actualiza en cada avance, sin crear un plan por PR/fase.
 
@@ -113,7 +113,7 @@ Este diagrama es la dirección de arquitectura. **Cada tabla se introducirá sol
 | 2026-11-08 | Catálogo visual de Artículos | PR #17, `d9a4db62000d6cb88a9cc119ef337abfa53971f6` | Codex informó 126/126 tests focalizados, build Web y preview 8092 | **Solo UX/proyección**, no core |
 | 2026-11-10 | Propuesta maestro espejo | PR #18 / migración 088 | Tabla nueva + triggers sobre fuentes legadas, sin auditoría real del lab aquí | **CONGELADA / NO APROBADA** |
 | 2026-11-10 | Auditoría externa LS Central | Drive carpeta POS, 4 ficheros | `Item` AL tabla 27; SQL BOM, vinculados, modificadores; límites expresos | **Decisión core único ratificada** |
-| 2026-11-10 | Plan rector actualizado | este documento | Objetivo autoritativo, gates F0–F4, no maquillaje UI | **F0 PENDIENTE** |\n| 2026-11-10 | Ajuste de alcance y auditoría de impacto | este documento / ADR-002 | Historia operativa del laboratorio no se conserva; clasificación de tablas, FKs, RPC, Drift, POS y estrategia de corte; script read-only ampliado | **F0 ESTÁTICA AVANZADA; G0 NO APROBADO** |
+| 2026-11-10 | Plan rector actualizado | este documento | Objetivo autoritativo, gates F0–F4, no maquillaje UI | **F0 PENDIENTE** |\n| 2026-11-10 | Ajuste de alcance y auditoría de impacto | este documento / ADR-002 | Historia operativa del laboratorio no se conserva; clasificación de tablas, FKs, RPC, Drift, POS y estrategia de corte; script read-only ampliado | **F0 ESTÁTICA AVANZADA** |\n| 2026-11-10 | Auditoría real F0 y revisión del gate | `57d96aa995edfd704c62c31dccb6fb82f83c3690` | 55 relaciones, 143 FK, 70 funciones, 165 dependencias legacy; 8 preflights sin bloqueantes; 088 ausente | **G0 APROBADO SOLO PARA DISEÑO DE F1; migración NO autorizada** |
 
 ### Plantilla obligatoria de actualización
 
@@ -321,12 +321,7 @@ configuración se conservan; solo se adaptan referencias materiales.
 `inventory_movements`, `packaging_movements` y `product_packaging_rules`.
 Ninguna tabla se eliminó en F0.
 
-**Gate G0: NO APROBADO / BLOQUEADO.** F0 queda cerrado como auditoría y la
-evidencia permite diseñar F1, pero no declarar G0 aprobado: 088 no está aplicada,
-no existe el core `items`, permanecen 12 FKs directas, 165 dependencias, RPC y
-escritores legacy, contratos Drift/sync duales y grants amplios. No se autoriza
-F3 ni ninguna eliminación o migración hasta resolver estos bloqueantes en
-laboratorio y ratificar la matriz de seguridad/tenant.
+**Gate G0: APROBADO PARA DISEÑO DE F1, NO PARA MIGRACIÓN.** F0 se cerró con auditoría ejecutada contra PostgreSQL local, 8 verificaciones sin bloqueantes de integridad y censo real de dependencias. La ausencia de `items`, la migración 088 no aplicada, 12 FKs legacy y 165 dependencias **son el alcance de sustitución de F1/F2**, no fallas del censo G0. Los grants amplios y las RPC requieren plan de mínimo privilegio y pruebas de seguridad durante F1/F2. **Autorizado:** diseñar DDL definitivo, orden de dependencias, contratos, pruebas y reversión. **No autorizado:** aplicar la 088 congelada, ejecutar migraciones, eliminar tablas, alterar POS/pantallas ni tocar producción antes de validar y aprobar el diseño de F1.
 
 ## 10. Referencias y precedencia documental
 
@@ -341,4 +336,4 @@ laboratorio y ratificar la matriz de seguridad/tenant.
 
 ## 11. Próxima acción autorizada
 
-**F0: ejecutar `supabase/tests/item_master_preflight_readonly.sql` (ampliado con censo de `pg_catalog`, FKs, columnas, triggers, RLS, grants, funciones vigentes por hash y ledger de migraciones), y contrastar cada salida con las matrices de la sección 9 exclusivamente en Docker local; confirmar estado de 088, referencias, funciones definitivas, permisos y datos de configuración.** Los históricos operativos de laboratorio son prescindibles; no limpiar ni borrar aún. **Sin aplicar 088, sin crear nuevas tablas y sin editar pantallas**. El desarrollo de F1 se autorizará solo al cerrar G0 documentado.
+**Siguiente paso: diseño ejecutable de F1 sin aplicar SQL todavía.** Usar la evidencia F0 cerrada para especificar DDL definitivo de `items`, unidades/clasificaciones, inventario canónico y referencias tenant-compuestas; decidir tratamiento de datos maestros vigentes y corte limpio de históricos del laboratorio; documentar secuencia de eliminación de FKs, RPC, Drift y contratos de sincronización; definir pruebas/rollback y un punto único de autoridad. La 088 actual permanece **congelada** y no debe ejecutarse. Actualizar exclusivamente este plan rector con el diseño y criterios de G1 antes de modificar base de datos o pantallas.
