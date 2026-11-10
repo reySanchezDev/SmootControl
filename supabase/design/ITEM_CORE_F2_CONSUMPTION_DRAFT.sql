@@ -5,7 +5,7 @@
 -- Exact service type wins, then exact source-item, then priority; ties reject.
 -- Per-order rules are evaluated once; per-line rules preserve each line ID.
 -- Per-order rules may be global or scoped to one item present in order.
--- Excludes non-inventory/service consumption: no physical quantity to move.
+-- Resolves inventory AND non-inventory consumption; only inventory posts\n-- physical ledger. Service articles cannot be consumed.
 -- The caller must persist rule IDs and quantities with transaction snapshot in F2.
 -- DO NOT use output to book inventory until one atomic POS sale RPC exists.
 
@@ -82,6 +82,28 @@ BEGIN
     END IF;
   END LOOP;
 
+  -- An active applicable rule that targets a Service is a configuration
+  -- defect, not something the POS may silently ignore.
+  IF EXISTS (
+    SELECT 1
+    FROM public.item_consumption_rules r
+    JOIN public.items consumed
+      ON consumed.id=r.consumed_item_id
+     AND consumed.restaurant_id=r.restaurant_id
+    WHERE r.restaurant_id=p_restaurant_id AND r.is_active
+      AND consumed.item_type='service'
+      AND (r.sales_type_id IS NULL OR r.sales_type_id=p_sales_type_id)
+      AND (
+        r.source_item_id IS NULL OR EXISTS (
+          SELECT 1 FROM jsonb_array_elements(p_sale_lines) l
+          WHERE (l.value->>'item_id')::uuid=r.source_item_id
+        )
+      )
+  ) THEN
+    RAISE EXCEPTION 'service_article_cannot_be_consumed'
+      USING ERRCODE='23514';
+  END IF;
+
   -- Per-line rules retain their individual sale_line_id, while per-order
   -- rules resolve once even when the same article appears in several lines.
   IF EXISTS (
@@ -116,7 +138,7 @@ BEGIN
     JOIN public.items consumed
       ON consumed.id = r.consumed_item_id
      AND consumed.restaurant_id = r.restaurant_id
-     AND consumed.item_type = 'inventory'
+     AND consumed.item_type IN ('inventory','non_inventory')
      AND consumed.is_active = true
     LEFT JOIN source_items source ON source.item_id = r.source_item_id
     LEFT JOIN lines l ON l.item_id = r.source_item_id
