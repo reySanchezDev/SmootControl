@@ -24,6 +24,12 @@ BEGIN;
 -- The DDL below references product_categories to remain reviewable against
 -- the audited 001-087 schema; replace all references atomically at cutover.
 
+-- Existing category.id is PK, but composite tenant FK also needs a unique key.
+-- This is a conservative additive constraint on the existing table.
+ALTER TABLE public.product_categories
+  ADD CONSTRAINT product_categories_tenant_id_unique
+  UNIQUE(restaurant_id,id);
+
 CREATE TABLE public.items (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   restaurant_id uuid NOT NULL REFERENCES public.restaurants(id),
@@ -62,12 +68,6 @@ CREATE INDEX items_active_type_idx
   ON public.items(restaurant_id,item_type,is_active);
 CREATE INDEX items_category_idx
   ON public.items(restaurant_id,category_id);
-
--- Existing category.id is PK, but composite tenant FK also needs a unique key.
--- This is a conservative additive constraint on the existing table.
-ALTER TABLE public.product_categories
-  ADD CONSTRAINT product_categories_tenant_id_unique
-  UNIQUE(restaurant_id,id);
 
 -- 2. Classification N:M, independent of inventory/service type.
 CREATE TABLE public.item_classifications (
@@ -179,6 +179,10 @@ ALTER TABLE public.item_ledger_entries
 --    both as a normal product and as packaging, subject to explicit policies.
 --    Null sales_type/source indicate applicability at restaurant level;
 --    rule precedence is determined by a single resolution RPC in F2.
+-- A same-tenant sales_type FK requires a unique composite target.
+ALTER TABLE public.sales_types
+  ADD CONSTRAINT sales_types_tenant_id_unique UNIQUE(restaurant_id,id);
+
 CREATE TABLE public.item_consumption_rules (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   restaurant_id uuid NOT NULL REFERENCES public.restaurants(id),
@@ -197,7 +201,8 @@ CREATE TABLE public.item_consumption_rules (
     REFERENCES public.items(restaurant_id,id),
   FOREIGN KEY(restaurant_id,consumed_item_id)
     REFERENCES public.items(restaurant_id,id),
-  FOREIGN KEY(sales_type_id) REFERENCES public.sales_types(id),
+  FOREIGN KEY(restaurant_id,sales_type_id)
+    REFERENCES public.sales_types(restaurant_id,id),
   CONSTRAINT consumption_line_has_source CHECK(
     scope <> 'per_sale_line' OR source_item_id IS NOT NULL
   ),
