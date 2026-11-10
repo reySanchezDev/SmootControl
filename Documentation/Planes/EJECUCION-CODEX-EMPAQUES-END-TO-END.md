@@ -450,6 +450,60 @@ Reusar `measurement_units` como catálogo de unidades global/tenant. Crear `item
 
 ---
 
+### 10.11 ValidaciÃ³n F1 ejecutada en laboratorio aislado (2026-11-10)
+
+Se creÃ³ el contenedor temporal `smoocontrol_f1_lab` con PostgreSQL 16,
+roles Supabase mÃ­nimos, copia reproducible del contrato de tablas referenciado
+y fixtures sintÃ©ticos de dos restaurantes. La carga del dump pÃºblico completo
+fue descartada por lÃ­mite de memoria del contenedor (cÃ³digo 137), sin afectar
+la base principal; la prueba continuÃ³ con el clon mÃ­nimo reproducible requerido
+por el DDL. El contenedor y PostgREST temporal quedaron fuera de la base
+principal.
+
+**DDL:** `ITEM_CORE_F1_DDL_DRAFT.sql` ejecutado primero con `ROLLBACK` y sin
+error despuÃ©s de aÃ±adir al clon los roles `authenticated` y `anon` que exige
+el entorno Supabase. La segunda ejecuciÃ³n materializada con `COMMIT` ocurriÃ³
+solo en el contenedor desechable; creÃ³ las siete tablas, restricciones,
+Ã­ndices, RLS y grants del borrador. No se ejecutÃ³ en `supabase_db_smoo_control`,
+producciÃ³n ni `main`.
+
+**RPC experimental:** se aÃ±adiÃ³ fuera de `supabase/migrations`
+`supabase/design/ITEM_CORE_F1_RPC_DRAFT.sql` con `app_upsert_item` y
+`apply_item_movement`. Ambos son `SECURITY DEFINER`, fijan `search_path`, usan
+claims JWT (`restaurant_id`, `permissions`, `role=service_role`), rechazan
+cross-tenant y mantienen revocada la escritura directa de clientes. El arnés
+`supabase/tests/item_master_f1_rpc_isolated.sql` exige
+`app.f1_isolated=true` y termina en `ROLLBACK`.
+
+Resultados verificables:
+
+- SQL RPC: PASS para alta/ediciÃ³n, servicio sin stock, clasificaciones N:M,
+  unidad base, idempotencia con mismo payload, rechazo de digest distinto,
+  stock insuficiente, reversiÃ³n exacta y aislamiento cross-tenant.
+- REST contra PostgREST temporal: `app_upsert_item` 200 y
+  `apply_item_movement` 200; JWT sin permiso rechazado con HTTP 400.
+- Concurrencia REST: dos ventas simultÃ¡neas de 2 sobre saldo 3 produjeron una
+  respuesta 200 y una 400 por stock insuficiente; saldo final 1.
+- El arnés guardado desde el repositorio terminÃ³ con
+  `PASS item master F1 RPC assertions`, `ROLLBACK` y cÃ³digo 0.
+- La ejecuciÃ³n directa del borrador DDL con `ROLLBACK` terminÃ³ con cÃ³digo 0.
+
+**Problemas de editor y Flutter:** se corrigieron de forma local los futures
+descartados y el acceso protegido de `articles_page_view_part.dart`, y se
+ejecutÃ³ `dart format` sobre los archivos afectados. `dart analyze`,
+`flutter analyze` y `flutter test` no devolvieron diagnÃ³stico: cada comando
+quedÃ³ bloqueado mÃ¡s de 30 segundos en el analizador/entorno Dart y fue
+detenido. Por tanto, no se declara el conjunto de 15 problemas ni el anÃ¡lisis
+Flutter como aprobado; el bloqueo queda pendiente de un entorno limpio. Los
+cambios locales preexistentes de UI, navegaciÃ³n, autenticaciÃ³n, localizaciÃ³n y
+tests no se incorporan al commit F1.
+
+**G1: NO APROBADO.** F1 queda validado estructuralmente en laboratorio aislado,
+pero no habilita migraciÃ³n ni operaciÃ³n: falta resolver el anÃ¡lisis Flutter,
+formalizar la prueba REST/concurrencia en CI, completar invariantes de unidades,
+resolver consumo de reglas y contratos F2/Drift, y obtener revisiÃ³n de seguridad
+de claims/grants antes de cualquier corte. La 088 sigue congelada y no aplicada.
+
 ## 11. Referencias y precedencia documental
 
 1. **Este plan rector**: fuente operativa de arquitectura, etapas, gates y estado actual.
