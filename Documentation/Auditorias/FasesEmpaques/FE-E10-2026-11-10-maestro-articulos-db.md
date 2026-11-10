@@ -11,6 +11,7 @@ Kivo debe tener **un maestro persistente** `public.items`, como concepto de domi
 - `item_class`: `sale_product`, `raw_material`, `packaging`, `service`. Clasificación comercial, **independiente** del tipo; una bolsa controlada por stock es `inventory + packaging`.
 - `is_sellable`, `tracks_inventory`, `is_active`, `unit_cost`, `unit_price`, unidades de base/compra, conversión y categoría como atributos del maestro, sin confundir servicio con stock.
 - Identidad, tenant, código estable y procedencia `source_kind/source_id`, índices para código y filtrado, RLS por restaurante.
+- Contratos SQL **de lectura** `item_stock_balances` e `item_ledger_entries`: vistas persistidas en el esquema (no duplican registros), combinan saldos/movimientos por `item_id` y mantienen RLS mediante `security_invoker`. Permiten consultar ambos inventarios sin migrar todavía sus ledgers.
 - El nuevo tipo Servicio puede registrarse como `source_kind=native`, sin movimientos de inventario ni referencia de producto. **No habilitar venta de servicios desde POS** hasta migrar sus contratos en fase posterior.
 
 ### Transición sin pérdida histórica
@@ -39,7 +40,7 @@ Las tablas existentes `public.products` y `public.packaging_items` son contratos
 ## Ficheros de la fase
 
 1. `supabase/tests/item_master_preflight_readonly.sql` — consultas solo lectura, hallazgos y bloqueantes
-2. `supabase/migrations/088_item_master_foundation.sql` — tabla persistente, índices, constraints, backfill, triggers, RLS y permisos para servicios nativos
+2. `supabase/migrations/088_item_master_foundation.sql` — tabla persistente, índices, constraints, backfill, triggers, RLS, permisos de servicios nativos y vistas de saldo/movimiento
 3. `supabase/tests/item_master_foundation_rollback.sql` — prueba transaccional sintética y `ROLLBACK`; verifica producto, materia prima, empaque, servicio, espejo de actualizaciones, rechazo cross-tenant, identidad y flags
 
 ## Barreras de calidad obligatorias
@@ -49,7 +50,7 @@ Las tablas existentes `public.products` y `public.packaging_items` son contratos
 - Aplicar 088 local mediante migración; contar **88/88**; probar ejecución rollback y CRUD en tablas legacy. Comparar conteos, UUID, nombre, stock, costo, unidad, categoría, clasificación y tenant antes/después.
 - Validar **JWT reales** de cuatro perfiles: administrador, solo productos, solo empaques, sin permiso. SELECT de maestro por restaurante; INSERT/UPDATE de servicio nativo solamente con `productos.gestionar`; escrituras sobre filas legacy denegadas; no exponer cross-tenant. El script rollback por sí mismo no prueba HTTP/RLS.
 - Actualización de productos/empaques por REST debe sincronizar el maestro **en la misma transacción**, sin afectar movimientos; fallos en restricciones deben revertir escritura legacy.
-- Confirmar relaciones originales de reglas/ventas/stock y operaciones POS anteriores sin regresiones; si aparece incompatibilidad SQL, corregir en la misma rama mediante migración incremental (089 si 088 ya se aplicó localmente), nunca reescribir migraciones aplicadas.
+- Confirmar que `item_stock_balances` e `item_ledger_entries` respetan saldos/movimientos exactamente una vez, tenant, permisos y referencias originales; comparar contra los dos ledgers anteriores sin duplicación. Confirmar relaciones originales de reglas/ventas/stock y operaciones POS anteriores sin regresiones; si aparece incompatibilidad SQL, corregir en la misma rama mediante migración incremental (089 si 088 ya se aplicó localmente), nunca reescribir migraciones aplicadas.
 - No iniciar implementación de interfaz: **Fase 2 es exclusivamente posterior** a aprobación de integridad de base; no hacer cambios de Flutter/UX/navegación en este PR.
 - Inspeccionar privilegios de `SECURITY DEFINER` y otros triggers en el schema real; validar que ningún usuario cliente pueda manipular `items` cambiando IDs, tenant o procedencia.
 - No confundir compilación del Flutter actual con aprobación de la fase DB. QA SQL, HTTP y de contratos prevalecen.
