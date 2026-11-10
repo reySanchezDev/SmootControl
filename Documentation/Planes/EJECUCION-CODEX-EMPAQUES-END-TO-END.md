@@ -113,7 +113,7 @@ Este diagrama es la dirección de arquitectura. **Cada tabla se introducirá sol
 | 2026-11-08 | Catálogo visual de Artículos | PR #17, `d9a4db62000d6cb88a9cc119ef337abfa53971f6` | Codex informó 126/126 tests focalizados, build Web y preview 8092 | **Solo UX/proyección**, no core |
 | 2026-11-10 | Propuesta maestro espejo | PR #18 / migración 088 | Tabla nueva + triggers sobre fuentes legadas, sin auditoría real del lab aquí | **CONGELADA / NO APROBADA** |
 | 2026-11-10 | Auditoría externa LS Central | Drive carpeta POS, 4 ficheros | `Item` AL tabla 27; SQL BOM, vinculados, modificadores; límites expresos | **Decisión core único ratificada** |
-| 2026-11-10 | Plan rector actualizado | este documento | Objetivo autoritativo, gates F0–F4, no maquillaje UI | **F0 PENDIENTE** |\n| 2026-11-10 | Ajuste de alcance y auditoría de impacto | este documento / ADR-002 | Historia operativa del laboratorio no se conserva; clasificación de tablas, FKs, RPC, Drift, POS y estrategia de corte | **F0 ESTÁTICA AVANZADA; G0 NO APROBADO** |
+| 2026-11-10 | Plan rector actualizado | este documento | Objetivo autoritativo, gates F0–F4, no maquillaje UI | **F0 PENDIENTE** |\n| 2026-11-10 | Ajuste de alcance y auditoría de impacto | este documento / ADR-002 | Historia operativa del laboratorio no se conserva; clasificación de tablas, FKs, RPC, Drift, POS y estrategia de corte; script read-only ampliado | **F0 ESTÁTICA AVANZADA; G0 NO APROBADO** |
 
 ### Plantilla obligatoria de actualización
 
@@ -255,7 +255,7 @@ Al completar trabajo, editar la fecha/estado de cabecera, la fila de fase y aña
 
 - **Comprobado en repositorio:** dualidad de maestros, dos ledgers/stock, FKs de ventas/recetas/ajustes/consumo de personal, RPC de compra/POS/receta, Drift v34, dos pulls e inactivaciones, permisos RLS y triggers 085–087.
 - **No comprobado aún contra Docker:** tablas adicionales que el entorno tenga, cuerpo **final** de funciones redefinidas, triggers vivos, volúmenes y cifras de filas, rutas efectivas de grants, cambios manuales fuera de migraciones, operación multi-terminal real, estado de 088.
-- **G0:** permanece **ABIERTO** hasta auditoría SQL de `pg_catalog` y diagnóstico de las discrepancias; ninguna decisión de DROP/productivo se ejecutará de manera anticipada.
+- **G0:** permanece **ABIERTO** hasta auditoría SQL de `pg_catalog` y diagnóstico de las discrepancias; ninguna decisión de DROP/productivo se ejecutará de manera anticipada. El script versionado `supabase/tests/item_master_preflight_readonly.sql` es el censo reproducible. **Sus resultados no se han ejecutado ni certificado desde GitHub**.
 
 
 ## 10. Referencias y precedencia documental
@@ -271,4 +271,4 @@ Al completar trabajo, editar la fecha/estado de cabecera, la fila de fase y aña
 
 ## 11. Próxima acción autorizada
 
-**F0: ejecutar el censo real de `pg_catalog` y contrastarlo con las matrices de la sección 9, exclusivamente en Docker local; confirmar estado de 088, referencias, funciones definitivas, permisos y datos de configuración.** Los históricos operativos de laboratorio son prescindibles; no limpiar ni borrar aún. **Sin aplicar 088, sin crear nuevas tablas y sin editar pantallas**. El desarrollo de F1 se autorizará solo al cerrar G0 documentado.
+**F0: ejecutar `supabase/tests/item_master_preflight_readonly.sql` (ampliado con censo de `pg_catalog`, FKs, columnas, triggers, RLS, grants, funciones vigentes por hash y ledger de migraciones), y contrastar cada salida con las matrices de la sección 9 exclusivamente en Docker local; confirmar estado de 088, referencias, funciones definitivas, permisos y datos de configuración.** Los históricos operativos de laboratorio son prescindibles; no limpiar ni borrar aún. **Sin aplicar 088, sin crear nuevas tablas y sin editar pantallas**. El desarrollo de F1 se autorizará solo al cerrar G0 documentado.
