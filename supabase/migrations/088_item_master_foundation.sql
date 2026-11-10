@@ -341,6 +341,59 @@ BEFORE INSERT OR UPDATE ON public.items
 FOR EACH ROW
 EXECUTE FUNCTION public.validate_item_master_category_tenant();
 
+-- Unified read contracts for inventory and history, without copying balances
+-- or movement records. security_invoker ensures underlying table RLS is used.
+-- Native service/non-inventory items have no stock rows.
+CREATE VIEW public.item_stock_balances
+WITH (security_invoker = true)
+AS
+  SELECT i.id AS item_id, s.restaurant_id,
+         s.quantity_on_hand::numeric(18,6) AS quantity_on_hand,
+         'product'::text AS ledger_source, s.updated_at
+  FROM public.inventory_stock s
+  JOIN public.items i ON i.id = s.product_id
+    AND i.restaurant_id = s.restaurant_id
+    AND i.source_kind = 'product'
+  UNION ALL
+  SELECT i.id AS item_id, s.restaurant_id,
+         s.quantity_on_hand::numeric(18,6) AS quantity_on_hand,
+         'packaging'::text AS ledger_source, s.updated_at
+  FROM public.packaging_stock s
+  JOIN public.items i ON i.id = s.packaging_item_id
+    AND i.restaurant_id = s.restaurant_id
+    AND i.source_kind = 'packaging';
+
+CREATE VIEW public.item_ledger_entries
+WITH (security_invoker = true)
+AS
+  SELECT i.id AS item_id, m.restaurant_id,
+         m.id AS movement_id, m.movement_type,
+         m.quantity_delta::numeric(18,6) AS quantity_delta,
+         'product'::text AS ledger_source, m.reference_type,
+         m.reference_id, m.created_at
+  FROM public.inventory_movements m
+  JOIN public.items i ON i.id = m.product_id
+    AND i.restaurant_id = m.restaurant_id
+    AND i.source_kind = 'product'
+  UNION ALL
+  SELECT i.id AS item_id, m.restaurant_id,
+         m.id AS movement_id, m.movement_type,
+         m.quantity_delta::numeric(18,6) AS quantity_delta,
+         'packaging'::text AS ledger_source, m.reference_type,
+         m.reference_id, m.created_at
+  FROM public.packaging_movements m
+  JOIN public.items i ON i.id = m.packaging_item_id
+    AND i.restaurant_id = m.restaurant_id
+    AND i.source_kind = 'packaging';
+
+GRANT SELECT ON public.item_stock_balances, public.item_ledger_entries
+TO authenticated;
+
+COMMENT ON VIEW public.item_stock_balances IS
+  'Read-only inventory balances for legacy product and packaging sources; no stock duplication.';
+COMMENT ON VIEW public.item_ledger_entries IS
+  'Read-only, RLS-invoker movement history over existing ledgers; immutable original movement IDs.';
+
 -- Assertion in the migration (no destructive cleanup or reset).
 DO $$
 DECLARE
