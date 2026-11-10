@@ -61,7 +61,7 @@ jobs:
             exit 0
           fi
           if git diff --name-only "$base" "$CURRENT_SHA" |
-            grep -Eq '^(lib/|test/|pubspec\.(yaml|lock)$|analysis_options\.yaml$|\.github/workflows/item-core-quality\.yml$)'; then
+            grep -Eq '^(lib/|test/|pubspec\.(yaml|lock)$|analysis_options\.yaml$)'; then
             echo 'flutter=true' >> "$GITHUB_OUTPUT"
           else
             echo 'flutter=false' >> "$GITHUB_OUTPUT"
