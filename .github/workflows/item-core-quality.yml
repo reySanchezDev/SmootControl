@@ -5,6 +5,7 @@ on:
     branches:
       - feature/item-master-db-foundation
       - feature/item-core-f2-purchases-adjustments
+      - feature/item-core-f2-staff-consumption
     paths:
       - 'lib/**'
       - 'test/**'
