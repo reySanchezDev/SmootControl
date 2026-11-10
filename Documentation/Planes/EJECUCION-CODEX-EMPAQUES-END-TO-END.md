@@ -697,3 +697,15 @@ Se verifico la rama `feature/item-master-db-foundation` en `0d095ec718c234fe8d4c
 **Validación GitHub Actions:** corrida `42918534477`; jobs staff consumption, payroll claim, consumo, compra/ajuste y recetas **PASS**. Flutter se omitió correctamente por no existir cambios Dart. Un commit documental posterior no modifica el comportamiento SQL verificado.
 
 **Gate G2:** ABIERTO. No se aplicó ninguna migración ni se modificaron tablas en el laboratorio/producción.
+
+### 12.11 F2.1 — Empaques no inventariados y venta/anulación
+
+**Rama:** `feature/item-core-f2-noninventory-consumption`. Durante la auditoría cruzada F2.1/F2.3 se detectó que `resolve_item_consumption` filtraba exclusivamente `consumed.item_type='inventory'`, **omitiendo silenciosamente servilletas/empaques no inventariados**, aunque el core admite ese tipo y su clasificación como empaque.
+
+**Corrección de contrato:** se resuelven consumos de `inventory` y `non_inventory`, con rechazo explícito de reglas activas hacia `service`. En `pos_sync_sale_v2`, solo artículos `inventory` crean movimiento físico; ambos tipos se registran en el snapshot original de venta. `sale_consumption_snapshots.is_inventory_consumption` + `movement_id` nullable de modo consistente distinguen consumo físico y lógico; la anulación revierte **solo** movimientos físicos originalmente contabilizados. **No se inventan existencias para artículos no inventariados.**
+
+**Pruebas PostgreSQL 16 aisladas:** resolver no omite artículos no inventariados, rechaza servicios, compra/ajuste/recetas/nomina siguen pasando; venta de botella con bolsa inventariable `per_order` y servilleta no inventariable `per_sale_line`: dos snapshots, pero solo dos movimientos físicos (producto y bolsa); void devuelve stock a apertura y conserva snapshots. **CI corrida `42921236410`: success.**
+
+**Seguridad pendiente:** la señal `is_inventory_consumption` del snapshot es derivada por RPC confiable del `item_type`. En el corte definitivo debe denegarse DML directo a `sale_consumption_snapshots`, impedir RPC alternativos que creen snapshots falsificados y verificar FK/trigger frente al esquema real y JWT. Este SQL continúa exclusivamente en `supabase/design/`, no en migraciones ni base principal.
+
+**Estado:** contrato integrado en rama técnica solo tras suite CI; G2 continúa ABIERTO hasta integración real de POS, Drift, permisos y cutover.
