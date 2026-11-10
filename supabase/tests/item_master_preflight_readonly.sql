@@ -73,4 +73,108 @@ FROM (
 WHERE foreign_table_name IN ('products', 'packaging_items')
 ORDER BY foreign_table_name, table_name, column_name;
 
+
+-- F0 physical-schema census. Never run this on production.
+-- Only object metadata is returned; no credentials, Auth rows or customer data.
+
+-- 1. All public relations, including objects not present in migration text.
+SELECT n.nspname AS schema_name, c.relname AS object_name,
+       c.relkind AS object_kind, c.relispartition AS partitioned_child,
+       c.relrowsecurity AS rls_enabled,
+       c.relforcerowsecurity AS force_rls,
+       pg_size_pretty(pg_total_relation_size(c.oid)) AS allocated_size,
+       COALESCE(s.n_live_tup, 0) AS estimated_live_rows
+FROM pg_class c
+JOIN pg_namespace n ON n.oid = c.relnamespace
+LEFT JOIN pg_stat_user_tables s ON s.relid = c.oid
+WHERE n.nspname = 'public' AND c.relkind IN ('r','p','v','m')
+ORDER BY c.relkind, c.relname;
+
+-- 2. Every FK in public with its exact source/target keys and delete action.
+SELECT con.conname AS constraint_name,
+       src.relname AS source_table,
+       pg_get_constraintdef(con.oid, true) AS exact_foreign_key,
+       dst.relname AS target_table,
+       con.convalidated AS validated
+FROM pg_constraint con
+JOIN pg_class src ON src.oid = con.conrelid
+JOIN pg_namespace ns ON ns.oid = src.relnamespace
+JOIN pg_class dst ON dst.oid = con.confrelid
+WHERE ns.nspname = 'public' AND con.contype = 'f'
+ORDER BY target_table, source_table, constraint_name;
+
+-- 3. Unique, check and primary-key constraints.
+SELECT src.relname AS relation_name, con.conname AS constraint_name,
+       con.contype, pg_get_constraintdef(con.oid, true) AS definition
+FROM pg_constraint con
+JOIN pg_class src ON src.oid = con.conrelid
+JOIN pg_namespace ns ON ns.oid = src.relnamespace
+WHERE ns.nspname = 'public' AND con.contype IN ('p','u','c','x')
+ORDER BY relation_name, con.contype, constraint_name;
+
+-- 4. Columns used by master candidates and their downstream references.
+SELECT table_name, ordinal_position, column_name, data_type, udt_name,
+       is_nullable, column_default
+FROM information_schema.columns
+WHERE table_schema = 'public'
+  AND (
+    table_name IN (
+      'products','packaging_items','product_categories','measurement_units',
+      'product_recipes','product_recipe_lines','product_packaging_rules',
+      'sale_items','sales','inventory_stock','inventory_movements',
+      'packaging_stock','packaging_movements','inventory_adjustment_lines',
+      'employee_raw_material_consumption_lines','modifier_groups',
+      'modifier_options','product_modifier_groups','items',
+      'item_stock','item_ledger_entries'
+    )
+    OR column_name IN ('product_id','packaging_item_id','component_product_id',
+                       'item_id','restaurant_id')
+  )
+ORDER BY table_name, ordinal_position;
+
+-- 5. User-visible grants and RLS policy expressions (no credentials).
+SELECT schemaname, tablename, policyname, permissive, roles, cmd, qual,
+       with_check
+FROM pg_policies
+WHERE schemaname = 'public'
+ORDER BY tablename, policyname;
+
+SELECT table_name, grantee, privilege_type
+FROM information_schema.role_table_grants
+WHERE table_schema = 'public'
+  AND grantee IN ('anon','authenticated','service_role','PUBLIC')
+ORDER BY table_name, grantee, privilege_type;
+
+-- 6. Active triggers (also detect active triggers that migration 088 would add).
+SELECT rel.relname AS table_name, trg.tgname AS trigger_name,
+       pg_get_triggerdef(trg.oid, true) AS trigger_definition,
+       trg.tgenabled AS enabled
+FROM pg_trigger trg
+JOIN pg_class rel ON rel.oid = trg.tgrelid
+JOIN pg_namespace ns ON ns.oid = rel.relnamespace
+WHERE ns.nspname = 'public' AND NOT trg.tgisinternal
+ORDER BY table_name, trigger_name;
+
+-- 7. All functions/RPCs touching item-related tables/fields by BODY,
+-- not merely by function name. Hashes help compare actual deployed bodies
+-- against versioned migrations without dumping code or JWTs.
+SELECT proc.proname AS function_name,
+       pg_get_function_identity_arguments(proc.oid) AS arguments,
+       proc.prosecdef AS security_definer,
+       md5(pg_get_functiondef(proc.oid)) AS function_body_md5,
+       pg_get_userbyid(proc.proowner) AS owner
+FROM pg_proc proc
+JOIN pg_namespace ns ON ns.oid = proc.pronamespace
+WHERE ns.nspname = 'public'
+  AND (
+    pg_get_functiondef(proc.oid) ~* '(products|packaging_items|inventory_stock|packaging_stock|inventory_movements|packaging_movements|product_recipe|product_packaging_rules|product_id|packaging_item_id|item_id)'
+    OR proc.proname ~* '^(pos_sync|pos_pull|apply_|app_register|app_save|app_get_)'
+  )
+ORDER BY function_name, arguments;
+
+-- 8. Deployed migration ledger, including whether 088 was already executed.
+SELECT version, name
+FROM supabase_migrations.schema_migrations
+ORDER BY version;
+
 COMMIT;
