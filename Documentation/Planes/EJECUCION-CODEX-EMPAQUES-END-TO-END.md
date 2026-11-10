@@ -551,9 +551,25 @@ Se verifico la rama `feature/item-master-db-foundation` en `0d095ec718c234fe8d4c
 
 **Jerarquía de autoridad:** requisitos acordados del core y este plan > contratos de seguridad/integridad verificados > historial de auditoría > soluciones transitorias de interfaz. Un PR o Codex no modifica la arquitectura por su cuenta. Cualquier contradicción se documenta aquí antes de ejecutar código.
 
-## 12. Próxima acción autorizada
+## 12. Estado operativo y ejecución automatizada (2026-11-10)
 
-**Siguiente paso: validar el borrador DDL F1 sobre clon desechable con ROLLBACK, completar invariantes de unidades y permisos, y diseñar/ensayar `app_upsert_item` y `apply_item_movement` bajo aislamiento, antes de crear una migración efectiva.** Corregir el borrador con resultados de pruebas y documentarlos aquí. No aplicar la migración 088 espejo, ni tocar base real o pantallas.
-### 12.1 Estado operativo posterior a F1.1
+**F0:** ejecutada y auditada sobre PostgreSQL local. **G1:** aprobado para *preparar* F2, no para instalar schema ni operar en producción. La 088 espejo sigue congelada. Los módulos ventas, recetas, compras, consumo personal/nómina y Drift requieren corte coordinado.
 
-El siguiente paso autorizado queda condicionado a resolver G1: entorno Dart/Flutter limpio con `analyze` y `test` concluyentes, pruebas REST/concurrencia automatizadas y mapa completo de `pg_depend` para ventas, recetas, compras, nomina y sync Drift. No aplicar la migracion 088 espejo, no ejecutar migraciones en este cierre y no tocar base real, produccion o pantallas.
+### 12.1 GitHub Actions — automatización del trabajo remoto
+
+- **Workflow:** `.github/workflows/item-core-quality.yml` — disparo en push de `feature/item-master-db-foundation`; PR contra `main` y ejecución manual según disponibilidad.
+- **Inventario estático:** `tool/audit_item_core_dependencies.py`; analiza todas las migraciones versionadas y archivos Dart del proyecto, enumera las apariciones de siete tablas legacy y las últimas migraciones que contienen nombres de RPC. Publica el reporte como artefacto `item-core-dependency-inventory` (14 días).
+- **Flutter:** instala Flutter stable **3.41.7** en runner Linux limpio, ejecuta `flutter pub get`, `flutter analyze --no-pub` con timeout explícito de 180 segundos y `flutter test --no-pub -j 2` con timeout de 1200 segundos. Los resultados no se ocultan; si falla/hang cualquiera, el job es fallido. Logs disponibles como artefacto `item-core-flutter-tooling-logs`.
+- **Aislamiento:** workflow solamente hace checkout, lecturas de archivos, análisis de dependencias y pruebas Flutter. **No** conecta al PostgreSQL de laboratorio, no ejecuta migraciones, no necesita credenciales, no despliega y no escribe sobre `main`.
+- **Importante:** la generación de mapa estático no equivale a resolver `pg_depend` real ni validar SQL ejecutado; debe complementarse con el censo F0 del laboratorio antes de eliminar tablas.
+- **Estado al registrar:** workflow publicado y corridas lanzadas automáticamente por GitHub; resultados aún por certificar. No declarar PASS hasta tener `conclusion=success` y examinar logs.
+
+### 12.2 Reparto de responsabilidad para reducir prompts Codex
+
+**Trabajo del asistente mediante GitHub:** inspección de migraciones y Dart, matrices de dependencias, diseño/corrección de código versionado, commits, branches, PRs, configuración CI, revisión de logs, reportes y documentación de avance en este mismo plan. Los resultados de CI son evidencia de un entorno limpio de GitHub, no del Windows local.
+
+**Trabajo exclusivo de Codex local:** acceso a `supabase_db_smoo_control` y `pg_catalog` vivo, inspección de colas/tickets de terminales, pruebas con dispositivos/Drift locales, pruebas que requieran Docker/Windows instalados en el equipo, ejecución de un futuro corte de laboratorio **solo tras autorización**. No delegar a Codex lo que pueda inspeccionarse/corregirse directamente en GitHub.
+
+**Siguiente entrega técnica del asistente:** producir mapa F2 por tabla, función y consumidor desde el artefacto generado; construir contratos/versionamiento y PRs sin aplicar migraciones ni tocar pantallas. Si GitHub Actions no está habilitado o no corre, informarlo sin simular su ejecución. Resolver anomalías reproducibles del CI dentro de la rama.
+
+**Gates:** G2 pendiente. Prohibido activar el nuevo core o retirar tablas legacy hasta que RPC, ventas/void, recetas, reglas, nómina, POS/Drift y sincronización superen pruebas y que no queden escritores legacy activos.
