@@ -709,3 +709,24 @@ Se verifico la rama `feature/item-master-db-foundation` en `0d095ec718c234fe8d4c
 **Seguridad pendiente:** la señal `is_inventory_consumption` del snapshot es derivada por RPC confiable del `item_type`. En el corte definitivo debe denegarse DML directo a `sale_consumption_snapshots`, impedir RPC alternativos que creen snapshots falsificados y verificar FK/trigger frente al esquema real y JWT. Este SQL continúa exclusivamente en `supabase/design/`, no en migraciones ni base principal.
 
 **Estado:** contrato integrado en rama técnica solo tras suite CI; G2 continúa ABIERTO hasta integración real de POS, Drift, permisos y cutover.
+
+### 12.12 F2.3 — Contrato de catálogo POS V2, previo a migrar Drift
+
+**Rama:** `feature/item-core-f2-pos-catalog-validated`, desde `feature/item-master-db-foundation`. Se agregan exclusivamente código Dart **independiente** del motor actual y pruebas:
+- `lib/features/sync/domain/entities/item_catalog_snapshot_v2.dart`
+- `test/features/sync/domain/entities/item_catalog_snapshot_v2_test.dart`
+
+**Alcance:** modelo inmutable de snapshot completo del maestro `items`, conversiones `item_units` y referencias de `item_consumption_rules`. Exige `contract_version=2`, `snapshot_complete=true`, `restaurant_id` uniforme, revisión positiva, `snapshot_id` estable, UUID canónicos, códigos comerciales únicos sin distinguir mayúsculas/minúsculas, unidad base por artículo con factor 1, conversiones decimales exactas representadas como **cadenas** y reglas que solo apuntan a artículos/unidades del mismo catálogo. Prohíbe convertir un artículo oculto de POS en artículo borrado/inactivo. Una respuesta paginada/parcial se rechaza **antes de tocar SQLite**.
+
+**Idempotencia/snapshot:** si la revisión entrante es menor que la aplicada se rechaza por stale; si es igual con el mismo `snapshot_id` se considera replay sin cambio, y si es igual con `snapshot_id` diferente se rechaza. Una revisión superior solo se considera aplicable; **NO se ejecuta todavía ninguna escritura Drift**. La futura actualización debe ser una transacción local única que persista artículos, unidades, reglas y revisión juntos.
+
+**Pruebas:** casos de catálogo de hamburguesa no inventariable y empaque inventariable compartiendo el maestro; partial-pull; cross-tenant; código duplicado; unidad base ausente/factor distinto de uno; regla a unidad inválida; precisión decimal; servicio como consumo físico; line-rule sin origen; revisiones repetidas, desordenadas y conflictivas; listas inmutables.
+
+**Preocupaciones de integración antes de G2:**
+1. Crear `pos_pull_item_catalog_v2` transaccional y snapshot completo con revisión monotónica por restaurante. `snapshot_id` debe identificar exactamente la misma revisión; no confiar en que el cliente pueda crear revisiones.
+2. Completar el parser de reglas, atributos vigentes y modificaciones POS existentes necesarios para no degradar funcionalidad. El contrato actual es **un núcleo mínimo**, no un DTO exhaustivo de todos los campos de la venta.
+3. Adaptar Drift v34 a tablas canónicas en una rama controlada, sin correr ambas rutas `LocalProducts`/`LocalPackagingItems` al mismo tiempo. Los dispositivos offline deben cerrar/enviar pendientes o reinstalar base de prueba antes del corte.
+4. Cambiar el sender de ventas al comando transaccional V2; no basta con sincronizar un catálogo nuevo manteniendo envíos HTTP parciales anteriores.
+5. GitHub Actions debe comprobar tests y análisis de los archivos nuevos; si el análisis global falla por defectos legacy, separar la línea base y demostrar cero diagnósticos **nuevos**. No registrar G2 como aprobado por pruebas DTO.
+
+**CI:** se corrigió la detección de cambios Dart para incluir el diff completo de una rama F2 contra la rama de integración, y no solamente el último commit (que podría cambiar YAML y omitir pruebas). Verificar conclusión del run de esta rama antes de considerar certificado el contrato.
