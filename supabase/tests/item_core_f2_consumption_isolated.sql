@@ -61,22 +61,41 @@ SELECT set_config('app.test_restaurant','00000000-0000-0000-0000-000000000001',t
 
 DO $$
 DECLARE
-  v_lines jsonb := '[{"item_id":"30000000-0000-0000-0000-000000000001","quantity":1},{"item_id":"30000000-0000-0000-0000-000000000001","quantity":1}]';
+  v_lines jsonb := '[{"line_id":"50000000-0000-0000-0000-000000000001","item_id":"30000000-0000-0000-0000-000000000001","quantity":1},{"line_id":"50000000-0000-0000-0000-000000000002","item_id":"30000000-0000-0000-0000-000000000001","quantity":1}]';
   v_line_qty numeric;
   v_order_qty numeric;
   v_rows integer;
 BEGIN
   SELECT count(*),
-    max(quantity_base) FILTER (WHERE scope='per_sale_line'),
+    sum(quantity_base) FILTER (WHERE scope='per_sale_line'),
     max(quantity_base) FILTER (WHERE scope='per_order')
   INTO v_rows,v_line_qty,v_order_qty
   FROM public.resolve_item_consumption(
     '00000000-0000-0000-0000-000000000001',
     '20000000-0000-0000-0000-000000000001',v_lines);
-  IF v_rows<>2 OR v_line_qty<>4 OR v_order_qty<>1 THEN
+  IF v_rows<>3 OR v_line_qty<>4 OR v_order_qty<>1 THEN
     RAISE EXCEPTION 'wrong_consumption: rows %, line %, order %',
       v_rows,v_line_qty,v_order_qty;
   END IF;
+
+  IF (SELECT count(DISTINCT sale_line_id)
+      FROM public.resolve_item_consumption(
+        '00000000-0000-0000-0000-000000000001',
+        '20000000-0000-0000-0000-000000000001',v_lines)
+      WHERE scope='per_sale_line')<>2 THEN
+    RAISE EXCEPTION 'sale_line_identity_not_preserved';
+  END IF;
+
+  BEGIN
+    PERFORM * FROM public.resolve_item_consumption(
+      '00000000-0000-0000-0000-000000000001',
+      '20000000-0000-0000-0000-000000000001',
+      replace(v_lines::text,'50000000-0000-0000-0000-000000000002',
+        '50000000-0000-0000-0000-000000000001')::jsonb);
+    RAISE EXCEPTION 'duplicate_line_id_not_rejected';
+  EXCEPTION WHEN check_violation THEN
+    IF SQLERRM <> 'duplicate_sale_line_id' THEN RAISE; END IF;
+  END;
 
   -- More specific per-order source overrides global per-order without
   -- consuming the order package twice, even at a worse priority.
