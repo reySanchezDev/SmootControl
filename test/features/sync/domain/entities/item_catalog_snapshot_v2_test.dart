@@ -139,8 +139,7 @@ void main() {
 
     test('rejects a missing unit for the canonical base unit', () {
       final catalog = _catalog();
-      final units = catalog['item_units']! as List<Map<String, Object?>>;
-      units.removeAt(1);
+      (catalog['item_units']! as List<Map<String, Object?>>).removeAt(1);
 
       expect(
         () => ItemCatalogSnapshotV2.fromJson(
@@ -263,10 +262,10 @@ void main() {
         expectedRestaurantId: _restaurant,
       );
 
-      expect(() => snapshot.items.clear(), throwsUnsupportedError);
-      expect(() => snapshot.units.clear(), throwsUnsupportedError);
+      expect(snapshot.items.clear, throwsUnsupportedError);
+      expect(snapshot.units.clear, throwsUnsupportedError);
       expect(
-        () => snapshot.consumptionRules.clear(),
+        snapshot.consumptionRules.clear,
         throwsUnsupportedError,
       );
     });
