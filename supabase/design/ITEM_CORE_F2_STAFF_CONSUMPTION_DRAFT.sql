@@ -71,6 +71,11 @@ BEGIN
     RAISE EXCEPTION 'invalid_staff_item_consumption'
       USING ERRCODE='22023';
   END IF;
+  -- Synchronize new staff consumption with payroll period claims.
+  PERFORM pg_advisory_xact_lock(
+    hashtext(p_restaurant_id::text),
+    hashtext('staff-employee:'||p_employee_id::text)
+  );
   IF NOT EXISTS(
     SELECT 1 FROM public.employees e
     WHERE e.id=p_employee_id AND e.restaurant_id=p_restaurant_id
@@ -262,6 +267,19 @@ BEGIN
     'operation',p_void_operation_key,'voided_at',p_voided_at
   )::text);
 
+  -- Advisory lock comes BEFORE row lock, matching the ordering in
+  -- payroll claim and post: no void can race a payroll association.
+  SELECT * INTO v_header
+  FROM public.employee_raw_material_consumptions
+  WHERE id=p_consumption_id AND restaurant_id=p_restaurant_id;
+  IF v_header.id IS NULL THEN
+    RAISE EXCEPTION 'staff_consumption_not_found'
+      USING ERRCODE='23503';
+  END IF;
+  PERFORM pg_advisory_xact_lock(
+    hashtext(p_restaurant_id::text),
+    hashtext('staff-employee:'||v_header.employee_id::text)
+  );
   SELECT * INTO v_header
   FROM public.employee_raw_material_consumptions
   WHERE id=p_consumption_id AND restaurant_id=p_restaurant_id

@@ -663,3 +663,23 @@ Se verifico la rama `feature/item-master-db-foundation` en `0d095ec718c234fe8d4c
 **CI:** GitHub Actions ejecuta job `F2 staff consumption and void - isolated PostgreSQL` con PostgreSQL 16 desechable y `ROLLBACK`. El primer resultado de este job fue PASS en la corrida `42915516379`; cualquier modificación posterior requiere una nueva corrida PASS antes de fusionar. Las validaciones SQL no sustituyen pruebas de payroll con permisos reales/JWT ni consistencia de pago final.
 
 **Estado:** contrato de diseño F2.2, no desplegado. No aplicar en base principal/producción ni habilitarlo desde UI/POS hasta que nómina, permisos efectivos, Drift y ventas completen G2.
+
+### 12.8 F2.2 — Reclamación de consumos de personal para nómina
+
+**Entrega técnica:** `feature/item-core-f2-payroll-claim`, archivos `supabase/design/ITEM_CORE_F2_PAYROLL_CLAIM_DRAFT.sql` y `supabase/tests/item_core_f2_payroll_claim_{fixture,assert}.sql`, y job PostgreSQL 16 desechable en GitHub Actions. **No ejecutado en base operativa ni migraciones**.
+
+**Decisión de integridad:** el contrato heredado 076/077 calcula el total de materia prima y después marca filas como pagadas mediante llamadas separadas. F2 sustituirá esta separación por un **claim único y transaccional**, que devuelve exactamente las filas e importes asignados a `payroll_run_id`, ignora `status='voided'`, bloquea reclamación por otro run, aplica período semiabierto `[inicio,fin)` y toma lock por empleado compartido con los RPC de creación/anulación del consumo.
+
+**Decisión de seguridad incorporada tras auditoría:** el claim acepta límites temporales pero NO debe quedar invocable como endpoint REST independiente. Se implementa como `item_core_internal.claim_staff_consumptions_for_payroll`, sin `EXECUTE` para `anon`/`authenticated`. Lo llamará exclusivamente la RPC confiable `app_post_payroll_employee` después de validar usuario, tenant, período real de `payroll_runs`, zona horaria comercial y estado draft. El test aislado afirma que un usuario `authenticated` **no puede** invocarlo. Nunca dar permisos de cliente directo ni usar un `set_config` del cliente como autorización.
+
+**Dependencias que aún obligan a corte conjunto:**
+1. Actualizar `app_post_payroll_employee` para calcular y marcar consumos en **una operación**, usando el total y detalle del claim como snapshot de nómina. Hoy se conserva la función legacy sin modificar.
+2. Definir origen de zona horaria por restaurante; `payroll_runs.period_start/period_end` son `date`, pero `consumed_at` es `timestamptz`. La RPC superior debe convertir el rango local a instantes UTC y demostrar que no puede reclamar ventanas distintas de las fechas del run. **No resolver con UTC fijo para todos los restaurantes.**
+3. Evitar crear consumos retroactivos en períodos ya liquidados: el lock impide carrera durante el claim, **pero no impide inserción tardía después del commit**. La RPC de registro deberá comprobar `payroll_run_lines` y periodos liquidados del empleado.
+4. Ajustar `app_reverse_payroll_payment_receipt` para liberar solo consumos realmente asociados a ese run y preservar snapshots/liquidaciones.
+5. Asegurar que la operación de pago/reversión completa conserva condiciones de nómina parcial, adelantos, horas extras y comprobantes existentes (migraciones 022–079).
+6. Ejecutar pruebas JWT/RLS y flujo real con la totalidad del esquema de nómina, no solo la fixture sintética.
+
+**Pruebas del contrato:** consumos válidos, anulados, fuera del límite superior, repetición, reclamación de otro run, permisos independientes, tenant cruzado, run ya publicado, void de consumo asignado, reconciliación del kardex. Solo afirmar PASS en el SHA cuyo job GitHub Actions tenga conclusión exitosa.
+
+**Gate G2:** sigue ABIERTO. La integración es un borrador SQL aislado y seguro por ausencia de despliegue; no autoriza modificaciones de UI, POS, base principal, `main` ni migración 088.
