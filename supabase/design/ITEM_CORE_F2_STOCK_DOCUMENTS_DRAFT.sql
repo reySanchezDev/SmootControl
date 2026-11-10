@@ -193,9 +193,15 @@ BEGIN
         RAISE EXCEPTION 'adjustment_expected_stock_missing'
           USING ERRCODE='22023';
       END IF;
-      SELECT COALESCE(quantity_on_hand,0) INTO v_current
+      -- Serialize the optimistic count against purchases/other adjustments.
+      -- Holding this lock until commit prevents a TOCTOU between expected
+      -- stock and the internal ledger update.
+      INSERT INTO public.item_stock(restaurant_id,item_id)
+      VALUES(p_restaurant_id,v_item_id) ON CONFLICT DO NOTHING;
+      SELECT quantity_on_hand INTO v_current
       FROM public.item_stock
-      WHERE restaurant_id=p_restaurant_id AND item_id=v_item_id;
+      WHERE restaurant_id=p_restaurant_id AND item_id=v_item_id
+      FOR UPDATE;
       v_current := COALESCE(v_current,0);
       IF v_current <> v_expected THEN
         RAISE EXCEPTION 'adjustment_stock_changed'
