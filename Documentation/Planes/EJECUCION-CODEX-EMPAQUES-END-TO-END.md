@@ -573,3 +573,37 @@ Se verifico la rama `feature/item-master-db-foundation` en `0d095ec718c234fe8d4c
 **Siguiente entrega técnica del asistente:** producir mapa F2 por tabla, función y consumidor desde el artefacto generado; construir contratos/versionamiento y PRs sin aplicar migraciones ni tocar pantallas. Si GitHub Actions no está habilitado o no corre, informarlo sin simular su ejecución. Resolver anomalías reproducibles del CI dentro de la rama.
 
 **Gates:** G2 pendiente. Prohibido activar el nuevo core o retirar tablas legacy hasta que RPC, ventas/void, recetas, reglas, nómina, POS/Drift y sincronización superen pruebas y que no queden escritores legacy activos.
+
+### 12.3 F2.0 — contratos concretos identificados en código (GitHub, no DB local)
+
+**Evidencia:** inspección directa de `lib/features/sync/data/datasources/supabase_catalog_pull_service_catalog_part.dart`, `supabase_catalog_pull_service_inventory_part.dart`, `supabase_sync_remote_sender_payloads_part.dart`, `supabase_sync_remote_sender_sales_part.dart`, `lib/core/database/tables/catalog_tables.dart`, `inventory_tables.dart`, `sales_tables.dart`, `sync_tables.dart`, `app_database.dart`. Workflow `item-core-quality.yml` generó inventario estático satisfactoriamente en la corrida `42905726172`; pruebas Flutter completas pendientes a la hora de documentar. Este registro **no** equivale a pruebas de integración F2.
+
+**Mapa de consumidores y reemplazos obligatorios:**
+
+| Contrato efectivo actual | Evidencia en repositorio | Contrato F2 a implementar |
+|---|---|---|
+| Catálogo local | `LocalProducts`, `LocalPackagingItems`, `LocalProductPackagingRules` en `catalog_tables.dart` | `LocalItems`, `LocalItemClassifications`, `LocalItemUnits`, `LocalItemConsumptionRules`; ningún catálogo adicional de empaques |
+| Existencias locales | `LocalInventoryStock`, `LocalPackagingStock` en `inventory_tables.dart` | `LocalItemStock` por `itemId`, cantidades `NUMERIC`/decimal sin redondeo a entero |
+| Kardex local | `LocalInventoryMovements`, `LocalPackagingMovements` en `inventory_tables.dart` | `LocalItemLedgerEntries` por `itemId`, idempotencia, reversión y costo base |
+| Descarga | `supabase_catalog_pull_service_catalog_part.dart`, `...inventory_part.dart`, `...missing_part.dart` | Pull **completo versionado** del maestro; visibilidad POS se calcula aparte; baja/inactivación solo tras snapshot completo del mismo tenant |
+| Ajuste de saldo offline | `...inventory_part.dart` usa `pendingDeltas[productId]` y otra rama por `packagingItemId`; colas `sales`, `inventory_movements`, `packaging_movements` | Delta pendiente único por `itemId`, deduplicado por operación y fuente; tras ACK remoto no sumar nuevamente |
+| Catálogo por envío | `supabase_sync_remote_sender_payloads_part.dart` genera estructuras separadas de producto, empaque y regla | Crear un único contrato DTO `item` + clasificaciones, unidades y reglas; no enviar dos maestros ni convertir códigos a UUID |
+| Venta remota | `supabase_sync_remote_sender_sales_part.dart` hace upsert de `sales`, luego `sale_items`, luego movimientos de inventario y empaque | **Reemplazar por RPC transaccional única** de venta/void o comando idempotente de operación. Prohibido mantener mutaciones HTTP separadas que puedan quedar parcialmente aplicadas |
+| Línea de venta | `_saleItemPayload` envía `product_id` y usa `productId` como `product_code` | `item_id` UUID y `item_code` comercial reales, snapshot inmutable de código/nombre/precio/costo/unidad/modificadores |
+| RPC POS del servidor | `pos_sync_sale` / `pos_sync_staff_consumption`, rediseñadas en varias migraciones 019–065 | Nueva versión de contrato JSON con `schema_version`, tenant/terminal y `item_id`; evitar dobles caminos POS web/RPC que contabilicen la misma operación |
+| Reglas | `product_packaging_rules` y `sales_types` | `item_consumption_rules` con regla aplicable explícita `per_order` o `per_sale_line`, prioridad determinista y snapshot de consumo registrado |
+| Empleados/nómina | `employee_raw_material_consumption_lines.product_id` y RPC `app_*raw_material*` | Línea por `item_id`, movimientos de staff canónicos, no cambiar cálculo de nómina ni tipos de documentos |
+| Ajustes/compras/recetas | `inventory_adjustment_lines.product_id`, `product_recipe_lines.component_product_id`, `app_register_inventory_purchase_batch` | FK canónicas `item_id`, validación de unidades y uso de `apply_item_movement` en una única transacción |
+
+**Hallazgo de riesgo principal:** el sender `supabase_sync_remote_sender_sales_part.dart` realiza escrituras HTTP sucesivas sobre cabecera, líneas y movimientos. La idempotencia del ledger F1 por sí sola **no hace atómica la venta completa**. F2 debe tener **un único comando transaccional** para venta/void; conservar el sender anterior durante el corte sin adaptarlo permitiría estados parciales o doble aplicación.
+
+**Orden de implementación F2 recomendado (no paralelizar cortes de autoridad):**
+
+1. **F2.1**: definir/ensayar `item_consumption_rules` resolver y comandos SQL transaccionales `pos_sync_sale_v2` / void; fijar snapshots, política de costo base y negativos, algoritmo de idempotencia de operación completa. Probar en Docker desechable.
+2. **F2.2**: reconducir recetas, modificadores, compras/ajustes y consumo de personal/nómina hacia `item_id` y ledger único; pruebas de compatibilidad/contabilidad.
+3. **F2.3**: crear versión nueva de Drift y DTO de pull/push para `LocalItems`, `LocalItemStock`, `LocalItemLedgerEntries` y reglas, con flags de versión/corte; verificar todos los consumidores y tests offline.
+4. **F2.4**: ejecutar **ensayo de corte aislado**: snapshot/configuración útil, migrar maestro real, reset solo de historial sintético consentido en laboratorio clonado, desconectar terminal v34 o migrarlo, verificar colas/tickets, activar RPC canónicas, prohibir escritores legacy, completar `pg_depend` y retirar tablas obsoletas sin CASCADE. No usar producción.
+5. **G2**: solo aprobable con una venta y una anulación end-to-end, receta, empaque por pedido/línea, compra, ajuste, nómina, dos terminales concurrentes, modo offline y reenvío idempotente, permisos efectivos por tenant, y cero rutas funcionales que escriban masters/ledgers legacy.
+
+**Próxima acción ejecutable remotamente:** implementar el arnés de contrato para `pos_sync_sale_v2` y resolvedor de reglas en `supabase/design/`, fuera de migraciones, con test aislado y verificación GitHub Actions. No aplicar en el laboratorio real antes del ensayo de corte. Codex solo cuando haga falta acceder a Docker/Windows/terminales locales.
+
