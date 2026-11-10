@@ -8,7 +8,7 @@
 -- ITEM_CORE_F2_STAFF_CONSUMPTION_DRAFT.sql.
 -- Historical payroll/accounting rows must not be mutated by this prototype.
 
-CREATE OR REPLACE FUNCTION public.app_claim_staff_consumptions_for_payroll_v2(
+CREATE OR REPLACE FUNCTION item_core_internal.claim_staff_consumptions_for_payroll(
   p_restaurant_id uuid,
   p_employee_id uuid,
   p_payroll_run_id uuid,
@@ -111,12 +111,11 @@ BEGIN
 END;
 $$;
 
-REVOKE ALL ON FUNCTION public.app_claim_staff_consumptions_for_payroll_v2(
+REVOKE ALL ON FUNCTION item_core_internal.claim_staff_consumptions_for_payroll(
   uuid,uuid,uuid,timestamptz,timestamptz
-) FROM PUBLIC,anon;
-GRANT EXECUTE ON FUNCTION public.app_claim_staff_consumptions_for_payroll_v2(
-  uuid,uuid,uuid,timestamptz,timestamptz
-) TO authenticated;
+) FROM PUBLIC,anon,authenticated;
+-- No direct client grant. A vetted payroll posting RPC must call this
+-- helper under its own privilege and verified payroll period.
 
 -- Required coordinated follow-up:
 -- 1. Update app_post_payroll_employee to call this RPC ONCE and use the
