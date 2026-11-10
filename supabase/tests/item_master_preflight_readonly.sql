@@ -166,6 +166,7 @@ SELECT proc.proname AS function_name,
 FROM pg_proc proc
 JOIN pg_namespace ns ON ns.oid = proc.pronamespace
 WHERE ns.nspname = 'public'
+  AND proc.prokind = 'f'
   AND (
     pg_get_functiondef(proc.oid) ~* '(products|packaging_items|inventory_stock|packaging_stock|inventory_movements|packaging_movements|product_recipe|product_packaging_rules|product_id|packaging_item_id|item_id)'
     OR proc.proname ~* '^(pos_sync|pos_pull|apply_|app_register|app_save|app_get_)'
