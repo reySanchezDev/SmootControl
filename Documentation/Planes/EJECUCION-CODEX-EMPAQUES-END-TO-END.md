@@ -2,7 +2,7 @@
 
 **Identificador:** KIVO-ITEM-CORE  
 **Última actualización:** 2026-11-10  
-**Estado:** F0/G0 CERRADO; F1 DISEÑO RELACIONAL Y CONTRATOS ESPECIFICADOS; MIGRACIÓN 088 CONGELADA; SQL Y PANTALLAS NO AUTORIZADOS  
+**Estado:** F0/G0 CERRADO; F1 DISEÑO Y BORRADOR DDL NO EJECUTABLE VERSIONADOS; G1 ABIERTO; MIGRACIÓN 088 CONGELADA; PANTALLAS NO AUTORIZADAS  
 **Repositorio:** `reySanchezDev/SmootControl`  
 **Documento único de planificación:** este archivo. Se actualiza en cada avance, sin crear un plan por PR/fase.
 
@@ -113,7 +113,7 @@ Este diagrama es la dirección de arquitectura. **Cada tabla se introducirá sol
 | 2026-11-08 | Catálogo visual de Artículos | PR #17, `d9a4db62000d6cb88a9cc119ef337abfa53971f6` | Codex informó 126/126 tests focalizados, build Web y preview 8092 | **Solo UX/proyección**, no core |
 | 2026-11-10 | Propuesta maestro espejo | PR #18 / migración 088 | Tabla nueva + triggers sobre fuentes legadas, sin auditoría real del lab aquí | **CONGELADA / NO APROBADA** |
 | 2026-11-10 | Auditoría externa LS Central | Drive carpeta POS, 4 ficheros | `Item` AL tabla 27; SQL BOM, vinculados, modificadores; límites expresos | **Decisión core único ratificada** |
-| 2026-11-10 | Plan rector actualizado | este documento | Objetivo autoritativo, gates F0–F4, no maquillaje UI | **F0 PENDIENTE** |\n| 2026-11-10 | Ajuste de alcance y auditoría de impacto | este documento / ADR-002 | Historia operativa del laboratorio no se conserva; clasificación de tablas, FKs, RPC, Drift, POS y estrategia de corte; script read-only ampliado | **F0 ESTÁTICA AVANZADA** |\n| 2026-11-10 | Auditoría real F0 y revisión del gate | `57d96aa995edfd704c62c31dccb6fb82f83c3690` | 55 relaciones, 143 FK, 70 funciones, 165 dependencias legacy; 8 preflights sin bloqueantes; 088 ausente | **G0 APROBADO SOLO PARA DISEÑO DE F1; migración NO autorizada** |\n| 2026-11-10 | Diseño técnico F1 | Sección 10 del plan rector | Modelo de tablas/constraints, autoridad RPC, permisos, migración coordinada F1/F2, tests y puntos de corte | **Diseño especificado; revisión y SQL aún pendientes** |
+| 2026-11-10 | Plan rector actualizado | este documento | Objetivo autoritativo, gates F0–F4, no maquillaje UI | **F0 PENDIENTE** |\n| 2026-11-10 | Ajuste de alcance y auditoría de impacto | este documento / ADR-002 | Historia operativa del laboratorio no se conserva; clasificación de tablas, FKs, RPC, Drift, POS y estrategia de corte; script read-only ampliado | **F0 ESTÁTICA AVANZADA** |\n| 2026-11-10 | Auditoría real F0 y revisión del gate | `57d96aa995edfd704c62c31dccb6fb82f83c3690` | 55 relaciones, 143 FK, 70 funciones, 165 dependencias legacy; 8 preflights sin bloqueantes; 088 ausente | **G0 APROBADO SOLO PARA DISEÑO DE F1; migración NO autorizada** |\n| 2026-11-10 | Diseño técnico F1 | Sección 10 del plan rector | Modelo de tablas/constraints, autoridad RPC, permisos, migración coordinada F1/F2, tests y puntos de corte | **Diseño especificado** |\n| 2026-11-10 | Borrador DDL para inspección F1 | `supabase/design/ITEM_CORE_F1_DDL_DRAFT.sql` | 7 tablas canónicas, restricciones tenant, índices, RLS lectura; sin RPCs, backfill ni efectos en BD | **No ejecutado; G1 pendiente** |
 
 ### Plantilla obligatoria de actualización
 
@@ -422,6 +422,27 @@ Reusar `measurement_units` como catálogo de unidades global/tenant. Crear `item
 
 ### 10.9 Decisiones explícitamente diferidas (no son bloqueos para diseñar core)
 
+### 10.10 Revisión DDL F1 — materialización documental del diseño (2026-11-10)
+
+**Artefacto:** `supabase/design/ITEM_CORE_F1_DDL_DRAFT.sql`, intencionalmente **fuera de `supabase/migrations`**, marcado NO EJECUTAR y terminado en `ROLLBACK`. Es una especificación estructural para inspección, **no una migración aprobada, aplicada ni certificada por PostgreSQL**. La migración 088 espejo permanece congelada.
+
+**Objetos incluidos en el borrador:** `items`, `item_classifications`, `item_classification_links`, `item_units`, `item_stock`, `item_ledger_entries`, `item_consumption_rules`; restricciones compuestas de restaurante, índices, RLS de lectura y revocación de escrituras directas en nuevas tablas. Conserva `measurement_units`, `product_categories` y `sales_types` como entidades existentes durante el diseño. No añade triggers de espejo, no altera `products`/`packaging_items`, no mueve filas y no elimina nada.
+
+**Decisiones de integridad comprobadas mediante revisión de DDL (todavía sin ejecutar):**
+
+1. `product_categories(restaurant_id,id)` y `sales_types(restaurant_id,id)` reciben UNIQUE compuestos **antes** de ser objetivos de FK. La regla referenciada por modalidad de servicio usa FK compuesta para prohibir cross-tenant.
+2. Las clasificaciones admiten N:M; no se asume una única clase de negocio. La categoría principal puede ser nullable.
+3. `base_unit_id` es una unidad del catálogo global/tenant existente; `item_units.quantity_in_base` determina conversión. Las invariantes «exactamente una unidad base efectiva, misma dimensión, unidad activa» **no se garantizan solo con las constraints actuales**: son requisitos de RPC y triggers/constraints adicionales antes de aprobar G1.
+4. `item_ledger_entries` lleva `operation_key`, `request_digest`, fuente, cantidad y referencia de reversión compuesta tenant+item; estas columnas no sustituyen una función transaccional de validación idempotente. **No activar ventas ni compras sobre estas tablas** sin la RPC `apply_item_movement`.
+5. `item_stock` es materialización, no fuente de verdad. Su cambio exige serialización/locks y exactamente un ledger, no DML de cliente.
+6. Actualmente no se creó `locations`; stock se mantiene por restaurante+item, evitando inventar almacenes. La expansión a ubicaciones exige una migración futura con nueva clave.
+7. **Gap pendiente F1/F2**: el borrador no incluye implementación de `app_upsert_item`, `apply_item_movement`, `item_consumption_rules` resolver, reglas de unidades/tenant global, ledger `append-only`, permisos efectivos por RPC, semillas/backfill ni corte Drift. Todos son requisitos de implementación; no se consideran satisfechos por la existencia del archivo.
+8. **Gap de validación:** la especificación no ha sido ejecutada en PostgreSQL/CI ni sometida a pruebas JWT/RLS. G1 continúa bloqueado. Ejecutar una prueba de parseo y transacción rollback exclusivamente en una **base clonada y desechable**, nunca en el laboratorio vivo o producción, y corregir cualquier divergencia sin alterar registros.
+
+**Aprobación de diseño ≠ autorización de migración:** para convertir el borrador en migración, primero completar invariantes y RPCs, pruebas automáticas de esquema/RLS, mapa de dependencias F2, política de costo base/negativos y corte local controlado. El SHA del borrador y resultados de pruebas deberán registrarse aquí.
+
+
+
 - Listas de precios avanzadas, promociones, múltiples almacenes y lotes/caducidad: no crear tablas por anticipación; diseñar extensión posterior con claves canónicas.
 - Política de costo (FIFO/promedio) y stock negativo por flujo: hoy el SQL mezcla costo de compra y costo base. **Antes de habilitar el nuevo motor F2**, seleccionar y probar una política operativa precisa. Inicialmente registrar costo por unidad base y snapshots de transacción; no afirmar FIFO si no se ha implementado.
 - Fiscalidad por país y multi-moneda: preservar capacidades existentes y snapshots; no crear ledger fiscal adicional en F1 sin requisito específico.
@@ -442,4 +463,4 @@ Reusar `measurement_units` como catálogo de unidades global/tenant. Crear `item
 
 ## 12. Próxima acción autorizada
 
-**Siguiente paso: revisión de diseño F1 antes de autorizar su ejecución.** El contrato técnico se encuentra en la sección 10. Elaborar DDL de implementación únicamente después de revisar las restricciones definitivas (unidades, clasificación N:M, costos por unidad base, políticas RLS y secuencia coordinada F1/F2). La migración 088 espejo continúa **congelada** y no debe ejecutarse. No modificar base real ni pantallas durante la revisión.
+**Siguiente paso: validar el borrador DDL F1 sobre clon desechable con ROLLBACK, completar invariantes de unidades y permisos, y diseñar/ensayar `app_upsert_item` y `apply_item_movement` bajo aislamiento, antes de crear una migración efectiva.** Corregir el borrador con resultados de pruebas y documentarlos aquí. No aplicar la migración 088 espejo, ni tocar base real o pantallas.
