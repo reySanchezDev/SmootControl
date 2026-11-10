@@ -83,6 +83,18 @@ BEGIN
      OR NOT EXISTS (
        SELECT 1 FROM public.sale_consumption_snapshots
        WHERE sale_id=v_sale AND quantity_base=1 AND scope='per_order'
+         AND is_inventory_consumption AND movement_id IS NOT NULL
+     )
+     OR NOT EXISTS (
+       SELECT 1 FROM public.sale_consumption_snapshots
+       WHERE sale_id=v_sale AND scope='per_sale_line'
+         AND consumed_item_id='30000000-0000-0000-0000-000000000004'
+         AND quantity_base=2 AND NOT is_inventory_consumption
+         AND movement_id IS NULL
+     )
+     OR EXISTS(
+       SELECT 1 FROM public.item_stock
+       WHERE item_id='30000000-0000-0000-0000-000000000004'
      ) THEN RAISE EXCEPTION 'sale_stock_or_packaging_failed'; END IF;
 
   v_result:=public.pos_sync_sale_v2(
@@ -152,7 +164,7 @@ BEGIN
          WHERE movement_type='reversal')<>2
      OR (SELECT status FROM public.sales WHERE id=v_sale)<>'voided'
      OR (SELECT quantity_base FROM public.sale_consumption_snapshots
-         WHERE sale_id=v_sale)<>1
+         WHERE sale_id=v_sale AND scope='per_order')<>1
   THEN RAISE EXCEPTION 'void_not_exactly_reversed'; END IF;
 
   v_result:=public.pos_void_sale_v2(

@@ -163,4 +163,58 @@ BEGIN
   RAISE NOTICE 'PASS F2 isolated rule resolver: line, order, priority, ambiguity, units, tenant';
 END;
 $$;
+
+-- Noninventoried material may be consumed without generating physical stock.
+-- Active service-consumption rules are rejected rather than silently ignored.
+INSERT INTO public.items VALUES
+ ('30000000-0000-0000-0000-000000000005',
+  '00000000-0000-0000-0000-000000000001',
+  'non_inventory',true,false,'10000000-0000-0000-0000-000000000001'),
+ ('30000000-0000-0000-0000-000000000006',
+  '00000000-0000-0000-0000-000000000001',
+  'service',true,false,'10000000-0000-0000-0000-000000000001');
+INSERT INTO public.item_consumption_rules VALUES
+ ('40000000-0000-0000-0000-000000000006',
+  '00000000-0000-0000-0000-000000000001',
+  NULL,'30000000-0000-0000-0000-000000000005',
+  '20000000-0000-0000-0000-000000000001',
+  'per_order',1,'10000000-0000-0000-0000-000000000001',10,true);
+
+DO $$
+DECLARE
+  v_lines jsonb := jsonb_build_array(jsonb_build_object(
+    'line_id','50000000-0000-0000-0000-000000000099',
+    'item_id','30000000-0000-0000-0000-000000000001',
+    'quantity',1
+  ));
+BEGIN
+  IF NOT EXISTS(
+    SELECT 1 FROM public.resolve_item_consumption(
+      '00000000-0000-0000-0000-000000000001',
+      '20000000-0000-0000-0000-000000000001',v_lines
+    ) WHERE consumed_item_id=
+      '30000000-0000-0000-0000-000000000005'::uuid
+      AND scope='per_order' AND quantity_base=1
+  ) THEN
+    RAISE EXCEPTION 'noninventory_consumption_was_omitted';
+  END IF;
+  INSERT INTO public.item_consumption_rules VALUES
+   ('40000000-0000-0000-0000-000000000007',
+    '00000000-0000-0000-0000-000000000001',
+    NULL,'30000000-0000-0000-0000-000000000006',
+    '20000000-0000-0000-0000-000000000001',
+    'per_order',1,'10000000-0000-0000-0000-000000000001',10,true);
+  BEGIN
+    PERFORM * FROM public.resolve_item_consumption(
+      '00000000-0000-0000-0000-000000000001',
+      '20000000-0000-0000-0000-000000000001',v_lines
+    );
+    RAISE EXCEPTION 'consumption_service_rule_not_rejected';
+  EXCEPTION WHEN check_violation THEN
+    IF SQLERRM <> 'service_article_cannot_be_consumed' THEN RAISE; END IF;
+  END;
+  RAISE NOTICE 'PASS noninventory consumption resolved and service rejected';
+END;
+$$;
+
 ROLLBACK;

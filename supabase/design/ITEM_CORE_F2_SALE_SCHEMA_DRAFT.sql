@@ -84,6 +84,7 @@ CREATE TABLE public.sale_consumption_snapshots (
   quantity_base numeric(18,6) NOT NULL CHECK(quantity_base > 0),
   unit_cost_base numeric(18,6) NOT NULL CHECK(unit_cost_base >= 0),
   movement_id text,
+  is_inventory_consumption boolean NOT NULL DEFAULT true,
   created_at timestamptz NOT NULL DEFAULT now(),
   CONSTRAINT sale_consumption_snapshot_scope CHECK(
     (scope='per_order' AND sale_line_id IS NULL)
@@ -99,9 +100,12 @@ CREATE TABLE public.sale_consumption_snapshots (
     REFERENCES public.item_consumption_rules(restaurant_id,id),
   FOREIGN KEY(restaurant_id,consumed_item_id,movement_id)
     REFERENCES public.item_ledger_entries(restaurant_id,item_id,id),
-  -- Physical inventory consumption MUST include a committed ledger entry.
+  -- Snapshot non-inventory consumption without creating physical stock.
+  -- The trusted POS RPC derives this flag from the canonical item type.
   CONSTRAINT sale_consumption_snapshot_has_movement CHECK(
-    movement_id IS NOT NULL AND length(btrim(movement_id)) > 0
+    (is_inventory_consumption AND movement_id IS NOT NULL
+      AND length(btrim(movement_id)) > 0)
+    OR (NOT is_inventory_consumption AND movement_id IS NULL)
   )
 );
 CREATE INDEX sale_consumption_snapshots_sale_idx
