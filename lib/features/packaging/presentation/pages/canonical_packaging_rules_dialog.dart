@@ -145,7 +145,7 @@ class _CanonicalPackagingRulesDialogState
                   title: Text(name),
                   subtitle: Text(
                     '${rule.quantity} · '
-                    '${rule.scope == 'per_order' ? 'Por pedido' : 'Por unidad'}',
+                    rule.scope == 'per_order' ? 'Por pedido' : 'Por unidad',
                   ),
                   trailing: TextButton(
                     onPressed: _busy ? null : () => _edit(rule),
