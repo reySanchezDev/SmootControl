@@ -25,6 +25,7 @@ import 'package:smoo_control/features/packaging/domain/repositories/i_packaging_
 import 'package:smoo_control/features/payment_methods/domain/entities/payment_method.dart';
 import 'package:smoo_control/features/payment_methods/domain/repositories/i_payment_methods_repository.dart';
 import 'package:smoo_control/features/products/data/models/product_option_group_codec.dart';
+import 'package:smoo_control/features/products/domain/entities/canonical_item.dart';
 import 'package:smoo_control/features/products/domain/entities/measurement_unit.dart';
 import 'package:smoo_control/features/products/domain/entities/product.dart';
 import 'package:smoo_control/features/products/domain/repositories/i_products_repository.dart';
@@ -41,6 +42,7 @@ import 'package:smoo_control/features/users/domain/repositories/i_users_reposito
 part 'supabase_admin_repository_access_part.dart';
 part 'supabase_admin_repository_base_part.dart';
 part 'supabase_admin_repository_catalog_part.dart';
+part 'supabase_admin_repository_canonical_items_part.dart';
 part 'supabase_admin_repository_error_part.dart';
 part 'supabase_admin_repository_operations_part.dart';
 part 'supabase_admin_repository_packaging_part.dart';
@@ -55,6 +57,7 @@ part 'supabase_admin_repository_units_part.dart';
 final class SupabaseAdminRepository extends _SupabaseAdminRepositoryBase
     with
         _SupabaseAdminCatalogMixin,
+        _SupabaseAdminCanonicalItemsMixin,
         _SupabaseAdminOperationsMixin,
         _SupabaseAdminSettingsMixin,
         _SupabaseAdminPackagingMixin,
