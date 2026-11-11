@@ -9,7 +9,6 @@ CREATE TABLE public.item_recipes (
   version integer NOT NULL CHECK (version > 0),
   status text NOT NULL CHECK (status IN ('active','inactive')),
   created_at timestamptz NOT NULL DEFAULT now(),
-  PRIMARY KEY (id),
   UNIQUE (restaurant_id, id),
   UNIQUE (restaurant_id, item_id, version),
   FOREIGN KEY (restaurant_id, item_id)
