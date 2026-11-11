@@ -1,6 +1,7 @@
 param(
   [string]$CredentialsPath = "",
-  [switch]$CanonicalItemsQa
+  [switch]$CanonicalItemsQa,
+  [switch]$LocalSupabaseQa
 )
 
 $ErrorActionPreference = 'Stop'
@@ -60,7 +61,47 @@ if ($missing.Count -gt 0) {
   throw "No se genero el Web release: faltan las variables obligatorias $($missing -join ', '). No se imprimen valores."
 }
 
-if ($values['SMOO_SUPABASE_URL'] -notmatch '^https://[^/]+') {
+if ($LocalSupabaseQa -and -not $CanonicalItemsQa) {
+  throw 'LocalSupabaseQa requiere CanonicalItemsQa.'
+}
+if ($LocalSupabaseQa) {
+  # Local Docker is allowed only on loopback; never permit cleartext remote hosts.
+  if ($values['SMOO_SUPABASE_URL'] -notmatch '^http://(127[.]0[.]0[.]1|localhost):54321/?
+
+$dartDefines = @($requiredKeys | ForEach-Object {
+  "--dart-define=$_=$($values[$_])"
+})
+
+if ($CanonicalItemsQa) {
+  $dartDefines += '--dart-define=SMOO_ITEM_CORE_V2_QA=true'
+  $dartDefines += '--dart-define=SMOO_APP_MODE=backoffice'
+  Write-Host 'QA RELEASE: Backoffice remoto autenticado (sin inicializacion POS).'
+  if ($LocalSupabaseQa) {
+    Write-Host 'QA RELEASE: Supabase del Docker local, sin tocar el remoto.'
+  }
+}
+
+Push-Location $repoRoot
+try {
+  flutter clean
+  if ($LASTEXITCODE -ne 0) { throw 'flutter clean fallo.' }
+  flutter pub get
+  if ($LASTEXITCODE -ne 0) { throw 'flutter pub get fallo.' }
+  dart compile js -O2 -o web\drift_worker.js web\drift_worker.dart
+  if ($LASTEXITCODE -ne 0) { throw 'Compilacion del worker Drift fallo.' }
+  flutter build web --release --no-wasm-dry-run --no-web-resources-cdn --pwa-strategy=none @dartDefines
+  if ($LASTEXITCODE -ne 0) { throw 'flutter build web fallo.' }
+
+  Copy-Item web\sqlite3.wasm build\web\sqlite3.wasm -Force
+  Copy-Item web\drift_worker.js build\web\drift_worker.js -Force
+  Write-Host 'Build Web release listo: configuracion Supabase validada y assets Drift copiados (sin mostrar valores).'
+} finally {
+  Pop-Location
+}
+) {
+    throw 'QA Docker requiere Supabase HTTP local en 127.0.0.1:54321 o localhost:54321.'
+  }
+} elseif ($values['SMOO_SUPABASE_URL'] -notmatch '^https://[^/]+') {
   throw 'No se genero el Web release: SMOO_SUPABASE_URL no es una URL https valida.'
 }
 
