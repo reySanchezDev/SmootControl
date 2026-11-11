@@ -26,7 +26,7 @@ BEGIN
      t,'50000000-0000-0000-0000-000000000001','fixture-secret'
    )->'item_units') x
    WHERE x->>'unit_id'=dozen::text
-     AND x->>'quantity_in_base'='12'
+     AND (x->>'quantity_in_base')::numeric=12
  ) THEN RAISE EXCEPTION 'unit_not_published_in_snapshot'; END IF;
 
  BEGIN
