@@ -1,23 +1,20 @@
 {
-  "source_run": 43044541603,
+  "source_run": 43054787540,
   "analyzer": "Flutter 3.41.7",
-  "description": "20 legacy diagnostics remaining after PR #31 cleanup; strict non-regression ceiling from full Flutter analyzer. No exceptions; reduce after further verified fixes.",
+  "description": "Strict ceiling: 17 remaining analyzer diagnostics after combined F2.3/PR31 rehearsal; verified full CI. No exemptions.",
   "diagnostics": {
     "lib/core/navigation/app_route_experience.dart|directives_ordering|info": 1,
     "lib/core/navigation/app_router.dart|directives_ordering|info": 2,
     "lib/core/navigation/route_access.dart|directives_ordering|info": 1,
     "lib/features/auth/presentation/pages/auth_gate.dart|directives_ordering|info": 1,
-    "lib/features/packaging/presentation/pages/product_packaging_rules_dialog.dart|lines_longer_than_80_chars|info": 1,
     "lib/features/products/presentation/pages/articles_page.dart|curly_braces_in_flow_control_structures|info": 1,
     "lib/features/products/presentation/pages/articles_page.dart|unnecessary_lambdas|info": 1,
     "lib/features/products/presentation/pages/articles_page_view_part.dart|avoid_redundant_argument_values|info": 1,
     "lib/features/products/presentation/pages/articles_page_view_part.dart|discarded_futures|info": 2,
     "lib/features/products/presentation/pages/articles_page_view_part.dart|invalid_use_of_protected_member|warning": 1,
     "test/core/navigation/route_access_guard_test.dart|avoid_redundant_argument_values|info": 1,
-    "test/core/navigation/route_access_guard_test.dart|cascade_invocations|info": 1,
     "test/core/navigation/route_access_guard_test.dart|prefer_const_constructors|info": 1,
     "test/features/packaging/presentation/pages/product_packaging_rules_action_test.dart|prefer_const_constructors|info": 2,
-    "test/features/packaging/presentation/pages/product_packaging_rules_action_test.dart|prefer_const_literals_to_create_immutables|info": 2,
-    "test/features/products/presentation/pages/articles_page_test.dart|cascade_invocations|info": 1
+    "test/features/packaging/presentation/pages/product_packaging_rules_action_test.dart|prefer_const_literals_to_create_immutables|info": 2
   }
 }
