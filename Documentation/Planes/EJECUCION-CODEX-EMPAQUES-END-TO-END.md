@@ -1086,4 +1086,42 @@ Se puede decir **“listo para pruebas de Reynaldo”** solo cuando: (a) fronten
 | E7 | main + Vercel/producción con rollback | **Pendiente** | G4 |
 | E8 | Limpieza de datos piloto y retiro del legado | **Pendiente** | Cierre |
 
+### 13.9 AuditorÃ­a local E0/E1 de PR #40 (2026-11-11)
+
+Se sincronizÃ³ `feature/item-core-end-to-end-implementation` en un worktree
+aislado desde `7b4f7fa`; el worktree original conservÃ³ sus 15 modificaciones
+locales y los 17 stashes. Docker fue inspeccionado sin recrear, detener ni
+eliminar contenedores: el proyecto `smoo_control` mantiene PostgreSQL Supabase
+local saludable en `127.0.0.1:54324`, junto con Kong, REST, Auth y Meta.
+
+La CLI Supabase se enlazÃ³ al proyecto remoto autorizado sin guardar secretos en
+Git. `supabase migration list --linked` mostrÃ³ remoto aplicado **001â€“083**;
+**084â€“088 no estÃ¡n aplicadas remotamente**. El inventario remoto de solo lectura
+reportÃ³ PostgreSQL **17.11**, **55** tablas pÃºblicas, **54** con RLS y **56**
+polÃ­ticas. Las seis tablas canÃ³nicas esperadas (`items`, `item_units`,
+`item_classifications`, `item_classification_links`, `item_consumption_rules`,
+`item_catalog_revisions`) existen **0/6**; las seis RPC V2 esperadas existen
+**0/6**. La auditorÃ­a se ejecutÃ³ con `BEGIN TRANSACTION READ ONLY` y terminÃ³
+con `ROLLBACK`; no se consultaron filas de negocio ni se modificÃ³ el remoto.
+
+Respaldo: `supabase backups list` informa **WALG=true**, pero **PITR=false** y
+sin timestamps de respaldo disponibles en la CLI; no se ejecutÃ³ restauraciÃ³n.
+El lint remoto detectÃ³ un error preexistente en
+`public.app_backfill_missing_sale_costs`: referencia a
+`tmp_cost_backfill_items` inexistente. Esto impide certificar E1 hasta corregirlo
+con una migraciÃ³n autorizada y un plan de reversiÃ³n.
+
+PreparaciÃ³n Windows: `flutter pub get` completÃ³. El script oficial
+`tool/build_web_release.ps1` validÃ³ las credenciales locales y comenzÃ³ el build,
+pero quedÃ³ bloqueado en compilaciÃ³n sin producir `main.dart.js`, `sqlite3.wasm`
+ni `drift_worker.js`; se detuvo Ãºnicamente el proceso iniciado por esta sesiÃ³n.
+`flutter test --no-pub -j 2` quedÃ³ bloqueado cargando `test/app_test.dart` y no
+produjo resultado. No se duplicÃ³ frontend ni se activaron rutas nuevas.
+
+**Estado E0/E1:** auditorÃ­a y preparaciÃ³n local completadas; implementaciÃ³n
+remota y QA ejecutable **PENDIENTES**. Bloqueos: autorizaciÃ³n para una nueva
+migraciÃ³n aditiva 084+ con backup/restauraciÃ³n verificable, correcciÃ³n del lint
+remoto y resoluciÃ³n del bloqueo Flutter/Web de Windows. No se modificaron
+`main`, producciÃ³n, datos, Docker operativo ni migraciones remotas.
+
 **Todo PR/cambio posterior deberá actualizar esta tabla con SHA, CI, evidencia visual y aceptación.** Cualquier gate no acreditado permanece pendiente. No cambiar estado para presentar progreso artificial.
