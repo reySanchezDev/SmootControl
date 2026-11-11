@@ -20,3 +20,23 @@ INSERT INTO public.item_units(
 )
 SELECT i.restaurant_id,i.id,i.base_unit_id,1
 FROM public.items i;
+
+-- F2.3 POS classification export needs all master/link rows, even hidden
+-- or inactive classes. These tables are synthetic only.
+CREATE TABLE public.item_classifications(
+  id uuid PRIMARY KEY,
+  restaurant_id uuid NOT NULL,
+  code text NOT NULL,
+  name text NOT NULL DEFAULT 'Fixture classification',
+  is_active boolean NOT NULL,
+  UNIQUE(restaurant_id,id)
+);
+CREATE TABLE public.item_classification_links(
+  restaurant_id uuid NOT NULL,
+  item_id uuid NOT NULL,
+  classification_id uuid NOT NULL,
+  PRIMARY KEY(restaurant_id,item_id,classification_id),
+  FOREIGN KEY(restaurant_id,item_id) REFERENCES public.items(restaurant_id,id),
+  FOREIGN KEY(restaurant_id,classification_id)
+    REFERENCES public.item_classifications(restaurant_id,id)
+);
