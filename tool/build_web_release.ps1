@@ -1,5 +1,6 @@
 param(
-  [string]$CredentialsPath = ""
+  [string]$CredentialsPath = "",
+  [switch]$CanonicalItemsQa
 )
 
 $ErrorActionPreference = 'Stop'
@@ -66,6 +67,11 @@ if ($values['SMOO_SUPABASE_URL'] -notmatch '^https://[^/]+') {
 $dartDefines = @($requiredKeys | ForEach-Object {
   "--dart-define=$_=$($values[$_])"
 })
+
+if ($CanonicalItemsQa) {
+  $dartDefines += '--dart-define=SMOO_ITEM_CORE_V2_QA=true'
+  Write-Host 'QA local: maestro de articulos canonico habilitado en el build.'
+}
 
 Push-Location $repoRoot
 try {
