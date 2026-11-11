@@ -21,6 +21,7 @@ on:
       - feature/item-core-g2-qa-candidate
       - feature/item-core-g2-qa-rehearsal
       - feature/item-core-g2-dual-device-rehearsal
+      - feature/item-core-g2-production-readonly-audit
     paths:
       - 'lib/**'
       - 'test/**'
@@ -555,6 +556,37 @@ jobs:
       - name: Execute isolated G2 rehearsal with mandatory rollback
         shell: pwsh
         run: ./tool/run_item_core_g2_qa.ps1 -SkipFlutter
+
+  production-schema-readonly-audit:
+    name: G2 production pilot - read-only schema and RLS inventory
+    # Explicitly isolated from regular CI / pull requests.
+    # The DB login supplied via secret MUST be read-only.
+    if: >-
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/feature/item-core-g2-production-readonly-audit'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    env:
+      PGCONNECT_TIMEOUT: '10'
+      PGSSLMODE: require
+      PGOPTIONS: '-c default_transaction_read_only=on -c statement_timeout=10000'
+      AUDIT_DATABASE_URL: ${{ secrets.SMOO_SUPABASE_PROD_READONLY_DB_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Require dedicated read-only production pilot credential
+        shell: bash
+        run: |
+          if [ -z "$AUDIT_DATABASE_URL" ]; then
+            echo "::error::SMOO_SUPABASE_PROD_READONLY_DB_URL is not configured. No connection was attempted."
+            exit 1
+          fi
+          echo "::add-mask::$AUDIT_DATABASE_URL"
+      - name: Inspect actual schema and policies without data writes
+        shell: bash
+        run: |
+          psql "$AUDIT_DATABASE_URL" -X -q -v ON_ERROR_STOP=1 -f supabase/tests/item_core_g2_real_schema_readonly_audit.sql
 
   flutter-quality:
     needs: changed-code
