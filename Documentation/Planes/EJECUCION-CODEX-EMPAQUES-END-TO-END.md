@@ -730,3 +730,13 @@ Se verifico la rama `feature/item-master-db-foundation` en `0d095ec718c234fe8d4c
 5. GitHub Actions debe comprobar tests y análisis de los archivos nuevos; si el análisis global falla por defectos legacy, separar la línea base y demostrar cero diagnósticos **nuevos**. No registrar G2 como aprobado por pruebas DTO.
 
 **CI:** se corrigió la detección de cambios Dart para incluir el diff completo de una rama F2 contra la rama de integración, y no solamente el último commit (que podría cambiar YAML y omitir pruebas). Verificar conclusión del run de esta rama antes de considerar certificado el contrato.
+
+### 12.13 F2.3 — Calidad CI sin ocultar el análisis global (2026-11-10)
+
+**Incidencia resuelta en el gate:** GitHub Actions `42921763903` completó 392+ pruebas Flutter con exit 0, pero `flutter analyze` devolvió exit 1 por **33 diagnósticos heredados** (1 warning `invalid_use_of_protected_member`, 32 info). El código nuevo del contrato POS V2 no añadió ningún diagnóstico en esta corrida. Esto NO equivale a un análisis global exitoso.
+
+**Control implementado en la rama F2.3:** `tool/item_core_analyzer_baseline.json` congela los diagnósticos por ruta/código/severidad/cantidad, con referencia explícita al run de origen; `tool/check_item_core_analyzer.py` exige un análisis terminado normalmente y **falla si aparece un diagnóstico nuevo o aumenta cualquiera de los existentes**. También exige coincidencia entre el número de diagnósticos analizados y el resumen del compilador. No permite pasar timeouts, crashes ni fallos de `flutter test`. Adicionalmente, Actions ejecuta `dart analyze` **directamente sobre los dos archivos nuevos F2.3**, que deben estar limpios.
+
+**Interpretación de CI:** un run verde significa pruebas exitosas, código F2.3 limpio y **sin regresiones contra un baseline heredado**. NO significa `flutter analyze` global limpio. Los 33 diagnósticos siguen siendo deuda reconocida y deberán desaparecer del baseline mediante una corrección separada y verificable; nunca aumentar ni sustituirlos por excepciones del analizador.
+
+**Restricción:** no se modificaron páginas UI o tests preexistentes en esta fase, pues su estado local podía contener cambios no publicados. G2 sigue pendiente y el catálogo V2 continúa sin integrarse en Drift/POS operativos.
