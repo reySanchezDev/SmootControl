@@ -285,10 +285,8 @@ void main() {
 
     test('rejects duplicate classification codes regardless of case', () {
       final catalog = _catalog();
-      final classes =
-          catalog['item_classifications']!
-              as List<Map<String, Object?>>;
-      classes.add(<String, Object?>{
+      (catalog['item_classifications']! as List<Map<String, Object?>>)
+          .add(<String, Object?>{
         'restaurant_id': _restaurant,
         'id': '50000000-0000-0000-0000-000000000002',
         'code': 'packaging',
