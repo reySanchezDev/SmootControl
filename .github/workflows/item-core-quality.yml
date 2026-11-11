@@ -10,6 +10,7 @@ on:
       - feature/item-core-f2-payroll-backdate-guard
       - feature/item-core-f2-noninventory-consumption
       - feature/item-core-f2-pos-catalog-validated
+      - feature/item-core-f2-pos-catalog-server
     paths:
       - 'lib/**'
       - 'test/**'
@@ -304,6 +305,40 @@ jobs:
             -f supabase/tests/item_core_f2_recipe_fixture.sql \
             -f supabase/design/ITEM_CORE_F2_RECIPE_RESOLVER_DRAFT.sql \
             -f supabase/tests/item_core_f2_recipe_assert.sql
+
+  pos-catalog-snapshot:
+    name: F2 POS canonical catalog export - isolated PostgreSQL
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: f2_catalog_fixture_only
+          POSTGRES_DB: f2_catalog_contract
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d f2_catalog_contract"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: localhost
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGPASSWORD: f2_catalog_fixture_only
+      PGDATABASE: f2_catalog_contract
+    steps:
+      - uses: actions/checkout@v4
+      - name: Export complete tenant catalog revision with rollback
+        run: |
+          psql -X -v ON_ERROR_STOP=1 \
+            -f supabase/tests/item_core_f2_pos_sale_fixture.sql \
+            -f supabase/tests/item_core_f2_catalog_pull_fixture.sql \
+            -f supabase/design/ITEM_CORE_F2_CATALOG_PULL_DRAFT.sql \
+            -f supabase/tests/item_core_f2_catalog_pull_assert.sql
 
   flutter-quality:
     needs: changed-code
