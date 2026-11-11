@@ -586,8 +586,7 @@ jobs:
       - name: Inspect actual schema and policies without data writes
         shell: bash
         run: |
-          psql "$AUDIT_DATABASE_URL" -X -q -v ON_ERROR_STOP=1 \\
-            -f supabase/tests/item_core_g2_real_schema_readonly_audit.sql
+          psql "$AUDIT_DATABASE_URL" -X -q -v ON_ERROR_STOP=1 -f supabase/tests/item_core_g2_real_schema_readonly_audit.sql
 
   flutter-quality:
     needs: changed-code
