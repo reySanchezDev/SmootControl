@@ -57,12 +57,13 @@ void main() {
 }
 
 void _setUp({required String roleId}) {
-  serviceLocator.registerSingleton(CurrentOperatorService());
+  serviceLocator.registerSingleton(const CurrentOperatorService());
   final token = CurrentRemoteSessionService()
     ..set(accessToken: 'synthetic-jwt', userId: 'actor');
-  serviceLocator.registerSingleton(token);
-  final restaurant = CurrentRestaurantService(restaurantId: 'synthetic-tenant');
-  serviceLocator.registerSingleton(restaurant);
+  const restaurant = CurrentRestaurantService(restaurantId: 'synthetic-tenant');
+  serviceLocator
+    ..registerSingleton(token)
+    ..registerSingleton(restaurant);
   serviceLocator.registerSingleton(
     SupabaseAdminRepository(
       config: const SupabaseAppConfig(

@@ -171,7 +171,8 @@ class _ProductPackagingRulesDialogState
                             child: catalog.rules.isEmpty
                                 ? const Center(
                                     child: Text(
-                                      'Este producto no tiene reglas de empaque.',
+                                      'Este producto no tiene reglas de '
+                                      'empaque.',
                                     ),
                                   )
                                 : ListView.builder(
@@ -201,7 +202,8 @@ class _ProductPackagingRulesDialogState
                                           '$salesName · $packagingName',
                                         ),
                                         subtitle: Text(
-                                          '${rule.quantityPerUnit} por unidad · '
+                                          '${rule.quantityPerUnit} por '
+                                          'unidad · '
                                           '${rule.isActive ? 'Activa' : 'Inactiva'}',
                                         ),
                                         trailing: IconButton(
