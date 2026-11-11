@@ -13,11 +13,14 @@ on:
       - feature/item-core-f2-pos-catalog-server
       - feature/item-core-f2-catalog-revision-writer
       - feature/item-core-f2-consumption-rule-revision
+      - fix/quality-12-diagnostics
     paths:
       - 'lib/**'
       - 'test/**'
       - 'supabase/**'
       - 'tool/audit_item_core_dependencies.py'
+      - 'tool/check_item_core_analyzer.py'
+      - 'tool/item_core_analyzer_baseline.json'
       - '.github/workflows/item-core-quality.yml'
   pull_request:
     branches: [main]
@@ -26,6 +29,8 @@ on:
       - 'test/**'
       - 'supabase/**'
       - 'tool/audit_item_core_dependencies.py'
+      - 'tool/check_item_core_analyzer.py'
+      - 'tool/item_core_analyzer_baseline.json'
       - '.github/workflows/item-core-quality.yml'
   workflow_dispatch:
 

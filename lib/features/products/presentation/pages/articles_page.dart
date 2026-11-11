@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:smoo_control/core/design_system/app_message_dialog.dart';
+import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
 import 'package:smoo_control/core/design_system/backoffice_collection_view.dart';
 import 'package:smoo_control/core/design_system/backoffice_selection_toolbar.dart';
-import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/core/formatters/money_formatter.dart';
 import 'package:smoo_control/core/result/app_result.dart';
@@ -213,7 +213,8 @@ class _ArticlesPageState extends State<ArticlesPage> {
       context,
       title: 'Inactivar artículo',
       message:
-          '¿Inactivar ${article.name}? Se conservarán su historial y sus movimientos.',
+          '¿Inactivar ${article.name}? Se conservarán su historial y '
+          'sus movimientos.',
       confirmLabel: 'Inactivar',
       cancelLabel: 'Cancelar',
       destructive: true,
