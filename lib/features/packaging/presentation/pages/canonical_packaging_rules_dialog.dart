@@ -141,11 +141,13 @@ class _CanonicalPackagingRulesDialogState
                 final name = target.isEmpty
                     ? 'Artículo no disponible'
                     : target.first.name;
+                final scopeLabel = rule.scope == 'per_order'
+                    ? 'Por pedido' : 'Por unidad';
                 return ListTile(
                   title: Text(name),
                   subtitle: Text(
                     '${rule.quantity} · '
-                    '${rule.scope == 'per_order' ? 'Por pedido' : 'Por unidad'}',
+                    scopeLabel,
                   ),
                   trailing: TextButton(
                     onPressed: _busy ? null : () => _edit(rule),
