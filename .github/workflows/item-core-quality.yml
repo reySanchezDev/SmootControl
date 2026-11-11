@@ -11,6 +11,7 @@ on:
       - feature/item-core-f2-noninventory-consumption
       - feature/item-core-f2-pos-catalog-validated
       - feature/item-core-f2-pos-catalog-server
+      - feature/item-core-f2-catalog-revision-writer
     paths:
       - 'lib/**'
       - 'test/**'
@@ -339,6 +340,42 @@ jobs:
             -f supabase/tests/item_core_f2_catalog_pull_fixture.sql \
             -f supabase/design/ITEM_CORE_F2_CATALOG_PULL_DRAFT.sql \
             -f supabase/tests/item_core_f2_catalog_pull_assert.sql
+
+  catalog-writer-revision:
+    name: F2 item writer revision handshake - isolated PostgreSQL
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: f2_writer_fixture_only
+          POSTGRES_DB: f2_writer_contract
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d f2_writer_contract"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: localhost
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGPASSWORD: f2_writer_fixture_only
+      PGDATABASE: f2_writer_contract
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify trusted item upsert and catalog revision commit (rollback)
+        run: |
+          psql -X -v ON_ERROR_STOP=1 \
+            -f supabase/tests/item_core_f2_pos_sale_fixture.sql \
+            -f supabase/tests/item_core_f2_catalog_pull_fixture.sql \
+            -f supabase/design/ITEM_CORE_F2_CATALOG_PULL_DRAFT.sql \
+            -f supabase/tests/item_core_f2_catalog_writer_fixture.sql \
+            -f supabase/design/ITEM_CORE_F2_CATALOG_WRITER_BRIDGE_DRAFT.sql \
+            -f supabase/tests/item_core_f2_catalog_writer_assert.sql
 
   flutter-quality:
     needs: changed-code
