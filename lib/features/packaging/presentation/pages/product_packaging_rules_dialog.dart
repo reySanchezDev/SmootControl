@@ -197,6 +197,9 @@ class _ProductPackagingRulesDialogState
                                               .map((x) => x.name)
                                               .firstOrNull ??
                                           'Empaque no disponible';
+                                      final status = rule.isActive
+                                          ? 'Activa'
+                                          : 'Inactiva';
                                       return ListTile(
                                         title: Text(
                                           '$salesName · $packagingName',
@@ -204,7 +207,7 @@ class _ProductPackagingRulesDialogState
                                         subtitle: Text(
                                           '${rule.quantityPerUnit} por '
                                           'unidad · '
-                                          '${rule.isActive ? 'Activa' : 'Inactiva'}',
+                                          '$status',
                                         ),
                                         trailing: IconButton(
                                           tooltip: 'Editar regla',

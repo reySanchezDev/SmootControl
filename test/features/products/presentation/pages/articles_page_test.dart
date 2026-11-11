@@ -57,24 +57,24 @@ void main() {
 }
 
 void _setUp({required String roleId}) {
-  serviceLocator.registerSingleton(const CurrentOperatorService());
   final token = CurrentRemoteSessionService()
     ..set(accessToken: 'synthetic-jwt', userId: 'actor');
   const restaurant = CurrentRestaurantService(restaurantId: 'synthetic-tenant');
   serviceLocator
+    ..registerSingleton(const CurrentOperatorService())
     ..registerSingleton(token)
-    ..registerSingleton(restaurant);
-  serviceLocator.registerSingleton(
-    SupabaseAdminRepository(
-      config: const SupabaseAppConfig(
-        supabaseUrl: 'https://local.test',
-        publishableKey: 'synthetic-publishable',
+    ..registerSingleton(restaurant)
+    ..registerSingleton(
+      SupabaseAdminRepository(
+        config: const SupabaseAppConfig(
+          supabaseUrl: 'https://local.test',
+          publishableKey: 'synthetic-publishable',
+        ),
+        restaurantService: restaurant,
+        remoteSessionService: token,
+        client: _CatalogClient(),
       ),
-      restaurantService: restaurant,
-      remoteSessionService: token,
-      client: _CatalogClient(),
-    ),
-  );
+    );
   CurrentOperatorService.currentSession = AuthSession(
     userId: 'actor',
     email: 'lab@example.test',

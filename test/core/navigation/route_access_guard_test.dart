@@ -76,18 +76,18 @@ Future<void> _pumpGuard(
     ..registerSingleton(remoteSession)
     ..registerSingleton(
       const CurrentRestaurantService(restaurantId: 'test-restaurant'),
-    );
-  serviceLocator.registerSingleton(
-    SupabaseAdminRepository(
-      config: const SupabaseAppConfig(
-        supabaseUrl: 'https://local.test',
-        publishableKey: 'test-key',
+    )
+    ..registerSingleton(
+      SupabaseAdminRepository(
+        config: const SupabaseAppConfig(
+          supabaseUrl: 'https://local.test',
+          publishableKey: 'test-key',
+        ),
+        restaurantService: serviceLocator<CurrentRestaurantService>(),
+        remoteSessionService: remoteSession,
+        client: _PermissionClient(statusCode, permissions),
       ),
-      restaurantService: serviceLocator<CurrentRestaurantService>(),
-      remoteSessionService: remoteSession,
-      client: _PermissionClient(statusCode, permissions),
-    ),
-  );
+    );
   CurrentOperatorService.currentSession = AuthSession(
     userId: 'test-user',
     email: 'admin@local.test',
