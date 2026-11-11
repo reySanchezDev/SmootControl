@@ -30,6 +30,7 @@ import 'package:smoo_control/features/products/domain/entities/canonical_item.da
 import 'package:smoo_control/features/products/domain/entities/measurement_unit.dart';
 import 'package:smoo_control/features/products/domain/entities/product.dart';
 import 'package:smoo_control/features/products/domain/repositories/i_products_repository.dart';
+import 'package:smoo_control/features/recipes/domain/entities/canonical_recipe.dart';
 import 'package:smoo_control/features/roles/domain/entities/access_permission.dart';
 import 'package:smoo_control/features/roles/domain/entities/access_role.dart';
 import 'package:smoo_control/features/roles/domain/repositories/i_roles_repository.dart';
