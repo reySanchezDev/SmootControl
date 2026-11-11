@@ -68,5 +68,7 @@ try {
 }
 finally {
     if ($started) { & docker rm -f $container *> $null }
-    if (Test-Path $saleDdl) { Remove-Item -LiteralPath $saleDdl -Force }
+    if ($saleDdl -and (Test-Path $saleDdl)) {
+        Remove-Item -LiteralPath $saleDdl -Force
+    }
 }

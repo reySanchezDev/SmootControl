@@ -53,7 +53,7 @@ INSERT INTO public.item_core_g2_rls_probe VALUES
    'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01'),
   ('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
    '22222222-2222-4222-8222-222222222222', 'TENANT-B',
-   'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb01');
+   'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb');
 
 SET ROLE authenticated;
 SELECT set_config('request.jwt.claim.sub',
