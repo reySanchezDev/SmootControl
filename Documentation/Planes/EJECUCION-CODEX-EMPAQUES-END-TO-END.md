@@ -850,7 +850,7 @@ Se ampliaron los triggers `pull_request.branches` de `.github/workflows/item-cor
 
 **Aplicacion:** `ItemCatalogSnapshotApplier` valida primero `ItemCatalogSnapshotV2` y luego reemplaza unicamente las tablas canonicas dentro de una unica transaccion Drift. Un replay exacto no escribe; una revision antigua o un conflicto de `snapshot_id` se rechazan. Los snapshots parciales o de otro restaurante se rechazan antes de tocar la base. Ventas, `local_sync_queue` y catalogos legacy no se modifican. El servicio no esta registrado en el flujo POS ni activado operativamente.
 
-**Evidencia local:** generacion Drift completada con `build_runner`; `dart format` y `git diff --check` correctos; **21 pruebas Flutter pass** (aplicacion completa, preservacion de cola, replay, snapshot antiguo, conflicto, parcial, tenant cruzado y contrato V2 existente). El analisis local focalizado de Windows se bloqueo en el servidor Dart sin producir diagnosticos; no se declara limpieza local por esa via.
+**Evidencia local:** generacion Drift completada con `build_runner`; `dart format` y `git diff --check` correctos; **22 pruebas Flutter pass** (aplicacion completa, preservacion de cola, replay, snapshot antiguo, conflicto, parcial, rollback, tenant cruzado y contrato V2 existente). El analisis local focalizado de Windows se bloqueo en el servidor Dart sin producir diagnosticos; no se declara limpieza local por esa via.
 
 **Baseline de calidad:** PR #31 head `b2208cb08b1e72edfa30ea5118f2467dcde2d944`, run `43046975909`, concluyo `success`; el baseline quedo reducido y verificado en **20 diagnosticos legacy**, sin incremento. Esto controla regresiones, pero no equivale a `flutter analyze` global limpio.
 
