@@ -19,7 +19,7 @@ INSERT INTO public.item_classification_links(
   '90000000-0000-0000-0000-000000000001'
 );
 
-DO $
+DO $$
 DECLARE
   v_tenant uuid := '00000000-0000-0000-0000-000000000001';
   v_device uuid := '50000000-0000-0000-0000-000000000001';
