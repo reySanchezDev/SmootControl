@@ -171,7 +171,8 @@ class _ProductPackagingRulesDialogState
                             child: catalog.rules.isEmpty
                                 ? const Center(
                                     child: Text(
-                                      'Este producto no tiene reglas de empaque.',
+                                      'Este producto no tiene reglas de '
+                                      'empaque.',
                                     ),
                                   )
                                 : ListView.builder(
@@ -196,13 +197,17 @@ class _ProductPackagingRulesDialogState
                                               .map((x) => x.name)
                                               .firstOrNull ??
                                           'Empaque no disponible';
+                                      final status = rule.isActive
+                                          ? 'Activa'
+                                          : 'Inactiva';
                                       return ListTile(
                                         title: Text(
                                           '$salesName · $packagingName',
                                         ),
                                         subtitle: Text(
-                                          '${rule.quantityPerUnit} por unidad · '
-                                          '${rule.isActive ? 'Activa' : 'Inactiva'}',
+                                          '${rule.quantityPerUnit} por '
+                                          'unidad · '
+                                          '$status',
                                         ),
                                         trailing: IconButton(
                                           tooltip: 'Editar regla',
