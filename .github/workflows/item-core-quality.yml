@@ -338,6 +338,14 @@ jobs:
           echo "exit_code=$status" >> "$GITHUB_OUTPUT"
           echo "Flutter analyze exit: $status"
           exit "$status"
+      - name: Analyze new F2.3 code independently
+        if: always()
+        shell: bash
+        run: |
+          timeout 90s dart analyze \
+            lib/features/sync/domain/entities/item_catalog_snapshot_v2.dart
+          timeout 90s dart analyze \
+            test/features/sync/domain/entities/item_catalog_snapshot_v2_test.dart
       - name: Run all Flutter tests even when analyze is blocked
         id: tests
         if: always()
@@ -370,7 +378,15 @@ jobs:
         run: |
           echo "Analyzer exit: ${ANALYZE_EXIT:-not-run}"
           echo "Tests exit: ${TEST_EXIT:-not-run}"
-          if [ "${ANALYZE_EXIT:-missing}" != 0 ] || [ "${TEST_EXIT:-missing}" != 0 ]; then
-            echo "Quality gate failed. Inspect uploaded analyzer/test logs."
+          if [ "${TEST_EXIT:-missing}" != 0 ]; then
+            echo "Flutter tests failed or did not finish."
             exit 1
           fi
+          if [ -z "${ANALYZE_EXIT:-}" ]; then
+            echo "Flutter analyzer did not run."
+            exit 1
+          fi
+          python3 tool/check_item_core_analyzer.py \
+            --log "$RUNNER_TEMP/flutter-analyze.log" \
+            --baseline tool/item_core_analyzer_baseline.json \
+            --analyzer-exit "$ANALYZE_EXIT"
