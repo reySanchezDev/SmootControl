@@ -12,7 +12,7 @@ $root = Split-Path -Parent $PSScriptRoot
 $started = $false
 
 function Invoke-PsqlFile([string]$file) {
-    & docker exec -e PGPASSWORD=$password $container psql -X -v ON_ERROR_STOP=1 `
+    & docker exec -w /workspace -e PGPASSWORD=$password $container psql -X -v ON_ERROR_STOP=1 `
         -U postgres -d $database -f "/workspace/$file"
     if ($LASTEXITCODE -ne 0) { throw "PostgreSQL contract failed: $file" }
 }
@@ -43,7 +43,7 @@ try {
         Set-Content -Path $saleDdl -Encoding utf8
     & docker cp $saleDdl "${container}:/tmp/item-core-g2-sale-schema.sql"
     if ($LASTEXITCODE -ne 0) { throw 'Could not copy isolated sale schema' }
-    & docker exec -e PGPASSWORD=$password $container psql -X -v ON_ERROR_STOP=1 `
+    & docker exec -w /workspace -e PGPASSWORD=$password $container psql -X -v ON_ERROR_STOP=1 `
         -U postgres -d $database `
         -f /workspace/supabase/tests/item_core_f2_pos_sale_fixture.sql `
         -f /tmp/item-core-g2-sale-schema.sql `
