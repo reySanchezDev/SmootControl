@@ -1251,6 +1251,49 @@ restauracion remota administrada. Lint remoto sigue bloqueado por
 verificable, autorizacion especifica, correccion del lint y cierre de los 17
 diagnosticos de calidad. No se modificaron produccion, main, POS ni colas.
 
+### 13.15 Validacion local de 094 y matriz E1/E2 (2026-11-11)
+
+Se verifico PR #40 en `3bd1bc259084b8a021cf729eb75195c04d76a0d9` y se mantuvo el
+worktree original con 15 cambios locales, 17 stashes, sus worktrees y el Docker
+`smoo_control`. El ledger local sigue en 087; los objetos de 089 estaban ya
+instalados y no se reaplicaron 089--093. La 088 no se ejecuto. El remoto sigue
+en 083 y no recibio DDL.
+
+Se aplico **solo en PostgreSQL Docker local**
+`094_item_core_least_privilege_writes.sql`, con `ON_ERROR_STOP=1`, y se comprobo
+la funcion `item_core_internal.assert_packaging_write(uuid)` y su uso por
+`app_upsert_item_consumption_rule_v2`. No fue necesario crear una migracion
+posterior: los fallos de las primeras corridas fueron datos de prueba
+invalidos (`item_type=product` y `scope=restaurant`), corregidos en el caso
+transaccional sin tocar SQL aplicado.
+
+Matriz JWT/RLS con identidades locales existentes y fixtures de rol temporales
+revertidos por la misma transaccion: administrador con ambos permisos **CRUD
+completo aprobado**; solo `productos.gestionar` **articulos, unidades,
+clasificaciones y recetas aprobados**, regla de empaque rechazada; solo
+`empaques.gestionar` **regla aprobada**, articulo rechazado; sin permiso,
+usuario POS y otro tenant rechazados. Resultado: **3 operaciones de exito de
+alcance, 5 denegaciones 42501, 0 falsos positivos**. Se releearon dentro de la
+transaccion 2 articulos, 1 clasificacion, 1 unidad, 1 receta activa y 1 regla;
+la revision llego a 12. Rollback posterior: 0 articulos de prueba y 0 roles
+temporales. No se alteraron datos permanentes.
+
+El build oficial `tool/build_web_release.ps1 -CanonicalItemsQa` ya genero RELEASE
+con `main.dart.js` 6,603,933 bytes, `sqlite3.wasm` 733,662 y `drift_worker.js`
+375,910. El servidor local respondio HTTP 200 para los cuatro assets y se
+verifico recarga por solicitudes repetidas; no hay herramienta de navegador
+disponible en este entorno para certificar visualmente login y F5. `flutter
+analyze --no-fatal-infos` conserva 17 diagnósticos preexistentes y los 25 tests
+dirigidos de core/catalogo pasan. No se inventa aprobacion funcional de UI.
+
+La auditoria remota de lint continua bloqueada por
+`public.app_backfill_missing_sale_costs`/`tmp_cost_backfill_items` (42P01). El
+estado de backup remoto reporta WALG=true pero PITR=false y timestamps de
+restauracion 0; no existe respaldo remoto restaurable demostrado, por lo que
+no se ejecutaron migraciones remotas. G0/G1/E1/E2 quedan aprobados solo para
+continuacion local; el gate remoto y la activacion operativa permanecen
+cerrados.
+
 ### 13.10 Release obligatorio incluso para QA local (2026-11-11)
 
 **Decisión del propietario:** Kivo en localhost se evalúa **siempre desde Flutter Web compilado en RELEASE**, nunca `flutter run`/debug, por su tiempo de carga. Se mantiene ejecución aislada por rama de QA, sin publicar kivo.quantix.software.
