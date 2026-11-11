@@ -1,4 +1,6 @@
 -- Always ends with ROLLBACK; never touches operating data.
+INSERT INTO public.item_catalog_revisions(restaurant_id)
+VALUES('00000000-0000-0000-0000-000000000001');
 DO $$
 DECLARE
  t uuid:='00000000-0000-0000-0000-000000000001';
