@@ -2,9 +2,40 @@
 
 **Identificador:** KIVO-ITEM-CORE  
 **Última actualización:** 2026-11-11  
-**Estado E2E:** auditoría F0 terminada; contratos F1/F2 y snapshot Drift V2 probados de forma aislada; **G1/G2 operativos pendientes; migración canónica no aplicada; frontend F3 canónico no entregado; Docker/QA manual no ejecutados; F4 sin despliegue**. PR #17 es una vista legacy, no CRUD canónico. Migración 088 congelada.  
+**Estado E2E (11/11/2026):** F0 auditado; F1/F2 probados parcialmente en laboratorio; **migración aditiva 089 ensayada en Docker local, NO aplicada remotamente**; F3 Artículos/Recetas/Empaques canónicos parcialmente implementados bajo flag QA y compilados Web RELEASE en CI, **sin QA funcional aprobada**; G1/G2 remoto y G3/G4 abiertos; `main` y sitio público sin despliegue. Migración 088 congelada.  
 **Repositorio:** `reySanchezDev/SmootControl`  
 **Documento único de planificación:** este archivo. Se actualiza en cada avance, sin crear un plan por PR/fase.
+
+## CONTINUIDAD PARA EL SIGUIENTE CHAT — LECTURA OBLIGATORIA (11/11/2026)
+
+**Mandato del propietario:** entregar la refactorización completa END-TO-END del maestro de artículos de Kivo, sin limitarse a backend. Incluye tipos inventory/non_inventory/service, unidades, clasificaciones, recetas, envases/empaques y reglas, inventario, compras, ventas/void, POS y offline, pantallas Backoffice V2 y QA visual. El asistente debe ejecutar TODO lo posible directamente en GitHub/Actions, seguir sin detenerse y recurrir a Codex únicamente para Windows/Docker/credenciales reales/dispositivos físicos. Respuestas breves; no pedir al usuario que vuelva a explicar el proyecto.
+
+**Plan vigente:** este mismo Plan Rector, particularmente §§13.1–13.8, 13.10 y 13.11. Para QA local **siempre Flutter Web RELEASE**, jamás debug. No entregar un sitio web que no guarde operaciones reales. Las revisiones CI sintéticas no certifican funcionalidad.
+
+**GitHub:** `reySanchezDev/SmootControl`; PR de integración #40 https://github.com/reySanchezDev/SmootControl/pull/40, rama `feature/item-core-end-to-end-implementation` sobre `feature/item-core-g2-production-readonly-audit` (PR #39). **Consultar HEAD actual al empezar**; en este corte era `abf8a0ad5701d22a4ab7c374bcba5cab3d544434`. PRs #29–#39 contienen contratos y pruebas previos apilados; no están en `main`. No mergear ni publicar el dominio `kivo.quantix.software` sin G3/G4 explícitos.
+
+### Avances y evidencias que deben conservarse
+
+- **Docker existente:** proyecto `smoo_control` en Docker Desktop; PostgreSQL local `127.0.0.1:54324`, Kong, REST, Auth y Meta saludables. No recrear ni eliminar sus contenedores ni los de Tentrix.
+- **Supabase remoto piloto:** migraciones 001–083 aplicadas, 084–088 pendientes; 55 tablas, 54 con RLS, 56 políticas; inicialmente 0/6 tablas y 0/6 RPC V2. Auditoría remota solo lectura. WALG=true; PITR y restauración remota verificable NO acreditados. El usuario autorizó este proyecto como piloto, NO limpieza ni DDL/DML sin control.
+- **Codex/PR #40:** añadió `supabase/migrations/089_item_master_v2_additive.sql`, independiente de la 088 congelada. Según evidencia Codex, 089 crea 6 tablas/6 RPC, políticas RLS e índices sin backfill/ventas/POS; probada con rollback en restauración aislada y aplicada al Docker local. Backup lógico LOCAL de 1,010,328 bytes restaurado parcialmente en entorno temporal (55 tablas); errores de extensiones y roles administrados de Supabase. **No es un respaldo verificado del remoto. La 089 NO está aplicada remotamente.**
+- **Auth local verificada por Codex:** JWT aceptado por Kong/PostgREST, SELECT RLS 200 (sin filas), escritura directa 403 y dispositivo RPC inválido 403. No confundir con prueba completa JWT/RLS remota ni QA comercial.
+- **Frontend bajo flag `SMOO_ITEM_CORE_V2_QA=true`:** se implementaron entidades y acceso remoto canónico para Artículos, clasificaciones, recetas y consumo de empaques; formulario/listado para tres tipos; editor de reglas y editor de recetas versionadas. **Implementación parcial, sin validación de persistencia con backend remoto.** Revisar mismatch: cliente receta llama `app_save_item_recipe_v2`, comprobar si 089 publica dicha RPC; validar también que los otros RPC/DTO coincidan con 089.
+- **QA RELEASE:** `tool/build_web_release.ps1 -CanonicalItemsQa`, `tool/start_item_core_qa_release.ps1`; workflow `.github/workflows/item-core-web-qa.yml` compiló release Linux y validó 4 assets, por ejemplo runs 43092362378, 43093682709, 43094196456, 43094874769. Estas compilaciones inyectan URL/clave dummy inservibles: solo prueban compilación.
+- **Pruebas Flutter:** run 43094196563 dio 424 tests correctos pero tres diagnósticos nuevos; correcciones en c3af1933. Las ejecuciones del HEAD abf8a0ad estaban EN COLA al corte; **consultar conclusiones actuales, no afirmar CI verde sin verificarlas**.
+- **Windows:** build oficial release generó main.dart.js (~6.6 MB) pero no terminó ni copió sqlite3.wasm / drift_worker.js. No había un localhost funcional para QA. Codex preservó worktree con 15 cambios locales y 17 stashes.
+- **Pendiente remoto heredado:** lint de `public.app_backfill_missing_sale_costs` por `tmp_cost_backfill_items` inexistente; diagnosticar antes de migración remota, reparar de forma segura y versionada si procede.
+
+### Siguiente ejecución concreta, sin pedir confirmaciones innecesarias
+
+1. Leer HEAD/CI/diff actuales del PR #40; completar o reparar frontend y contratos directamente con GitHub, incluyendo CRUD real Artículos, recetas, reglas de empaque, compras e integración POS/offline. Ejecutar CI y corregir todas las regresiones; evitar PRs o estudios redundantes.
+2. Conciliar migraciones 084–087, 089 y RPC/DTO del cliente; **088 queda congelada**. Comprobar seguridad JWT, permisos, RLS, integridad, rollback e idempotencia en Docker. Enviar a Codex **un solo prompt consolidado** cuando precise credenciales de Supabase o equipo local; no delegarle trabajo GitHub que pueda hacerse directamente.
+3. Antes de cualquier escritura remota: copia REMOTA restaurable demostrada, preflight de operaciones/colas, evaluación de la secuencia de migraciones, rollback y autorización específica. No asumir que WALG equivale a backup probado. No ejecutar DDL remoto basándose solo en la autorización de usar el proyecto como piloto.
+4. Compilar release desde la rama QA con credenciales locales privadas, abrir localhost y verificar login, guardado/edición persistidos, recetas y empaques, después matriz UI/REC/EMP/INV/POS/OFF/SEC/UX/RECOVER de §13.5. Requiere aprobación explícita del propietario en G3.
+5. Solo luego: merge controlado a main y despliegue Vercel bajo gate G4. Documentar cada SHA, tests, errores y decisiones aquí. Continuar trabajando mientras el siguiente paso pueda ejecutarse directamente.
+
+**Prohibido:** migración 088, borrar datos/volúmenes, modificar POS real o sus colas, exponer secretos, limpiar producción piloto indiscriminadamente, habilitar el sitio público antes de G3/G4 o presentar UI compilada con credenciales dummy como QA aceptada.
+
 
 > **REGLA INNEGOCIABLE:** No se considerará implementado un maestro único porque dos tablas aparezcan juntas en una pantalla, en una vista SQL UNION, o por crear una tercera tabla que reciba copias sincronizadas. Solo se cumple cuando `items` es la **única autoridad de los datos maestros**, los servicios operativos usan `item_id`, las relaciones operativas y la sincronización futura son coherentes y no existe escritura funcional paralela definitiva.
 
