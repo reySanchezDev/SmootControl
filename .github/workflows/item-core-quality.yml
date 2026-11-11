@@ -19,6 +19,8 @@ on:
       - 'test/**'
       - 'supabase/**'
       - 'tool/audit_item_core_dependencies.py'
+      - 'tool/check_item_core_analyzer.py'
+      - 'tool/item_core_analyzer_baseline.json'
       - '.github/workflows/item-core-quality.yml'
   pull_request:
     branches: [main]
@@ -27,6 +29,8 @@ on:
       - 'test/**'
       - 'supabase/**'
       - 'tool/audit_item_core_dependencies.py'
+      - 'tool/check_item_core_analyzer.py'
+      - 'tool/item_core_analyzer_baseline.json'
       - '.github/workflows/item-core-quality.yml'
   workflow_dispatch:
 
