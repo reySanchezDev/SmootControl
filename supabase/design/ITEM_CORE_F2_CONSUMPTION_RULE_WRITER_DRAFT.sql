@@ -22,6 +22,7 @@ DECLARE
   v_scope text;
   v_quantity numeric;
   v_priority integer;
+  v_revision bigint;
   v_is_active boolean;
 BEGIN
   PERFORM public.app_assert_admin_permission(
@@ -54,12 +55,13 @@ BEGIN
       USING ERRCODE='22023';
   END IF;
 
-  SELECT revision INTO STRICT v_priority
+  SELECT revision INTO v_revision
   FROM public.item_catalog_revisions
   WHERE restaurant_id=p_restaurant_id FOR UPDATE;
-  -- v_priority above holds a temporary read of revision to acquire the lock,
-  -- then restores actual domain priority from payload.
-  v_priority:=(p_payload->>'priority')::integer;
+  IF v_revision IS NULL THEN
+    RAISE EXCEPTION 'consumption_catalog_revision_not_initialized'
+      USING ERRCODE='23503';
+  END IF;
 
   IF NOT EXISTS(
     SELECT 1 FROM public.items i
@@ -142,9 +144,6 @@ BEGIN
 
   PERFORM item_core_internal.bump_item_catalog_revision(p_restaurant_id);
   RETURN v_row;
-EXCEPTION WHEN no_data_found THEN
-  RAISE EXCEPTION 'consumption_catalog_revision_not_initialized'
-    USING ERRCODE='23503';
 END;
 $$;
 
