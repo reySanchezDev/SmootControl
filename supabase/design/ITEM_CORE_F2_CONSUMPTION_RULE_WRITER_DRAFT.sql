@@ -46,7 +46,8 @@ BEGIN
   IF v_id IS NULL OR v_consumed IS NULL OR v_unit IS NULL
      OR v_scope NOT IN ('per_order','per_sale_line')
      OR v_scope IS NULL
-     OR v_quantity IS NULL OR NOT isfinite(v_quantity)
+     OR v_quantity IS NULL
+     OR v_quantity::text IN ('NaN','Infinity','-Infinity')
      OR v_quantity<=0 OR round(v_quantity,6)<>v_quantity
      OR v_priority IS NULL OR v_is_active IS NULL
      OR (v_scope='per_sale_line' AND v_source IS NULL)
