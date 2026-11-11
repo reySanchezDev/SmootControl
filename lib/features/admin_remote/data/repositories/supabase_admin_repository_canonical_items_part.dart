@@ -89,6 +89,63 @@ mixin _SupabaseAdminCanonicalItemsMixin on _SupabaseAdminRepositoryBase {
     },
   );
 
+  /// Returns the latest active canonical recipe for an article.
+  Future<AppResult<CanonicalRecipe?>> loadCanonicalRecipe(String itemId) =>
+      _guard(
+        'canonical_recipe_read_failed',
+        'No se pudo cargar la receta.',
+        () async {
+          final rows = await _getRows('product_recipes', {
+            'restaurant_id': 'eq.$_restaurantId',
+            'item_id': 'eq.$itemId',
+            'status': 'eq.active',
+            'select': 'id,item_id,version',
+            'order': 'version.desc',
+            'limit': '1',
+          });
+          if (rows.isEmpty) return null;
+          final row = rows.first;
+          final lines = await _getRows('product_recipe_lines', {
+            'restaurant_id': 'eq.$_restaurantId',
+            'recipe_id': 'eq.${_text(row['id'])}',
+            'is_active': 'eq.true',
+            'select': 'component_item_id,unit_id,quantity,waste_percent',
+            'order': 'display_order.asc',
+          });
+          return CanonicalRecipe(
+            id: _text(row['id']),
+            itemId: _text(row['item_id']),
+            version: _int(row['version'], fallback: 1),
+            lines: lines.map(CanonicalRecipeLine.fromRow).toList(),
+          );
+        },
+      );
+
+  /// Creates an immutable recipe revision through server-side validation.
+  Future<AppResult<void>> saveCanonicalRecipe({
+    required String itemId,
+    required List<CanonicalRecipeLine> lines,
+  }) => _guard(
+    'canonical_recipe_save_failed',
+    'No se pudo guardar la receta.',
+    () async {
+      if (lines.isEmpty) {
+        throw StateError('La receta requiere al menos un componente.');
+      }
+      final reply = await _rpc('app_save_item_recipe_v2', {
+        'p_restaurant_id': _restaurantId,
+        'p_item_id': itemId,
+        'p_lines': [
+          for (var index = 0; index < lines.length; index++)
+            lines[index].toPayload(index),
+        ],
+      });
+      if (_text(reply['recipe_id']).isEmpty) {
+        throw StateError('El servidor no confirmó la receta.');
+      }
+    },
+  );
+
   /// Creates or updates an article atomically via the trusted V2 writer.
   Future<AppResult<CanonicalItem>> saveCanonicalItem(CanonicalItem item) =>
       _guard(
