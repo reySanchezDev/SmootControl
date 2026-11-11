@@ -148,7 +148,7 @@ class _CanonicalItemDialogState extends State<CanonicalItemDialog> {
                   validator: _required,
                 ),
                 DropdownButtonFormField<CanonicalItemType>(
-                  value: _type,
+                  initialValue: _type,
                   decoration: const InputDecoration(
                     labelText: 'Tipo técnico *',
                   ),
@@ -169,7 +169,7 @@ class _CanonicalItemDialogState extends State<CanonicalItemDialog> {
                   },
                 ),
                 DropdownButtonFormField<String>(
-                  value: units.any((unit) => unit.id == _baseUnit)
+                  initialValue: units.any((unit) => unit.id == _baseUnit)
                       ? _baseUnit
                       : null,
                   decoration: const InputDecoration(
