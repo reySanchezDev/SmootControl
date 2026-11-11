@@ -5,9 +5,15 @@ import 'package:smoo_control/features/sync/domain/entities/item_catalog_snapshot
 /// Applies a validated canonical V2 snapshot without touching legacy POS data.
 final class ItemCatalogSnapshotApplier {
   /// Creates an applier for the local Drift database.
-  const ItemCatalogSnapshotApplier(this._database);
+  const ItemCatalogSnapshotApplier(
+    this._database, {
+    this.beforeSnapshotMetadataWrite,
+  });
 
   final AppDatabase _database;
+
+  /// Optional test seam that simulates a failure inside the transaction.
+  final Future<void> Function()? beforeSnapshotMetadataWrite;
 
   /// Applies a newer snapshot in one transaction, or returns `false` on replay.
   ///
@@ -15,9 +21,8 @@ final class ItemCatalogSnapshotApplier {
   /// legacy catalog, sales and synchronization queue are never modified.
   Future<bool> apply(ItemCatalogSnapshotV2 snapshot) async {
     final stored =
-        await (_database.select(
-              _database.localCanonicalCatalogSnapshots,
-            )..where((row) => row.restaurantId.equals(snapshot.restaurantId)))
+        await (_database.select(_database.localCanonicalCatalogSnapshots)
+              ..where((row) => row.restaurantId.equals(snapshot.restaurantId)))
             .getSingleOrNull();
     final decision = snapshot.decideAgainst(
       storedRevision: stored?.revision,
@@ -99,6 +104,7 @@ final class ItemCatalogSnapshotApplier {
               ),
             );
       }
+      await beforeSnapshotMetadataWrite?.call();
       await _database
           .into(_database.localCanonicalCatalogSnapshots)
           .insertOnConflictUpdate(

@@ -41,9 +41,9 @@ void main() {
             ),
           );
 
-      final applied = await ItemCatalogSnapshotApplier(database).apply(
-        _snapshot(revision: 1),
-      );
+      final applied = await ItemCatalogSnapshotApplier(
+        database,
+      ).apply(_snapshot(revision: 1));
 
       expect(applied, isTrue);
       expect(
@@ -134,6 +134,37 @@ void main() {
       );
     },
   );
+
+  test('rolls back every canonical table when a commit step fails', () async {
+    final applier = ItemCatalogSnapshotApplier(database);
+    await applier.apply(_snapshot(revision: 1));
+
+    final failingApplier = ItemCatalogSnapshotApplier(
+      database,
+      beforeSnapshotMetadataWrite: () async {
+        throw StateError('simulated_local_commit_failure');
+      },
+    );
+    await expectLater(
+      failingApplier.apply(
+        _snapshot(
+          revision: 2,
+          snapshotId: '88888888-8888-4888-8888-888888888888',
+        ),
+      ),
+      throwsA(isA<StateError>()),
+    );
+    expect(
+      (await database.select(database.localCanonicalCatalogSnapshots).get())
+          .single
+          .revision,
+      1,
+    );
+    expect(
+      await database.select(database.localCanonicalItems).get(),
+      hasLength(1),
+    );
+  });
 }
 
 ItemCatalogSnapshotV2 _snapshot({
