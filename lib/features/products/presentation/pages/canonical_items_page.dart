@@ -85,7 +85,9 @@ class _CanonicalItemsPageState extends State<CanonicalItemsPage> {
   }
 
   Future<void> _recipe(CanonicalItem selected) async {
-    if (_busy || selected.id == null || selected.type == CanonicalItemType.service) {
+    if (_busy ||
+        selected.id == null ||
+        selected.type == CanonicalItemType.service) {
       return;
     }
     setState(() => _busy = true);
