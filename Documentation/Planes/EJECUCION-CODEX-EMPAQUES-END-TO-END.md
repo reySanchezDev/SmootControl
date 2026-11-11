@@ -759,3 +759,13 @@ Se verifico la rama `feature/item-master-db-foundation` en `0d095ec718c234fe8d4c
 - **PR #26:** integrado a la misma rama técnica mediante squash `0f8129301eb8e63b38c57b53c021a69fe51cd2df`. Exportación POS V2 completa del maestro con revisión y snapshot por tenant, bajo prueba PostgreSQL 16 aislada. El run `42934670518` obtuvo **success** en todos los jobs aplicables; Flutter se omitió porque el commit es exclusivamente SQL.
 - **Bloqueante técnico principal vigente:** la revisión monotónica del catálogo requiere adaptar **todos los escritores** del maestro, unidades, clasificaciones y reglas para tomar el lock sobre `item_catalog_revisions` antes de sus cambios y actualizar la revisión en la misma transacción. No conectar todavía el pull a Drift ni habilitar los RPC de escritura antes del corte coordinado.
 - **Próximo trabajo remoto:** adaptar el escritor `app_upsert_item` y las mutaciones de reglas/unidades al protocolo transaccional de revisión, comprobar rollback/idempotencia/tenant en PostgreSQL desechable y posteriormente preparar la versión nueva de Drift. No autorizar aplicar migraciones en laboratorio principal ni producción hasta G2.
+
+### 12.16 F2.3 — Puente transaccional del escritor de artículos
+
+**Artefactos aislados:** `supabase/design/ITEM_CORE_F2_CATALOG_WRITER_BRIDGE_DRAFT.sql`, fixture y test `supabase/tests/item_core_f2_catalog_writer_{fixture,assert}.sql`, GitHub Actions PostgreSQL 16. Sin migraciones aplicadas.
+
+**Contrato de escritura:** `app_upsert_item_v2` verifica `articulos.gestionar`, exige una revisión inicializada, adquiere `FOR UPDATE` sobre `item_catalog_revisions` **antes** de llamar a la RPC F1 `app_upsert_item`, y actualiza `revision`/`snapshot_id` dentro de la **misma transacción**. La denegación/revocación de `EXECUTE` sobre la RPC antigua evita que un usuario cliente eluda el protocolo. La función V2 es un **puente de corte**, no un segundo maestro permanente; deberá consolidarse con el escritor canónico una vez completado F2. Los otros escritores (unidades/reglas/categorías/clasificaciones) todavía deben implementar el mismo protocolo.
+
+**Aserciones aisladas:** cambiar el nombre de un artículo produce revisión +1 y un nuevo snapshot; falla de escritura no cambia artículo ni revisión; permiso insuficiente rechaza; `authenticated` ya no puede ejecutar directamente la RPC antigua y sí tiene habilitada la nueva. **El fixture de este test representa un escritor F1 simplificado**; no sustituye la suite de seguridad F1.1 con roles reales ni ensaya la integración SQL completa.
+
+**Regla G2:** mantener escritura canónica y revisionado coordinados. El catálogo V2 sigue desconectado de Drift y del POS activo; producción y la base principal permanecen intactas.
