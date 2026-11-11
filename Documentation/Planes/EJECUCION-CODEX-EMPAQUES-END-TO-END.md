@@ -2,7 +2,7 @@
 
 **Identificador:** KIVO-ITEM-CORE  
 **Última actualización:** 2026-11-10  
-**Estado:** F0/G0 CERRADO; F1 DISEÑO Y BORRADOR DDL NO EJECUTABLE VERSIONADOS; G1 ABIERTO; MIGRACIÓN 088 CONGELADA; PANTALLAS NO AUTORIZADAS  
+**Estado:** F0/G0 CERRADO; G1 AUTORIZADO PARA DISEÑO F2, NO DESPLIEGUE; F2.3 CONTRATOS Y CI AISLADO VERIFICADOS; G2 ABIERTO; MIGRACIÓN 088 CONGELADA; PANTALLAS NO AUTORIZADAS  
 **Repositorio:** `reySanchezDev/SmootControl`  
 **Documento único de planificación:** este archivo. Se actualiza en cada avance, sin crear un plan por PR/fase.
 
@@ -791,3 +791,11 @@ Se verifico la rama `feature/item-master-db-foundation` en `0d095ec718c234fe8d4c
 **GitHub Actions:** los commits originales y los heads corregidos reportan `check_runs=[]`, `workflow_runs=[]`, `statuses=[]` y estado `pending`. No se declara un check verde inexistente. El workflow `item-core-quality.yml` solo dispara pull requests hacia `main`; #29 apunta a `feature/item-master-db-foundation` y #30 apunta a la rama de #29, por lo que la configuración actual no genera checks para esta cadena apilada. Es un bloqueante de integración remota que requiere ajustar el trigger o ejecutar el workflow manualmente con autorización del mantenedor.
 
 **Gate:** contratos SQL aislados de PR #29 y #30: **PASS**. Listos para integración técnica condicionada. Gate G2 global: **ABIERTO** hasta disponer de checks CI verificables, JWT/RLS reales, escritores legacy retirados y corte coordinado POS/Drift. No se autoriza merge automático, migración 088, activación operativa ni cambios en producción.
+
+### 12.19 Verificación GitHub Actions remota PR #29/#30 (2026-11-11)
+
+Se ampliaron los triggers `pull_request.branches` de `.github/workflows/item-core-quality.yml` en ambas ramas de PR para cubrir `feature/item-master-db-foundation` y la rama apilada `feature/item-core-f2-unit-revision` (sin modificar `main`). GitHub inició el run `43033683990` de PR #30, confirmando que Actions sí puede ejecutarse. El primer run falló en el job de unidad por inicialización repetida de `visible_in_pos`; después se corrigió el orden de fixtures, y el segundo run falló porque el fixture insertaba la revisión antes de crear `item_catalog_revisions`. Ambas incidencias fueron corregidas y publicadas en los PR #29/#30. El disparo manual no era necesario; `workflow_dispatch` no está disponible hasta registrar el workflow en la rama default `main`.
+
+**CI verificado:** run `43034050169` (PR #30, SHA `b9dbb265972ee101901b6e786d2ae982f05007bc`) concluyó con **12 jobs success**, incluido `F2 canonical unit revision writer` y `F2 classification link writer`; `Flutter tests and analyzer` se omitió porque el diff era exclusivamente SQL/YAML. Todos los contratos ejecutaron PostgreSQL desechable y no aplicaron migraciones. La falta de check aislado en el head PR #29 no equivale a ausencia de cobertura: el job de unidad pasó en la rama apilada PR #30 después de las correcciones. **G2 sigue abierto.**
+
+**Pendiente de integración:** PR #29 devuelve conflicto al solicitar squash contra la rama técnica porque el Plan Rector fue actualizado paralelamente en la base (`69ee7530...`). Reconciliar el texto del Plan Rector, rebasar las dos ramas en orden y revalidar CI antes de cualquier integración técnica. El Plan Rector previo prohíbe merge automático sin autorización; no se ha fusionado ninguna rama. `main`, POS, Drift, migraciones activas y producción sin cambios.
