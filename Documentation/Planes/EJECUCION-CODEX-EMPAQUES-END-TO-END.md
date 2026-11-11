@@ -855,3 +855,11 @@ Se ampliaron los triggers `pull_request.branches` de `.github/workflows/item-cor
 **Baseline de calidad:** PR #31 head `b2208cb08b1e72edfa30ea5118f2467dcde2d944`, run `43046975909`, concluyo `success`; el baseline quedo reducido y verificado en **20 diagnosticos legacy**, sin incremento. Esto controla regresiones, pero no equivale a `flutter analyze` global limpio.
 
 **Gate:** integracion Drift V2 preparada para revision tecnica, sin merge ni despliegue. G2 sigue **ABIERTO** hasta conectar de forma coordinada el pull RPC V2, completar consumidores comerciales/modificadores, demostrar rollback de IO real, adaptar el sender de ventas y colas offline al contrato, validar JWT/RLS/escritores legacy y ejecutar el corte de dispositivos. Migracion 088, POS operativo, `main`, produccion y laboratorio principal no fueron modificados.
+
+### 12.25 Aislamiento multirrestaurante y serialización Drift V2 (2026-11-11)
+
+**Auditoría remota del PR #35:** el aplicador inicial eliminaba **todas** las filas de las tablas canónicas al recibir un snapshot, aunque guardaba revisiones por restaurante. Ello habría borrado el catálogo de otro restaurante si compartían almacenamiento local. Además leía la revisión **fuera** de la transacción, permitiendo condiciones de carrera con snapshots simultáneos. Ambos fallos se corrigieron en el propio PR #35.
+
+**Corrección:** `ItemCatalogSnapshotApplier.apply` ahora consulta la revisión dentro de la transacción y borra/reemplaza únicamente filas pertenecientes a `snapshot.restaurantId`; las unidades y enlaces (sin restaurante propio en su tabla) se filtran usando los IDs de artículos anteriores de ese restaurante. El reemplazo y la revisión se confirman juntos. Un fallo en cualquier paso revierte todo; replays y snapshots antiguos nunca sobreescriben revisiones más nuevas.
+
+**Pruebas adicionales:** dos restaurantes en la misma BD conservan artículos, unidades, clasificaciones, enlaces, reglas y metadatos después de actualizar solo uno; dos versiones concurrentes deben mantener la mayor revisión y rechazar el intento obsoleto. Las ventas, colas offline y catálogos legacy permanecen fuera de este aplicador. **No afirmar que estas pruebas pasaron hasta verificar la ejecución GitHub Actions del head corregido.** La activación en POS y G2 siguen bloqueados por el corte end-to-end y seguridad JWT/RLS real.
