@@ -47,6 +47,10 @@ CREATE POLICY item_core_g2_insert ON public.item_core_g2_rls_probe
     AND auth.has_permission('item_core.write')
   );
 
+GRANT USAGE ON SCHEMA auth TO authenticated;
+GRANT EXECUTE ON FUNCTION auth.uid(), auth.restaurant_id(), auth.has_permission(text)
+  TO authenticated;
+
 INSERT INTO public.item_core_g2_rls_probe VALUES
   ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
    '11111111-1111-4111-8111-111111111111', 'TENANT-A',
