@@ -18,11 +18,14 @@ on:
       - feature/item-core-f2-classification-master-revision
       - feature/item-core-f2-classification-snapshot
       - feature/item-core-f2-catalog-drift-v2
+      - feature/item-core-g2-qa-candidate
     paths:
       - 'lib/**'
       - 'test/**'
       - 'supabase/**'
       - 'tool/audit_item_core_dependencies.py'
+      - 'tool/check_item_core_analyzer.py'
+      - 'tool/item_core_analyzer_baseline.json'
       - '.github/workflows/item-core-quality.yml'
   pull_request:
     branches:
@@ -32,11 +35,14 @@ on:
       - feature/item-core-f2-classification-revision
       - feature/item-core-f2-classification-master-revision
       - feature/item-core-f2-classification-snapshot
+      - feature/item-core-f2-catalog-drift-v2
     paths:
       - 'lib/**'
       - 'test/**'
       - 'supabase/**'
       - 'tool/audit_item_core_dependencies.py'
+      - 'tool/check_item_core_analyzer.py'
+      - 'tool/item_core_analyzer_baseline.json'
       - '.github/workflows/item-core-quality.yml'
   workflow_dispatch:
 
