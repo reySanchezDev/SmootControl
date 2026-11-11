@@ -1125,3 +1125,14 @@ remoto y resoluciÃ³n del bloqueo Flutter/Web de Windows. No se modificaron
 `main`, producciÃ³n, datos, Docker operativo ni migraciones remotas.
 
 **Todo PR/cambio posterior deberá actualizar esta tabla con SHA, CI, evidencia visual y aceptación.** Cualquier gate no acreditado permanece pendiente. No cambiar estado para presentar progreso artificial.
+
+
+### 13.10 Release obligatorio incluso para QA local (2026-11-11)
+
+**Decisión del propietario:** Kivo en localhost se evalúa **siempre desde Flutter Web compilado en RELEASE**, nunca `flutter run`/debug, por su tiempo de carga. Se mantiene ejecución aislada por rama de QA, sin publicar kivo.quantix.software.
+
+**Implementación publicada en PR #40:** `tool/build_web_release.ps1 -CanonicalItemsQa` inyecta exclusivamente para QA el flag `SMOO_ITEM_CORE_V2_QA=true` y conserva los Dart defines Supabase que obtiene de la configuración privada local. El lanzador `tool/start_item_core_qa_release.ps1` ejecuta ese build oficial RELEASE, comprueba `index.html`, `main.dart.js`, `sqlite3.wasm` y `drift_worker.js`, evita pisar procesos de puertos ocupados, inicia `http://127.0.0.1:8080/` con Python y exige HTTP 200. No hace `flutter run`, no configura ni altera Docker o base de datos.
+
+**CI reproducible Linux**: `.github/workflows/item-core-web-qa.yml` compila con `flutter build web --release` y valida los cuatro artefactos; usa URL y llave de prueba **inservibles** para no incorporar credenciales reales a un artefacto GitHub. Run **43092362378**, **SUCCESS** en SHA `7fdec6fa83f106dc411cde44c3842bd886062ccd`. Certifica **build release, no QA funcional remoto ni aprobación del gate G3**.
+
+**Estado de frontend al corte:** capa de lectura/alta/edición de artículos `items` por RPC V2, clasificación y unidades, y editor de reglas de consumo canónico iniciados bajo flag QA. Recetas canónicas, despliegue remoto y pruebas UX completas **pendientes**. Supabase remoto todavía no tiene el esquema ni RPC V2 (auditoría E0/E1); la pantalla nueva no puede guardar allí hasta completar E1 y verificar JWT/RLS. No presentar este build con credenciales ficticias como entregable de aceptación. El bloqueo Flutter Windows no puede alterar la política RELEASE: resolverlo o compilar correctamente desde Linux con configuración autorizada para el entorno QA.
