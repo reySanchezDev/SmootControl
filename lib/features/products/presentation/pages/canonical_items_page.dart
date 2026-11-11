@@ -111,7 +111,9 @@ class _CanonicalItemsPageState extends State<CanonicalItemsPage> {
           rules: (rules as AppSuccess<List<CanonicalConsumptionRule>>).value,
         ),
       );
-      if (result == true && mounted) _refresh();
+      if (result ?? false) {
+        if (mounted) _refresh();
+      }
     } finally {
       if (mounted) setState(() => _busy = false);
     }
