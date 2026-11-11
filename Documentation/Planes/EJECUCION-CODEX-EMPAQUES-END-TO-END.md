@@ -931,3 +931,11 @@ misma matriz contra JWT/RLS y contratos del esquema real autorizado, completar
 consumidores comerciales/modificadores y el corte reversible de terminales.
 No se aplicaron migraciones, no se modificó `main`, producción, migración 088,
 POS operativo ni laboratorio principal; no se fusionó el PR #37.
+
+### 12.29 Simulación de dos dispositivos y auditoría RLS no destructiva (2026-11-11)
+
+**Rama:** `feature/item-core-g2-dual-device-rehearsal`, apilada sobre PR #37. Se agregó test Flutter de dos almacenes SQLite físicamente separados (una instancia por terminal simulada): mientras B mantiene venta pendiente sin internet y revisión 1, A instala revisión 2; al reconectar B se aplica revisión 2 y su venta pendiente se conserva. Los replays de revisión 2 no escriben. **No representa prueba de dos terminales físicas ni sincronización efectiva contra backend**.
+
+**Plan de aceptación:** `Documentation/Planes/G2-QA-TERMINALES-Y-RLS.md` define prerrequisitos y evidencias de seguridad, ventas/anulaciones, reintentos offline, sincronización física A/B, conciliación de ledger y rollback coordinado. `supabase/tests/item_core_g2_real_schema_readonly_audit.sql` consulta solo `pg_catalog` y `pg_policies` bajo transacción `READ ONLY`. **No ejecutar en ninguna base no autorizada; no interpreta existencia de políticas como JWT validado.**
+
+**G2 ABIERTO:** CI sintético no reemplaza JWT/RLS de Supabase real ni dispositivos físicos. No hay permiso para activar el catálogo V2, hacer migraciones, cambiar `main` o producción. Registrar evidencia CI del PR solo después del run final.
