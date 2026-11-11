@@ -1127,6 +1127,47 @@ remoto y resoluciÃ³n del bloqueo Flutter/Web de Windows. No se modificaron
 **Todo PR/cambio posterior deberá actualizar esta tabla con SHA, CI, evidencia visual y aceptación.** Cualquier gate no acreditado permanece pendiente. No cambiar estado para presentar progreso artificial.
 
 
+### 13.11 E1/E2 local sobre Docker y respaldo verificable (2026-11-11)
+
+Se sincronizo PR #40 hasta `c3af193`, preservando el worktree original, sus 15
+cambios locales y los 17 stashes. El contenedor `smoo_control` no fue recreado,
+reseteado ni eliminado. PostgreSQL local reporto migracion maxima **087**;
+**088 no fue ejecutada**.
+
+Se genero un respaldo logico custom de **1,010,328 bytes** y se verifico su
+manifiesto con `pg_restore --list`. La restauracion en contenedores y bases
+temporales separadas recupero **55 tablas publicas**, incluida `products`.
+Los errores de una restauracion generica corresponden a extensiones/roles del
+runtime Supabase (`auth`, `realtime` y roles administrados), no a corrupcion
+del archivo.
+
+Se agrego `supabase/migrations/089_item_master_v2_additive.sql`: migracion
+autocontenida y transaccional, independiente de 088, con **6/6** tablas V2,
+**6/6** RPC (pull y cinco escritores), **5** politicas RLS e indices. No hace
+backfill, DROP, triggers legacy ni cambios en ventas, POS o colas offline. Se
+ejecuto en la restauracion aislada y en el Docker local existente. Un fallo
+transaccional deliberado dejo cero objetos parciales.
+
+La autenticacion local verifico JWT HS256 aceptado por Kong/PostgREST: lectura
+RLS **200** con respuesta vacia, escritura directa sobre `items` **403** y RPC
+`pos_pull_item_catalog_v2` con dispositivo invalido **403**. Las funciones
+SECURITY DEFINER fijan `search_path` y no tienen EXECUTE para `anon`.
+
+El script oficial `tool/build_web_release.ps1 -CanonicalItemsQa` valido las
+credenciales privadas, compilo el worker Drift y produjo `main.dart.js`
+(**6,603,939 bytes**). Flutter Web quedo sin salida en la fase final y se
+detuvo solo el proceso de esta sesion; el script no alcanzo a copiar WASM y
+worker a `build/web`. No se declara release ejecutable ni QA funcional hasta
+resolver el bloqueo del compilador/entorno Windows. `flutter analyze` presento
+el mismo bloqueo de inicializacion y no produjo diagnosticos.
+
+**Gate E1/E2 local:** migracion y RLS locales verificadas; remoto sin cambios.
+**G1/G2 remoto: PENDIENTE.** Bloqueos que requieren decision: autorizar el
+proceso posterior de migracion remota solo con respaldo/restauracion Supabase
+administrada verificable, corregir el lint remoto de
+`app_backfill_missing_sale_costs` (`tmp_cost_backfill_items` inexistente) y
+resolver el bloqueo Flutter Web Windows antes de presentar localhost a QA.
+
 ### 13.10 Release obligatorio incluso para QA local (2026-11-11)
 
 **Decisión del propietario:** Kivo en localhost se evalúa **siempre desde Flutter Web compilado en RELEASE**, nunca `flutter run`/debug, por su tiempo de carga. Se mantiene ejecución aislada por rama de QA, sin publicar kivo.quantix.software.
