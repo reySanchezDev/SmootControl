@@ -1,7 +1,8 @@
 param(
   [string]$CredentialsPath = "",
   [int]$Port = 8080,
-  [switch]$NoBrowser
+  [switch]$NoBrowser,
+  [switch]$LocalSupabaseQa
 )
 
 $ErrorActionPreference = 'Stop'
@@ -9,6 +10,10 @@ Set-StrictMode -Version Latest
 
 if ($Port -lt 1024 -or $Port -gt 65535) {
   throw 'El puerto de QA debe estar entre 1024 y 65535.'
+}
+
+if ($LocalSupabaseQa -and [string]::IsNullOrWhiteSpace($CredentialsPath)) {
+  throw 'Indicá -CredentialsPath con configuración PRIVADA del Docker local (no remota).'
 }
 
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
@@ -24,6 +29,9 @@ if ($existing) {
 $buildArgs = @{ CanonicalItemsQa = $true }
 if (-not [string]::IsNullOrWhiteSpace($CredentialsPath)) {
   $buildArgs.CredentialsPath = $CredentialsPath
+}
+if ($LocalSupabaseQa) {
+  $buildArgs.LocalSupabaseQa = $true
 }
 & $builder @buildArgs
 
@@ -57,7 +65,11 @@ if (-not $healthy) {
 }
 
 Write-Host "Kivo QA RELEASE: $url (PID $($server.Id))"
-Write-Host 'Supabase remoto configurado desde credenciales locales privadas.'
+if ($LocalSupabaseQa) {
+  Write-Host 'Conectado al Supabase del Docker local, con archivo privado del laboratorio.'
+} else {
+  Write-Host 'Supabase configurado mediante archivo privado; verificar entorno.'
+}
 if (-not $NoBrowser) {
   Start-Process $url
 }
