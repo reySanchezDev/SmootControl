@@ -33,6 +33,7 @@ extension _AppDatabaseMigrations on AppDatabase {
     await _upgradeSchemaFrom32(migrator, from);
     await _upgradeSchemaFrom33(migrator, from);
     await _upgradeSchemaFrom34(migrator, from);
+    await _upgradeSchemaFrom35(migrator, from);
   }
 
   Future<void> _upgradeSchemaFrom7To20(Migrator migrator, int from) async {
@@ -263,6 +264,17 @@ extension _AppDatabaseMigrations on AppDatabase {
       if (!await _tableExists(localVacationRequests.actualTableName)) {
         await migrator.createTable(localVacationRequests);
       }
+    }
+  }
+
+  Future<void> _upgradeSchemaFrom35(Migrator migrator, int from) async {
+    if (from < 35) {
+      await migrator.createTable(localCanonicalCatalogSnapshots);
+      await migrator.createTable(localCanonicalItems);
+      await migrator.createTable(localCanonicalItemUnits);
+      await migrator.createTable(localCanonicalClassifications);
+      await migrator.createTable(localCanonicalClassificationLinks);
+      await migrator.createTable(localCanonicalConsumptionRules);
     }
   }
 }
