@@ -20,23 +20,56 @@ final class ItemCatalogSnapshotApplier {
   /// Drift rolls back every canonical table change if any insert fails. The
   /// legacy catalog, sales and synchronization queue are never modified.
   Future<bool> apply(ItemCatalogSnapshotV2 snapshot) async {
-    final stored =
-        await (_database.select(_database.localCanonicalCatalogSnapshots)
-              ..where((row) => row.restaurantId.equals(snapshot.restaurantId)))
-            .getSingleOrNull();
-    final decision = snapshot.decideAgainst(
-      storedRevision: stored?.revision,
-      storedSnapshotId: stored?.snapshotId,
-    );
-    if (decision == ItemCatalogUpdateDecisionV2.noChange) return false;
-
     final now = DateTime.now();
+    var applied = false;
     await _database.transaction(() async {
-      await _database.delete(_database.localCanonicalClassificationLinks).go();
-      await _database.delete(_database.localCanonicalConsumptionRules).go();
-      await _database.delete(_database.localCanonicalItemUnits).go();
-      await _database.delete(_database.localCanonicalClassifications).go();
-      await _database.delete(_database.localCanonicalItems).go();
+      // Read revision inside the same transaction as the replacement.
+      // A concurrent applier must never check a stale revision and then
+      // overwrite a newer catalog.
+      final stored =
+          await (_database.select(_database.localCanonicalCatalogSnapshots)
+                ..where(
+                  (row) => row.restaurantId.equals(snapshot.restaurantId),
+                ))
+              .getSingleOrNull();
+      final decision = snapshot.decideAgainst(
+        storedRevision: stored?.revision,
+        storedSnapshotId: stored?.snapshotId,
+      );
+      if (decision == ItemCatalogUpdateDecisionV2.noChange) return;
+
+      // Canonical data is tenant-owned. Never erase a second restaurant's
+      // catalog when the current restaurant receives a newer snapshot.
+      final oldItems =
+          await (_database.select(_database.localCanonicalItems)
+                ..where(
+                  (row) => row.restaurantId.equals(snapshot.restaurantId),
+                ))
+              .get();
+      final oldIds = oldItems.map((item) => item.id).toList(growable: false);
+      if (oldIds.isNotEmpty) {
+        await (_database.delete(_database.localCanonicalClassificationLinks)
+              ..where((row) => row.itemId.isIn(oldIds)))
+            .go();
+        await (_database.delete(_database.localCanonicalItemUnits)
+              ..where((row) => row.itemId.isIn(oldIds)))
+            .go();
+      }
+      await (_database.delete(_database.localCanonicalConsumptionRules)
+            ..where(
+              (row) => row.restaurantId.equals(snapshot.restaurantId),
+            ))
+          .go();
+      await (_database.delete(_database.localCanonicalClassifications)
+            ..where(
+              (row) => row.restaurantId.equals(snapshot.restaurantId),
+            ))
+          .go();
+      await (_database.delete(_database.localCanonicalItems)
+            ..where(
+              (row) => row.restaurantId.equals(snapshot.restaurantId),
+            ))
+          .go();
 
       for (final item in snapshot.items) {
         await _database
@@ -115,8 +148,9 @@ final class ItemCatalogSnapshotApplier {
               appliedAt: now,
             ),
           );
+      applied = true;
     });
-    return true;
+    return applied;
   }
 
   String _itemType(ItemCatalogTypeV2 type) {
