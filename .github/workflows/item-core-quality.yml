@@ -22,6 +22,7 @@ on:
       - feature/item-core-g2-qa-rehearsal
       - feature/item-core-g2-dual-device-rehearsal
       - feature/item-core-g2-production-readonly-audit
+      - feature/item-core-end-to-end-implementation
     paths:
       - 'lib/**'
       - 'test/**'
@@ -42,6 +43,7 @@ on:
       - feature/item-core-f2-catalog-drift-v2
       - feature/item-core-g2-qa-candidate
       - feature/item-core-g2-qa-rehearsal
+      - feature/item-core-g2-production-readonly-audit
     paths:
       - 'lib/**'
       - 'test/**'
