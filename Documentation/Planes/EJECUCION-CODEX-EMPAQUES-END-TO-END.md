@@ -819,3 +819,13 @@ Se ampliaron los triggers `pull_request.branches` de `.github/workflows/item-cor
 **Calidad independiente:** PR #31 `fix/quality-12-diagnostics` publica los seis archivos de las 12 correcciones locales en `d85fd55d012e325625d64189d02373c76b37aab5`, sin SQL ni migraciones. El trigger de rama añadido al workflow solo habilita su verificación CI y no cambia operación. Run `43043531503` está en curso: inventario y jobs SQL ya están `success`; Flutter/analyzer aún no concluye. Por la regla 12.20, los 12 diagnósticos permanecen **PENDIENTES DE CIERRE** hasta que ese job termine con evidencia verificable. El análisis local de Windows siguió bloqueándose; no se declara limpieza por esa vía.
 
 **Gate:** #29 y #30 quedan técnicamente listos, con CI verde y sin merge autorizado. #31 queda publicado y separado, pendiente del resultado completo de Actions. No se autoriza merge, reducción del baseline ni G2 hasta cerrar esa evidencia.
+
+### 12.21 Evidencia CI de calidad y reducción de baseline (2026-11-11)
+
+**Runs finales reportados por Codex y comprobados directamente en GitHub:** PR #29 run `43043946796`, 11 jobs success y Flutter omitido por diff solo SQL; PR #30 run `43044045409`, 12 jobs success y Flutter omitido; PR #31 run `43044541603`, 11 jobs success incluidos `Flutter tests and analyzer - bounded diagnostics`. Los controles aplicables concluyeron sin fallos.
+
+**Analizador PR #31:** el log de `43044541603` acredita `20 issues found` (antes 33), análisis focalizado `No issues found`, `Analyzer exit=1`, `observed=20; legacy ceiling=33` y `PASS NON-REGRESSION ONLY`. No presentar esto como `flutter analyze` limpio. Quedan 19 infos y un warning (`invalid_use_of_protected_member`).
+
+**Control de deuda:** la rama `fix/quality-12-diagnostics` actualizó `tool/item_core_analyzer_baseline.json` para que el máximo heredado sea **20** y añadió rutas del guard/baseline a los triggers de CI. La reducción refleja exactamente el log del run anterior, sin ocultar reglas. Revisar CI del nuevo commit antes de fusionar PR #31. Los cambios no se aplicaron a producción, `main`, migraciones, POS ni Drift.
+
+**Próximo cierre de calidad:** limpiar los 20 diagnósticos restantes mediante rama separada y controles reales; no aumentar el nuevo techo ni usar ignorados genéricos. Las 12 correcciones originales permanecen en PR #31 sin despliegue; QA propietario corresponde solo en entorno real.
