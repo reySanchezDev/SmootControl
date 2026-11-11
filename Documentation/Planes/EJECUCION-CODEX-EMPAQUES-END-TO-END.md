@@ -1337,6 +1337,34 @@ remoto restaurable demostrado y el lint remoto debe verificarse nuevamente
 despues de 095/096 antes de cualquier DDL. E1/E2 quedan aprobados solo para
 continuacion local; G3 y el corte remoto siguen cerrados.
 
+### 13.20 E1/E2 estado exacto en c8707c4 (2026-11-11)
+
+Se sincronizo PR #40 hasta `c8707c4de6fa33336ce451bf95aa6326356a1230`.
+El worktree original conserva 15 cambios locales y 17 stashes; no se
+reiniciaron, recrearon ni resetearon contenedores. El workflow
+**43111089884** termino `completed/success` en ese SHA.
+
+La inspeccion de catalogos del Docker reporta PostgreSQL **17.6** y extensiones
+`pgcrypto 1.3`, `pg_graphql 1.5.11`, `pg_net 0.20`, `pg_stat_statements 1.11`,
+`supabase_vault 0.3.1` y `uuid-ossp 1.1`. Para
+`app_backfill_missing_sale_costs(uuid)`, `has_function_privilege` confirma
+`anon=false`, `authenticated=false`, `service_role=true`; `prosecdef=true`,
+`search_path=public, pg_temp` y `old_temp_ref=false`. La prueba aislada 096
+paso en PostgreSQL 16 sin invocar la funcion.
+
+No se repitio `SET ROLE anon` en el contenedor operativo. Los logs conservan el
+SIGSEGV del backend PostgreSQL durante ese ensayo anterior, con recuperacion
+automatica; la version/extensiones no muestran una extension no declarada como
+causa. La peticion PostgREST de ensayo con JWT no ejecuto la funcion y fue
+rechazada con HTTP **401** antes de cualquier mutacion. No se modificaron ACL
+remotos ni se hicieron escrituras remotas.
+
+El QA funcional de navegador no pudo ejecutarse: esta sesion no expone un
+controlador de navegador Windows conectado. Por tanto no se certifican login,
+restaurante/rol, CRUD visual, F5 ni capturas; los HTTP 200 previos de assets no
+se presentan como QA funcional. El remoto continua en 083 sin tablas V2, por
+lo que el CRUD remoto tampoco es certificable. G3 permanece cerrado.
+
 ### 13.10 Release obligatorio incluso para QA local (2026-11-11)
 
 **Decisión del propietario:** Kivo en localhost se evalúa **siempre desde Flutter Web compilado en RELEASE**, nunca `flutter run`/debug, por su tiempo de carga. Se mantiene ejecución aislada por rama de QA, sin publicar kivo.quantix.software.
