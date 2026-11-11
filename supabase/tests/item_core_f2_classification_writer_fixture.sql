@@ -1,6 +1,6 @@
 -- Disposable PostgreSQL fixture. Starts inside POS sale BEGIN.
 -- Master and link tables are now created in the shared catalog fixture.
-INSERT INTO public.item_classifications VALUES
+INSERT INTO public.item_classifications(id,restaurant_id,code,is_active) VALUES
  ('90000000-0000-0000-0000-000000000001',
   '00000000-0000-0000-0000-000000000001','PACKAGING',true),
  ('90000000-0000-0000-0000-000000000002',
