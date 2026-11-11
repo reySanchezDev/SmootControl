@@ -69,6 +69,29 @@ final class CanonicalItem {
     this.classificationIds = const [],
   });
 
+  /// Parses an RLS-scoped Supabase response.
+  factory CanonicalItem.fromRow(
+    Map<String, Object?> row, {
+    List<String> classificationIds = const [],
+  }) {
+    return CanonicalItem(
+      id: row['id']?.toString(),
+      code: row['code']?.toString() ?? '',
+      name: row['name']?.toString() ?? '',
+      type: CanonicalItemType.parse(row['item_type']),
+      baseUnitId: row['base_unit_id']?.toString() ?? '',
+      cost: double.tryParse(row['base_unit_cost'].toString()) ?? 0,
+      price: double.tryParse(row['base_unit_price'].toString()) ?? 0,
+      canSell: row['can_sell'] == true,
+      canPurchase: row['can_purchase'] == true,
+      visibleInPos: row['visible_in_pos'] == true,
+      usesRecipe: row['uses_recipe'] == true,
+      sendToKitchen: row['send_to_kitchen'] == true,
+      isActive: row['is_active'] != false,
+      classificationIds: classificationIds,
+    );
+  }
+
   /// UUID assigned by PostgreSQL, not by the user.
   final String? id;
 
@@ -110,29 +133,6 @@ final class CanonicalItem {
 
   /// Independent functional classification IDs.
   final List<String> classificationIds;
-
-  /// Parses an RLS-scoped Supabase response.
-  static CanonicalItem fromRow(
-    Map<String, Object?> row, {
-    List<String> classificationIds = const [],
-  }) {
-    return CanonicalItem(
-      id: row['id']?.toString(),
-      code: row['code']?.toString() ?? '',
-      name: row['name']?.toString() ?? '',
-      type: CanonicalItemType.parse(row['item_type']),
-      baseUnitId: row['base_unit_id']?.toString() ?? '',
-      cost: double.tryParse(row['base_unit_cost'].toString()) ?? 0,
-      price: double.tryParse(row['base_unit_price'].toString()) ?? 0,
-      canSell: row['can_sell'] == true,
-      canPurchase: row['can_purchase'] == true,
-      visibleInPos: row['visible_in_pos'] == true,
-      usesRecipe: row['uses_recipe'] == true,
-      sendToKitchen: row['send_to_kitchen'] == true,
-      isActive: row['is_active'] != false,
-      classificationIds: classificationIds,
-    );
-  }
 
   /// The trusted RPC, not direct table DML, performs every update.
   Map<String, Object?> toPayload() => {
