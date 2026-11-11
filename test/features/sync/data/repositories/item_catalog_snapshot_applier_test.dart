@@ -193,6 +193,71 @@ void main() {
     );
   });
 
+  test('two independent offline terminals converge without losing sales', () async {
+    final terminalA = AppDatabase(NativeDatabase.memory());
+    final terminalB = AppDatabase(NativeDatabase.memory());
+    try {
+      final applierA = ItemCatalogSnapshotApplier(terminalA);
+      final applierB = ItemCatalogSnapshotApplier(terminalB);
+      final first = _snapshot(revision: 1);
+      final second = _snapshot(
+        revision: 2,
+        snapshotId: '88888888-8888-4888-8888-888888888888',
+      );
+
+      await Future.wait([
+        applierA.apply(first),
+        applierB.apply(first),
+      ]);
+      await terminalB.into(terminalB.localSyncQueue).insert(
+        LocalSyncQueueCompanion.insert(
+          id: 'offline-sale-terminal-b',
+          entityType: 'sale',
+          entityId: 'terminal-b-sale-1',
+          operation: 'create',
+          payloadJson: '{}',
+          createdAt: DateTime(2026),
+          updatedAt: DateTime(2026),
+        ),
+      );
+
+      // Terminal B remains offline while terminal A receives a new revision.
+      expect(await applierA.apply(second), isTrue);
+      expect(
+        (await terminalB.select(
+          terminalB.localCanonicalCatalogSnapshots,
+        ).get()).single.revision,
+        1,
+      );
+      expect(
+        await terminalB.select(terminalB.localSyncQueue).get(),
+        hasLength(1),
+      );
+
+      // After reconnect, terminal B must accept the same canonical version.
+      expect(await applierB.apply(second), isTrue);
+      for (final terminal in [terminalA, terminalB]) {
+        final metadata = await terminal
+            .select(terminal.localCanonicalCatalogSnapshots)
+            .get();
+        expect(metadata.single.revision, 2);
+        expect(metadata.single.snapshotId, second.snapshotId);
+        expect(
+          await terminal.select(terminal.localCanonicalItems).get(),
+          hasLength(1),
+        );
+      }
+      expect(
+        (await terminalB.select(terminalB.localSyncQueue).get()).single.id,
+        'offline-sale-terminal-b',
+      );
+      expect(await applierB.apply(second), isFalse);
+    } finally {
+      await terminalA.close();
+      await terminalB.close();
+    }
+  });
+
   test('rolls back every canonical table when a commit step fails', () async {
     final applier = ItemCatalogSnapshotApplier(database);
     await applier.apply(_snapshot(revision: 1));
