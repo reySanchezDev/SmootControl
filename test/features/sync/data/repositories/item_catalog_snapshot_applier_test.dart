@@ -1,4 +1,3 @@
-import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:smoo_control/core/database/app_database.dart';
@@ -162,8 +161,10 @@ void main() {
         hasLength(2));
     expect(await database.select(database.localCanonicalClassifications).get(),
         hasLength(2));
-    expect(await database.select(database.localCanonicalClassificationLinks).get(),
-        hasLength(2));
+    expect(
+      await database.select(database.localCanonicalClassificationLinks).get(),
+      hasLength(2),
+    );
     expect(await database.select(database.localCanonicalConsumptionRules).get(),
         hasLength(2));
   });
@@ -233,7 +234,8 @@ ItemCatalogSnapshotV2 _otherTenantSnapshot({required int revision}) {
   final items = json['items']! as List<Map<String, Object?>>;
   final units = json['item_units']! as List<Map<String, Object?>>;
   final classes = json['item_classifications']! as List<Map<String, Object?>>;
-  final links = json['item_classification_links']! as List<Map<String, Object?>>;
+  final links =
+      json['item_classification_links']! as List<Map<String, Object?>>;
   final rules = json['consumption_rules']! as List<Map<String, Object?>>;
   const otherItemId = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
   const otherClassId = 'cccccccc-cccc-4ccc-8ccc-cccccccccccc';
