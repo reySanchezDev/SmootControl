@@ -193,9 +193,7 @@ void main() {
     );
   });
 
-  test(
-    'two independent offline terminals converge without losing sales',
-    () async {
+  test('two terminal offline replay keeps pending sales', () async {
     final terminalA = AppDatabase(NativeDatabase.memory());
     final terminalB = AppDatabase(NativeDatabase.memory());
     try {
@@ -258,8 +256,7 @@ void main() {
       await terminalA.close();
       await terminalB.close();
     }
-    },
-  );
+  });
 
   test('rolls back every canonical table when a commit step fails', () async {
     final applier = ItemCatalogSnapshotApplier(database);
