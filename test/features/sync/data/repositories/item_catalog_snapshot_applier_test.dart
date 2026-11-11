@@ -135,6 +135,63 @@ void main() {
     },
   );
 
+  test('preserves canonical catalogs belonging to other restaurants', () async {
+    final applier = ItemCatalogSnapshotApplier(database);
+    await applier.apply(_snapshot(revision: 1));
+    await applier.apply(_otherTenantSnapshot(revision: 1));
+    await applier.apply(
+      _snapshot(
+        revision: 2,
+        snapshotId: '88888888-8888-4888-8888-888888888888',
+      ),
+    );
+
+    final catalogs = await database
+        .select(database.localCanonicalCatalogSnapshots)
+        .get();
+    expect(catalogs, hasLength(2));
+    expect(
+      catalogs.singleWhere(
+        (row) => row.restaurantId == _otherRestaurantId,
+      ).revision,
+      1,
+    );
+    expect(await database.select(database.localCanonicalItems).get(),
+        hasLength(2));
+    expect(await database.select(database.localCanonicalItemUnits).get(),
+        hasLength(2));
+    expect(await database.select(database.localCanonicalClassifications).get(),
+        hasLength(2));
+    expect(await database.select(database.localCanonicalClassificationLinks).get(),
+        hasLength(2));
+    expect(await database.select(database.localCanonicalConsumptionRules).get(),
+        hasLength(2));
+  });
+
+  test('serializes concurrent revisions and preserves the newest', () async {
+    final applier = ItemCatalogSnapshotApplier(database);
+    final newer = _snapshot(
+      revision: 3,
+      snapshotId: '99999999-9999-4999-8999-999999999999',
+    );
+    final older = _snapshot(
+      revision: 2,
+      snapshotId: '88888888-8888-4888-8888-888888888888',
+    );
+    final outcomes = await Future.wait([
+      applier.apply(newer),
+      applier.apply(older).then<Object>((value) => value)
+          .catchError((Object error) => error),
+    ]);
+    expect(outcomes.first, isTrue);
+    expect(outcomes.last, isA<FormatException>());
+    expect(
+      (await database.select(database.localCanonicalCatalogSnapshots).get())
+          .single.revision,
+      3,
+    );
+  });
+
   test('rolls back every canonical table when a commit step fails', () async {
     final applier = ItemCatalogSnapshotApplier(database);
     await applier.apply(_snapshot(revision: 1));
@@ -165,6 +222,43 @@ void main() {
       hasLength(1),
     );
   });
+}
+
+ItemCatalogSnapshotV2 _otherTenantSnapshot({required int revision}) {
+  final json = _jsonSnapshot();
+  json['restaurant_id'] = _otherRestaurantId;
+  json['revision'] = revision;
+  json['snapshot_id'] = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+
+  final items = json['items']! as List<Map<String, Object?>>;
+  final units = json['item_units']! as List<Map<String, Object?>>;
+  final classes = json['item_classifications']! as List<Map<String, Object?>>;
+  final links = json['item_classification_links']! as List<Map<String, Object?>>;
+  final rules = json['consumption_rules']! as List<Map<String, Object?>>;
+  const otherItemId = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
+  const otherClassId = 'cccccccc-cccc-4ccc-8ccc-cccccccccccc';
+  const otherRuleId = 'dddddddd-dddd-4ddd-8ddd-dddddddddddd';
+  items.single
+    ..['restaurant_id'] = _otherRestaurantId
+    ..['id'] = otherItemId;
+  units.single
+    ..['restaurant_id'] = _otherRestaurantId
+    ..['item_id'] = otherItemId;
+  classes.single
+    ..['restaurant_id'] = _otherRestaurantId
+    ..['id'] = otherClassId;
+  links.single
+    ..['restaurant_id'] = _otherRestaurantId
+    ..['item_id'] = otherItemId
+    ..['classification_id'] = otherClassId;
+  rules.single
+    ..['restaurant_id'] = _otherRestaurantId
+    ..['id'] = otherRuleId
+    ..['consumed_item_id'] = otherItemId;
+  return ItemCatalogSnapshotV2.fromJson(
+    json,
+    expectedRestaurantId: _otherRestaurantId,
+  );
 }
 
 ItemCatalogSnapshotV2 _snapshot({
