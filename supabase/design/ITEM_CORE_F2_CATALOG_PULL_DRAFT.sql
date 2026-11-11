@@ -66,6 +66,8 @@ DECLARE
   v_items jsonb;
   v_units jsonb;
   v_rules jsonb;
+  v_classifications jsonb;
+  v_classification_links jsonb;
 BEGIN
   PERFORM public.assert_pos_device(
     p_restaurant_id,p_device_id,p_device_secret
@@ -80,7 +82,8 @@ BEGIN
       USING ERRCODE='23503';
   END IF;
 
-  -- A missing base unit or broken active rule MUST fail the full pull
+  -- A missing base unit, broken active rule or classification reference
+  -- MUST fail the full pull
   -- rather than send an incomplete catalog that deletes local rows.
   IF EXISTS (
     SELECT 1 FROM public.items i
@@ -145,6 +148,37 @@ BEGIN
   FROM public.item_consumption_rules r
   WHERE r.restaurant_id=p_restaurant_id AND r.is_active;
 
+  -- Never expose dangling or disabled links as a valid full catalog.
+  IF EXISTS (
+    SELECT 1 FROM public.item_classification_links l
+    LEFT JOIN public.items i ON i.restaurant_id=l.restaurant_id
+      AND i.id=l.item_id
+    LEFT JOIN public.item_classifications cl
+      ON cl.restaurant_id=l.restaurant_id
+      AND cl.id=l.classification_id
+    WHERE l.restaurant_id=p_restaurant_id
+      AND (i.id IS NULL OR cl.id IS NULL OR NOT cl.is_active)
+  ) THEN
+    RAISE EXCEPTION 'catalog_invalid_classification_link'
+      USING ERRCODE='23514';
+  END IF;
+
+  SELECT COALESCE(jsonb_agg(jsonb_build_object(
+    'restaurant_id',c.restaurant_id,'id',c.id,
+    'code',c.code,'name',c.name,'is_active',c.is_active
+  ) ORDER BY c.code,c.id),'[]'::jsonb)
+  INTO v_classifications
+  FROM public.item_classifications c
+  WHERE c.restaurant_id=p_restaurant_id;
+
+  SELECT COALESCE(jsonb_agg(jsonb_build_object(
+    'restaurant_id',l.restaurant_id,'item_id',l.item_id,
+    'classification_id',l.classification_id
+  ) ORDER BY l.item_id,l.classification_id),'[]'::jsonb)
+  INTO v_classification_links
+  FROM public.item_classification_links l
+  WHERE l.restaurant_id=p_restaurant_id;
+
   RETURN jsonb_build_object(
     'contract_version',2,
     'restaurant_id',p_restaurant_id,
@@ -153,6 +187,8 @@ BEGIN
     'revision',v_revision,
     'items',v_items,
     'item_units',v_units,
+    'item_classifications',v_classifications,
+    'item_classification_links',v_classification_links,
     'consumption_rules',v_rules
   );
 END;
