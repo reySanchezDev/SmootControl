@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:smoo_control/features/recipes/domain/entities/canonical_recipe.dart';
 
 void main() {
-  test('ingredient references canonical UUID and preserves measured quantity', () {
+  test('ingredient references canonical UUID and measured quantity', () {
     const line = CanonicalRecipeLine(
       componentItemId: 'ingredient-uuid',
       unitId: 'kg-uuid',
