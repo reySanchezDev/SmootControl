@@ -20,6 +20,12 @@ part 'app_database_migration_helpers.dart';
 /// Local Drift database used for offline-first persistence.
 @DriftDatabase(
   tables: [
+    LocalCanonicalCatalogSnapshots,
+    LocalCanonicalItems,
+    LocalCanonicalItemUnits,
+    LocalCanonicalClassifications,
+    LocalCanonicalClassificationLinks,
+    LocalCanonicalConsumptionRules,
     LocalProductCategories,
     LocalProducts,
     LocalSalesTypes,
@@ -66,7 +72,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 34;
+  int get schemaVersion => 35;
 
   @override
   MigrationStrategy get migration {

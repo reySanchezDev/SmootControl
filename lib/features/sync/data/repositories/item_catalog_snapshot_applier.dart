@@ -1,0 +1,163 @@
+import 'package:drift/drift.dart';
+import 'package:smoo_control/core/database/app_database.dart';
+import 'package:smoo_control/features/sync/domain/entities/item_catalog_snapshot_v2.dart';
+
+/// Applies a validated canonical V2 snapshot without touching legacy POS data.
+final class ItemCatalogSnapshotApplier {
+  /// Creates an applier for the local Drift database.
+  const ItemCatalogSnapshotApplier(
+    this._database, {
+    this.beforeSnapshotMetadataWrite,
+  });
+
+  final AppDatabase _database;
+
+  /// Optional test seam that simulates a failure inside the transaction.
+  final Future<void> Function()? beforeSnapshotMetadataWrite;
+
+  /// Applies a newer snapshot in one transaction, or returns `false` on replay.
+  ///
+  /// Drift rolls back every canonical table change if any insert fails. The
+  /// legacy catalog, sales and synchronization queue are never modified.
+  Future<bool> apply(ItemCatalogSnapshotV2 snapshot) async {
+    final now = DateTime.now();
+    var applied = false;
+    await _database.transaction(() async {
+      // Read revision inside the same transaction as the replacement.
+      // A concurrent applier must never check a stale revision and then
+      // overwrite a newer catalog.
+      final stored =
+          await (_database.select(_database.localCanonicalCatalogSnapshots)
+                ..where(
+                  (row) => row.restaurantId.equals(snapshot.restaurantId),
+                ))
+              .getSingleOrNull();
+      final decision = snapshot.decideAgainst(
+        storedRevision: stored?.revision,
+        storedSnapshotId: stored?.snapshotId,
+      );
+      if (decision == ItemCatalogUpdateDecisionV2.noChange) return;
+
+      // Canonical data is tenant-owned. Never erase a second restaurant's
+      // catalog when the current restaurant receives a newer snapshot.
+      final oldItems =
+          await (_database.select(_database.localCanonicalItems)
+                ..where(
+                  (row) => row.restaurantId.equals(snapshot.restaurantId),
+                ))
+              .get();
+      final oldIds = oldItems.map((item) => item.id).toList(growable: false);
+      if (oldIds.isNotEmpty) {
+        await (_database.delete(_database.localCanonicalClassificationLinks)
+              ..where((row) => row.itemId.isIn(oldIds)))
+            .go();
+        await (_database.delete(_database.localCanonicalItemUnits)
+              ..where((row) => row.itemId.isIn(oldIds)))
+            .go();
+      }
+      await (_database.delete(_database.localCanonicalConsumptionRules)
+            ..where(
+              (row) => row.restaurantId.equals(snapshot.restaurantId),
+            ))
+          .go();
+      await (_database.delete(_database.localCanonicalClassifications)
+            ..where(
+              (row) => row.restaurantId.equals(snapshot.restaurantId),
+            ))
+          .go();
+      await (_database.delete(_database.localCanonicalItems)
+            ..where(
+              (row) => row.restaurantId.equals(snapshot.restaurantId),
+            ))
+          .go();
+
+      for (final item in snapshot.items) {
+        await _database
+            .into(_database.localCanonicalItems)
+            .insert(
+              LocalCanonicalItemsCompanion.insert(
+                id: item.id,
+                restaurantId: snapshot.restaurantId,
+                code: item.code,
+                name: item.name,
+                itemType: _itemType(item.type),
+                baseUnitId: item.baseUnitId,
+                canSell: item.canSell,
+                visibleInPos: item.visibleInPos,
+                isActive: item.isActive,
+              ),
+            );
+      }
+      for (final unit in snapshot.units) {
+        await _database
+            .into(_database.localCanonicalItemUnits)
+            .insert(
+              LocalCanonicalItemUnitsCompanion.insert(
+                itemId: unit.itemId,
+                unitId: unit.unitId,
+                quantityInBase: unit.quantityInBase,
+              ),
+            );
+      }
+      for (final classification in snapshot.classifications) {
+        await _database
+            .into(_database.localCanonicalClassifications)
+            .insert(
+              LocalCanonicalClassificationsCompanion.insert(
+                id: classification.id,
+                restaurantId: snapshot.restaurantId,
+                code: classification.code,
+                name: classification.name,
+                isActive: classification.isActive,
+              ),
+            );
+      }
+      for (final link in snapshot.classificationLinks) {
+        await _database
+            .into(_database.localCanonicalClassificationLinks)
+            .insert(
+              LocalCanonicalClassificationLinksCompanion.insert(
+                itemId: link.itemId,
+                classificationId: link.classificationId,
+              ),
+            );
+      }
+      for (final rule in snapshot.consumptionRules) {
+        await _database
+            .into(_database.localCanonicalConsumptionRules)
+            .insert(
+              LocalCanonicalConsumptionRulesCompanion.insert(
+                id: rule.id,
+                restaurantId: snapshot.restaurantId,
+                sourceItemId: Value(rule.sourceItemId),
+                consumedItemId: rule.consumedItemId,
+                unitId: rule.unitId,
+                scope: rule.scope,
+                quantity: rule.quantity,
+              ),
+            );
+      }
+      await beforeSnapshotMetadataWrite?.call();
+      await _database
+          .into(_database.localCanonicalCatalogSnapshots)
+          .insertOnConflictUpdate(
+            LocalCanonicalCatalogSnapshotsCompanion.insert(
+              restaurantId: snapshot.restaurantId,
+              snapshotId: snapshot.snapshotId,
+              revision: snapshot.revision,
+              appliedAt: now,
+            ),
+          );
+      applied = true;
+    });
+    return applied;
+  }
+
+  String _itemType(ItemCatalogTypeV2 type) {
+    return switch (type) {
+      ItemCatalogTypeV2.inventory => 'inventory',
+      ItemCatalogTypeV2.nonInventory => 'non_inventory',
+      ItemCatalogTypeV2.service => 'service',
+    };
+  }
+}

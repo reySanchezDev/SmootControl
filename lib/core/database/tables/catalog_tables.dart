@@ -1,6 +1,132 @@
 import 'package:drift/drift.dart';
 import 'package:smoo_control/core/database/tables/sync_columns.dart';
 
+/// Local canonical V2 item master snapshot metadata.
+class LocalCanonicalCatalogSnapshots extends Table {
+  /// Restaurant owning the snapshot.
+  TextColumn get restaurantId => text()();
+
+  /// Backend-issued immutable snapshot identifier.
+  TextColumn get snapshotId => text()();
+
+  /// Strictly increasing backend revision.
+  IntColumn get revision => integer()();
+
+  /// Local commit timestamp.
+  DateTimeColumn get appliedAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {restaurantId};
+}
+
+/// Canonical V2 articles staged for the future POS cutover.
+class LocalCanonicalItems extends Table {
+  /// Canonical article identifier.
+  TextColumn get id => text()();
+
+  /// Owning restaurant.
+  TextColumn get restaurantId => text()();
+
+  /// Commercial code.
+  TextColumn get code => text()();
+
+  /// Display name.
+  TextColumn get name => text()();
+
+  /// inventory, non_inventory or service.
+  TextColumn get itemType => text()();
+
+  /// Canonical base measurement-unit identifier.
+  TextColumn get baseUnitId => text()();
+
+  /// Whether the article can be sold.
+  BoolColumn get canSell => boolean()();
+
+  /// Whether the article is visible in POS.
+  BoolColumn get visibleInPos => boolean()();
+
+  /// Whether the article is active.
+  BoolColumn get isActive => boolean()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+/// Canonical V2 article-unit conversions.
+class LocalCanonicalItemUnits extends Table {
+  /// Canonical article identifier.
+  TextColumn get itemId => text()();
+
+  /// Measurement-unit identifier.
+  TextColumn get unitId => text()();
+
+  /// Exact decimal conversion represented as text.
+  TextColumn get quantityInBase => text()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {itemId, unitId};
+}
+
+/// Canonical V2 business classifications.
+class LocalCanonicalClassifications extends Table {
+  /// Canonical classification identifier.
+  TextColumn get id => text()();
+
+  /// Owning restaurant.
+  TextColumn get restaurantId => text()();
+
+  /// Tenant-unique business code.
+  TextColumn get code => text()();
+
+  /// Display name.
+  TextColumn get name => text()();
+
+  /// Whether new assignments are allowed.
+  BoolColumn get isActive => boolean()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+/// Canonical V2 item-classification assignments.
+class LocalCanonicalClassificationLinks extends Table {
+  /// Canonical article identifier.
+  TextColumn get itemId => text()();
+
+  /// Canonical classification identifier.
+  TextColumn get classificationId => text()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {itemId, classificationId};
+}
+
+/// Canonical V2 consumption rules.
+class LocalCanonicalConsumptionRules extends Table {
+  /// Rule identifier.
+  TextColumn get id => text()();
+
+  /// Owning restaurant.
+  TextColumn get restaurantId => text()();
+
+  /// Optional sellable source article.
+  TextColumn get sourceItemId => text().nullable()();
+
+  /// Article consumed by this rule.
+  TextColumn get consumedItemId => text()();
+
+  /// Unit used by the rule.
+  TextColumn get unitId => text()();
+
+  /// per_order or per_sale_line.
+  TextColumn get scope => text()();
+
+  /// Exact decimal quantity represented as text.
+  TextColumn get quantity => text()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
 /// Local categories and subcategories used by the POS.
 class LocalProductCategories extends Table with SyncColumns {
   /// Local identifier.
