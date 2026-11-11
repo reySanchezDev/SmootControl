@@ -17,6 +17,7 @@ import 'package:smoo_control/features/modifiers/domain/entities/modifier_catalog
 import 'package:smoo_control/features/modifiers/domain/entities/modifier_group.dart';
 import 'package:smoo_control/features/modifiers/domain/entities/modifier_option.dart';
 import 'package:smoo_control/features/modifiers/domain/repositories/i_modifiers_repository.dart';
+import 'package:smoo_control/features/packaging/domain/entities/canonical_consumption_rule.dart';
 import 'package:smoo_control/features/packaging/domain/entities/packaging_item.dart';
 import 'package:smoo_control/features/packaging/domain/entities/packaging_stock_item.dart';
 import 'package:smoo_control/features/packaging/domain/entities/product_packaging_rule.dart';
