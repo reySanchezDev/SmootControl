@@ -286,7 +286,9 @@ final class ItemCatalogSnapshotV2 {
           !classificationCodes.add(code.toLowerCase())) {
         throw const FormatException('duplicate_item_classification');
       }
-      if (isActive) activeClassificationIds.add(id);
+      if (isActive) {
+        activeClassificationIds.add(id);
+      }
       classifications.add(
         ItemCatalogClassificationV2(
           id: id,
