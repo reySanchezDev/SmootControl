@@ -1,7 +1,12 @@
 /// Technical type of a canonical article, independently of its labels.
 enum CanonicalItemType {
+  /// Physical stock movement enabled.
   inventory('Con inventario'),
+
+  /// Purchasable or sellable without physical stock movement.
   nonInventory('Sin inventario'),
+
+  /// Non-physical service.
   service('Servicio');
 
   const CanonicalItemType(this.label);
@@ -48,11 +53,11 @@ final class CanonicalClassification {
 final class CanonicalItem {
   /// Creates a canonical article.
   const CanonicalItem({
-    this.id,
     required this.code,
     required this.name,
     required this.type,
     required this.baseUnitId,
+    this.id,
     this.cost = 0,
     this.price = 0,
     this.canSell = false,
@@ -107,7 +112,7 @@ final class CanonicalItem {
   final List<String> classificationIds;
 
   /// Parses an RLS-scoped Supabase response.
-  factory CanonicalItem.fromRow(
+  static CanonicalItem fromRow(
     Map<String, Object?> row, {
     List<String> classificationIds = const [],
   }) {
