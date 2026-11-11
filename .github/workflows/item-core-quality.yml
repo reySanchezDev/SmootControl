@@ -15,6 +15,7 @@ on:
       - feature/item-core-f2-consumption-rule-revision
       - feature/item-core-f2-unit-revision
       - feature/item-core-f2-classification-revision
+      - feature/item-core-f2-classification-master-revision
     paths:
       - 'lib/**'
       - 'test/**'
@@ -26,6 +27,7 @@ on:
       - main
       - feature/item-master-db-foundation
       - feature/item-core-f2-unit-revision
+      - feature/item-core-f2-classification-revision
     paths:
       - 'lib/**'
       - 'test/**'
@@ -489,6 +491,44 @@ jobs:
             -f supabase/tests/item_core_f2_classification_writer_fixture.sql \
             -f supabase/design/ITEM_CORE_F2_CLASSIFICATION_LINK_WRITER_DRAFT.sql \
             -f supabase/tests/item_core_f2_classification_writer_assert.sql
+
+  classification-master-writer:
+    name: F2 classification master revision writer - isolated PostgreSQL
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: f2_class_master_only
+          POSTGRES_DB: f2_class_master_contract
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d f2_class_master_contract"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: localhost
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGPASSWORD: f2_class_master_only
+      PGDATABASE: f2_class_master_contract
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate classification master revision and permission rollback
+        run: |
+          psql -X -v ON_ERROR_STOP=1 \
+            -f supabase/tests/item_core_f2_pos_sale_fixture.sql \
+            -f supabase/tests/item_core_f2_catalog_pull_fixture.sql \
+            -f supabase/design/ITEM_CORE_F2_CATALOG_PULL_DRAFT.sql \
+            -f supabase/tests/item_core_f2_classification_writer_fixture.sql \
+            -f supabase/design/ITEM_CORE_F2_CLASSIFICATION_LINK_WRITER_DRAFT.sql \
+            -f supabase/tests/item_core_f2_classification_master_writer_fixture.sql \
+            -f supabase/design/ITEM_CORE_F2_CLASSIFICATION_MASTER_WRITER_DRAFT.sql \
+            -f supabase/tests/item_core_f2_classification_master_writer_assert.sql
 
   flutter-quality:
     needs: changed-code
