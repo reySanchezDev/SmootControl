@@ -1217,3 +1217,10 @@ Se identificó un desacople verificable: el repositorio Flutter leía `product_r
 Se publicó en la rama de integración la migración **090_item_recipes_v2_additive.sql**: tablas separadas `item_recipes` y `item_recipe_lines`, versiones activas por artículo, FKs por tenant, lectura RLS, RPC `app_save_item_recipe_v2` con autenticación/permiso, validación de unidades/cantidades/ciclos y actualización de revisión. La lectura Flutter ahora utiliza exclusivamente esas tablas canónicas; no se alteraron `product_recipes` ni ventas anteriores.
 
 **Estado de evidencia:** cambio de código publicado, **todavía sin ejecutar 090 en Docker ni Supabase remoto**, sin validación SQL integral/CI aprobada ni pruebas de lectura/escritura autenticadas. Antes de ejecutar 090: inspeccionar el estado real de 089, dependencias 084–087, respaldo restaurable, permisos y rollback. 088 continúa congelada. **No presentar recetas como funcionales hasta prueba end-to-end.**
+
+
+### 13.13 Corrección de persistencia atómica de clasificaciones — PR #40 (2026-11-11)
+
+La ficha de Artículos enviaba `classification_ids` dentro del payload a `app_upsert_item_v2`, pero la versión de dicha RPC en migración 089 descartaba ese campo: el formulario podía informar guardado exitoso sin persistir las clasificaciones seleccionadas. Se añadió migración **091_item_classification_atomic_write.sql**, aditiva y dependiente de 089, que reemplaza únicamente la RPC para validar clasificaciones activas del mismo tenant y actualizar enlaces **en la misma transacción** que el artículo. Con clave omitida, conserva enlaces para clientes anteriores; con lista vacía elimina los enlaces. El fallo de cualquier validación aborta la operación completa.
+
+**Evidencia:** código publicado en PR #40; 090/091 NO ejecutadas ni validadas todavía contra Docker ni remoto. No confundir con implementación de todo E1/E2. El siguiente control local debe aplicar 089→090→091 en el Docker autorizado, sin ejecutar 088, y probar guardado/relectura de clasificaciones, recetas, rollback, autorización y cross-tenant. No modificar remoto sin respaldo restaurable y autorización específica.
