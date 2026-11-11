@@ -83,6 +83,44 @@ final class ItemCatalogUnitV2 {
   final String quantityInBase;
 }
 
+/// Classification is a business capability, independent of item type.
+final class ItemCatalogClassificationV2 {
+  /// Constructs an immutable classification.
+  const ItemCatalogClassificationV2({
+    required this.id,
+    required this.code,
+    required this.name,
+    required this.isActive,
+  });
+
+  /// Canonical classification UUID.
+  final String id;
+
+  /// Tenant-unique business classification code.
+  final String code;
+
+  /// Human-readable classification name.
+  final String name;
+
+  /// Whether this classification accepts new item assignments.
+  final bool isActive;
+}
+
+/// Assignment of a classification to an item in the same tenant.
+final class ItemCatalogClassificationLinkV2 {
+  /// Constructs an immutable classification assignment.
+  const ItemCatalogClassificationLinkV2({
+    required this.itemId,
+    required this.classificationId,
+  });
+
+  /// Canonical item UUID.
+  final String itemId;
+
+  /// Classification UUID.
+  final String classificationId;
+}
+
 /// Consumption policy selected for a canonical article.
 final class ItemCatalogConsumptionRuleV2 {
   /// Creates an immutable consumption rule.
@@ -123,6 +161,8 @@ final class ItemCatalogSnapshotV2 {
     required this.revision,
     required this.items,
     required this.units,
+    required this.classifications,
+    required this.classificationLinks,
     required this.consumptionRules,
   });
 
@@ -151,6 +191,14 @@ final class ItemCatalogSnapshotV2 {
     final snapshotId = _uuid(json['snapshot_id'], 'snapshot_id');
     final itemRows = _rows(json['items'], 'items');
     final unitRows = _rows(json['item_units'], 'item_units');
+    final classificationRows = _rows(
+      json['item_classifications'],
+      'item_classifications',
+    );
+    final classificationLinkRows = _rows(
+      json['item_classification_links'],
+      'item_classification_links',
+    );
     final ruleRows = _rows(json['consumption_rules'], 'consumption_rules');
 
     final itemIds = <String>{};
@@ -224,6 +272,55 @@ final class ItemCatalogSnapshotV2 {
       throw const FormatException('missing_item_base_unit');
     }
 
+    final classifications = <ItemCatalogClassificationV2>[];
+    final classificationIds = <String>{};
+    final classificationCodes = <String>{};
+    final activeClassificationIds = <String>{};
+    for (final row in classificationRows) {
+      _checkTenant(row, restaurantId);
+      final id = _uuid(row['id'], 'classification_id');
+      final code = _text(row['code'], 'classification_code');
+      final name = _text(row['name'], 'classification_name');
+      final isActive = _boolean(row['is_active'], 'classification_active');
+      if (!classificationIds.add(id) ||
+          !classificationCodes.add(code.toLowerCase())) {
+        throw const FormatException('duplicate_item_classification');
+      }
+      if (isActive) activeClassificationIds.add(id);
+      classifications.add(
+        ItemCatalogClassificationV2(
+          id: id,
+          code: code,
+          name: name,
+          isActive: isActive,
+        ),
+      );
+    }
+
+    final classificationLinks = <ItemCatalogClassificationLinkV2>[];
+    final classificationLinkKeys = <String>{};
+    for (final row in classificationLinkRows) {
+      _checkTenant(row, restaurantId);
+      final itemId = _uuid(row['item_id'], 'classification_item_id');
+      final classificationId = _uuid(
+        row['classification_id'],
+        'classification_link_id',
+      );
+      if (!itemIds.contains(itemId) ||
+          !activeClassificationIds.contains(classificationId)) {
+        throw const FormatException('invalid_item_classification_link');
+      }
+      if (!classificationLinkKeys.add('$itemId/$classificationId')) {
+        throw const FormatException('duplicate_item_classification_link');
+      }
+      classificationLinks.add(
+        ItemCatalogClassificationLinkV2(
+          itemId: itemId,
+          classificationId: classificationId,
+        ),
+      );
+    }
+
     final rules = <ItemCatalogConsumptionRuleV2>[];
     final ruleIds = <String>{};
     for (final row in ruleRows) {
@@ -275,6 +372,8 @@ final class ItemCatalogSnapshotV2 {
       revision: revision,
       items: List.unmodifiable(items),
       units: List.unmodifiable(units),
+      classifications: List.unmodifiable(classifications),
+      classificationLinks: List.unmodifiable(classificationLinks),
       consumptionRules: List.unmodifiable(rules),
     );
   }
@@ -294,12 +393,18 @@ final class ItemCatalogSnapshotV2 {
   /// Full unit conversions for the corresponding articles.
   final List<ItemCatalogUnitV2> units;
 
+  /// All business classifications, including inactive definitions.
+  final List<ItemCatalogClassificationV2> classifications;
+
+  /// Full tenant-bound item classification assignments.
+  final List<ItemCatalogClassificationLinkV2> classificationLinks;
+
   /// Rules referencing the canonical article identifiers.
   final List<ItemCatalogConsumptionRuleV2> consumptionRules;
 
   /// Rejects out-of-order snapshots and conflicting equal-revision payloads.
   ///
-  /// A caller must commit all three collections in one local transaction,
+  /// A caller must commit every catalog collection in one local transaction,
   /// together with this revision and snapshot identifier.
   ItemCatalogUpdateDecisionV2 decideAgainst({
     required int? storedRevision,
