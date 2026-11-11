@@ -902,3 +902,30 @@ para QA del propietario, pero no habilita rutas incompletas, POS operativo,
 Drift productivo, migración 088, laboratorio principal, `main` ni producción.
 Para cerrar G2 todavía se requiere una ejecución CI verde del arnés, JWT/RLS
 contra el esquema real y autorización explícita para el corte coordinado.
+
+### 12.28 Verificación CI del rehearsal G2 (2026-11-11)
+
+PR independiente **#37**: `feature/item-core-g2-qa-rehearsal`, contra
+`feature/item-core-g2-qa-candidate`, publicado finalmente en
+`b62ecbb94dd9e714494bd34238cc229f73e03042`.
+
+GitHub Actions run **43063366453**: **14 jobs success**, **1 job skipped**
+(Flutter omitido correctamente porque no hubo cambios Dart). El nuevo job
+`G2 functional QA - disposable PostgreSQL 16 and Drift` terminó **success**.
+Su salida confirma: JWT/RLS 1/1 (tenant, permiso y revocación), resolución de
+consumo 1/1, contrato de venta/anulación 1/1 con inventario, snapshots,
+idempotencia, stock insuficiente y rollback. Los contratos se ejecutaron en un
+contenedor `postgres:16` efímero y el runner eliminó el contenedor al finalizar.
+
+La cobertura Drift/sync focalizada queda en **10/10 PASS**: seis pruebas de
+aplicación atómica del snapshot, incluyendo dos revisiones concurrentes,
+rollback, partial/stale/conflict/cross-tenant y preservación de la cola; cuatro
+pruebas de cola offline, lote, reintento y timeout. Esto valida el candidato
+aislado, no una activación del POS ni una conexión contra el esquema Supabase
+real.
+
+**Gate G2:** continúa **ABIERTO** por decisión técnica pendiente: ejecutar la
+misma matriz contra JWT/RLS y contratos del esquema real autorizado, completar
+consumidores comerciales/modificadores y el corte reversible de terminales.
+No se aplicaron migraciones, no se modificó `main`, producción, migración 088,
+POS operativo ni laboratorio principal; no se fusionó el PR #37.
