@@ -32,3 +32,19 @@ INSERT INTO public.item_units(
 SELECT i.restaurant_id,i.id,i.base_unit_id,1,true
 FROM public.items i;
 SELECT set_config('app.can_write_inventory','true',true);
+
+-- The classified snapshot reader requires these relation names, even
+-- when the unit writer's standalone test has no classification rows.
+CREATE TABLE public.item_classifications(
+  id uuid PRIMARY KEY,
+  restaurant_id uuid NOT NULL,
+  code text NOT NULL,
+  name text NOT NULL,
+  is_active boolean NOT NULL
+);
+CREATE TABLE public.item_classification_links(
+  restaurant_id uuid NOT NULL,
+  item_id uuid NOT NULL,
+  classification_id uuid NOT NULL,
+  PRIMARY KEY(restaurant_id,item_id,classification_id)
+);
