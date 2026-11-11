@@ -74,8 +74,10 @@ class _ProductPackagingRulesActionState
                   title: const Text('Empaque y consumo'),
                   subtitle: Text(
                     widget.enabled
-                        ? 'Administrá los empaques utilizados según la modalidad de venta.'
-                        : 'Guardá los cambios del producto antes de editar sus reglas.',
+                        ? 'Administrá los empaques utilizados según la '
+                              'modalidad de venta.'
+                        : 'Guardá los cambios del producto antes de editar '
+                              'sus reglas.',
                   ),
                   trailing: const Icon(Icons.chevron_right),
                   enabled: widget.enabled,
