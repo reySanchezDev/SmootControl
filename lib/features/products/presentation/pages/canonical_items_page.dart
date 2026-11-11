@@ -113,7 +113,6 @@ class _CanonicalItemsPageState extends State<CanonicalItemsPage> {
                 hint: const Text('Todos los tipos'),
                 items: [
                   const DropdownMenuItem<CanonicalItemType?>(
-                    value: null,
                     child: Text('Todos los tipos'),
                   ),
                   ...CanonicalItemType.values.map(
