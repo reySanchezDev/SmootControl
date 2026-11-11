@@ -8,6 +8,16 @@ final class CanonicalRecipeLine {
     this.wastePercent = 0,
   });
 
+  /// Reads one persisted ingredient row.
+  factory CanonicalRecipeLine.fromRow(Map<String, Object?> row) {
+    return CanonicalRecipeLine(
+      componentItemId: row['component_item_id']?.toString() ?? '',
+      unitId: row['unit_id']?.toString() ?? '',
+      quantity: double.tryParse(row['quantity'].toString()) ?? 0,
+      wastePercent: double.tryParse(row['waste_percent'].toString()) ?? 0,
+    );
+  }
+
   /// Component UUID in the same restaurant.
   final String componentItemId;
 
@@ -29,15 +39,7 @@ final class CanonicalRecipeLine {
     'display_order': order,
   };
 
-  /// Reads one persisted ingredient row.
-  factory CanonicalRecipeLine.fromRow(Map<String, Object?> row) {
-    return CanonicalRecipeLine(
-      componentItemId: row['component_item_id']?.toString() ?? '',
-      unitId: row['unit_id']?.toString() ?? '',
-      quantity: double.tryParse(row['quantity'].toString()) ?? 0,
-      wastePercent: double.tryParse(row['waste_percent'].toString()) ?? 0,
-    );
-  }
+
 }
 
 /// A versioned canonical recipe, preserving the previous versions.
