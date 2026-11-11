@@ -1,0 +1,501 @@
+name: Kivo Item Core - Quality and Dependency Inventory
+
+on:
+  push:
+    branches:
+      - feature/item-master-db-foundation
+      - feature/item-core-f2-purchases-adjustments
+      - feature/item-core-f2-staff-consumption
+      - feature/item-core-f2-payroll-claim
+      - feature/item-core-f2-payroll-backdate-guard
+      - feature/item-core-f2-noninventory-consumption
+      - feature/item-core-f2-pos-catalog-validated
+      - feature/item-core-f2-pos-catalog-server
+      - feature/item-core-f2-catalog-revision-writer
+      - feature/item-core-f2-consumption-rule-revision
+    paths:
+      - 'lib/**'
+      - 'test/**'
+      - 'supabase/**'
+      - 'tool/audit_item_core_dependencies.py'
+      - '.github/workflows/item-core-quality.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'lib/**'
+      - 'test/**'
+      - 'supabase/**'
+      - 'tool/audit_item_core_dependencies.py'
+      - '.github/workflows/item-core-quality.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: kivo-item-core-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  changed-code:
+    name: Detect Flutter-impacting changes
+    runs-on: ubuntu-latest
+    outputs:
+      flutter: ${{ steps.diff.outputs.flutter }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Identify changed paths
+        id: diff
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PREVIOUS_SHA: ${{ github.event.before }}
+          CURRENT_SHA: ${{ github.sha }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        shell: bash
+        run: |
+          if [ "$EVENT_NAME" = workflow_dispatch ]; then
+            echo 'flutter=true' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          base="$PREVIOUS_SHA"
+          if [ "$EVENT_NAME" = pull_request ]; then
+            base="$BASE_SHA"
+          elif [ "$GITHUB_REF_NAME" != 'feature/item-master-db-foundation' ]; then
+            git fetch --no-tags origin feature/item-master-db-foundation
+            base="$(git merge-base HEAD origin/feature/item-master-db-foundation)"
+          fi
+          if [ -z "$base" ] || ! git cat-file -e "$base^{commit}" 2>/dev/null; then
+            echo 'flutter=true' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if git diff --name-only "$base" "$CURRENT_SHA" |
+            grep -Eq '^(lib/|test/|pubspec\.(yaml|lock)$|analysis_options\.yaml$)'; then
+            echo 'flutter=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'flutter=false' >> "$GITHUB_OUTPUT"
+          fi
+
+  dependency-inventory:
+    name: Read-only F2 dependency inventory
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Generate static cross-module inventory
+        run: |
+          python3 tool/audit_item_core_dependencies.py \
+            --output "$RUNNER_TEMP/item-core-dependencies.md"
+          test -s "$RUNNER_TEMP/item-core-dependencies.md"
+      - name: Confirm frozen F1 draft is not auto-executed
+        run: |
+          test -f supabase/design/ITEM_CORE_F1_DDL_DRAFT.sql
+          test -f supabase/design/ITEM_CORE_F1_RPC_DRAFT.sql
+          test -f supabase/tests/item_master_f1_rpc_isolated.sql
+          test -f supabase/migrations/088_item_master_foundation.sql
+          # Static guard: no SQL is executed in this workflow.
+          # A path existence check does NOT invoke the frozen migration.
+          ! grep -Eq '^[[:space:]]*supabase[[:space:]]+db[[:space:]]+(reset|push)' \
+            .github/workflows/item-core-quality.yml
+          ! grep -Eq '^[[:space:]]*psql .*supabase/migrations/088_' \
+            .github/workflows/item-core-quality.yml
+      - name: Upload dependency map
+        uses: actions/upload-artifact@v4
+        with:
+          name: item-core-dependency-inventory
+          path: ${{ runner.temp }}/item-core-dependencies.md
+          retention-days: 14
+
+  consumption-contract:
+    name: F2 consumption rule SQL - isolated PostgreSQL
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: f2_fixture_only
+          POSTGRES_DB: f2_item_contract
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d f2_item_contract"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: localhost
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGPASSWORD: f2_fixture_only
+      PGDATABASE: f2_item_contract
+    steps:
+      - uses: actions/checkout@v4
+      - name: PostgreSQL SQL contract test (rollback, isolated)
+        run: |
+          psql -X -v ON_ERROR_STOP=1 \
+            -f supabase/tests/item_core_f2_consumption_isolated.sql
+      - name: Sale schema contract (isolated transaction rollback)
+        shell: bash
+        run: |
+          # Only remove the draft's transaction wrappers on this disposable DB.
+          sed '/^BEGIN;$/d;/^ROLLBACK;$/d' \
+            supabase/design/ITEM_CORE_F2_SALE_SCHEMA_DRAFT.sql \
+            > "$RUNNER_TEMP/f2-sale-ddl.sql"
+          psql -X -v ON_ERROR_STOP=1 \
+            -f supabase/tests/item_core_f2_sale_schema_fixture.sql \
+            -f "$RUNNER_TEMP/f2-sale-ddl.sql" \
+            -f supabase/tests/item_core_f2_sale_schema_assert.sql
+      - name: Trusted stock engine contract (isolated rollback)
+        run: |
+          psql -X -v ON_ERROR_STOP=1 \
+            -f supabase/tests/item_core_f2_internal_ledger_fixture.sql \
+            -f supabase/design/ITEM_CORE_F2_INTERNAL_LEDGER_DRAFT.sql \
+            -f supabase/tests/item_core_f2_internal_ledger_assert.sql
+      - name: POS V2 atomic sale + void contract (isolated rollback)
+        shell: bash
+        run: |
+          sed '/^BEGIN;$/d;/^ROLLBACK;$/d' \
+            supabase/design/ITEM_CORE_F2_SALE_SCHEMA_DRAFT.sql \
+            > "$RUNNER_TEMP/f2-sale-ddl.sql"
+          psql -X -v ON_ERROR_STOP=1 \
+            -f supabase/tests/item_core_f2_pos_sale_fixture.sql \
+            -f "$RUNNER_TEMP/f2-sale-ddl.sql" \
+            -f supabase/design/ITEM_CORE_F2_CONSUMPTION_DRAFT.sql \
+            -f supabase/design/ITEM_CORE_F2_INTERNAL_LEDGER_DRAFT.sql \
+            -f supabase/design/ITEM_CORE_F2_POS_SALE_RPC_DRAFT.sql \
+            -f supabase/tests/item_core_f2_pos_sale_assert.sql
+
+  stock-documents-contract:
+    name: F2 item purchases and adjustments - isolated PostgreSQL
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: f2_stock_fixture_only
+          POSTGRES_DB: f2_stock_contract
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d f2_stock_contract"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: localhost
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGPASSWORD: f2_stock_fixture_only
+      PGDATABASE: f2_stock_contract
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run atomic item purchase and adjustment contracts (rollback)
+        run: |
+          psql -X -v ON_ERROR_STOP=1 \
+            -f supabase/tests/item_core_f2_internal_ledger_fixture.sql \
+            -f supabase/tests/item_core_f2_stock_document_fixture.sql \
+            -f supabase/design/ITEM_CORE_F2_INTERNAL_LEDGER_DRAFT.sql \
+            -f supabase/design/ITEM_CORE_F2_STOCK_DOCUMENTS_DRAFT.sql \
+            -f supabase/tests/item_core_f2_stock_document_assert.sql
+
+  staff-consumption-contract:
+    name: F2 staff consumption and void - isolated PostgreSQL
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: f2_staff_fixture_only
+          POSTGRES_DB: f2_staff_contract
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d f2_staff_contract"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: localhost
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGPASSWORD: f2_staff_fixture_only
+      PGDATABASE: f2_staff_contract
+    steps:
+      - uses: actions/checkout@v4
+      - name: Staff consumption and payroll-locked void (rollback)
+        run: |
+          psql -X -v ON_ERROR_STOP=1 \
+            -f supabase/tests/item_core_f2_internal_ledger_fixture.sql \
+            -f supabase/tests/item_core_f2_staff_consumption_fixture.sql \
+            -f supabase/design/ITEM_CORE_F2_INTERNAL_LEDGER_DRAFT.sql \
+            -f supabase/design/ITEM_CORE_F2_STAFF_CONSUMPTION_DRAFT.sql \
+            -f supabase/tests/item_core_f2_staff_consumption_assert.sql
+
+  payroll-claim-contract:
+    name: F2 staff payroll claim - isolated PostgreSQL
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: f2_payroll_fixture_only
+          POSTGRES_DB: f2_payroll_contract
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d f2_payroll_contract"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: localhost
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGPASSWORD: f2_payroll_fixture_only
+      PGDATABASE: f2_payroll_contract
+    steps:
+      - uses: actions/checkout@v4
+      - name: Claim payroll once from posted consumption snapshots (rollback)
+        run: |
+          psql -X -v ON_ERROR_STOP=1 \
+            -f supabase/tests/item_core_f2_internal_ledger_fixture.sql \
+            -f supabase/tests/item_core_f2_staff_consumption_fixture.sql \
+            -f supabase/tests/item_core_f2_payroll_claim_fixture.sql \
+            -f supabase/design/ITEM_CORE_F2_INTERNAL_LEDGER_DRAFT.sql \
+            -f supabase/design/ITEM_CORE_F2_STAFF_CONSUMPTION_DRAFT.sql \
+            -f supabase/design/ITEM_CORE_F2_PAYROLL_CLAIM_DRAFT.sql \
+            -f supabase/tests/item_core_f2_payroll_claim_assert.sql
+
+  recipe-contract:
+    name: F2 nested recipe SQL - isolated PostgreSQL
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: f2_recipe_fixture_only
+          POSTGRES_DB: f2_recipe_contract
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d f2_recipe_contract"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: localhost
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGPASSWORD: f2_recipe_fixture_only
+      PGDATABASE: f2_recipe_contract
+    steps:
+      - uses: actions/checkout@v4
+      - name: Nested recipe expansion and unit conversion (rollback)
+        run: |
+          psql -X -v ON_ERROR_STOP=1 \
+            -f supabase/tests/item_core_f2_recipe_fixture.sql \
+            -f supabase/design/ITEM_CORE_F2_RECIPE_RESOLVER_DRAFT.sql \
+            -f supabase/tests/item_core_f2_recipe_assert.sql
+
+  pos-catalog-snapshot:
+    name: F2 POS canonical catalog export - isolated PostgreSQL
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: f2_catalog_fixture_only
+          POSTGRES_DB: f2_catalog_contract
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d f2_catalog_contract"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: localhost
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGPASSWORD: f2_catalog_fixture_only
+      PGDATABASE: f2_catalog_contract
+    steps:
+      - uses: actions/checkout@v4
+      - name: Export complete tenant catalog revision with rollback
+        run: |
+          psql -X -v ON_ERROR_STOP=1 \
+            -f supabase/tests/item_core_f2_pos_sale_fixture.sql \
+            -f supabase/tests/item_core_f2_catalog_pull_fixture.sql \
+            -f supabase/design/ITEM_CORE_F2_CATALOG_PULL_DRAFT.sql \
+            -f supabase/tests/item_core_f2_catalog_pull_assert.sql
+
+  catalog-writer-revision:
+    name: F2 item writer revision handshake - isolated PostgreSQL
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: f2_writer_fixture_only
+          POSTGRES_DB: f2_writer_contract
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d f2_writer_contract"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: localhost
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGPASSWORD: f2_writer_fixture_only
+      PGDATABASE: f2_writer_contract
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify trusted item upsert and catalog revision commit (rollback)
+        run: |
+          psql -X -v ON_ERROR_STOP=1 \
+            -f supabase/tests/item_core_f2_pos_sale_fixture.sql \
+            -f supabase/tests/item_core_f2_catalog_pull_fixture.sql \
+            -f supabase/design/ITEM_CORE_F2_CATALOG_PULL_DRAFT.sql \
+            -f supabase/tests/item_core_f2_catalog_writer_fixture.sql \
+            -f supabase/design/ITEM_CORE_F2_CATALOG_WRITER_BRIDGE_DRAFT.sql \
+            -f supabase/tests/item_core_f2_catalog_writer_assert.sql
+
+  consumption-rule-writer:
+    name: F2 consumption rule revision writer - isolated PostgreSQL
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: f2_rule_fixture_only
+          POSTGRES_DB: f2_rule_contract
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d f2_rule_contract"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: localhost
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGPASSWORD: f2_rule_fixture_only
+      PGDATABASE: f2_rule_contract
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate canonical rule revision write with rollback
+        run: |
+          psql -X -v ON_ERROR_STOP=1 \
+            -f supabase/tests/item_core_f2_pos_sale_fixture.sql \
+            -f supabase/tests/item_core_f2_catalog_pull_fixture.sql \
+            -f supabase/design/ITEM_CORE_F2_CATALOG_PULL_DRAFT.sql \
+            -f supabase/tests/item_core_f2_consumption_rule_writer_fixture.sql \
+            -f supabase/design/ITEM_CORE_F2_CONSUMPTION_RULE_WRITER_DRAFT.sql \
+            -f supabase/tests/item_core_f2_consumption_rule_writer_assert.sql
+
+  flutter-quality:
+    needs: changed-code
+    if: needs.changed-code.outputs.flutter == 'true'
+    name: Flutter tests and analyzer - bounded diagnostics
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - name: Flutter stable SDK
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.41.7'
+          channel: stable
+          cache: true
+      - name: Environment info
+        run: |
+          flutter --version
+          dart --version
+      - name: Resolve Flutter dependencies
+        run: flutter pub get
+      - name: Analyzer - capture reproducible timeout/failure
+        id: analyze
+        continue-on-error: true
+        shell: bash
+        run: |
+          set +e
+          timeout --signal=TERM --kill-after=10s 180s \
+            flutter analyze --no-pub > "$RUNNER_TEMP/flutter-analyze.log" 2>&1
+          status=$?
+          cat "$RUNNER_TEMP/flutter-analyze.log"
+          echo "exit_code=$status" >> "$GITHUB_OUTPUT"
+          echo "Flutter analyze exit: $status"
+          exit "$status"
+      - name: Analyze new F2.3 code independently
+        if: always()
+        shell: bash
+        run: |
+          timeout 90s dart analyze \
+            lib/features/sync/domain/entities/item_catalog_snapshot_v2.dart
+          timeout 90s dart analyze \
+            test/features/sync/domain/entities/item_catalog_snapshot_v2_test.dart
+      - name: Run all Flutter tests even when analyze is blocked
+        id: tests
+        if: always()
+        continue-on-error: true
+        shell: bash
+        run: |
+          set +e
+          timeout --signal=TERM --kill-after=10s 1200s \
+            flutter test --no-pub -j 2 > "$RUNNER_TEMP/flutter-test.log" 2>&1
+          status=$?
+          tail -n 100 "$RUNNER_TEMP/flutter-test.log"
+          echo "exit_code=$status" >> "$GITHUB_OUTPUT"
+          exit "$status"
+      - name: Upload tooling logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: item-core-flutter-tooling-logs
+          path: |
+            ${{ runner.temp }}/flutter-analyze.log
+            ${{ runner.temp }}/flutter-test.log
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Enforce quality without masking analyzer hangs
+        if: always()
+        shell: bash
+        env:
+          ANALYZE_EXIT: ${{ steps.analyze.outputs.exit_code }}
+          TEST_EXIT: ${{ steps.tests.outputs.exit_code }}
+        run: |
+          echo "Analyzer exit: ${ANALYZE_EXIT:-not-run}"
+          echo "Tests exit: ${TEST_EXIT:-not-run}"
+          if [ "${TEST_EXIT:-missing}" != 0 ]; then
+            echo "Flutter tests failed or did not finish."
+            exit 1
+          fi
+          if [ -z "${ANALYZE_EXIT:-}" ]; then
+            echo "Flutter analyzer did not run."
+            exit 1
+          fi
+          python3 tool/check_item_core_analyzer.py \
+            --log "$RUNNER_TEMP/flutter-analyze.log" \
+            --baseline tool/item_core_analyzer_baseline.json \
+            --analyzer-exit "$ANALYZE_EXIT"

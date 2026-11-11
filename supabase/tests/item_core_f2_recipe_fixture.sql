@@ -1,0 +1,73 @@
+-- Isolated PostgreSQL 16 test fixture for migrated item-based recipes.
+BEGIN;
+CREATE ROLE anon NOLOGIN;
+CREATE ROLE authenticated NOLOGIN;
+CREATE FUNCTION public.current_restaurant_id()
+RETURNS uuid LANGUAGE sql STABLE AS $$
+  SELECT nullif(current_setting('app.test_restaurant',true),'')::uuid;
+$$;
+CREATE TABLE public.items(
+ id uuid PRIMARY KEY,restaurant_id uuid NOT NULL,
+ name text NOT NULL,item_type text NOT NULL,base_unit_id uuid NOT NULL,
+ base_unit_cost numeric NOT NULL,can_sell boolean NOT NULL,
+ uses_recipe boolean NOT NULL,is_active boolean NOT NULL
+);
+CREATE TABLE public.measurement_units(
+ id uuid PRIMARY KEY,restaurant_id uuid,unit_group text NOT NULL,
+ base_factor numeric NOT NULL,is_active boolean NOT NULL
+);
+CREATE TABLE public.product_recipes(
+ id uuid PRIMARY KEY,restaurant_id uuid NOT NULL,item_id uuid NOT NULL,
+ version integer NOT NULL,status text NOT NULL,
+ effective_from timestamptz NOT NULL
+);
+CREATE TABLE public.product_recipe_lines(
+ id uuid PRIMARY KEY,restaurant_id uuid NOT NULL,recipe_id uuid NOT NULL,
+ component_item_id uuid NOT NULL,quantity numeric NOT NULL,
+ unit_id uuid NOT NULL,waste_percent numeric NOT NULL,
+ display_order integer NOT NULL,is_active boolean NOT NULL
+);
+INSERT INTO public.measurement_units VALUES
+ ('10000000-0000-0000-0000-000000000001',NULL,'count',1,true),
+ ('10000000-0000-0000-0000-000000000002',NULL,'mass',1,true),
+ ('10000000-0000-0000-0000-000000000003',NULL,'mass',1000,true);
+INSERT INTO public.items VALUES
+ ('30000000-0000-0000-0000-000000000001',
+  '00000000-0000-0000-0000-000000000001','Hamburguesa',
+  'non_inventory','10000000-0000-0000-0000-000000000001',0,true,true,true),
+ ('30000000-0000-0000-0000-000000000002',
+  '00000000-0000-0000-0000-000000000001','Salsa',
+  'non_inventory','10000000-0000-0000-0000-000000000001',0,false,true,true),
+ ('30000000-0000-0000-0000-000000000003',
+  '00000000-0000-0000-0000-000000000001','Harina',
+  'inventory','10000000-0000-0000-0000-000000000002',0.01,false,false,true),
+ ('30000000-0000-0000-0000-000000000004',
+  '00000000-0000-0000-0000-000000000001','Tomate',
+  'inventory','10000000-0000-0000-0000-000000000002',0.02,false,false,true),
+ ('30000000-0000-0000-0000-000000000005',
+  '00000000-0000-0000-0000-000000000002','Otro tenant',
+  'non_inventory','10000000-0000-0000-0000-000000000001',0,true,false,true);
+INSERT INTO public.product_recipes VALUES
+ ('40000000-0000-0000-0000-000000000001',
+  '00000000-0000-0000-0000-000000000001',
+  '30000000-0000-0000-0000-000000000001',3,'active','2026-01-01T00:00:00Z'),
+ ('40000000-0000-0000-0000-000000000002',
+  '00000000-0000-0000-0000-000000000001',
+  '30000000-0000-0000-0000-000000000002',2,'active','2026-01-01T00:00:00Z');
+INSERT INTO public.product_recipe_lines VALUES
+ ('50000000-0000-0000-0000-000000000001',
+  '00000000-0000-0000-0000-000000000001',
+  '40000000-0000-0000-0000-000000000001',
+  '30000000-0000-0000-0000-000000000003',0.5,
+  '10000000-0000-0000-0000-000000000003',0,1,true),
+ ('50000000-0000-0000-0000-000000000002',
+  '00000000-0000-0000-0000-000000000001',
+  '40000000-0000-0000-0000-000000000001',
+  '30000000-0000-0000-0000-000000000002',1,
+  '10000000-0000-0000-0000-000000000001',0,2,true),
+ ('50000000-0000-0000-0000-000000000003',
+  '00000000-0000-0000-0000-000000000001',
+  '40000000-0000-0000-0000-000000000002',
+  '30000000-0000-0000-0000-000000000004',100,
+  '10000000-0000-0000-0000-000000000002',10,1,true);
+SELECT set_config('app.test_restaurant','00000000-0000-0000-0000-000000000001',true);
