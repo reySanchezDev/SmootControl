@@ -8,6 +8,7 @@
 -- Without this writer protocol, revision and snapshot cannot be trusted.
 --
 -- Catalog sync does not change the existing POS/Drift v34 workflow.
+CREATE SCHEMA IF NOT EXISTS item_core_internal;
 CREATE TABLE public.item_catalog_revisions (
   restaurant_id uuid PRIMARY KEY REFERENCES public.restaurants(id),
   revision bigint NOT NULL DEFAULT 1 CHECK(revision > 0),

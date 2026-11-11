@@ -551,6 +551,15 @@ Se verifico la rama `feature/item-master-db-foundation` en `0d095ec718c234fe8d4c
 
 **Jerarquía de autoridad:** requisitos acordados del core y este plan > contratos de seguridad/integridad verificados > historial de auditoría > soluciones transitorias de interfaz. Un PR o Codex no modifica la arquitectura por su cuenta. Cualquier contradicción se documenta aquí antes de ejecutar código.
 
+
+### Protocolo obligatorio de continuidad ChatGPT — Codex — propietario (2026-11-10)
+
+- **Continuidad sin interrupciones:** ChatGPT debe ejecutar de forma autónoma todos los trabajos ya planificados y autorizados que estén dentro de sus herramientas. No interrumpir para informar progresos, entregar resúmenes, pedir una confirmación ya concedida o preguntar si debe continuar. La lectura de un resultado de CI no es por sí misma una razón para detenerse: investigar, corregir, relanzar o avanzar a trabajo independiente mientras sea seguro.
+- **Únicas condiciones de parada:** (a) completar íntegramente el alcance aprobado y probado; (b) encontrar una inconsistencia o decisión que requiere necesariamente la intervención del propietario; (c) llegar a un trabajo que requiere necesariamente Codex/entorno local y que no puede resolverse desde GitHub/Actions. Nunca saltar gates, activar producción ni fusionar a main para evitar una parada.
+- **Entrega a Codex:** cuando realmente corresponda, responder con **un único prompt breve, concreto y ejecutable**, que incluya rama/SHA, acciones mínimas, criterios de éxito y la obligación de actualizar el Plan Rector. No trasladar al propietario informes técnicos largos que Codex puede leer en el repositorio.
+- **Cierre final:** solo al completar el trabajo, enviar una comunicación muy breve del resultado, referencias GitHub y cualquier gate abierto. El propietario realiza QA y aprobación de UX/funcionalidad **sobre la versión efectivamente desplegada**, no sobre afirmaciones, capturas sintéticas ni solamente pruebas.
+- **Responsabilidades:** ChatGPT ejecuta GitHub y CI hasta el límite real de sus capacidades; Codex hace exclusivamente trabajo local imprescindible; el propietario decide gates, autoriza cambios sensibles y certifica QA real.
+
 ## 12. Estado operativo y ejecución automatizada (2026-11-10)
 
 **F0:** ejecutada y auditada sobre PostgreSQL local. **G1:** aprobado para *preparar* F2, no para instalar schema ni operar en producción. La 088 espejo sigue congelada. Los módulos ventas, recetas, compras, consumo personal/nómina y Drift requieren corte coordinado.
