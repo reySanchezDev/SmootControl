@@ -907,7 +907,9 @@ contra el esquema real y autorización explícita para el corte coordinado.
 
 PR independiente **#37**: `feature/item-core-g2-qa-rehearsal`, contra
 `feature/item-core-g2-qa-candidate`, publicado finalmente en
-`b62ecbb94dd9e714494bd34238cc229f73e03042`.
+`c4934992fc175b35902d7ebff63b368ebfe3dc5c` (la evidencia CI funcional
+corresponde al commit de código `b62ecbb94dd9e714494bd34238cc229f73e03042`,
+antes del último cambio exclusivamente documental).
 
 GitHub Actions run **43063366453**: **14 jobs success**, **1 job skipped**
 (Flutter omitido correctamente porque no hubo cambios Dart). El nuevo job
