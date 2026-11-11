@@ -9,6 +9,8 @@ import 'package:smoo_control/features/packaging/presentation/pages/canonical_pac
 import 'package:smoo_control/features/products/domain/entities/canonical_item.dart';
 import 'package:smoo_control/features/products/domain/entities/measurement_unit.dart';
 import 'package:smoo_control/features/products/presentation/widgets/canonical_item_dialog.dart';
+import 'package:smoo_control/features/recipes/domain/entities/canonical_recipe.dart';
+import 'package:smoo_control/features/recipes/presentation/pages/canonical_recipe_dialog.dart';
 
 /// QA-only canonical article workspace, isolated from the legacy writers.
 class CanonicalItemsPage extends StatefulWidget {
@@ -76,6 +78,45 @@ class _CanonicalItemsPageState extends State<CanonicalItemsPage> {
           _refresh();
         case AppFailureResult(:final error):
           _error(error.message);
+      }
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _recipe(CanonicalItem selected) async {
+    if (_busy || selected.id == null || selected.type == CanonicalItemType.service) {
+      return;
+    }
+    setState(() => _busy = true);
+    try {
+      final catalog = await _repository.getCanonicalItems();
+      final units = await _repository.getMeasurementUnits();
+      final existing = await _repository.loadCanonicalRecipe(selected.id!);
+      if (!mounted) return;
+      if (catalog case AppFailureResult(:final error)) {
+        _error(error.message);
+        return;
+      }
+      if (units case AppFailureResult(:final error)) {
+        _error(error.message);
+        return;
+      }
+      if (existing case AppFailureResult(:final error)) {
+        _error(error.message);
+        return;
+      }
+      final result = await showDialog<bool>(
+        context: context,
+        builder: (_) => CanonicalRecipeDialog(
+          item: selected,
+          items: (catalog as AppSuccess<List<CanonicalItem>>).value,
+          units: (units as AppSuccess<List<MeasurementUnit>>).value,
+          existing: (existing as AppSuccess<CanonicalRecipe?>).value,
+        ),
+      );
+      if (result ?? false) {
+        if (mounted) _refresh();
       }
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -175,6 +216,14 @@ class _CanonicalItemsPageState extends State<CanonicalItemsPage> {
                     : () => _edit(_selected),
                 icon: const Icon(Icons.edit_outlined),
                 label: const Text('Editar seleccionado'),
+              ),
+              OutlinedButton.icon(
+                onPressed: _busy || _selected == null ||
+                        _selected!.type == CanonicalItemType.service
+                    ? null
+                    : () => _recipe(_selected!),
+                icon: const Icon(Icons.restaurant_menu_outlined),
+                label: const Text('Receta'),
               ),
               OutlinedButton.icon(
                 onPressed: _busy || _selected?.canSell != true
