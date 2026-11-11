@@ -133,6 +133,35 @@ jobs:
           path: ${{ runner.temp }}/item-core-dependencies.md
           retention-days: 14
 
+  historical-sale-cost-acl:
+    name: Historical cost backfill 096 - static execute ACL
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: fixture_only
+          POSTGRES_DB: item_acl_fixture
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d item_acl_fixture"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: localhost
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGPASSWORD: fixture_only
+      PGDATABASE: item_acl_fixture
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect privileges without invoking restricted functions
+        run: psql -X -v ON_ERROR_STOP=1 -f supabase/tests/item_core_cost_backfill_096_acl_isolated.sql
+
   historical-sale-cost-backfill:
     name: Historical sale cost backfill 095 - isolated PostgreSQL
     runs-on: ubuntu-latest
