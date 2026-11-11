@@ -40,6 +40,7 @@ jobs:
           flutter build web --release --no-wasm-dry-run \
             --no-web-resources-cdn --pwa-strategy=none \
             --dart-define=SMOO_ITEM_CORE_V2_QA=true \
+            --dart-define=SMOO_APP_MODE=backoffice \
             --dart-define=SMOO_SUPABASE_URL=https://invalid.example \
             --dart-define=SMOO_SUPABASE_PUBLISHABLE_KEY=qa-placeholder \
             --dart-define=SMOO_RESTAURANT_ID=00000000-0000-4000-8000-000000000000
