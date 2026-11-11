@@ -55,6 +55,40 @@ mixin _SupabaseAdminCanonicalItemsMixin on _SupabaseAdminRepositoryBase {
     },
   );
 
+  /// Reads canonical packaging rules without the legacy packaging master.
+  Future<AppResult<List<CanonicalConsumptionRule>>>
+      getCanonicalConsumptionRules() => _guard(
+    'canonical_rules_read_failed',
+    'No se pudieron cargar las reglas de consumo.',
+    () async {
+      final rows = await _getRows('item_consumption_rules', {
+        'restaurant_id': 'eq.$_restaurantId',
+        'select': 'id,source_item_id,consumed_item_id,sales_type_id,'
+            'scope,quantity,unit_id,priority,is_active',
+        'order': 'priority.asc',
+      });
+      return rows.map(CanonicalConsumptionRule.fromRow).toList();
+    },
+  );
+
+  /// Writes a rule through the transactionally revisioned V2 server RPC.
+  Future<AppResult<CanonicalConsumptionRule>> saveCanonicalConsumptionRule(
+    CanonicalConsumptionRule rule,
+  ) => _guard(
+    'canonical_rule_save_failed',
+    'No se pudo guardar la regla de consumo.',
+    () async {
+      final row = await _rpc('app_upsert_item_consumption_rule_v2', {
+        'p_restaurant_id': _restaurantId,
+        'p_payload': rule.toPayload(),
+      });
+      if (_text(row['id']).isEmpty) {
+        throw StateError('El servidor no confirmó la regla.');
+      }
+      return CanonicalConsumptionRule.fromRow(row);
+    },
+  );
+
   /// Creates or updates an article atomically via the trusted V2 writer.
   Future<AppResult<CanonicalItem>> saveCanonicalItem(CanonicalItem item) =>
       _guard(
