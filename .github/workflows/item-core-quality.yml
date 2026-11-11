@@ -17,11 +17,14 @@ on:
       - feature/item-core-f2-classification-revision
       - feature/item-core-f2-classification-master-revision
       - feature/item-core-f2-classification-snapshot
+      - feature/item-core-g2-integration-rehearsal
     paths:
       - 'lib/**'
       - 'test/**'
       - 'supabase/**'
       - 'tool/audit_item_core_dependencies.py'
+      - 'tool/check_item_core_analyzer.py'
+      - 'tool/item_core_analyzer_baseline.json'
       - '.github/workflows/item-core-quality.yml'
   pull_request:
     branches:
@@ -30,11 +33,14 @@ on:
       - feature/item-core-f2-unit-revision
       - feature/item-core-f2-classification-revision
       - feature/item-core-f2-classification-master-revision
+      - feature/item-core-f2-classification-snapshot
     paths:
       - 'lib/**'
       - 'test/**'
       - 'supabase/**'
       - 'tool/audit_item_core_dependencies.py'
+      - 'tool/check_item_core_analyzer.py'
+      - 'tool/item_core_analyzer_baseline.json'
       - '.github/workflows/item-core-quality.yml'
   workflow_dispatch:
 
