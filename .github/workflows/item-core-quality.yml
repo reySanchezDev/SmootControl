@@ -27,6 +27,7 @@ on:
       - main
       - feature/item-master-db-foundation
       - feature/item-core-f2-unit-revision
+      - feature/item-core-f2-classification-revision
     paths:
       - 'lib/**'
       - 'test/**'
