@@ -13,6 +13,21 @@ final class CanonicalConsumptionRule {
     this.isActive = true,
   });
 
+  /// Parses one tenant-scoped remote record.
+  factory CanonicalConsumptionRule.fromRow(Map<String, Object?> row) {
+    return CanonicalConsumptionRule(
+      id: row['id']?.toString() ?? '',
+      sourceItemId: row['source_item_id']?.toString(),
+      consumedItemId: row['consumed_item_id']?.toString() ?? '',
+      salesTypeId: row['sales_type_id']?.toString(),
+      scope: row['scope']?.toString() ?? '',
+      quantity: double.tryParse(row['quantity'].toString()) ?? 0,
+      unitId: row['unit_id']?.toString() ?? '',
+      priority: int.tryParse(row['priority'].toString()) ?? 100,
+      isActive: row['is_active'] == true,
+    );
+  }
+
   /// Stable operation identity for idempotent RPC updates.
   final String id;
 
@@ -39,21 +54,6 @@ final class CanonicalConsumptionRule {
 
   /// Whether this rule can match a transaction.
   final bool isActive;
-
-  /// Parses one tenant-scoped remote record.
-  static CanonicalConsumptionRule fromRow(Map<String, Object?> row) {
-    return CanonicalConsumptionRule(
-      id: row['id']?.toString() ?? '',
-      sourceItemId: row['source_item_id']?.toString(),
-      consumedItemId: row['consumed_item_id']?.toString() ?? '',
-      salesTypeId: row['sales_type_id']?.toString(),
-      scope: row['scope']?.toString() ?? '',
-      quantity: double.tryParse(row['quantity'].toString()) ?? 0,
-      unitId: row['unit_id']?.toString() ?? '',
-      priority: int.tryParse(row['priority'].toString()) ?? 100,
-      isActive: row['is_active'] == true,
-    );
-  }
 
   /// Payload accepted by the revisioned, authenticated writer.
   Map<String, Object?> toPayload() => {
