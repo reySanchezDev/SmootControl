@@ -1459,3 +1459,22 @@ Captura del propietario en `127.0.0.1:18080`: aparece **Inicializar dispositivo 
 Corrección publicada en PR #40: el build canónico inyecta **ambos** defines `SMOO_ITEM_CORE_V2_QA=true` y `SMOO_APP_MODE=backoffice`. Se introdujo `-LocalSupabaseQa` que admite exclusivamente `http://127.0.0.1:54321` o `http://localhost:54321`, y solo junto al flag QA canónico. El lanzador `tool/start_item_core_qa_release.ps1 -LocalSupabaseQa` exige `-CredentialsPath` explícito apuntando al archivo PRIVADO del laboratorio, con URL/clave publicable local y `SMOO_RESTAURANT_ID` correspondiente al administrador sintético local. El pipeline Linux de compilación también fija `SMOO_APP_MODE=backoffice`; usa credenciales dummy solo para validar artefactos.
 
 **Pendiente a ejecutar por Codex Windows:** sincronizar la rama, localizar o preparar en ruta privada el archivo de credenciales LOCAL correcto sin exponer claves ni copiar el del remoto, comprobar el laboratorio Docker/Auth/restaurante, recompilar Web RELEASE mediante el script oficial y servirlo en puerto libre, abriendo el navegador del propietario. Probar que el inicio muestre login Backoffice **sin inicialización de POS**, JWT/rol/tenant del laboratorio y CRUD persistente Artículos/recetas/reglas con recarga F5. Conservar 15 cambios locales, 17 stashes, Docker y main. No reutilizar el JS viejo de 18080: HTTP 200 no corrige defines compilados. No ejecutar migraciones remotas ni 088. G3 seguirá abierto hasta aceptación visual del propietario.
+
+### 13.22 Diagnóstico del rechazo de login en Backoffice local (2026-11-11)
+
+La captura del propietario en `127.0.0.1:18081` muestra correctamente el formulario
+Backoffice y no el aprovisionamiento POS, pero el intento concreto fue rechazado por
+Supabase Auth como `invalid_credentials`. Se inspeccionaron los logs de Auth sin
+registrar cuerpos, contraseñas ni tokens.
+
+La cuenta sintética local está confirmada, activa, no bloqueada, no es POS, pertenece
+al restaurante `9fa3d1b7-a87a-4271-89bd-cbd24644dfd4` y conserva los permisos de
+productos, empaques y `dispositivo.inicializar`. Usando exclusivamente el archivo
+privado de recuperación existente fuera de Git, el mismo endpoint local
+`/auth/v1/token?grant_type=password` respondió HTTP 200. Por tanto no se reproduce
+un fallo de Kong, URL, clave publicable, tenant, RLS ni del build RELEASE; la
+captura refleja credenciales introducidas que no corresponden a esa cuenta local.
+
+El servidor RELEASE continúa activo en `http://127.0.0.1:18081/`. La autenticación
+visual, CRUD y persistencia tras F5 siguen pendientes de que Reynaldo use la cuenta
+local del archivo privado y acepte los escenarios G3; no se declara G3 aprobado.
