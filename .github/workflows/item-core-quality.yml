@@ -21,7 +21,10 @@ on:
       - 'tool/audit_item_core_dependencies.py'
       - '.github/workflows/item-core-quality.yml'
   pull_request:
-    branches: [main]
+    branches:
+      - main
+      - feature/item-master-db-foundation
+      - feature/item-core-f2-unit-revision
     paths:
       - 'lib/**'
       - 'test/**'
