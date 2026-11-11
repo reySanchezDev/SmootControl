@@ -1365,6 +1365,41 @@ restaurante/rol, CRUD visual, F5 ni capturas; los HTTP 200 previos de assets no
 se presentan como QA funcional. El remoto continua en 083 sin tablas V2, por
 lo que el CRUD remoto tampoco es certificable. G3 permanece cerrado.
 
+### 13.21 Backoffice V2 local abierto para QA (2026-11-11)
+
+Se sincronizo PR #40 hasta `9b414286e29bef602ba632252eb5ba5f39c7c0de` en el
+worktree aislado. El worktree original mantiene 15 cambios locales y 17
+stashes. Docker `smoo_control` no fue recreado, reseteado ni detenido:
+PostgreSQL, Kong, Auth, REST y Meta permanecen saludables. Kong local responde
+en `127.0.0.1:54321`, Auth `/auth/v1/health` reporta GoTrue v2.188.1 y REST
+responde 200. El ledger local permanece en 087, con los objetos V2 089--096
+presentes; no se ejecuto 088 ni hubo DDL remoto.
+
+Se preparo fuera de Git el archivo privado del laboratorio con URL
+`http://127.0.0.1:54321`, clave publicable local y el restaurante sintetico
+`9fa3d1b7-a87a-4271-89bd-cbd24644dfd4`. La identidad administrativa local
+`0a400f9d-3914-4c2a-8bab-4f0fda771283` existe en `auth.users`, su perfil activo
+pertenece a ese restaurante, no es POS y conserva ambos permisos de catalogo.
+No se registraron claves, contrasenas ni tokens.
+
+El commit sincronizado tenia un error reproducible de sintaxis en
+`tool/build_web_release.ps1`: el guard de URL local estaba truncado y habia dos
+bloques de compilacion intercalados. Se corrigio el script sin tocar la
+configuracion remota. `tool/start_item_core_qa_release.ps1 -LocalSupabaseQa
+-CredentialsPath (ruta privada) -Port 18081` completo RELEASE en 156.0 s,
+inyectando `SMOO_APP_MODE=backoffice` y `SMOO_ITEM_CORE_V2_QA=true`, copio WASM
+y Drift worker, abrio mediante `Start-Process`
+`http://127.0.0.1:18081/` y dejo el servidor activo. Los cuatro assets
+respondieron 200; esto acredita compilacion/servidor, no aceptacion funcional.
+
+No existe controlador de navegador Windows disponible en esta sesion. Por ello
+la URL quedo abierta para QA manual de Rey, pero no se certificaron visualmente
+login de administrador, ausencia de inicializacion POS, restaurante/rol, CRUD
+de Articulos, clasificaciones, unidades, recetas, empaques ni persistencia tras
+F5. El remoto sigue en 083 sin tablas V2, asi que ese CRUD solo puede validarse
+contra este laboratorio local. G3 permanece cerrado hasta evidencia visual y
+persistencia aceptada.
+
 ### 13.10 Release obligatorio incluso para QA local (2026-11-11)
 
 **Decisión del propietario:** Kivo en localhost se evalúa **siempre desde Flutter Web compilado en RELEASE**, nunca `flutter run`/debug, por su tiempo de carga. Se mantiene ejecución aislada por rama de QA, sin publicar kivo.quantix.software.
