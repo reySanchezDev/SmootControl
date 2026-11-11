@@ -133,6 +133,35 @@ jobs:
           path: ${{ runner.temp }}/item-core-dependencies.md
           retention-days: 14
 
+  historical-sale-cost-backfill:
+    name: Historical sale cost backfill 095 - isolated PostgreSQL
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: fixture_only
+          POSTGRES_DB: item_cost_fixture
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d item_cost_fixture"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: localhost
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGPASSWORD: fixture_only
+      PGDATABASE: item_cost_fixture
+    steps:
+      - uses: actions/checkout@v4
+      - name: Confirm backfill results, tenant isolation and repeat safety
+        run: psql -X -v ON_ERROR_STOP=1 -f supabase/tests/item_core_cost_backfill_095_isolated.sql
+
   consumption-contract:
     name: F2 consumption rule SQL - isolated PostgreSQL
     runs-on: ubuntu-latest
