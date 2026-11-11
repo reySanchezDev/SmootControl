@@ -37,7 +37,13 @@ try {
     Invoke-PsqlFile 'supabase/tests/item_core_g2_jwt_rls_isolated.sql'
     Invoke-PsqlFile 'supabase/tests/item_core_f2_consumption_isolated.sql'
 
-    $saleDdl = Join-Path $env:TEMP 'item-core-g2-sale-schema.sql'
+    $tempRoot = if ($env:RUNNER_TEMP) {
+        $env:RUNNER_TEMP
+    }
+    else {
+        [System.IO.Path]::GetTempPath()
+    }
+    $saleDdl = Join-Path $tempRoot 'item-core-g2-sale-schema.sql'
     (Get-Content (Join-Path $root 'supabase/design/ITEM_CORE_F2_SALE_SCHEMA_DRAFT.sql')) |
         Where-Object { $_ -notmatch '^BEGIN;$' -and $_ -notmatch '^ROLLBACK;$' } |
         Set-Content -Path $saleDdl -Encoding utf8
