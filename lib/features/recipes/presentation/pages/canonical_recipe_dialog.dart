@@ -185,7 +185,9 @@ class _RecipeComponentDialogState extends State<_RecipeComponentDialog> {
   void _accept() {
     final quantity = double.tryParse(_quantity.text.replaceAll(',', '.'));
     if (_itemId == null || quantity == null || !quantity.isFinite ||
-        quantity <= 0) return;
+        quantity <= 0) {
+      return;
+    }
     final item = widget.items.firstWhere((entry) => entry.id == _itemId);
     Navigator.of(context).pop(CanonicalRecipeLine(
       componentItemId: item.id!,
