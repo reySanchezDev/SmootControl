@@ -31,6 +31,4 @@ INSERT INTO public.item_units(
 )
 SELECT i.restaurant_id,i.id,i.base_unit_id,1,true
 FROM public.items i;
-INSERT INTO public.item_catalog_revisions(restaurant_id)
-VALUES('00000000-0000-0000-0000-000000000001');
 SELECT set_config('app.can_write_inventory','true',true);
