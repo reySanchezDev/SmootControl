@@ -448,9 +448,8 @@ jobs:
         run: |
           psql -X -v ON_ERROR_STOP=1 \
             -f supabase/tests/item_core_f2_pos_sale_fixture.sql \
-            -f supabase/tests/item_core_f2_catalog_pull_fixture.sql \
-            -f supabase/design/ITEM_CORE_F2_CATALOG_PULL_DRAFT.sql \
             -f supabase/tests/item_core_f2_unit_writer_fixture.sql \
+            -f supabase/design/ITEM_CORE_F2_CATALOG_PULL_DRAFT.sql \
             -f supabase/design/ITEM_CORE_F2_UNIT_WRITER_DRAFT.sql \
             -f supabase/tests/item_core_f2_unit_writer_assert.sql
 
