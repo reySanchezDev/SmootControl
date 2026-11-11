@@ -16,6 +16,7 @@ on:
       - feature/item-core-f2-unit-revision
       - feature/item-core-f2-classification-revision
       - feature/item-core-f2-classification-master-revision
+      - feature/item-core-f2-classification-snapshot
     paths:
       - 'lib/**'
       - 'test/**'
@@ -28,6 +29,7 @@ on:
       - feature/item-master-db-foundation
       - feature/item-core-f2-unit-revision
       - feature/item-core-f2-classification-revision
+      - feature/item-core-f2-classification-master-revision
     paths:
       - 'lib/**'
       - 'test/**'
