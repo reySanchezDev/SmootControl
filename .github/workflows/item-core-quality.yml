@@ -13,6 +13,7 @@ on:
       - feature/item-core-f2-pos-catalog-server
       - feature/item-core-f2-catalog-revision-writer
       - feature/item-core-f2-consumption-rule-revision
+      - fix/quality-12-diagnostics
     paths:
       - 'lib/**'
       - 'test/**'
