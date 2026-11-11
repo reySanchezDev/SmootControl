@@ -14,6 +14,7 @@ import 'package:smoo_control/features/packaging/domain/entities/packaging_item.d
 import 'package:smoo_control/features/products/domain/entities/measurement_unit.dart';
 import 'package:smoo_control/features/products/domain/entities/product.dart';
 import 'package:smoo_control/features/products/presentation/widgets/create_product_dialog.dart';
+import 'package:smoo_control/features/products/presentation/pages/canonical_items_page.dart';
 import 'package:smoo_control/features/roles/domain/services/default_access_roles.dart';
 import 'package:uuid/uuid.dart';
 
@@ -262,7 +263,10 @@ class _ArticlesPageState extends State<ArticlesPage> {
   }
 
   @override
-  Widget build(BuildContext context) => AppPageScaffold(
+  Widget build(BuildContext context) =>
+      const bool.fromEnvironment('SMOO_ITEM_CORE_V2_QA')
+          ? const CanonicalItemsPage()
+          : AppPageScaffold(
     title: 'Productos',
     body: FutureBuilder<AppResult<_ArticlesSnapshot>>(
       future: _future,
