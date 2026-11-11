@@ -1208,3 +1208,12 @@ resolver el bloqueo Flutter Web Windows antes de presentar localhost a QA.
 **CI reproducible Linux**: `.github/workflows/item-core-web-qa.yml` compila con `flutter build web --release` y valida los cuatro artefactos; usa URL y llave de prueba **inservibles** para no incorporar credenciales reales a un artefacto GitHub. Run **43092362378**, **SUCCESS** en SHA `7fdec6fa83f106dc411cde44c3842bd886062ccd`. Certifica **build release, no QA funcional remoto ni aprobación del gate G3**.
 
 **Estado de frontend al corte:** capa de lectura/alta/edición de artículos `items` por RPC V2, clasificación y unidades, y editor de reglas de consumo canónico iniciados bajo flag QA. Recetas canónicas, despliegue remoto y pruebas UX completas **pendientes**. Supabase remoto todavía no tiene el esquema ni RPC V2 (auditoría E0/E1); la pantalla nueva no puede guardar allí hasta completar E1 y verificar JWT/RLS. No presentar este build con credenciales ficticias como entregable de aceptación. El bloqueo Flutter Windows no puede alterar la política RELEASE: resolverlo o compilar correctamente desde Linux con configuración autorizada para el entorno QA.
+
+
+### 13.12 Conciliación inicial de recetas canónicas — PR #40 (2026-11-11)
+
+Se identificó un desacople verificable: el repositorio Flutter leía `product_recipes` y `product_recipe_lines` filtrando `item_id`/`component_item_id`, columnas que no pertenecen al contrato legado de la migración 050. Asimismo invocaba `app_save_item_recipe_v2`, inexistente en 089.
+
+Se publicó en la rama de integración la migración **090_item_recipes_v2_additive.sql**: tablas separadas `item_recipes` y `item_recipe_lines`, versiones activas por artículo, FKs por tenant, lectura RLS, RPC `app_save_item_recipe_v2` con autenticación/permiso, validación de unidades/cantidades/ciclos y actualización de revisión. La lectura Flutter ahora utiliza exclusivamente esas tablas canónicas; no se alteraron `product_recipes` ni ventas anteriores.
+
+**Estado de evidencia:** cambio de código publicado, **todavía sin ejecutar 090 en Docker ni Supabase remoto**, sin validación SQL integral/CI aprobada ni pruebas de lectura/escritura autenticadas. Antes de ejecutar 090: inspeccionar el estado real de 089, dependencias 084–087, respaldo restaurable, permisos y rollback. 088 continúa congelada. **No presentar recetas como funcionales hasta prueba end-to-end.**
