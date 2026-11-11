@@ -871,3 +871,34 @@ Se ampliaron los triggers `pull_request.branches` de `.github/workflows/item-cor
 **PR #36:** `feature/item-core-g2-qa-candidate` sobre PR #35. Incorpora sin cambios de comportamiento las correcciones verificadas de PR #31/#34 y un `tool/item_core_analyzer_baseline.json` con techo **17**, más CI remoto para esta rama. Evidencia run `43059469890`, head `5f31703844e52b38bbf7eb6770e71013ded00a9d`: **14/14 jobs success**, **416 Flutter tests passed**, 17 diagnósticos heredados, 0 nuevos, análisis focalizado limpio; NO significa `flutter analyze` global sin avisos.
 
 **Estado operativo:** candidato técnico validado, NO autorización de G2. El código sigue en PRs abiertos. Faltan JWT/RLS real con roles de restaurante, retiro de todos los escritores legacy, contrato completo de precios/modificadores/categorías, pruebas reales de venta/void/inventario/nómina, dos terminales concurrentes, cola offline/sync y corte reversible. No integrar en `main`, POS activo, migraciones Supabase o producción sin decisión explícita y QA propietario del entorno desplegado.
+
+### 12.27 Rehearsal funcional G2 aislado (2026-11-11)
+
+Se preparó la rama independiente `feature/item-core-g2-qa-rehearsal` desde
+`feature/item-core-g2-qa-candidate` en `7cfa2fb914e0b2e7d238ca0e284211d46b71ec37`.
+El ejecutable `tool/run_item_core_g2_qa.ps1` levanta PostgreSQL 16 desechable,
+monta el repositorio en solo lectura, ejecuta cada contrato con `ROLLBACK` y
+elimina el contenedor en `finally`; no invoca migraciones ni toca el POS.
+
+La matriz automatizada queda así: JWT/RLS aislado 1 contrato (tenant,
+permiso, revocación inmediata y DML denegado); resolución/consumo 1;
+venta-anulación 1 (stock, snapshots, ledger, replay, stock insuficiente y
+rollback); Drift 10 pruebas (snapshot completo, preservación de ventas/cola
+offline, parcial, antiguo, conflicto, cross-tenant, rollback y dos revisiones
+concurrentes); cola offline 4 pruebas (éxito, lote, reintento y timeout).
+Las 10 pruebas Flutter focalizadas pasaron localmente.
+
+El contrato JWT/RLS es deliberadamente sintético y no certifica todavía el
+esquema Supabase real. La ejecución PostgreSQL local quedó bloqueada antes de
+crear la base porque Docker Desktop no tenía disponible
+`dockerDesktopLinuxEngine`; el mismo recorrido se añadió al job CI
+`g2-functional-qa` para verificarlo en un runner limpio. `flutter analyze` en
+Windows inició pero quedó sin salida durante más de 90 segundos y se detuvo;
+no se declara limpieza global local. `pwsh` tampoco está instalado localmente,
+por lo que la validación del runner PowerShell queda delegada al job CI.
+
+**Gate G2:** sigue **ABIERTO**. Esta rama deja listo un candidato ejecutable
+para QA del propietario, pero no habilita rutas incompletas, POS operativo,
+Drift productivo, migración 088, laboratorio principal, `main` ni producción.
+Para cerrar G2 todavía se requiere una ejecución CI verde del arnés, JWT/RLS
+contra el esquema real y autorización explícita para el corte coordinado.
