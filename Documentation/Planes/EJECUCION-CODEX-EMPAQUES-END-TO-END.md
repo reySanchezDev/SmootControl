@@ -1294,6 +1294,49 @@ no se ejecutaron migraciones remotas. G0/G1/E1/E2 quedan aprobados solo para
 continuacion local; el gate remoto y la activacion operativa permanecen
 cerrados.
 
+### 13.16 Validacion local de 095/096 y E1/E2 (2026-11-11)
+
+Se sincronizo PR #40 hasta `b70871cf4c8942fad6f231dc30593d218386ef38` en el
+worktree aislado. El worktree original conserva sus 15 cambios locales y 17
+stashes; no se recrearon ni eliminaron worktrees o contenedores Docker.
+GitHub Actions 43108249801 fue verificado sobre este SHA y termino
+`completed/success`.
+
+El Docker `smoo_control` mantiene el ledger 087 y los objetos 089--094
+instalados previamente; no se reaplicaron y 088 no se ejecuto. Se aplico solo
+localmente 095 y luego 096. 095 elimina la referencia lint a
+`tmp_cost_backfill_items` y conserva la firma de la RPC sin ejecutar backfill.
+La revision de permisos descubrio que el `CREATE OR REPLACE` dejaba ACL de
+cliente; 096 corrige esto sin modificar 095: `anon=false`,
+`authenticated=false`, `service_role=true`, y `search_path=public, pg_temp`.
+
+La suite `supabase/tests/item_core_cost_backfill_095_isolated.sql` paso en un
+PostgreSQL 16 desechable: costos por linea, totales, tenant ajeno,
+`sync_status=pending`, idempotencia y rollback. En el Docker real, con datos
+sinteticos dentro de `BEGIN/ROLLBACK`, el resultado fue
+`updated_items=1, updated_sales=1`, segunda ejecucion `0/0`, costo de linea
+`0.5000`, total `3.0000`, tenant ajeno y venta pendiente sin cambios, y
+`rollback_sales=0`.
+
+La comprobacion ACL del Docker confirma que la rutina de mantenimiento solo
+es ejecutable por `service_role`. Intentar invocarla bajo `SET ROLE anon` en
+este PostgreSQL local reproduce un `SIGSEGV` del proceso servidor, seguido de
+recuperacion automatica; no se repitio para no inestabilizar el contenedor.
+Esto es un bloqueo del runtime local para certificar la denegacion por llamada,
+aunque el ACL efectivo ya es restrictivo. No se modifico historial real.
+
+El script oficial `tool/build_web_release.ps1 -CanonicalItemsQa` completo el
+RELEASE tras ejecutarse con `ExecutionPolicy Bypass` solo para el proceso local;
+compilo en 253.5 s. Artefactos servidos en `http://127.0.0.1:18081/`: cuatro
+respuestas HTTP 200; `main.dart.js` 6,603,933 bytes, `sqlite3.wasm` 733,662 y
+`drift_worker.js` 375,910. No hay navegador conectado para certificar login,
+persistencia visual o F5; no se declara G3 aprobado.
+
+El remoto permanece sin migraciones nuevas y sin escrituras: no hay backup
+remoto restaurable demostrado y el lint remoto debe verificarse nuevamente
+despues de 095/096 antes de cualquier DDL. E1/E2 quedan aprobados solo para
+continuacion local; G3 y el corte remoto siguen cerrados.
+
 ### 13.10 Release obligatorio incluso para QA local (2026-11-11)
 
 **Decisión del propietario:** Kivo en localhost se evalúa **siempre desde Flutter Web compilado en RELEASE**, nunca `flutter run`/debug, por su tiempo de carga. Se mantiene ejecución aislada por rama de QA, sin publicar kivo.quantix.software.
