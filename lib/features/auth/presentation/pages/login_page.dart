@@ -60,7 +60,8 @@ class _LoginPageState extends State<LoginPage> {
     final colorScheme = Theme.of(context).colorScheme;
     final error = _localError ?? widget.failure;
     final loginMessage = AppRunMode.isBackoffice
-        ? 'Ingresa con tu correo y contraseña remota para administrar SmooControl.'
+        ? 'Ingresa con tu correo y contraseña remota '
+              'para administrar SmooControl.'
         : l10n.loginMessage;
 
     return Scaffold(
