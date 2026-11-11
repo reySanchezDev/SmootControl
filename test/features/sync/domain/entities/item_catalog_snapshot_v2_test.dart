@@ -8,6 +8,7 @@ const _productId = '20000000-0000-0000-0000-000000000001';
 const _packagingId = '20000000-0000-0000-0000-000000000002';
 const _unitId = '30000000-0000-0000-0000-000000000001';
 const _ruleId = '40000000-0000-0000-0000-000000000001';
+const _classId = '50000000-0000-0000-0000-000000000001';
 
 Map<String, Object?> _catalog({
   String tenant = _restaurant,
@@ -58,6 +59,22 @@ Map<String, Object?> _catalog({
         'quantity_in_base': '1',
       },
     ],
+    'item_classifications': <Map<String, Object?>>[
+      <String, Object?>{
+        'restaurant_id': _restaurant,
+        'id': _classId,
+        'code': 'PACKAGING',
+        'name': 'Empaque',
+        'is_active': true,
+      },
+    ],
+    'item_classification_links': <Map<String, Object?>>[
+      <String, Object?>{
+        'restaurant_id': _restaurant,
+        'item_id': _packagingId,
+        'classification_id': _classId,
+      },
+    ],
     'consumption_rules': <Map<String, Object?>>[
       <String, Object?>{
         'restaurant_id': _restaurant,
@@ -85,6 +102,8 @@ void main() {
       expect(snapshot.items.last.type, ItemCatalogTypeV2.inventory);
       expect(snapshot.consumptionRules, hasLength(1));
       expect(snapshot.units, hasLength(2));
+      expect(snapshot.classifications, hasLength(1));
+      expect(snapshot.classificationLinks, hasLength(1));
       expect(snapshot.items.last.canSell, isFalse);
       expect(snapshot.snapshotId, _snapshotId);
     });
@@ -223,6 +242,83 @@ void main() {
       );
     });
 
+    test('rejects missing classification collections', () {
+      final catalog = _catalog()..remove('item_classifications');
+      expect(
+        () => ItemCatalogSnapshotV2.fromJson(
+          catalog,
+          expectedRestaurantId: _restaurant,
+        ),
+        throwsFormatException,
+      );
+    });
+
+    test('rejects classification links outside the local tenant', () {
+      final catalog = _catalog();
+      final links =
+          catalog['item_classification_links']!
+              as List<Map<String, Object?>>;
+      links.single['restaurant_id'] = _otherRestaurant;
+      expect(
+        () => ItemCatalogSnapshotV2.fromJson(
+          catalog,
+          expectedRestaurantId: _restaurant,
+        ),
+        throwsFormatException,
+      );
+    });
+
+    test('rejects links to inactive classifications', () {
+      final catalog = _catalog();
+      final classes =
+          catalog['item_classifications']!
+              as List<Map<String, Object?>>;
+      classes.single['is_active'] = false;
+      expect(
+        () => ItemCatalogSnapshotV2.fromJson(
+          catalog,
+          expectedRestaurantId: _restaurant,
+        ),
+        throwsFormatException,
+      );
+    });
+
+    test('rejects duplicate classification codes regardless of case', () {
+      final catalog = _catalog();
+      final classes =
+          catalog['item_classifications']!
+              as List<Map<String, Object?>>;
+      classes.add(<String, Object?>{
+        'restaurant_id': _restaurant,
+        'id': '50000000-0000-0000-0000-000000000002',
+        'code': 'packaging',
+        'name': 'Duplicado',
+        'is_active': true,
+      });
+      expect(
+        () => ItemCatalogSnapshotV2.fromJson(
+          catalog,
+          expectedRestaurantId: _restaurant,
+        ),
+        throwsFormatException,
+      );
+    });
+
+    test('rejects duplicate item-classification assignments', () {
+      final catalog = _catalog();
+      final links =
+          catalog['item_classification_links']!
+              as List<Map<String, Object?>>;
+      links.add(Map<String, Object?>.from(links.single));
+      expect(
+        () => ItemCatalogSnapshotV2.fromJson(
+          catalog,
+          expectedRestaurantId: _restaurant,
+        ),
+        throwsFormatException,
+      );
+    });
+
     test('does not apply a stale revision or conflicting replay', () {
       final snapshot = ItemCatalogSnapshotV2.fromJson(
         _catalog(),
@@ -264,6 +360,8 @@ void main() {
 
       expect(snapshot.items.clear, throwsUnsupportedError);
       expect(snapshot.units.clear, throwsUnsupportedError);
+      expect(snapshot.classifications.clear, throwsUnsupportedError);
+      expect(snapshot.classificationLinks.clear, throwsUnsupportedError);
       expect(
         snapshot.consumptionRules.clear,
         throwsUnsupportedError,
