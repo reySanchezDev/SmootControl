@@ -145,10 +145,7 @@ class _CanonicalPackagingRulesDialogState
                     ? 'Por pedido' : 'Por unidad';
                 return ListTile(
                   title: Text(name),
-                  subtitle: Text(
-                    '${rule.quantity} · '
-                    scopeLabel,
-                  ),
+                  subtitle: Text('${rule.quantity} · $scopeLabel'),
                   trailing: TextButton(
                     onPressed: _busy ? null : () => _edit(rule),
                     child: const Text('Editar'),
