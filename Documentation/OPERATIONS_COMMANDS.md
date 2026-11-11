@@ -6,6 +6,55 @@ Estos comandos se ejecutan desde la raiz del proyecto:
 cd C:\Users\reyre\Aplicaciones\SmooControl
 ```
 
+## Docker Desktop existente — SmooControl (2026-11-11)
+
+**No crear un stack Docker nuevo por defecto.** Docker Desktop ya contiene
+los proyectos `smoo_control` y `tentrix`, con Docker Engine encendido.
+La captura muestra las agrupaciones colapsadas; no confirma qué servicios
+ni puertos están activos dentro de cada una.
+
+El laboratorio SmooControl utilizó Supabase CLI sobre Docker, con contenedor
+`supabase_db_smoo_control`, PostgreSQL/Auth/REST locales y puertos de Supabase.
+El archivo `supabase/config.toml` declara PostgreSQL local en 54324.
+**La base local Docker y Supabase remoto son entornos distintos.**
+
+### Diagnóstico sin modificar contenedores existentes
+
+```powershell
+docker context show
+docker compose ls --all
+docker ps -a --filter 'label=com.docker.compose.project=smoo_control'
+docker ps -a --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'
+```
+
+Antes de levantar o recrear servicios hay que identificar puertos y volúmenes.
+No usar `docker compose down -v`, `supabase db reset`, `docker system prune
+--volumes` o reinicios con pérdida de datos hasta confirmar el estado.
+
+### Web Kivo con Supabase remoto
+
+El repositorio ya tiene el script `tool/build_web_release.ps1`, que utiliza
+credenciales privadas locales (sin versionarlas) para inyectar los Dart
+defines de URL, publishable key y restaurante; compila además assets Drift.
+El resultado `build/web` puede servirse directamente con el procedimiento
+de Python documentado más abajo o mediante un contenedor web ya existente
+si su configuración local se verifica. No crear otro Dockerfile sin esa revisión.
+
+Para inspeccionar Supabase remoto usar el flujo enlazado documentado en
+`Documentation/SUPABASE_REMOTE_ACCESS.md`. No confundir el PostgreSQL Docker
+con el proyecto remoto autorizado como piloto.
+
+**Advertencia QA:** la rama con contratos F2/Drift aún no está conectada
+al flujo operativo del Backoffice/POS. Levantar un servidor web no activará
+por sí mismo el nuevo maestro de artículos.
+
+### Brecha documental detectada
+
+`rules.md` hace referencia a `comandos.md`, pero ese archivo no aparece
+versionado en la raíz del repositorio examinado. Este documento sí contiene
+el procedimiento de build y servidor web; cualquier Compose local excluido
+del repositorio debe identificarse en el equipo sin copiar sus credenciales.
+
 ## Construir El Sitio En Modo Release
 
 ```powershell
