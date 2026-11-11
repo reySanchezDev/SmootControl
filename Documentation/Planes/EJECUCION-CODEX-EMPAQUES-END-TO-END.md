@@ -828,3 +828,11 @@ Se ampliaron los triggers `pull_request.branches` de `.github/workflows/item-cor
 **Calidad independiente:** PR #31 `fix/quality-12-diagnostics` publica los seis archivos de las 12 correcciones locales en `d85fd55d012e325625d64189d02373c76b37aab5`, sin SQL ni migraciones. El trigger de rama añadido al workflow solo habilita su verificación CI y no cambia operación. Run `43043531503` está en curso: inventario y jobs SQL ya están `success`; Flutter/analyzer aún no concluye. Por la regla 12.20, los 12 diagnósticos permanecen **PENDIENTES DE CIERRE** hasta que ese job termine con evidencia verificable. El análisis local de Windows siguió bloqueándose; no se declara limpieza por esa vía.
 
 **Gate:** #29 y #30 quedan técnicamente listos, con CI verde y sin merge autorizado. #31 queda publicado y separado, pendiente del resultado completo de Actions. No se autoriza merge, reducción del baseline ni G2 hasta cerrar esa evidencia.
+
+### 12.22 Contrato de mantenimiento del maestro de clasificaciones — F2.3 (2026-11-11)
+
+**Rama técnica:** `feature/item-core-f2-classification-master-revision` apilada sobre PR #30, design-only `supabase/design/ITEM_CORE_F2_CLASSIFICATION_MASTER_WRITER_DRAFT.sql`. Job PostgreSQL aislado `classification-master-writer` con fixture y aserciones. No crear migración ni activar RPC en sistema operativo.
+
+**Contrato propuesto:** `app_upsert_item_classification_v2` exige permiso `articulos.gestionar`, serializa todas las escrituras mediante el lock `item_catalog_revisions FOR UPDATE`, impide colisión de UUID de otro tenant, códigos duplicados case-insensitive, datos vacíos y baja de clasificación asignada. Replay idéntico sin avance de revisión; cada cambio verdadero incrementa la revisión y el snapshot en la transacción. Direct DML de cliente revocado.
+
+**CI:** no declarar PASS hasta confirmar GitHub Actions sobre el head publicado. **Pendientes G2:** exportar todas las clasificaciones/enlaces en `pos_pull_item_catalog_v2`, validar el DTO Dart correspondiente, compatibilidad y commit transaccional Drift, JWT/RLS en esquema real, retirar escritores heredados y corte coordinado. F3 UI y F4 producción siguen restringidas.
