@@ -95,7 +95,7 @@ mixin _SupabaseAdminCanonicalItemsMixin on _SupabaseAdminRepositoryBase {
         'canonical_recipe_read_failed',
         'No se pudo cargar la receta.',
         () async {
-          final rows = await _getRows('product_recipes', {
+          final rows = await _getRows('item_recipes', {
             'restaurant_id': 'eq.$_restaurantId',
             'item_id': 'eq.$itemId',
             'status': 'eq.active',
@@ -105,7 +105,7 @@ mixin _SupabaseAdminCanonicalItemsMixin on _SupabaseAdminRepositoryBase {
           });
           if (rows.isEmpty) return null;
           final row = rows.first;
-          final lines = await _getRows('product_recipe_lines', {
+          final lines = await _getRows('item_recipe_lines', {
             'restaurant_id': 'eq.$_restaurantId',
             'recipe_id': 'eq.${_text(row['id'])}',
             'is_active': 'eq.true',
