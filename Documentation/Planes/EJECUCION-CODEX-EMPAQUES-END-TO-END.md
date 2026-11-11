@@ -1,8 +1,8 @@
 # PLAN RECTOR VIVO — Core de artículos de Kivo
 
 **Identificador:** KIVO-ITEM-CORE  
-**Última actualización:** 2026-11-10  
-**Estado:** F0/G0 CERRADO; G1 AUTORIZADO PARA DISEÑO F2, NO DESPLIEGUE; F2.3 CONTRATOS Y CI AISLADO VERIFICADOS; G2 ABIERTO; MIGRACIÓN 088 CONGELADA; PANTALLAS NO AUTORIZADAS  
+**Última actualización:** 2026-11-11  
+**Estado E2E:** auditoría F0 terminada; contratos F1/F2 y snapshot Drift V2 probados de forma aislada; **G1/G2 operativos pendientes; migración canónica no aplicada; frontend F3 canónico no entregado; Docker/QA manual no ejecutados; F4 sin despliegue**. PR #17 es una vista legacy, no CRUD canónico. Migración 088 congelada.  
 **Repositorio:** `reySanchezDev/SmootControl`  
 **Documento único de planificación:** este archivo. Se actualiza en cada avance, sin crear un plan por PR/fase.
 
@@ -80,7 +80,7 @@ Este diagrama es la dirección de arquitectura. **Cada tabla se introducirá sol
 | **F3. Interfaz sobre core aprobado** | Único formulario/listado de artículos, filtros y validaciones de capacidades, reglas en Configuración, sin maestro alternativo oculto | **G3:** UX autenticada aprobada por propietario, pantallas con CRUD real, responsive, permisos y accesibilidad |
 | **F4. Despliegue controlado** | Migraciones productivas con snapshots/backup, plan de rollout y rollback; monitoreo POS multiversión | **G4:** autorización explícita, comprobación de integridad en staging y ensayo de reversión; nunca desplegar por aprobar solo UI |
 
-**Alcance solicitado ahora:** F0 y F1 de base de datos. **Prohibido comenzar F3/pantallas** por tener una proyección funcional o un build correcto. F2 se planifica desde F0 para que F1 no produzca deuda estructural; se ejecuta antes de considerar la unificación operativa completa.
+**Alcance actual:** entrega END-TO-END del maestro único. F3 puede desarrollarse en paralelo mediante contratos canónicos y entorno aislado, pero no activarse sin backend/RLS/G2 reales. El propietario aprueba una aplicación funcionando en localhost y sus casos de uso, no PRs SQL aislados. La secuencia concreta y la aceptación están en la sección 13.
 
 ## 5. Estrategia de migración segura (debe convertirse en checklist ejecutable en F0)
 
@@ -949,3 +949,141 @@ POS operativo ni laboratorio principal; no se fusionó el PR #37.
 **Antes de ejecutar pruebas de escritura reales:** verificar respaldo/restauración, límites del tenant piloto, comportamiento RLS con JWT firmado auténtico de roles/tenants distintos, procedimientos de limpieza **acotada** y plan de reversión. Ventas, inventario, nómina y colas offline existentes quedan preservados hasta pasar esas comprobaciones y recibir autorización para una matriz acotada. El inventario de pg_policies no certifica por sí solo JWT/RLS; ejecutar esa evidencia aparte. **Nunca tratar una futura limpieza como sustituto de reversión transaccional.**
 
 **Estado:** solo preparación de auditoría de metadatos en producción; registrar resultado real del workflow y de credenciales antes de afirmar que se inspeccionó Supabase. `main` y rutas activas de POS permanecen intactos.
+
+
+## 13. Plan ejecutivo END-TO-END: maestro único visible, probado y desplegable (11/11/2026)
+
+**Este capítulo rige la ejecución restante.** Las secciones 1–12 conservan arquitectura, auditorías y evidencias, pero no sustituyen este plan de entrega. **Resultado contratado:** Reynaldo inicia sesión en el Backoffice de Kivo local y puede crear y editar artículos de distintos tipos, elaborar recetas, administrar envases/empaques y reglas, registrar compras/ajustes, vender/anular y verificar inventario, costos y operaciones offline con datos persistidos en el Supabase remoto piloto. Solo después de su aceptación se solicita aprobación de publicación.
+
+**Regla de progreso:** 15 jobs verdes o 417 pruebas automáticas sobre contratos aislados **no son** pantallas listas ni ventas reales integradas. No seguir creando PRs de arneses redundantes mientras falten rutas y pantallas funcionales. Preferir una rama de integración, pruebas sobre la app y un entregable ejecutable con URL localhost.
+
+### 13.1 Estado verificado, a diferencia de estado deseado
+
+| Módulo / fase | Ya existe y fue comprobado | No comprobado / falta implementar | Estado |
+| --- | --- | --- | --- |
+| F0 censo y arquitectura | Inventario de dependencias, auditoría PostgreSQL local, ADR y modelo canónico | Validar nuevamente el esquema real remoto antes de corte | Parcialmente cerrado para diseño |
+| F1 maestro real | Diseño, escritores F2 y contratos SQL aislados | Esquema/RPC autoritativos aplicados, backfill y CRUD seguros en Supabase remoto; retirar escritores de tablas maestras legacy | **NO operacional** |
+| F2 recetas, ventas, compras, consumo | Contratos SQL aislados de costo, receta, empaque, compra, venta, void, personal y nómina | Adaptar consumidores y RPC reales, conciliación, seguridad y sincronización end-to-end | **NO operacional** |
+| F2.3 local/Drift | Schema v35 y snapshots canónicos atómicos; PR #35/36 | Conectar pull autenticado y flujo POS; entregar precio/modificadores comerciales completos y cola compatible | Parcial, desactivado |
+| Seguridad y G2 | PR #37 con PostgreSQL/RLS **sintético**; PR #38 simulación de dos SQLite | JWT firmado y RLS/roles contra esquema remoto real; prueba hardware | Abierto |
+| UI Artículos | PR #17, listado de productos + empaques mediante repositorios legacy, con pantalla y formularios existentes | Listado y formulario CRUD usando **items** como única autoridad, tipos/capacidades/unidades/validaciones | **NO entregado** |
+| UI Recetas | Pantallas legacy y navegación existentes | Edición/listado sobre item_id, subrecetas, conversión, bloqueo de ciclos y snapshots | **NO entregado en core nuevo** |
+| UI Empaques | Editor legacy de reglas por tipo de venta | Usar mismo maestro items y reglas de consumo canónicas, con modal claro y vista previa | **NO entregado en core nuevo** |
+| UI otras operaciones | Backoffice V2, POS actual, inventarios, compras, categorías y modificadores | Remapear al maestro, comprobar endpoints y rutas escritas, sin romper POS | **NO integrado** |
+| Laboratorio local | Docker Desktop con grupo **smoo_control** existente; Supabase CLI y build web documentados | Inspeccionar puertos/containers reales; ejecutar nueva app local; smoke de navegador y credenciales remotas | Pendiente |
+| QA propietario / F4 | CI automatizado PR #38: 15/15, 417 Flutter tests, 17 diagnósticos heredados | Evidencia manual y dos terminales reales; despliegue QA, acta de aceptación y release | **Pendiente** |
+
+**Producción web:** main y kivo.quantix.software NO incluyen todavía el nuevo maestro. **Base de datos:** el propietario autorizó usar Supabase de producción como piloto por contener datos de ensayo, pero no autorizó borrados masivos, saltarse RLS, migración 088 ni desactivar el POS. Conservar respaldos y plan de reversión. Ver sección 12.30 y G2-QA-TERMINALES-Y-RLS.md.
+
+### 13.2 Contrato funcional obligatorio del maestro de Artículos
+
+**Maestro único:** cada artículo es una fila autoritativa en items, con UUID inmutable interno, código de negocio único por restaurante, nombre, estado, tipo técnico y clasificaciones/capacidades N:M; jamás dos maestros permanentes ni un simple UNION visual. Migrar datos que existan sin perder referencias, historial o colas.
+
+**Tipos técnicos visibles con lenguaje humano:**
+- **Con inventario (inventory):** puede comprarse, venderse, consumirse como ingrediente o envase y generar movimientos reales según reglas.
+- **Sin inventario (non_inventory):** puede comprarse o venderse/consumirse según configuración, pero nunca generar existencias físicas ficticias.
+- **Servicio (service):** vendible cuando procede; sin kardex físico, sin ajustes de stock.
+
+**Clasificaciones funcionales independientes:** Producto de venta, Materia prima, Empaque/Envase, Material de consumo u otras clasificaciones creadas por el usuario. Permitir combinación real (bebida vendible e ingrediente; bolsa que se compra y se consume; artículo con múltiples clasificaciones) sin duplicar artículos. No confundir clasificación con tipo ni inferir capacidad por nombre.
+
+**Ficha CRUD:** código, nombre, tipo técnico, clasificaciones, estado, unidades base/compra/venta y conversión, capacidades (vendible, comprable, visible POS, ingrediente, empaque, controla existencias), precio/costo/impuestos aplicables y acciones Guardar/Cancelar/Desactivar. UUID y posición no se piden al usuario. Si cambió el tipo o las unidades de un artículo con operaciones, bloquear incompatibilidades y preservar histórico. Validación backend por tenant y permisos, no solo Flutter.
+
+**Listado Artículos:** búsqueda por código/nombre; filtros tipo, clasificación, activo, stock, visible POS; orden y paginación; columnas legibles (Código, Nombre, Tipo, Clasificaciones, Unidad, Precio, Costo, Estado). UX Backoffice V2 Executive Ivory responsiva: selección de fila, barra con **Nuevo / Editar / Desactivar / Receta / Empaques** habilitados contextual y explícitamente. Sin columna Acciones repetitiva ni menú escondido «… Más». Encabezado fijo, navegación por teclado, empty/error/loading/permission states, confirmación de descarte y edición, mensajes humanos, ES/EN cuando aplique.
+
+**Recetas:** editor desde un artículo que soporte elaboración, lista de componentes elegidos del mismo maestro por código/nombre, cantidad y unidad exacta, costos calculados, conversiones, subrecetas y versionado/snapshots. Previsualización del consumo al vender, detección de ciclos, prohibición de cantidades negativas/cero o tenant ajeno. Cambiar receta no recalcula ventas/anulaciones históricas.
+
+**Empaques/envases:** bandejas, bolsas, vasos, tapas, servilletas, etc. se crean **desde Artículos**; cada uno define si lleva inventario. Las reglas se configuran desde **Configuración > Reglas de consumo/Empaques** y como acceso contextual desde la ficha: tipo de venta (Comer aquí / Para llevar / Delivery), artículo vendido cuando corresponde, empaque a consumir, cantidad/unidad, condición por pedido o línea según contrato, estado. Vista previa antes de guardar y al vender. Nunca descontar doble; anulaciones invierten los movimientos contabilizados. Las pantallas legacy pueden servir de patrón de UX, pero no permanecer como escritores maestros en paralelo.
+
+**Otros módulos afectados:** compras, recepción, inventarios, ajustes, mermas, consumos de personal, nómina, reportes, modificadores, categorías, menú, cocina, ventas y POS. Toda nueva escritura debe resolver item_id; la venta congela precio, receta, opciones, costo y empaque como snapshot; anulaciones invierten los asientos originales y la cola offline conserva idempotencia. No editar texto histórico para simular migración.
+
+### 13.3 Secuencia de ejecución completa, entregable y propietario
+
+| Orden | Fase | Trabajo obligatorio y salida verificable | Responsable principal | Gate |
+| --- | --- | --- | --- | --- |
+| E0 | **Integración sin duplicación** | Congelar nuevas ramas de diseño; establecer rama candidata desde el stack F2/Drift/QA, auditar diferencias y mapa de consumidores; evitar cherry-picks que sobrescriban cambios locales, conservando stashes | Asistente: GitHub/CI; Codex: worktree local | Una rama de integración y lista de deuda por módulo |
+| E1 | **Backend operativo F1** | Backup/restore verificable del remoto piloto, inventario SQL/roles/RPC, diseñar migración aditiva/correctiva nueva (NO ejecutar 088 congelada), instalar maestro autoritativo, conversiones, clasificación, precios/costos, permisos y RPC CRUD; migrar con mapeo estable y controles de FK | Codex (CLI/DB real); asistente (revisión/tests/CI) | CRUD remoto real con 3 tipos, pruebas cross-tenant y rollback |
+| E2 | **Integración de reglas y operaciones F2** | Vincular receta, consumos, empaque, compra, ajuste, stock, venta, void, personal/nómina, pricing/modificadores; adaptar lectores y **todos los escritores** legacy, asegurar idempotencia y coexistencia transitoria controlada | Codex local + asistente código/CI | Matriz de operaciones contra piloto real sin duplicados ni inconsistencia |
+| E3 | **Frontend F3 — paralelo a E1/E2, sin activar incompleto** | Reusar Backoffice V2 y pantallas, implementar listado y CRUD canónico Artículos + clasificaciones/unidades, editor receta y editor envases/reglas; permisos, responsive y estados UX; agregar tests widget/repositorio | Asistente GitHub para archivos manejables; Codex para integración/compilación local | Demo de CRUD real persistido y matrices 13.5 completas |
+| E4 | **POS/sync/Drift F2.3** | Integrar pull RPC autenticado, validación snapshot completo/revision/tenant y aplicación en transacción; adaptar precios, categorías, opciones, modificadores, inventario y sender de ventas/void a item_id; conservar local_sync_queue y ventas/tickets previos | Codex local; asistente pruebas/CI | POS sin internet + reconexión + varias terminales + reversión sin pérdida |
+| E5 | **Docker y localhost QA** | Auditar contenedores del grupo s moo_control **sin borrarlos**, usar configuración y credenciales existentes; compilar rama candidata con script oficial, publicar web local en puerto verificado y probar contra Supabase piloto | Codex (Windows/Docker) | URL localhost que abre, login funciona, pantallas E3 reales visibles |
+| E6 | **QA funcional del propietario G3** | Reynaldo ejecuta y aprueba matriz manual 13.5 y UX; correcciones en la misma rama hasta cerrar; capturas y evidencias con commit y datos de prueba | Reynaldo decide; Codex reproduce; asistente corrige remoto | **Aprobación explícita** del propietario |
+| E7 | **Preflight, integración y despliegue F4** | Consolidar PRs por dependencias con checks; backup, migraciones autorizadas, monitoreo y reversión probada; merge controlado a main y despliegue Vercel a kivo.quantix.software solo tras aprobación | Asistente GitHub/Vercel + Codex local según acceso | G4: go-live, smoke remoto, monitoreo y rollback |
+| E8 | **Cierre y limpieza** | Limpiar únicamente datos piloto con scripts tenant-scoped y preview/backup autorizados, retirar writers de legado, resolver deuda y registrar versión/release, cerrar Plan Rector | Asistente y Codex | Evidencia de cierre E2E, 0 rutas de maestro duplicado |
+
+**Regla de paralelismo:** E3 puede desarrollarse contra repositorios/fakes canónicos mientras E1 y E2 se implementan, pero NO habilitarla al público hasta E1/E2/G2. E5 no sustituye E3. Evitar esperar a “terminar todo SQL” para comenzar la interfaz: eso fue el error del plan anterior.
+
+### 13.4 Docker y QA remoto — procedimiento exacto, sin crear infraestructura
+
+El equipo Windows **ya tiene Docker Desktop y el grupo s moo_control** (la captura lo confirma) y se utilizó Supabase local previamente. **No proponer instalar Docker, crear un nuevo Compose ni reiniciar contenedores como primer paso.**
+
+1. Codex abre el worktree integrado sin tocar los 15 cambios locales preservados; identifica Docker con comandos de solo lectura: docker context show, docker compose ls --all, docker ps -a (incluyendo nombres y puertos). Comparar con supabase/config.toml (puerto PostgreSQL local 54324) y el estado real; no asumir que PostgreSQL Docker es Supabase remoto.
+2. Para verificar el **Supabase remoto autorizado**, usar CLI ya enlazado conforme a Documentation/SUPABASE_REMOTE_ACCESS.md. Antes de escritura revisar project ref, migrations, backup restaurable, transacciones abiertas y RLS. No exponer claves. Separar pruebas con usuario real de las conexiones administrativas.
+3. Compilar **la rama con UI canónica implementada**, no una rama con solo contratos, utilizando **tool/build_web_release.ps1** que inyecta SMOO_SUPABASE_URL, SMOO_SUPABASE_PUBLISHABLE_KEY y SMOO_RESTAURANT_ID desde el archivo privado local. No editar ni versionar credenciales. Incluir sqlite3.wasm y drift_worker.js; verificar que existan y HTTP 200.
+4. Publicar build/web en **http://127.0.0.1:8080/** o el puerto que realmente esté libre, con servidor local ya documentado en Documentation/OPERATIONS_COMMANDS.md. Si existe un contenedor de web **ya configurado**, reusarlo tras inspección; la compilación web no requiere inventar un Dockerfile. No lanzar otra base innecesaria ni detener Tentrix.
+5. Smoke con navegador: inicio de sesión, restaurante/rol correcto, menú Artículos, CRUD y modal, recetas, reglas de envases, menú POS, guardado persistente y recarga F5; revisar consola/HTTP, permisos y accesibilidad. Si falta flujo visible, detener la etiqueta “listo para QA” y corregir el código.
+6. Para dos terminales reales: usar dos dispositivos identificados, ventas de prueba con IDs distintos, uno desconectado y otro conectado, revisión de catálogo durante desconexión, luego reconectar, reenvíos y void; conciliación con servidor y colas. **Una simulación de dos SQLite no acredita hardware físico**.
+7. Mantener dominio público **kivo.quantix.software** intacto hasta G3/G4. No fusionar main para hacer QA; localhost usa rama candidata.
+
+**Prohibiciones:** docker compose down -v, supabase db reset, borrar colas/ventas, migración 088 congelada, apagar contenedores ajenos, modificar producción web antes de QA o eliminar datos piloto sin respaldo y aprobación acotada.
+
+### 13.5 Matriz de aceptación manual obligatoria para Reynaldo — G3
+
+En **localhost** conectado al piloto remoto, Reynaldo debe poder realizar sin consola SQL los siguientes casos y observar el resultado persistente al recargar, con permisos correctos.
+
+| ID | Acción desde interfaz | Criterio PASS |
+| --- | --- | --- |
+| UI-01 | Crear “Pollo crudo” con inventario, comprable, ingrediente, kg | Aparece en Artículos con código único y clasificación; guardado persiste tras F5 |
+| UI-02 | Crear bebida vendible/inventariable, precio, costo y visible POS | Aparece en listado y POS; compra/venta afecta existencia una sola vez |
+| UI-03 | Crear bolsa y bandeja con inventario, clasificación Empaque | Aparecen en **Artículos**, no obligan a crear maestro separado |
+| UI-04 | Crear servilleta no inventariable clasificada Empaque | Regla puede consumirla sin kardex |
+| UI-05 | Crear “Servicio de entrega” como servicio vendible | Facturable sin existencia ni saldo negativo |
+| UI-06 | Crear artículo vendible que también sea ingrediente | Una sola identidad y código; ambas capacidades operan |
+| UI-07 | Editar nombre, precio, estado y clasificaciones; buscar y filtrar | Edición persistente, validaciones y toolbar por selección funcionando |
+| UI-08 | Intentar código duplicado, tipo incompatible, unidad errónea y otro tenant | Backend rechaza; no hay cambios parciales ni fuga entre restaurantes |
+| REC-01 | Crear receta de hamburguesa con carne, pan y unidad válida | Muestra componentes, cantidades, conversiones, costo y desglose |
+| REC-02 | Editar receta, probar subreceta y referencia circular | Revisión persiste; ciclos se rechazan, snapshots de ventas anteriores intactos |
+| EMP-01 | Configurar “Para llevar” para consumir 1 bandeja y 1 bolsa | Vista previa clara; guarda regla y persiste |
+| EMP-02 | Vender para llevar y luego anular | Consumos y costos exactos; void revierte lo contabilizado originalmente |
+| EMP-03 | Vender “Comer aquí” y artículo sin regla de empaque | No descuenta envases de otra modalidad |
+| INV-01 | Registrar compra/ajuste, verificar kardex y stock | Movimiento y saldo concilian con ledger; sin duplicación |
+| POS-01 | Vender receta con modificador/opción y cantidad variable | Cobro conserva precio/modificador y descuenta ingredientes/envases correctos |
+| POS-02 | Reenviar la misma venta y misma anulación | Un solo efecto monetario y un solo consumo/reversión; sin duplicados |
+| OFF-01 | Terminal B vende sin internet; A recibe nuevo catálogo; B reconecta | Venta B pendiente preservada, sincroniza una sola vez y actualiza catálogo |
+| SEC-01 | Usuario sin permiso/otro tenant intenta CRUD y consume RPC | Pantalla y backend deniegan; JWT/RLS reales comprobados |
+| UX-01 | Usar móvil/tablet/desktop y teclado | Legibilidad, selección, errores claros, accesibilidad, sin botones ocultos |
+| RECOVER-01 | Fallar a mitad de guardado/sync y volver a entrar | Rollback, datos históricos/cola intactos y reintento recuperable |
+
+**No se declara G3 aprobado por capturas ni unit tests: el propietario confirma explícitamente los escenarios prioritarios UI-01–08, REC-01–02, EMP-01–03, INV-01, POS-01–02, OFF-01, SEC-01, UX-01 y RECOVER-01.** En cualquier falla se registra defecto y corrige en la rama candidata sin desplegar. El resto de regresiones se verifica automáticamente.
+
+### 13.6 Suites técnicas y puertas de salida por capa
+
+- **SQL schema/RPC:** migración desde base con históricos y base nueva, backfill tenant-consistente, UUID/código duplicado, FKs, constraints, RLS y permisos con JWT firmado, reader/writer de categorías/unidades/recetas/reglas, transacciones y rollback. Ejecutar contra laboratorio y, previa autorización y backup, contra piloto real acotado. Nunca identificar fixtures sintéticos como “pruebas reales RLS”.
+- **Dart/Flutter:** tests de repositorios, DTO snapshot, UI widgets, formularios, estados async, permisos, validaciones, navegación, layouts responsive, cola offline y migraciones Drift desde versiones previas. Objetivo 0 regresiones; 17 diagnósticos anteriores documentados NO equivalen a análisis limpio.
+- **Operación:** ventas/void, costo/stock, compra y ajuste, personal y nómina, recetas modificadas entre venta y void, saldo negativo, reintento duplicado, cambio de dispositivo, doble terminal, falta de red y reinicio durante sync.
+- **Integración visible:** build web de la rama final, smoke HTTP 200 en HTML/JS/WASM/worker, F5 preserva valores, login real, guarda y lee datos reales, RLS comprobada, pantallas accesibles sin glitches.
+- **Seguridad:** sin credenciales en Git/logs/artefactos; separación tenant, roles, mínimo privilegio RPC SECURITY DEFINER, search_path seguro, exposición de errores sin datos sensibles, revocación, tokens expirados.
+- **Release:** plan revertible con respaldo probado, versionado de migraciones, coexistencia con POS anteriores, ventana de corte autorizada y verificación post-release de datos y colas.
+
+### 13.7 Criterios objetivos de “LISTO” y coordinación
+
+Se puede decir **“listo para pruebas de Reynaldo”** solo cuando: (a) frontend F3 hace CRUD, recetas y reglas reales contra piloto, (b) build web inicia en localhost con login y permisos, (c) guardar/editar/recargar funciona para todos los tipos, (d) tests y CI pasan sin regresiones, (e) no hay daño a operaciones históricas ni colas. Se puede decir **“aprobado para producción”** solo después de G2 real, pruebas físicas G3, respaldo/rollback y autorización G4.
+
+**Regla de ejecución del asistente:** mientras el trabajo pueda hacerse mediante GitHub, CI y Vercel, hacerlo directamente sin detenerse ni pedir múltiples prompts. Solicitar una única intervención de Codex **solamente cuando la tarea requiera el Windows/Docker, credenciales del Supabase enlazado, worktrees privados o un dispositivo físico**; prompt autosuficiente con rama/SHA y criterios. Nunca reclamar que una fase está completada por publicar documentación.
+
+**Próximo entregable obligatorio (no otro estudio):** rama integradora con **CRUD real de Artículos + ficha por tipo + Recetas + Empaques** conectados a su backend canónico, compilable y accesible en localhost; ejecutar los primeros casos UI/REC/EMP antes de crear nuevos contratos aislados. La BD remota no debe modificarse antes del preflight G2, backup y decisión técnica del corte.
+
+### 13.8 Registro de avance por evidencia, no por porcentaje subjetivo
+
+| ID | Entregable | Situación a 11/11/2026 | Referencia |
+| --- | --- | --- | --- |
+| E0 | Contratos/QA en PRs apilados | Hecho en ramas técnicas, **no integrado a main** | #29–#39 |
+| E1 | Supabase real maestro + RLS auténtico | **Pendiente** | G1/G2 |
+| E2 | Operaciones POS/stock/reglas reales | **Pendiente** | G2 |
+| E3 | Listado, formulario, receta y empaques canónicos | **Pendiente** | G3 |
+| E4 | POS offline integrado al contrato canónico | **Pendiente** | G2 |
+| E5 | Docker existente + build localhost de UI nueva | **Pendiente** | E5 |
+| E6 | QA manual y aprobación del propietario | **Pendiente** | G3 |
+| E7 | main + Vercel/producción con rollback | **Pendiente** | G4 |
+| E8 | Limpieza de datos piloto y retiro del legado | **Pendiente** | Cierre |
+
+**Todo PR/cambio posterior deberá actualizar esta tabla con SHA, CI, evidencia visual y aceptación.** Cualquier gate no acreditado permanece pendiente. No cambiar estado para presentar progreso artificial.
