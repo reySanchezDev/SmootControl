@@ -1199,6 +1199,58 @@ administrada verificable, corregir el lint remoto de
 `app_backfill_missing_sale_costs` (`tmp_cost_backfill_items` inexistente) y
 resolver el bloqueo Flutter Web Windows antes de presentar localhost a QA.
 
+### 13.14 E1/E2 ejecutado localmente en 193bae2 (2026-11-11)
+
+Se sincronizo PR #40 hasta `193bae281fc0add8d68478e86753a1c1bd066d73` en
+worktree aislado. El worktree original conserva 15 cambios locales y los 17
+stashes. Docker `smoo_control` fue inspeccionado sin recrear ni eliminar
+contenedores; PostgreSQL local permanece saludable.
+
+Estado real: ledger local **087**, pero 089 ya estaba instalada manualmente
+(tablas `items`/revision y 6 RPC presentes), por lo que no se reaplico. 090 y
+091 no estaban instaladas y se aplicaron solo al Docker local, en orden. 088 no
+se ejecuto. El remoto sigue en **083**; no se aplicaron migraciones remotas.
+
+Hallazgos corregidos sin reescribir migraciones aplicadas:
+
+- 089 rechazaba al Administrador porque `assert_catalog_write` consultaba
+  `app_can_manage_packaging_catalog` con `productos.gestionar`, permiso que ese
+  helper no admite. Se agrego 092 para validar directamente los permisos
+  confiables `productos.gestionar`, `empaques.gestionar` y
+  `tipos_venta.gestionar`.
+- 089 tenia una ambiguedad entre la salida `revision` y la columna homonima en
+  `bump_item_catalog_revision`. Se agrego 093 con la columna calificada.
+
+Prueba SQL local con JWT claims y rol `authenticated`, dentro de transaccion:
+**2** articulos visibles, **2** enlaces de clasificacion, **1** receta activa
+versionada y **1** regla de empaques; edicion y relectura confirmadas.
+Cross-tenant fue rechazado con `42501`, ciclo de receta con `23514`, y el
+rollback final dejo **0** filas de prueba. Se validaron unidades compatibles,
+clasificacion atomica y revision/snapshot.
+
+Pruebas Flutter dirigidas: **25/25 passed**, incluyendo snapshot Drift,
+rechazo de snapshots parciales/antiguos/otro restaurante, concurrencia,
+preservacion de ventas offline, pull POS, articulos y recetas. `flutter analyze`
+termino tras 233.4 s con **17 issues** preexistentes (16 info y 1 warning de
+`invalid_use_of_protected_member`); `dart format --set-exit-if-changed` reporta
+53 archivos no formateados del HEAD recibido y no los modifico.
+
+Build RELEASE reproducible: `tool/build_web_release.ps1 -CanonicalItemsQa`
+termino correctamente en **128.4 s**, con `main.dart.js` 6,603,933 bytes,
+`sqlite3.wasm` 733,662 bytes y `drift_worker.js` 375,910 bytes. Servidor nuevo
+en `http://127.0.0.1:18080/`: los cuatro artefactos responden **HTTP 200**.
+La automatizacion visual/login/F5 no estuvo disponible en esta sesion; se
+verificaron recargas HTTP y JWT/RLS/RPC por API, no se declara QA visual manual.
+
+Backup remoto: WALG=true, PITR=false y timestamps 0; no existe evidencia de
+restauracion remota administrada. Lint remoto sigue bloqueado por
+`tmp_cost_backfill_items` inexistente en `app_backfill_missing_sale_costs`.
+
+**Gate E1/E2 local: aprobado para continuacion tecnica, no para corte remoto.**
+**G1/G2 remoto: PENDIENTE** hasta disponer de backup/restauracion remota
+verificable, autorizacion especifica, correccion del lint y cierre de los 17
+diagnosticos de calidad. No se modificaron produccion, main, POS ni colas.
+
 ### 13.10 Release obligatorio incluso para QA local (2026-11-11)
 
 **Decisión del propietario:** Kivo en localhost se evalúa **siempre desde Flutter Web compilado en RELEASE**, nunca `flutter run`/debug, por su tiempo de carga. Se mantiene ejecución aislada por rama de QA, sin publicar kivo.quantix.software.
