@@ -769,3 +769,13 @@ Se verifico la rama `feature/item-master-db-foundation` en `0d095ec718c234fe8d4c
 **Aserciones aisladas:** cambiar el nombre de un artículo produce revisión +1 y un nuevo snapshot; falla de escritura no cambia artículo ni revisión; permiso insuficiente rechaza; `authenticated` ya no puede ejecutar directamente la RPC antigua y sí tiene habilitada la nueva. **El fixture de este test representa un escritor F1 simplificado**; no sustituye la suite de seguridad F1.1 con roles reales ni ensaya la integración SQL completa.
 
 **Regla G2:** mantener escritura canónica y revisionado coordinados. El catálogo V2 sigue desconectado de Drift y del POS activo; producción y la base principal permanecen intactas.
+
+### 12.17 F2.3 — Escritura de reglas de consumo y revisión del catálogo
+
+**Rama/artefactos:** `feature/item-core-f2-consumption-rule-revision`, `supabase/design/ITEM_CORE_F2_CONSUMPTION_RULE_WRITER_DRAFT.sql`, fixture/aserciones `supabase/tests/item_core_f2_consumption_rule_writer_{fixture,assert}.sql`, job PostgreSQL 16 aislado. Sin despliegue ni aplicación de migraciones.
+
+**RPC `app_upsert_item_consumption_rule_v2`:** exige permiso específico `reglas_consumo.gestionar` por `app_assert_admin_permission`; el corte deberá asegurar que ese permiso se encuentre sembrado y asignado correctamente. Antes de insertar/actualizar la regla, toma `FOR UPDATE` de `item_catalog_revisions` para el restaurante. Valida artículo objetivo inventariable/no inventariable activo, unidad del objetivo, origen vendible activo si corresponde, modalidad de servicio del tenant, cantidad decimal positiva finita, scope y rechazo de autorreferencia. El payload idéntico no produce escritura ni nueva revisión. Duplicados activos del mismo rango de prioridad se rechazan y los clientes no tienen DML directo sobre `item_consumption_rules`.
+
+**Prueba automatizada:** actualización eleva revisión y sustituye snapshot; replay mantiene revisión; alta de regla de consumo no inventariable aparece en pull; regla que consume servicio se rechaza sin avanzar revisión; denegación por permiso y ausencia de DML directo. PostgreSQL rechazó en primera corrida un `isfinite(numeric)` incorrecto; se sustituyó por rechazo de valores especiales de tipo numeric, y se volvió a ejecutar el contrato. **La prueba es sintética**: no reemplaza JWT/RLS real ni un cierre de todos los RPC legacy.
+
+**Pendiente G2:** excluir todas las escrituras antiguas de reglas, permisos/roles reales, cobertura de cambios de modalidad, parámetros de prioridades completos y actualización transaccional del catálogo local Drift. El maestro de `items` no se duplica, la migración 088 sigue congelada.
