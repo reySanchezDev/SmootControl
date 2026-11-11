@@ -3,6 +3,9 @@ import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/core/result/app_result.dart';
 import 'package:smoo_control/features/admin_remote/data/repositories/supabase_admin_repository.dart';
+import 'package:smoo_control/features/packaging/domain/entities/canonical_consumption_rule.dart';
+import 'package:smoo_control/features/packaging/domain/entities/sales_type.dart';
+import 'package:smoo_control/features/packaging/presentation/pages/canonical_packaging_rules_dialog.dart';
 import 'package:smoo_control/features/products/domain/entities/canonical_item.dart';
 import 'package:smoo_control/features/products/domain/entities/measurement_unit.dart';
 import 'package:smoo_control/features/products/presentation/widgets/canonical_item_dialog.dart';
@@ -79,6 +82,41 @@ class _CanonicalItemsPageState extends State<CanonicalItemsPage> {
     }
   }
 
+  Future<void> _packagingRules(CanonicalItem selected) async {
+    if (_busy || !selected.canSell) return;
+    setState(() => _busy = true);
+    try {
+      final catalog = await _repository.getCanonicalItems();
+      final saleTypes = await _repository.getSalesTypes();
+      final rules = await _repository.getCanonicalConsumptionRules();
+      if (!mounted) return;
+      if (catalog case AppFailureResult(:final error)) {
+        _error(error.message);
+        return;
+      }
+      if (saleTypes case AppFailureResult(:final error)) {
+        _error(error.message);
+        return;
+      }
+      if (rules case AppFailureResult(:final error)) {
+        _error(error.message);
+        return;
+      }
+      final result = await showDialog<bool>(
+        context: context,
+        builder: (_) => CanonicalPackagingRulesDialog(
+          source: selected,
+          items: (catalog as AppSuccess<List<CanonicalItem>>).value,
+          salesTypes: (saleTypes as AppSuccess<List<SalesType>>).value,
+          rules: (rules as AppSuccess<List<CanonicalConsumptionRule>>).value,
+        ),
+      );
+      if (result == true && mounted) _refresh();
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
   void _error(String message) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -135,6 +173,13 @@ class _CanonicalItemsPageState extends State<CanonicalItemsPage> {
                     : () => _edit(_selected),
                 icon: const Icon(Icons.edit_outlined),
                 label: const Text('Editar seleccionado'),
+              ),
+              OutlinedButton.icon(
+                onPressed: _busy || _selected?.canSell != true
+                    ? null
+                    : () => _packagingRules(_selected!),
+                icon: const Icon(Icons.inventory_2_outlined),
+                label: const Text('Empaques y reglas'),
               ),
               IconButton(
                 onPressed: _busy ? null : _refresh,
