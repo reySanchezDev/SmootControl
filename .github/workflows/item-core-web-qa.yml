@@ -1,0 +1,58 @@
+name: Kivo Canonical Items - Web QA Compile
+
+on:
+  push:
+    branches:
+      - feature/item-core-end-to-end-implementation
+    paths:
+      - 'lib/**'
+      - 'web/**'
+      - 'tool/build_web_release.ps1'
+      - 'pubspec.*'
+      - '.github/workflows/item-core-web-qa.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: canonical-web-qa-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  compile-web:
+    name: Compile isolated canonical-item QA web (NO remote credentials)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.41.7'
+          channel: stable
+          cache: true
+      - name: Resolve dependencies
+        run: flutter pub get
+      - name: Compile Drift worker
+        run: dart compile js -O2 -o web/drift_worker.js web/drift_worker.dart
+      - name: Build opt-in QA web with NONFUNCTIONAL dummy connection
+        run: |
+          flutter build web --release --no-wasm-dry-run \
+            --no-web-resources-cdn --pwa-strategy=none \
+            --dart-define=SMOO_ITEM_CORE_V2_QA=true \
+            --dart-define=SMOO_APP_MODE=backoffice \
+            --dart-define=SMOO_SUPABASE_URL=https://invalid.example \
+            --dart-define=SMOO_SUPABASE_PUBLISHABLE_KEY=qa-placeholder \
+            --dart-define=SMOO_RESTAURANT_ID=00000000-0000-4000-8000-000000000000
+          cp web/sqlite3.wasm build/web/sqlite3.wasm
+          cp web/drift_worker.js build/web/drift_worker.js
+          test -s build/web/index.html
+          test -s build/web/main.dart.js
+          test -s build/web/sqlite3.wasm
+          test -s build/web/drift_worker.js
+      - name: Upload compile-only QA artifact, NOT functional deployment
+        uses: actions/upload-artifact@v4
+        with:
+          name: kivo-canonical-web-compile-only
+          path: build/web/
+          retention-days: 7

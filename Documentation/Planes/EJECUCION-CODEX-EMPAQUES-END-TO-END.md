@@ -2,9 +2,40 @@
 
 **Identificador:** KIVO-ITEM-CORE  
 **Última actualización:** 2026-11-11  
-**Estado E2E:** auditoría F0 terminada; contratos F1/F2 y snapshot Drift V2 probados de forma aislada; **G1/G2 operativos pendientes; migración canónica no aplicada; frontend F3 canónico no entregado; Docker/QA manual no ejecutados; F4 sin despliegue**. PR #17 es una vista legacy, no CRUD canónico. Migración 088 congelada.  
+**Estado E2E (11/11/2026):** F0 auditado; F1/F2 probados parcialmente en laboratorio; **migración aditiva 089 ensayada en Docker local, NO aplicada remotamente**; F3 Artículos/Recetas/Empaques canónicos parcialmente implementados bajo flag QA y compilados Web RELEASE en CI, **sin QA funcional aprobada**; G1/G2 remoto y G3/G4 abiertos; `main` y sitio público sin despliegue. Migración 088 congelada.  
 **Repositorio:** `reySanchezDev/SmootControl`  
 **Documento único de planificación:** este archivo. Se actualiza en cada avance, sin crear un plan por PR/fase.
+
+## CONTINUIDAD PARA EL SIGUIENTE CHAT — LECTURA OBLIGATORIA (11/11/2026)
+
+**Mandato del propietario:** entregar la refactorización completa END-TO-END del maestro de artículos de Kivo, sin limitarse a backend. Incluye tipos inventory/non_inventory/service, unidades, clasificaciones, recetas, envases/empaques y reglas, inventario, compras, ventas/void, POS y offline, pantallas Backoffice V2 y QA visual. El asistente debe ejecutar TODO lo posible directamente en GitHub/Actions, seguir sin detenerse y recurrir a Codex únicamente para Windows/Docker/credenciales reales/dispositivos físicos. Respuestas breves; no pedir al usuario que vuelva a explicar el proyecto.
+
+**Plan vigente:** este mismo Plan Rector, particularmente §§13.1–13.8, 13.10 y 13.11. Para QA local **siempre Flutter Web RELEASE**, jamás debug. No entregar un sitio web que no guarde operaciones reales. Las revisiones CI sintéticas no certifican funcionalidad.
+
+**GitHub:** `reySanchezDev/SmootControl`; PR de integración #40 https://github.com/reySanchezDev/SmootControl/pull/40, rama `feature/item-core-end-to-end-implementation` sobre `feature/item-core-g2-production-readonly-audit` (PR #39). **Consultar HEAD actual al empezar**; en este corte era `abf8a0ad5701d22a4ab7c374bcba5cab3d544434`. PRs #29–#39 contienen contratos y pruebas previos apilados; no están en `main`. No mergear ni publicar el dominio `kivo.quantix.software` sin G3/G4 explícitos.
+
+### Avances y evidencias que deben conservarse
+
+- **Docker existente:** proyecto `smoo_control` en Docker Desktop; PostgreSQL local `127.0.0.1:54324`, Kong, REST, Auth y Meta saludables. No recrear ni eliminar sus contenedores ni los de Tentrix.
+- **Supabase remoto piloto:** migraciones 001–083 aplicadas, 084–088 pendientes; 55 tablas, 54 con RLS, 56 políticas; inicialmente 0/6 tablas y 0/6 RPC V2. Auditoría remota solo lectura. WALG=true; PITR y restauración remota verificable NO acreditados. El usuario autorizó este proyecto como piloto, NO limpieza ni DDL/DML sin control.
+- **Codex/PR #40:** añadió `supabase/migrations/089_item_master_v2_additive.sql`, independiente de la 088 congelada. Según evidencia Codex, 089 crea 6 tablas/6 RPC, políticas RLS e índices sin backfill/ventas/POS; probada con rollback en restauración aislada y aplicada al Docker local. Backup lógico LOCAL de 1,010,328 bytes restaurado parcialmente en entorno temporal (55 tablas); errores de extensiones y roles administrados de Supabase. **No es un respaldo verificado del remoto. La 089 NO está aplicada remotamente.**
+- **Auth local verificada por Codex:** JWT aceptado por Kong/PostgREST, SELECT RLS 200 (sin filas), escritura directa 403 y dispositivo RPC inválido 403. No confundir con prueba completa JWT/RLS remota ni QA comercial.
+- **Frontend bajo flag `SMOO_ITEM_CORE_V2_QA=true`:** se implementaron entidades y acceso remoto canónico para Artículos, clasificaciones, recetas y consumo de empaques; formulario/listado para tres tipos; editor de reglas y editor de recetas versionadas. **Implementación parcial, sin validación de persistencia con backend remoto.** Revisar mismatch: cliente receta llama `app_save_item_recipe_v2`, comprobar si 089 publica dicha RPC; validar también que los otros RPC/DTO coincidan con 089.
+- **QA RELEASE:** `tool/build_web_release.ps1 -CanonicalItemsQa`, `tool/start_item_core_qa_release.ps1`; workflow `.github/workflows/item-core-web-qa.yml` compiló release Linux y validó 4 assets, por ejemplo runs 43092362378, 43093682709, 43094196456, 43094874769. Estas compilaciones inyectan URL/clave dummy inservibles: solo prueban compilación.
+- **Pruebas Flutter:** run 43094196563 dio 424 tests correctos pero tres diagnósticos nuevos; correcciones en c3af1933. Las ejecuciones del HEAD abf8a0ad estaban EN COLA al corte; **consultar conclusiones actuales, no afirmar CI verde sin verificarlas**.
+- **Windows:** build oficial release generó main.dart.js (~6.6 MB) pero no terminó ni copió sqlite3.wasm / drift_worker.js. No había un localhost funcional para QA. Codex preservó worktree con 15 cambios locales y 17 stashes.
+- **Pendiente remoto heredado:** lint de `public.app_backfill_missing_sale_costs` por `tmp_cost_backfill_items` inexistente; diagnosticar antes de migración remota, reparar de forma segura y versionada si procede.
+
+### Siguiente ejecución concreta, sin pedir confirmaciones innecesarias
+
+1. Leer HEAD/CI/diff actuales del PR #40; completar o reparar frontend y contratos directamente con GitHub, incluyendo CRUD real Artículos, recetas, reglas de empaque, compras e integración POS/offline. Ejecutar CI y corregir todas las regresiones; evitar PRs o estudios redundantes.
+2. Conciliar migraciones 084–087, 089 y RPC/DTO del cliente; **088 queda congelada**. Comprobar seguridad JWT, permisos, RLS, integridad, rollback e idempotencia en Docker. Enviar a Codex **un solo prompt consolidado** cuando precise credenciales de Supabase o equipo local; no delegarle trabajo GitHub que pueda hacerse directamente.
+3. Antes de cualquier escritura remota: copia REMOTA restaurable demostrada, preflight de operaciones/colas, evaluación de la secuencia de migraciones, rollback y autorización específica. No asumir que WALG equivale a backup probado. No ejecutar DDL remoto basándose solo en la autorización de usar el proyecto como piloto.
+4. Compilar release desde la rama QA con credenciales locales privadas, abrir localhost y verificar login, guardado/edición persistidos, recetas y empaques, después matriz UI/REC/EMP/INV/POS/OFF/SEC/UX/RECOVER de §13.5. Requiere aprobación explícita del propietario en G3.
+5. Solo luego: merge controlado a main y despliegue Vercel bajo gate G4. Documentar cada SHA, tests, errores y decisiones aquí. Continuar trabajando mientras el siguiente paso pueda ejecutarse directamente.
+
+**Prohibido:** migración 088, borrar datos/volúmenes, modificar POS real o sus colas, exponer secretos, limpiar producción piloto indiscriminadamente, habilitar el sitio público antes de G3/G4 o presentar UI compilada con credenciales dummy como QA aceptada.
+
 
 > **REGLA INNEGOCIABLE:** No se considerará implementado un maestro único porque dos tablas aparezcan juntas en una pantalla, en una vista SQL UNION, o por crear una tercera tabla que reciba copias sincronizadas. Solo se cumple cuando `items` es la **única autoridad de los datos maestros**, los servicios operativos usan `item_id`, las relaciones operativas y la sincronización futura son coherentes y no existe escritura funcional paralela definitiva.
 
@@ -1086,4 +1117,406 @@ Se puede decir **“listo para pruebas de Reynaldo”** solo cuando: (a) fronten
 | E7 | main + Vercel/producción con rollback | **Pendiente** | G4 |
 | E8 | Limpieza de datos piloto y retiro del legado | **Pendiente** | Cierre |
 
+### 13.9 AuditorÃ­a local E0/E1 de PR #40 (2026-11-11)
+
+Se sincronizÃ³ `feature/item-core-end-to-end-implementation` en un worktree
+aislado desde `7b4f7fa`; el worktree original conservÃ³ sus 15 modificaciones
+locales y los 17 stashes. Docker fue inspeccionado sin recrear, detener ni
+eliminar contenedores: el proyecto `smoo_control` mantiene PostgreSQL Supabase
+local saludable en `127.0.0.1:54324`, junto con Kong, REST, Auth y Meta.
+
+La CLI Supabase se enlazÃ³ al proyecto remoto autorizado sin guardar secretos en
+Git. `supabase migration list --linked` mostrÃ³ remoto aplicado **001â€“083**;
+**084â€“088 no estÃ¡n aplicadas remotamente**. El inventario remoto de solo lectura
+reportÃ³ PostgreSQL **17.11**, **55** tablas pÃºblicas, **54** con RLS y **56**
+polÃ­ticas. Las seis tablas canÃ³nicas esperadas (`items`, `item_units`,
+`item_classifications`, `item_classification_links`, `item_consumption_rules`,
+`item_catalog_revisions`) existen **0/6**; las seis RPC V2 esperadas existen
+**0/6**. La auditorÃ­a se ejecutÃ³ con `BEGIN TRANSACTION READ ONLY` y terminÃ³
+con `ROLLBACK`; no se consultaron filas de negocio ni se modificÃ³ el remoto.
+
+Respaldo: `supabase backups list` informa **WALG=true**, pero **PITR=false** y
+sin timestamps de respaldo disponibles en la CLI; no se ejecutÃ³ restauraciÃ³n.
+El lint remoto detectÃ³ un error preexistente en
+`public.app_backfill_missing_sale_costs`: referencia a
+`tmp_cost_backfill_items` inexistente. Esto impide certificar E1 hasta corregirlo
+con una migraciÃ³n autorizada y un plan de reversiÃ³n.
+
+PreparaciÃ³n Windows: `flutter pub get` completÃ³. El script oficial
+`tool/build_web_release.ps1` validÃ³ las credenciales locales y comenzÃ³ el build,
+pero quedÃ³ bloqueado en compilaciÃ³n sin producir `main.dart.js`, `sqlite3.wasm`
+ni `drift_worker.js`; se detuvo Ãºnicamente el proceso iniciado por esta sesiÃ³n.
+`flutter test --no-pub -j 2` quedÃ³ bloqueado cargando `test/app_test.dart` y no
+produjo resultado. No se duplicÃ³ frontend ni se activaron rutas nuevas.
+
+**Estado E0/E1:** auditorÃ­a y preparaciÃ³n local completadas; implementaciÃ³n
+remota y QA ejecutable **PENDIENTES**. Bloqueos: autorizaciÃ³n para una nueva
+migraciÃ³n aditiva 084+ con backup/restauraciÃ³n verificable, correcciÃ³n del lint
+remoto y resoluciÃ³n del bloqueo Flutter/Web de Windows. No se modificaron
+`main`, producciÃ³n, datos, Docker operativo ni migraciones remotas.
+
 **Todo PR/cambio posterior deberá actualizar esta tabla con SHA, CI, evidencia visual y aceptación.** Cualquier gate no acreditado permanece pendiente. No cambiar estado para presentar progreso artificial.
+
+
+### 13.11 E1/E2 local sobre Docker y respaldo verificable (2026-11-11)
+
+Se sincronizo PR #40 hasta `c3af193`, preservando el worktree original, sus 15
+cambios locales y los 17 stashes. El contenedor `smoo_control` no fue recreado,
+reseteado ni eliminado. PostgreSQL local reporto migracion maxima **087**;
+**088 no fue ejecutada**.
+
+Se genero un respaldo logico custom de **1,010,328 bytes** y se verifico su
+manifiesto con `pg_restore --list`. La restauracion en contenedores y bases
+temporales separadas recupero **55 tablas publicas**, incluida `products`.
+Los errores de una restauracion generica corresponden a extensiones/roles del
+runtime Supabase (`auth`, `realtime` y roles administrados), no a corrupcion
+del archivo.
+
+Se agrego `supabase/migrations/089_item_master_v2_additive.sql`: migracion
+autocontenida y transaccional, independiente de 088, con **6/6** tablas V2,
+**6/6** RPC (pull y cinco escritores), **5** politicas RLS e indices. No hace
+backfill, DROP, triggers legacy ni cambios en ventas, POS o colas offline. Se
+ejecuto en la restauracion aislada y en el Docker local existente. Un fallo
+transaccional deliberado dejo cero objetos parciales.
+
+La autenticacion local verifico JWT HS256 aceptado por Kong/PostgREST: lectura
+RLS **200** con respuesta vacia, escritura directa sobre `items` **403** y RPC
+`pos_pull_item_catalog_v2` con dispositivo invalido **403**. Las funciones
+SECURITY DEFINER fijan `search_path` y no tienen EXECUTE para `anon`.
+
+El script oficial `tool/build_web_release.ps1 -CanonicalItemsQa` valido las
+credenciales privadas, compilo el worker Drift y produjo `main.dart.js`
+(**6,603,939 bytes**). Flutter Web quedo sin salida en la fase final y se
+detuvo solo el proceso de esta sesion; el script no alcanzo a copiar WASM y
+worker a `build/web`. No se declara release ejecutable ni QA funcional hasta
+resolver el bloqueo del compilador/entorno Windows. `flutter analyze` presento
+el mismo bloqueo de inicializacion y no produjo diagnosticos.
+
+**Gate E1/E2 local:** migracion y RLS locales verificadas; remoto sin cambios.
+**G1/G2 remoto: PENDIENTE.** Bloqueos que requieren decision: autorizar el
+proceso posterior de migracion remota solo con respaldo/restauracion Supabase
+administrada verificable, corregir el lint remoto de
+`app_backfill_missing_sale_costs` (`tmp_cost_backfill_items` inexistente) y
+resolver el bloqueo Flutter Web Windows antes de presentar localhost a QA.
+
+### 13.14 E1/E2 ejecutado localmente en 193bae2 (2026-11-11)
+
+Se sincronizo PR #40 hasta `193bae281fc0add8d68478e86753a1c1bd066d73` en
+worktree aislado. El worktree original conserva 15 cambios locales y los 17
+stashes. Docker `smoo_control` fue inspeccionado sin recrear ni eliminar
+contenedores; PostgreSQL local permanece saludable.
+
+Estado real: ledger local **087**, pero 089 ya estaba instalada manualmente
+(tablas `items`/revision y 6 RPC presentes), por lo que no se reaplico. 090 y
+091 no estaban instaladas y se aplicaron solo al Docker local, en orden. 088 no
+se ejecuto. El remoto sigue en **083**; no se aplicaron migraciones remotas.
+
+Hallazgos corregidos sin reescribir migraciones aplicadas:
+
+- 089 rechazaba al Administrador porque `assert_catalog_write` consultaba
+  `app_can_manage_packaging_catalog` con `productos.gestionar`, permiso que ese
+  helper no admite. Se agrego 092 para validar directamente los permisos
+  confiables `productos.gestionar`, `empaques.gestionar` y
+  `tipos_venta.gestionar`.
+- 089 tenia una ambiguedad entre la salida `revision` y la columna homonima en
+  `bump_item_catalog_revision`. Se agrego 093 con la columna calificada.
+
+Prueba SQL local con JWT claims y rol `authenticated`, dentro de transaccion:
+**2** articulos visibles, **2** enlaces de clasificacion, **1** receta activa
+versionada y **1** regla de empaques; edicion y relectura confirmadas.
+Cross-tenant fue rechazado con `42501`, ciclo de receta con `23514`, y el
+rollback final dejo **0** filas de prueba. Se validaron unidades compatibles,
+clasificacion atomica y revision/snapshot.
+
+Pruebas Flutter dirigidas: **25/25 passed**, incluyendo snapshot Drift,
+rechazo de snapshots parciales/antiguos/otro restaurante, concurrencia,
+preservacion de ventas offline, pull POS, articulos y recetas. `flutter analyze`
+termino tras 233.4 s con **17 issues** preexistentes (16 info y 1 warning de
+`invalid_use_of_protected_member`); `dart format --set-exit-if-changed` reporta
+53 archivos no formateados del HEAD recibido y no los modifico.
+
+Build RELEASE reproducible: `tool/build_web_release.ps1 -CanonicalItemsQa`
+termino correctamente en **128.4 s**, con `main.dart.js` 6,603,933 bytes,
+`sqlite3.wasm` 733,662 bytes y `drift_worker.js` 375,910 bytes. Servidor nuevo
+en `http://127.0.0.1:18080/`: los cuatro artefactos responden **HTTP 200**.
+La automatizacion visual/login/F5 no estuvo disponible en esta sesion; se
+verificaron recargas HTTP y JWT/RLS/RPC por API, no se declara QA visual manual.
+
+Backup remoto: WALG=true, PITR=false y timestamps 0; no existe evidencia de
+restauracion remota administrada. Lint remoto sigue bloqueado por
+`tmp_cost_backfill_items` inexistente en `app_backfill_missing_sale_costs`.
+
+**Gate E1/E2 local: aprobado para continuacion tecnica, no para corte remoto.**
+**G1/G2 remoto: PENDIENTE** hasta disponer de backup/restauracion remota
+verificable, autorizacion especifica, correccion del lint y cierre de los 17
+diagnosticos de calidad. No se modificaron produccion, main, POS ni colas.
+
+### 13.15 Validacion local de 094 y matriz E1/E2 (2026-11-11)
+
+Se verifico PR #40 en `3bd1bc259084b8a021cf729eb75195c04d76a0d9` y se mantuvo el
+worktree original con 15 cambios locales, 17 stashes, sus worktrees y el Docker
+`smoo_control`. El ledger local sigue en 087; los objetos de 089 estaban ya
+instalados y no se reaplicaron 089--093. La 088 no se ejecuto. El remoto sigue
+en 083 y no recibio DDL.
+
+Se aplico **solo en PostgreSQL Docker local**
+`094_item_core_least_privilege_writes.sql`, con `ON_ERROR_STOP=1`, y se comprobo
+la funcion `item_core_internal.assert_packaging_write(uuid)` y su uso por
+`app_upsert_item_consumption_rule_v2`. No fue necesario crear una migracion
+posterior: los fallos de las primeras corridas fueron datos de prueba
+invalidos (`item_type=product` y `scope=restaurant`), corregidos en el caso
+transaccional sin tocar SQL aplicado.
+
+Matriz JWT/RLS con identidades locales existentes y fixtures de rol temporales
+revertidos por la misma transaccion: administrador con ambos permisos **CRUD
+completo aprobado**; solo `productos.gestionar` **articulos, unidades,
+clasificaciones y recetas aprobados**, regla de empaque rechazada; solo
+`empaques.gestionar` **regla aprobada**, articulo rechazado; sin permiso,
+usuario POS y otro tenant rechazados. Resultado: **3 operaciones de exito de
+alcance, 5 denegaciones 42501, 0 falsos positivos**. Se releearon dentro de la
+transaccion 2 articulos, 1 clasificacion, 1 unidad, 1 receta activa y 1 regla;
+la revision llego a 12. Rollback posterior: 0 articulos de prueba y 0 roles
+temporales. No se alteraron datos permanentes.
+
+El build oficial `tool/build_web_release.ps1 -CanonicalItemsQa` ya genero RELEASE
+con `main.dart.js` 6,603,933 bytes, `sqlite3.wasm` 733,662 y `drift_worker.js`
+375,910. El servidor local respondio HTTP 200 para los cuatro assets y se
+verifico recarga por solicitudes repetidas; no hay herramienta de navegador
+disponible en este entorno para certificar visualmente login y F5. `flutter
+analyze --no-fatal-infos` conserva 17 diagnósticos preexistentes y los 25 tests
+dirigidos de core/catalogo pasan. No se inventa aprobacion funcional de UI.
+
+La auditoria remota de lint continua bloqueada por
+`public.app_backfill_missing_sale_costs`/`tmp_cost_backfill_items` (42P01). El
+estado de backup remoto reporta WALG=true pero PITR=false y timestamps de
+restauracion 0; no existe respaldo remoto restaurable demostrado, por lo que
+no se ejecutaron migraciones remotas. G0/G1/E1/E2 quedan aprobados solo para
+continuacion local; el gate remoto y la activacion operativa permanecen
+cerrados.
+
+### 13.16 Validacion local de 095/096 y E1/E2 (2026-11-11)
+
+Se sincronizo PR #40 hasta `b70871cf4c8942fad6f231dc30593d218386ef38` en el
+worktree aislado. El worktree original conserva sus 15 cambios locales y 17
+stashes; no se recrearon ni eliminaron worktrees o contenedores Docker.
+GitHub Actions 43108249801 fue verificado sobre este SHA y termino
+`completed/success`.
+
+El Docker `smoo_control` mantiene el ledger 087 y los objetos 089--094
+instalados previamente; no se reaplicaron y 088 no se ejecuto. Se aplico solo
+localmente 095 y luego 096. 095 elimina la referencia lint a
+`tmp_cost_backfill_items` y conserva la firma de la RPC sin ejecutar backfill.
+La revision de permisos descubrio que el `CREATE OR REPLACE` dejaba ACL de
+cliente; 096 corrige esto sin modificar 095: `anon=false`,
+`authenticated=false`, `service_role=true`, y `search_path=public, pg_temp`.
+
+La suite `supabase/tests/item_core_cost_backfill_095_isolated.sql` paso en un
+PostgreSQL 16 desechable: costos por linea, totales, tenant ajeno,
+`sync_status=pending`, idempotencia y rollback. En el Docker real, con datos
+sinteticos dentro de `BEGIN/ROLLBACK`, el resultado fue
+`updated_items=1, updated_sales=1`, segunda ejecucion `0/0`, costo de linea
+`0.5000`, total `3.0000`, tenant ajeno y venta pendiente sin cambios, y
+`rollback_sales=0`.
+
+La comprobacion ACL del Docker confirma que la rutina de mantenimiento solo
+es ejecutable por `service_role`. Intentar invocarla bajo `SET ROLE anon` en
+este PostgreSQL local reproduce un `SIGSEGV` del proceso servidor, seguido de
+recuperacion automatica; no se repitio para no inestabilizar el contenedor.
+Esto es un bloqueo del runtime local para certificar la denegacion por llamada,
+aunque el ACL efectivo ya es restrictivo. No se modifico historial real.
+
+El script oficial `tool/build_web_release.ps1 -CanonicalItemsQa` completo el
+RELEASE tras ejecutarse con `ExecutionPolicy Bypass` solo para el proceso local;
+compilo en 253.5 s. Artefactos servidos en `http://127.0.0.1:18081/`: cuatro
+respuestas HTTP 200; `main.dart.js` 6,603,933 bytes, `sqlite3.wasm` 733,662 y
+`drift_worker.js` 375,910. No hay navegador conectado para certificar login,
+persistencia visual o F5; no se declara G3 aprobado.
+
+El remoto permanece sin migraciones nuevas y sin escrituras: no hay backup
+remoto restaurable demostrado y el lint remoto debe verificarse nuevamente
+despues de 095/096 antes de cualquier DDL. E1/E2 quedan aprobados solo para
+continuacion local; G3 y el corte remoto siguen cerrados.
+
+### 13.20 E1/E2 estado exacto en c8707c4 (2026-11-11)
+
+Se sincronizo PR #40 hasta `c8707c4de6fa33336ce451bf95aa6326356a1230`.
+El worktree original conserva 15 cambios locales y 17 stashes; no se
+reiniciaron, recrearon ni resetearon contenedores. El workflow
+**43111089884** termino `completed/success` en ese SHA.
+
+La inspeccion de catalogos del Docker reporta PostgreSQL **17.6** y extensiones
+`pgcrypto 1.3`, `pg_graphql 1.5.11`, `pg_net 0.20`, `pg_stat_statements 1.11`,
+`supabase_vault 0.3.1` y `uuid-ossp 1.1`. Para
+`app_backfill_missing_sale_costs(uuid)`, `has_function_privilege` confirma
+`anon=false`, `authenticated=false`, `service_role=true`; `prosecdef=true`,
+`search_path=public, pg_temp` y `old_temp_ref=false`. La prueba aislada 096
+paso en PostgreSQL 16 sin invocar la funcion.
+
+No se repitio `SET ROLE anon` en el contenedor operativo. Los logs conservan el
+SIGSEGV del backend PostgreSQL durante ese ensayo anterior, con recuperacion
+automatica; la version/extensiones no muestran una extension no declarada como
+causa. La peticion PostgREST de ensayo con JWT no ejecuto la funcion y fue
+rechazada con HTTP **401** antes de cualquier mutacion. No se modificaron ACL
+remotos ni se hicieron escrituras remotas.
+
+El QA funcional de navegador no pudo ejecutarse: esta sesion no expone un
+controlador de navegador Windows conectado. Por tanto no se certifican login,
+restaurante/rol, CRUD visual, F5 ni capturas; los HTTP 200 previos de assets no
+se presentan como QA funcional. El remoto continua en 083 sin tablas V2, por
+lo que el CRUD remoto tampoco es certificable. G3 permanece cerrado.
+
+### 13.21 Backoffice V2 local abierto para QA (2026-11-11)
+
+Se sincronizo PR #40 hasta `9b414286e29bef602ba632252eb5ba5f39c7c0de` en el
+worktree aislado. El worktree original mantiene 15 cambios locales y 17
+stashes. Docker `smoo_control` no fue recreado, reseteado ni detenido:
+PostgreSQL, Kong, Auth, REST y Meta permanecen saludables. Kong local responde
+en `127.0.0.1:54321`, Auth `/auth/v1/health` reporta GoTrue v2.188.1 y REST
+responde 200. El ledger local permanece en 087, con los objetos V2 089--096
+presentes; no se ejecuto 088 ni hubo DDL remoto.
+
+Se preparo fuera de Git el archivo privado del laboratorio con URL
+`http://127.0.0.1:54321`, clave publicable local y el restaurante sintetico
+`9fa3d1b7-a87a-4271-89bd-cbd24644dfd4`. La identidad administrativa local
+`0a400f9d-3914-4c2a-8bab-4f0fda771283` existe en `auth.users`, su perfil activo
+pertenece a ese restaurante, no es POS y conserva ambos permisos de catalogo.
+No se registraron claves, contrasenas ni tokens.
+
+El commit sincronizado tenia un error reproducible de sintaxis en
+`tool/build_web_release.ps1`: el guard de URL local estaba truncado y habia dos
+bloques de compilacion intercalados. Se corrigio el script sin tocar la
+configuracion remota. `tool/start_item_core_qa_release.ps1 -LocalSupabaseQa
+-CredentialsPath (ruta privada) -Port 18081` completo RELEASE en 156.0 s,
+inyectando `SMOO_APP_MODE=backoffice` y `SMOO_ITEM_CORE_V2_QA=true`, copio WASM
+y Drift worker, abrio mediante `Start-Process`
+`http://127.0.0.1:18081/` y dejo el servidor activo. Los cuatro assets
+respondieron 200; esto acredita compilacion/servidor, no aceptacion funcional.
+
+No existe controlador de navegador Windows disponible en esta sesion. Por ello
+la URL quedo abierta para QA manual de Rey, pero no se certificaron visualmente
+login de administrador, ausencia de inicializacion POS, restaurante/rol, CRUD
+de Articulos, clasificaciones, unidades, recetas, empaques ni persistencia tras
+F5. El remoto sigue en 083 sin tablas V2, asi que ese CRUD solo puede validarse
+contra este laboratorio local. G3 permanece cerrado hasta evidencia visual y
+persistencia aceptada.
+
+### 13.10 Release obligatorio incluso para QA local (2026-11-11)
+
+**Decisión del propietario:** Kivo en localhost se evalúa **siempre desde Flutter Web compilado en RELEASE**, nunca `flutter run`/debug, por su tiempo de carga. Se mantiene ejecución aislada por rama de QA, sin publicar kivo.quantix.software.
+
+**Implementación publicada en PR #40:** `tool/build_web_release.ps1 -CanonicalItemsQa` inyecta exclusivamente para QA el flag `SMOO_ITEM_CORE_V2_QA=true` y conserva los Dart defines Supabase que obtiene de la configuración privada local. El lanzador `tool/start_item_core_qa_release.ps1` ejecuta ese build oficial RELEASE, comprueba `index.html`, `main.dart.js`, `sqlite3.wasm` y `drift_worker.js`, evita pisar procesos de puertos ocupados, inicia `http://127.0.0.1:8080/` con Python y exige HTTP 200. No hace `flutter run`, no configura ni altera Docker o base de datos.
+
+**CI reproducible Linux**: `.github/workflows/item-core-web-qa.yml` compila con `flutter build web --release` y valida los cuatro artefactos; usa URL y llave de prueba **inservibles** para no incorporar credenciales reales a un artefacto GitHub. Run **43092362378**, **SUCCESS** en SHA `7fdec6fa83f106dc411cde44c3842bd886062ccd`. Certifica **build release, no QA funcional remoto ni aprobación del gate G3**.
+
+**Estado de frontend al corte:** capa de lectura/alta/edición de artículos `items` por RPC V2, clasificación y unidades, y editor de reglas de consumo canónico iniciados bajo flag QA. Recetas canónicas, despliegue remoto y pruebas UX completas **pendientes**. Supabase remoto todavía no tiene el esquema ni RPC V2 (auditoría E0/E1); la pantalla nueva no puede guardar allí hasta completar E1 y verificar JWT/RLS. No presentar este build con credenciales ficticias como entregable de aceptación. El bloqueo Flutter Windows no puede alterar la política RELEASE: resolverlo o compilar correctamente desde Linux con configuración autorizada para el entorno QA.
+
+
+### 13.12 Conciliación inicial de recetas canónicas — PR #40 (2026-11-11)
+
+Se identificó un desacople verificable: el repositorio Flutter leía `product_recipes` y `product_recipe_lines` filtrando `item_id`/`component_item_id`, columnas que no pertenecen al contrato legado de la migración 050. Asimismo invocaba `app_save_item_recipe_v2`, inexistente en 089.
+
+Se publicó en la rama de integración la migración **090_item_recipes_v2_additive.sql**: tablas separadas `item_recipes` y `item_recipe_lines`, versiones activas por artículo, FKs por tenant, lectura RLS, RPC `app_save_item_recipe_v2` con autenticación/permiso, validación de unidades/cantidades/ciclos y actualización de revisión. La lectura Flutter ahora utiliza exclusivamente esas tablas canónicas; no se alteraron `product_recipes` ni ventas anteriores.
+
+**Estado de evidencia:** cambio de código publicado, **todavía sin ejecutar 090 en Docker ni Supabase remoto**, sin validación SQL integral/CI aprobada ni pruebas de lectura/escritura autenticadas. Antes de ejecutar 090: inspeccionar el estado real de 089, dependencias 084–087, respaldo restaurable, permisos y rollback. 088 continúa congelada. **No presentar recetas como funcionales hasta prueba end-to-end.**
+
+
+### 13.13 Corrección de persistencia atómica de clasificaciones — PR #40 (2026-11-11)
+
+La ficha de Artículos enviaba `classification_ids` dentro del payload a `app_upsert_item_v2`, pero la versión de dicha RPC en migración 089 descartaba ese campo: el formulario podía informar guardado exitoso sin persistir las clasificaciones seleccionadas. Se añadió migración **091_item_classification_atomic_write.sql**, aditiva y dependiente de 089, que reemplaza únicamente la RPC para validar clasificaciones activas del mismo tenant y actualizar enlaces **en la misma transacción** que el artículo. Con clave omitida, conserva enlaces para clientes anteriores; con lista vacía elimina los enlaces. El fallo de cualquier validación aborta la operación completa.
+
+**Evidencia:** código publicado en PR #40; 090/091 NO ejecutadas ni validadas todavía contra Docker ni remoto. No confundir con implementación de todo E1/E2. El siguiente control local debe aplicar 089→090→091 en el Docker autorizado, sin ejecutar 088, y probar guardado/relectura de clasificaciones, recetas, rollback, autorización y cross-tenant. No modificar remoto sin respaldo restaurable y autorización específica.
+
+
+### 13.15 Control de mínimo privilegio del maestro V2 — PR #40 (2026-11-11)
+
+Tras integrar el SHA de Codex `0866bead0b9bbbf3f703ab2ee48b3b093b119d00`, se detectó que la migración 092 compartía la guarda `assert_catalog_write` con permisos `productos.gestionar`, `empaques.gestionar` o `tipos_venta.gestionar` para todos los escritores canónicos. Eso permitiría que un perfil limitado a empaques intentara crear o editar artículos o clasificaciones. Se publicó la migración **094_item_core_least_privilege_writes.sql** para corregir el mínimo privilegio: artículos/unidades/clasificaciones/recetas requieren `productos.gestionar`; reglas de consumo/empaque requieren `empaques.gestionar` por guarda independiente. Se mantiene restricción por usuario activo, restaurante y no POS, y `42501` en denegaciones.
+
+**Validación pendiente (NO declarar gate aprobado):** 094 está versionada, NO aplicada a Docker ni remoto. Probar con JWT reales: usuario exclusivamente `empaques.gestionar` puede operar reglas de consumo de su tenant pero no artículos/recetas; usuario exclusivamente `productos.gestionar` puede artículos/recetas pero no reglas; usuario sin permiso, POS y otro tenant denegados. Comprobar que un administrador con ambos permisos conserva operaciones. Pruebas con rollback y snapshots. No ejecutar en remoto antes de respaldo restaurable, revisión del ledger, preflight y autorización específica; 088 permanece congelada.
+
+La ejecución CI 43105210822 corresponde al SHA anterior a la 094; sus tests sintéticos no demuestran las restricciones nuevas ni QA remoto.
+
+
+### 13.17 Corrección versionada del lint remoto 42P01 — PR #40 (2026-11-11)
+
+Se rastreó `tmp_cost_backfill_items` hasta la función `public.app_backfill_missing_sale_costs` de la migración histórica 054. La migración **095_fix_sale_cost_backfill_temp_table.sql** sustituye la tabla temporal por un arreglo de IDs de ventas afectadas, sin cambiar la firma de la RPC ni ejecutar un backfill durante la migración. Se mantienen dos sentencias SQL: primero actualiza los costos de las líneas y obtiene ventas afectadas, luego recalcula los totales desde las líneas actualizadas (evitando lectura de estado anterior en un mismo statement). Se conserva el filtrado por tenant y ventas `completed` y se evita modificar ventas sin líneas actualizadas. No se reescribe 054.
+
+Se añadió `supabase/tests/item_core_cost_backfill_095_isolated.sql` y un job PostgreSQL 16 desechable en `.github/workflows/item-core-quality.yml` para verificar costos, totales, otro tenant, ventas pendientes e idempotencia. **Estado:** cambios publicados en GitHub; CI posterior a este commit todavía por verificar. 095 **no ha sido aplicada a Docker local ni al remoto**; la corrección del lint remoto no puede declararse hasta ejecutar y comprobar el nuevo DDL con respaldo remoto restaurable y autorización específica. El job sintético no certifica datos de producción.
+
+
+### 13.19 Verificación no invasiva de ACL 096 — PR #40 (2026-11-11)
+
+Con base en evidencia de Codex SHA `6296c800712d388c0dade54fe119c90e383c59ff`, 095 pasó pruebas en PostgreSQL 16 desechable y Docker local; la 096 corrigió privilegios (`anon=false`, `authenticated=false`, `service_role=true`) solo en Docker local. Se reportó `SIGSEGV` al invocar la RPC con `SET ROLE anon`; **no repetir esa invocación ni reiniciar/reseter Docker para investigar sin un entorno aislado**. La existencia del crash no invalida la evidencia de catálogo ACL, pero no equivale a certificar rechazo HTTP por rol.
+
+Se añadió `supabase/tests/item_core_cost_backfill_096_acl_isolated.sql` y un job PostgreSQL 16 desechable en `.github/workflows/item-core-quality.yml`, comprobando privilegios con `has_function_privilege`, `SECURITY DEFINER` y `search_path` por catálogos, **sin invocar la función**. El resultado CI debe verificarse antes de afirmar aprobado. En un siguiente ensayo controlado, usar HTTP/PostgREST con JWT de ensayo, primero verificar `403` por privilegio y solo si es seguro, sin `SET ROLE` en el contenedor operativo. Ante cualquier crash adicional suspender las llamadas y conservar logs para análisis de causa raíz.
+
+El remoto continúa sin migraciones posteriores a 083 ni respaldo administrado restaurable verificado; G1/G2 remoto y G3 siguen abiertos. No ejecutar SQL remoto, ni migración 088, ni modificar el sitio público.
+
+
+### 13.20 Bloqueo visible en QA: arranque POS en lugar de Backoffice (2026-11-11)
+
+Captura del propietario en `127.0.0.1:18080`: aparece **Inicializar dispositivo / Nombre del POS**, aunque el objetivo E3/E5 era Backoffice V2 conectado al Supabase Docker local. Diagnóstico por lectura de fuentes: el script `tool/build_web_release.ps1 -CanonicalItemsQa` inyectaba `SMOO_ITEM_CORE_V2_QA=true` pero omitía `SMOO_APP_MODE=backoffice`; `AppRunMode` caía en `standard` y el AuthBloc continuaba el flujo de aprovisionamiento POS. Además el script exigía HTTPS y recuperaba por defecto el archivo de credenciales del remoto: impediría conexión al Kong local `http://127.0.0.1:54321`.
+
+Corrección publicada en PR #40: el build canónico inyecta **ambos** defines `SMOO_ITEM_CORE_V2_QA=true` y `SMOO_APP_MODE=backoffice`. Se introdujo `-LocalSupabaseQa` que admite exclusivamente `http://127.0.0.1:54321` o `http://localhost:54321`, y solo junto al flag QA canónico. El lanzador `tool/start_item_core_qa_release.ps1 -LocalSupabaseQa` exige `-CredentialsPath` explícito apuntando al archivo PRIVADO del laboratorio, con URL/clave publicable local y `SMOO_RESTAURANT_ID` correspondiente al administrador sintético local. El pipeline Linux de compilación también fija `SMOO_APP_MODE=backoffice`; usa credenciales dummy solo para validar artefactos.
+
+**Pendiente a ejecutar por Codex Windows:** sincronizar la rama, localizar o preparar en ruta privada el archivo de credenciales LOCAL correcto sin exponer claves ni copiar el del remoto, comprobar el laboratorio Docker/Auth/restaurante, recompilar Web RELEASE mediante el script oficial y servirlo en puerto libre, abriendo el navegador del propietario. Probar que el inicio muestre login Backoffice **sin inicialización de POS**, JWT/rol/tenant del laboratorio y CRUD persistente Artículos/recetas/reglas con recarga F5. Conservar 15 cambios locales, 17 stashes, Docker y main. No reutilizar el JS viejo de 18080: HTTP 200 no corrige defines compilados. No ejecutar migraciones remotas ni 088. G3 seguirá abierto hasta aceptación visual del propietario.
+
+### 13.22 Diagnóstico del rechazo de login en Backoffice local (2026-11-11)
+
+La captura del propietario en `127.0.0.1:18081` muestra correctamente el formulario
+Backoffice y no el aprovisionamiento POS, pero el intento concreto fue rechazado por
+Supabase Auth como `invalid_credentials`. Se inspeccionaron los logs de Auth sin
+registrar cuerpos, contraseñas ni tokens.
+
+La cuenta sintética local está confirmada, activa, no bloqueada, no es POS, pertenece
+al restaurante `9fa3d1b7-a87a-4271-89bd-cbd24644dfd4` y conserva los permisos de
+productos, empaques y `dispositivo.inicializar`. Usando exclusivamente el archivo
+privado de recuperación existente fuera de Git, el mismo endpoint local
+`/auth/v1/token?grant_type=password` respondió HTTP 200. Por tanto no se reproduce
+un fallo de Kong, URL, clave publicable, tenant, RLS ni del build RELEASE; la
+captura refleja credenciales introducidas que no corresponden a esa cuenta local.
+
+El servidor RELEASE continúa activo en `http://127.0.0.1:18081/`. La autenticación
+visual, CRUD y persistencia tras F5 siguen pendientes de que Reynaldo use la cuenta
+local del archivo privado y acepte los escenarios G3; no se declara G3 aprobado.
+
+### 13.23 Validación UX y RELEASE local de d2c98da (2026-11-11)
+
+Se ejecutó `git fetch origin` y el worktree de integración quedó sincronizado por
+fast-forward con `origin/feature/item-core-end-to-end-implementation` en
+`d2c98da82694ce3afe3c35b3a91c833406783740`. El worktree original conserva sus 15
+cambios locales y 17 stashes; no se usó `reset --hard` ni se descartaron cambios.
+
+Se revisaron y formatearon exclusivamente los archivos UX modificados del alcance:
+`canonical_items_page.dart`, `canonical_items_empty_state.dart` y
+`canonical_item_dialog.dart`. La revisión no alteró SQL, POS ni lógica de negocio.
+La versión objetivo mantiene los dos archivos grandes por encima del límite histórico
+de 300 líneas tras `dart format` (304 y 313 líneas); no se hizo una extracción
+estructural riesgosa dentro de esta validación.
+
+Pruebas de entidades canónicas: **7/7 aprobadas**. `flutter analyze --no-pub` no
+terminó después de más de un minuto ni emitió diagnósticos; se canceló de forma
+controlada por bloqueo del analysis server y no se finalizaron procesos ajenos.
+
+El Docker `smoo_control` permaneció saludable. El script oficial
+`tool/start_item_core_qa_release.ps1 -LocalSupabaseQa` compiló Flutter Web RELEASE
+con credenciales privadas locales, `SMOO_APP_MODE=backoffice` y
+`SMOO_ITEM_CORE_V2_QA=true`. El puerto 18081 ya estaba ocupado por el PID 1720 y
+no se detuvo; se sirvió el nuevo build en `http://127.0.0.1:18082/` con PID 8236.
+HTML, `main.dart.js`, `sqlite3.wasm` y `drift_worker.js` respondieron HTTP 200.
+
+La apertura automática del navegador Windows fue bloqueada por la política del
+entorno de ejecución. No existe controlador de navegador disponible en esta sesión;
+por ello no se certifican login visual, estado vacío, búsqueda, selección, edición,
+creación persistente, recarga F5, responsive ni ausencia de errores visibles. El
+RELEASE queda accesible para revisión manual de Reynaldo y G3 permanece cerrado.
+
+La publicación de formato y esta evidencia quedó en `7e557aec81640602f86b0e39de2f9e5c7fc54ab0`;
+`HEAD` local y `origin/feature/item-core-end-to-end-implementation` coinciden en
+ese SHA.
+
+
+### 13.21 Primer ajuste UX en Artículos canónicos — PR #40 (2026-11-11)
+
+Tras la revisión visual del propietario de la lista vacía de Productos y el modal Nuevo artículo, se implementaron directamente en GitHub mejoras del Backoffice Executive Ivory: estado vacío guiado mediante componente reutilizable, distinción entre catálogo vacío y búsqueda sin resultados, CTA para crear el primer artículo, limpieza conjunta de filtros/búscador, etiquetas de acciones superiores más concisas; modal de edición ampliado a 780 px y contenido organizado en Identificación, Valores comerciales, Clasificaciones, Venta y operación, Estado, con mensajes de ayuda contextual. No se modificaron RPC, modelos, permisos, migraciones ni POS. El estado vacío no utiliza métricas ficticias ni crea títulos redundantes respecto a la pestaña.
+
+**Validación pendiente:** la implementación GitHub necesita formato/análisis Flutter, inspección y aceptación visual en el navegador Windows usando RELEASE del Docker local. Codex deberá actualizar el worktree al HEAD del PR #40, conservar modificaciones locales/stashes, ejecutar pruebas y compilar usando el script QA local; cualquier corrección suya exige commit + push a esta rama y reporte SHA local/remoto. No se declara UX terminada ni G3 aprobada únicamente por el diff. Continuar refinando listado responsive y formularios según pruebas del propietario.

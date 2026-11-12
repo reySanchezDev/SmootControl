@@ -2,6 +2,10 @@
 
 Sistema de administración y punto de venta para restaurante, implementado en Flutter/Dart y adaptado a la operación del establecimiento.
 
+## Trabajo activo: Kivo maestro único de artículos (END-TO-END)
+
+La implementación y el relevo entre chats se encuentran **en un solo Plan Rector**, en el bloque **«CONTINUIDAD PARA EL SIGUIENTE CHAT»** al inicio de [EJECUCION-CODEX-EMPAQUES-END-TO-END.md](Documentation/Planes/EJECUCION-CODEX-EMPAQUES-END-TO-END.md). Rama de trabajo: `feature/item-core-end-to-end-implementation`, [PR #40](https://github.com/reySanchezDev/SmootControl/pull/40). **No considerar `main` ni la web pública actualizados.** QA local solo con build Flutter Web RELEASE; hay bloqueos de migración remota y aceptación funcional pendientes.
+
 ## Componentes
 
 - **Backoffice:** administración, catálogos, personal, inventario, caja y reportes; sus operaciones administrativas utilizan Supabase.
