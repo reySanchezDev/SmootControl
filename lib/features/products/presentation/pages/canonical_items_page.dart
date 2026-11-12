@@ -14,7 +14,6 @@ import 'package:smoo_control/features/recipes/domain/entities/canonical_recipe.d
 import 'package:smoo_control/features/recipes/presentation/pages/canonical_recipe_dialog.dart';
 /// QA-only canonical article workspace, isolated from the legacy writers.
 class CanonicalItemsPage extends StatefulWidget {
-  /// Creates the canonical catalog.
   const CanonicalItemsPage({super.key});
   @override
   State<CanonicalItemsPage> createState() => _CanonicalItemsPageState();
