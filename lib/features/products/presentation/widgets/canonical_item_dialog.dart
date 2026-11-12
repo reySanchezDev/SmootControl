@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:smoo_control/features/products/domain/entities/canonical_item.dart';
 import 'package:smoo_control/features/products/domain/entities/measurement_unit.dart';
-
 /// Creates and edits all three canonical types through one article form.
 class CanonicalItemDialog extends StatefulWidget {
   /// Creates the form with data already authorized for the current tenant.
@@ -11,20 +10,15 @@ class CanonicalItemDialog extends StatefulWidget {
     this.item,
     super.key,
   });
-
   /// Existing article or null to create.
   final CanonicalItem? item;
-
   /// Measurement units available to the restaurant.
   final List<MeasurementUnit> units;
-
   /// Independent functional classifications.
   final List<CanonicalClassification> classifications;
-
   @override
   State<CanonicalItemDialog> createState() => _CanonicalItemDialogState();
 }
-
 class _CanonicalItemDialogState extends State<CanonicalItemDialog> {
   final _form = GlobalKey<FormState>();
   final _code = TextEditingController();
@@ -40,7 +34,6 @@ class _CanonicalItemDialogState extends State<CanonicalItemDialog> {
   late bool _isActive;
   late Set<String> _classifications;
   String? _baseUnit;
-
   @override
   void initState() {
     super.initState();
@@ -59,7 +52,6 @@ class _CanonicalItemDialogState extends State<CanonicalItemDialog> {
     _classifications = {...?item?.classificationIds};
     _baseUnit = item?.baseUnitId;
   }
-
   @override
   void dispose() {
     _code.dispose();
@@ -68,12 +60,10 @@ class _CanonicalItemDialogState extends State<CanonicalItemDialog> {
     _price.dispose();
     super.dispose();
   }
-
   String? _required(String? value) {
     if (value == null || value.trim().isEmpty) return 'Obligatorio';
     return null;
   }
-
   String? _nonnegative(String? value) {
     final number = double.tryParse((value ?? '').replaceAll(',', '.'));
     if (number == null || !number.isFinite || number < 0) {
@@ -81,7 +71,6 @@ class _CanonicalItemDialogState extends State<CanonicalItemDialog> {
     }
     return null;
   }
-
   void _save() {
     if (!_form.currentState!.validate()) return;
     if (_baseUnit == null) {
@@ -132,7 +121,6 @@ class _CanonicalItemDialogState extends State<CanonicalItemDialog> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('Identificación', style: Theme.of(context).textTheme.titleMedium),
-                const SizedBox(height: 12),
                 TextFormField(
                   controller: _code,
                   decoration: const InputDecoration(
@@ -188,10 +176,8 @@ class _CanonicalItemDialogState extends State<CanonicalItemDialog> {
                   onChanged: (id) => setState(() => _baseUnit = id),
                   validator: _required,
                 ),
-                const SizedBox(height: 20),
                 const Divider(),
                 Text('Valores comerciales', style: Theme.of(context).textTheme.titleMedium),
-                const SizedBox(height: 12),
                 Row(
                   children: [
                     Expanded(
@@ -260,7 +246,6 @@ class _CanonicalItemDialogState extends State<CanonicalItemDialog> {
                 ),
                 SwitchListTile(
                   title: const Text('Se puede comprar'),
-                  subtitle: const Text('Habilita su uso en abastecimiento.'),
                   value: _canPurchase,
                   onChanged: (value) =>
                       setState(() => _canPurchase = value),
@@ -283,7 +268,6 @@ class _CanonicalItemDialogState extends State<CanonicalItemDialog> {
                 ),
                 SwitchListTile(
                   title: const Text('Enviar a cocina'),
-                  subtitle: const Text('Envía la preparación a la estación configurada.'),
                   value: _sendToKitchen,
                   onChanged: (value) =>
                       setState(() => _sendToKitchen = value),
