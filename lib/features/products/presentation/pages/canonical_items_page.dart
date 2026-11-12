@@ -210,14 +210,14 @@ class _CanonicalItemsPageState extends State<CanonicalItemsPage> {
               FilledButton.icon(
                 onPressed: _busy ? null : () => _edit(null),
                 icon: const Icon(Icons.add),
-                label: const Text('Nuevo artículo'),
+                label: const Text('Nuevo'),
               ),
               OutlinedButton.icon(
                 onPressed: _busy || _selected == null
                     ? null
                     : () => _edit(_selected),
                 icon: const Icon(Icons.edit_outlined),
-                label: const Text('Editar seleccionado'),
+                label: const Text('Editar'),
               ),
               OutlinedButton.icon(
                 onPressed: _busy || _selected == null ||
@@ -234,10 +234,10 @@ class _CanonicalItemsPageState extends State<CanonicalItemsPage> {
                 icon: const Icon(Icons.inventory_2_outlined),
                 label: const Text('Empaques y reglas'),
               ),
-              IconButton(
+              OutlinedButton.icon(
                 onPressed: _busy ? null : _refresh,
-                tooltip: 'Actualizar artículos',
                 icon: const Icon(Icons.refresh),
+                label: const Text('Actualizar'),
               ),
             ],
           ),
@@ -262,8 +262,56 @@ class _CanonicalItemsPageState extends State<CanonicalItemsPage> {
                         item.name.toLowerCase().contains(q);
                   }).toList();
                   if (visible.isEmpty) {
-                    return const Center(
-                      child: Text('No hay artículos para este filtro.'),
+                    final noRecords = items.isEmpty;
+                    return Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 460),
+                        child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                noRecords ? Icons.inventory_2_outlined
+                                    : Icons.search_off_outlined,
+                                size: 48,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                noRecords
+                                    ? 'Todavía no hay artículos'
+                                    : 'No encontramos coincidencias',
+                                style: Theme.of(context).textTheme.titleLarge,
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                noRecords
+                                    ? 'Crea el primer artículo para organizar ventas, compras y consumo.'
+                                    : 'Probá con otro nombre, código o tipo de artículo.',
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 20),
+                              if (noRecords)
+                                FilledButton.icon(
+                                  onPressed: _busy ? null : () => _edit(null),
+                                  icon: const Icon(Icons.add),
+                                  label: const Text('Crear artículo'),
+                                )
+                              else
+                                OutlinedButton.icon(
+                                  onPressed: () => setState(() {
+                                    _query = '';
+                                    _filter = null;
+                                  }),
+                                  icon: const Icon(Icons.filter_alt_off_outlined),
+                                  label: const Text('Quitar filtros'),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ),
                     );
                   }
                   return ListView.builder(
