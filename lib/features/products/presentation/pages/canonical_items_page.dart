@@ -24,10 +24,16 @@ class _CanonicalItemsPageState extends State<CanonicalItemsPage> {
       serviceLocator<SupabaseAdminRepository>();
   late Future<AppResult<List<CanonicalItem>>> _items = _repository
       .getCanonicalItems();
+  final _searchController = TextEditingController();
   CanonicalItem? _selected;
   String _query = '';
   CanonicalItemType? _filter;
   bool _busy = false;
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
   void _refresh() {
     setState(() {
       _selected = null;
@@ -175,6 +181,7 @@ class _CanonicalItemsPageState extends State<CanonicalItemsPage> {
               SizedBox(
                 width: 300,
                 child: TextField(
+                  controller: _searchController,
                   decoration: const InputDecoration(
                     labelText: 'Buscar por código o nombre',
                     prefixIcon: Icon(Icons.search),
@@ -258,6 +265,7 @@ class _CanonicalItemsPageState extends State<CanonicalItemsPage> {
                       busy: _busy,
                       onCreate: () => _edit(null),
                       onClearFilters: () => setState(() {
+                        _searchController.clear();
                         _query = '';
                         _filter = null;
                       }),
