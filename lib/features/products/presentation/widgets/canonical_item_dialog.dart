@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:smoo_control/features/products/domain/entities/canonical_item.dart';
 import 'package:smoo_control/features/products/domain/entities/measurement_unit.dart';
+
 /// Creates and edits all three canonical types through one article form.
 class CanonicalItemDialog extends StatefulWidget {
   /// Creates the form with data already authorized for the current tenant.
@@ -10,15 +11,19 @@ class CanonicalItemDialog extends StatefulWidget {
     this.item,
     super.key,
   });
+
   /// Existing article or null to create.
   final CanonicalItem? item;
+
   /// Measurement units available to the restaurant.
   final List<MeasurementUnit> units;
+
   /// Independent functional classifications.
   final List<CanonicalClassification> classifications;
   @override
   State<CanonicalItemDialog> createState() => _CanonicalItemDialogState();
 }
+
 class _CanonicalItemDialogState extends State<CanonicalItemDialog> {
   final _form = GlobalKey<FormState>();
   final _code = TextEditingController();
@@ -52,6 +57,7 @@ class _CanonicalItemDialogState extends State<CanonicalItemDialog> {
     _classifications = {...?item?.classificationIds};
     _baseUnit = item?.baseUnitId;
   }
+
   @override
   void dispose() {
     _code.dispose();
@@ -60,10 +66,12 @@ class _CanonicalItemDialogState extends State<CanonicalItemDialog> {
     _price.dispose();
     super.dispose();
   }
+
   String? _required(String? value) {
     if (value == null || value.trim().isEmpty) return 'Obligatorio';
     return null;
   }
+
   String? _nonnegative(String? value) {
     final number = double.tryParse((value ?? '').replaceAll(',', '.'));
     if (number == null || !number.isFinite || number < 0) {
@@ -71,6 +79,7 @@ class _CanonicalItemDialogState extends State<CanonicalItemDialog> {
     }
     return null;
   }
+
   void _save() {
     if (!_form.currentState!.validate()) return;
     if (_baseUnit == null) {
@@ -104,8 +113,7 @@ class _CanonicalItemDialogState extends State<CanonicalItemDialog> {
   @override
   Widget build(BuildContext context) {
     final units = widget.units.where((unit) => unit.isActive).toList();
-    if (_baseUnit != null &&
-        !units.any((unit) => unit.id == _baseUnit)) {
+    if (_baseUnit != null && !units.any((unit) => unit.id == _baseUnit)) {
       final prior = widget.units.where((unit) => unit.id == _baseUnit);
       units.addAll(prior);
     }
@@ -120,7 +128,10 @@ class _CanonicalItemDialogState extends State<CanonicalItemDialog> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Identificación', style: Theme.of(context).textTheme.titleMedium),
+                Text(
+                  'Identificación',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
                 TextFormField(
                   controller: _code,
                   decoration: const InputDecoration(
@@ -177,7 +188,10 @@ class _CanonicalItemDialogState extends State<CanonicalItemDialog> {
                   validator: _required,
                 ),
                 const Divider(),
-                Text('Valores comerciales', style: Theme.of(context).textTheme.titleMedium),
+                Text(
+                  'Valores comerciales',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
                 Row(
                   children: [
                     Expanded(
@@ -209,11 +223,16 @@ class _CanonicalItemDialogState extends State<CanonicalItemDialog> {
                 ),
                 const SizedBox(height: 16),
                 const Divider(),
-                Text('Clasificaciones funcionales', style: Theme.of(context).textTheme.titleMedium),
+                Text(
+                  'Clasificaciones funcionales',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
                 if (widget.classifications.isEmpty)
                   const Padding(
                     padding: EdgeInsets.symmetric(vertical: 12),
-                    child: Text('Podrás asignar clasificaciones cuando estén configuradas.'),
+                    child: Text(
+                      'Podrás asignar clasificaciones cuando estén configuradas.',
+                    ),
                   ),
                 ...widget.classifications.map((classification) {
                   return CheckboxListTile(
@@ -233,7 +252,10 @@ class _CanonicalItemDialogState extends State<CanonicalItemDialog> {
                   );
                 }),
                 const Divider(),
-                Text('Venta y operación', style: Theme.of(context).textTheme.titleMedium),
+                Text(
+                  'Venta y operación',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
                 SwitchListTile(
                   title: const Text('Se puede vender'),
                   value: _canSell,
@@ -247,12 +269,13 @@ class _CanonicalItemDialogState extends State<CanonicalItemDialog> {
                 SwitchListTile(
                   title: const Text('Se puede comprar'),
                   value: _canPurchase,
-                  onChanged: (value) =>
-                      setState(() => _canPurchase = value),
+                  onChanged: (value) => setState(() => _canPurchase = value),
                 ),
                 SwitchListTile(
                   title: const Text('Visible en POS'),
-                  subtitle: const Text('Disponible para los cajeros al vender.'),
+                  subtitle: const Text(
+                    'Disponible para los cajeros al vender.',
+                  ),
                   value: _visibleInPos,
                   onChanged: _canSell
                       ? (value) => setState(() => _visibleInPos = value)
@@ -260,7 +283,9 @@ class _CanonicalItemDialogState extends State<CanonicalItemDialog> {
                 ),
                 SwitchListTile(
                   title: const Text('Utiliza receta'),
-                  subtitle: const Text('Consume ingredientes según la receta configurada.'),
+                  subtitle: const Text(
+                    'Consume ingredientes según la receta configurada.',
+                  ),
                   value: _usesRecipe,
                   onChanged: _type == CanonicalItemType.service
                       ? null
@@ -269,8 +294,7 @@ class _CanonicalItemDialogState extends State<CanonicalItemDialog> {
                 SwitchListTile(
                   title: const Text('Enviar a cocina'),
                   value: _sendToKitchen,
-                  onChanged: (value) =>
-                      setState(() => _sendToKitchen = value),
+                  onChanged: (value) => setState(() => _sendToKitchen = value),
                 ),
                 const Divider(),
                 Text('Estado', style: Theme.of(context).textTheme.titleMedium),

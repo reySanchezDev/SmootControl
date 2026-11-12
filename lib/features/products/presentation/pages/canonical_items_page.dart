@@ -12,12 +12,14 @@ import 'package:smoo_control/features/products/presentation/widgets/canonical_it
 import 'package:smoo_control/features/products/presentation/widgets/canonical_items_empty_state.dart';
 import 'package:smoo_control/features/recipes/domain/entities/canonical_recipe.dart';
 import 'package:smoo_control/features/recipes/presentation/pages/canonical_recipe_dialog.dart';
+
 /// QA-only canonical article workspace, isolated from the legacy writers.
 class CanonicalItemsPage extends StatefulWidget {
   const CanonicalItemsPage({super.key});
   @override
   State<CanonicalItemsPage> createState() => _CanonicalItemsPageState();
 }
+
 class _CanonicalItemsPageState extends State<CanonicalItemsPage> {
   SupabaseAdminRepository get _repository =>
       serviceLocator<SupabaseAdminRepository>();
@@ -33,12 +35,14 @@ class _CanonicalItemsPageState extends State<CanonicalItemsPage> {
     _searchController.dispose();
     super.dispose();
   }
+
   void _refresh() {
     setState(() {
       _selected = null;
       _items = _repository.getCanonicalItems();
     });
   }
+
   Future<void> _edit(CanonicalItem? current) async {
     if (_busy) return;
     setState(() => _busy = true);
@@ -83,6 +87,7 @@ class _CanonicalItemsPageState extends State<CanonicalItemsPage> {
       if (mounted) setState(() => _busy = false);
     }
   }
+
   Future<void> _recipe(CanonicalItem selected) async {
     if (_busy ||
         selected.id == null ||
@@ -123,6 +128,7 @@ class _CanonicalItemsPageState extends State<CanonicalItemsPage> {
       if (mounted) setState(() => _busy = false);
     }
   }
+
   Future<void> _packagingRules(CanonicalItem selected) async {
     if (_busy || !selected.canSell) return;
     setState(() => _busy = true);
@@ -159,12 +165,14 @@ class _CanonicalItemsPageState extends State<CanonicalItemsPage> {
       if (mounted) setState(() => _busy = false);
     }
   }
+
   void _error(String message) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message)),
     );
   }
+
   @override
   Widget build(BuildContext context) => AppPageScaffold(
     title: 'Artículos',
@@ -217,7 +225,9 @@ class _CanonicalItemsPageState extends State<CanonicalItemsPage> {
                 label: const Text('Editar'),
               ),
               OutlinedButton.icon(
-                onPressed: _busy || _selected == null ||
+                onPressed:
+                    _busy ||
+                        _selected == null ||
                         _selected!.type == CanonicalItemType.service
                     ? null
                     : () => _recipe(_selected!),

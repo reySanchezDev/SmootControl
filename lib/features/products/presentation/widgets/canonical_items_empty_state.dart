@@ -25,13 +25,17 @@ class CanonicalItemsEmptyState extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              noRecords ? Icons.inventory_2_outlined : Icons.search_off_outlined,
+              noRecords
+                  ? Icons.inventory_2_outlined
+                  : Icons.search_off_outlined,
               size: 48,
               color: Theme.of(context).colorScheme.primary,
             ),
             const SizedBox(height: 16),
             Text(
-              noRecords ? 'Todavía no hay artículos' : 'No encontramos coincidencias',
+              noRecords
+                  ? 'Todavía no hay artículos'
+                  : 'No encontramos coincidencias',
               style: Theme.of(context).textTheme.titleLarge,
               textAlign: TextAlign.center,
             ),

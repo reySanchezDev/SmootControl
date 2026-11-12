@@ -1479,6 +1479,37 @@ El servidor RELEASE continúa activo en `http://127.0.0.1:18081/`. La autenticac
 visual, CRUD y persistencia tras F5 siguen pendientes de que Reynaldo use la cuenta
 local del archivo privado y acepte los escenarios G3; no se declara G3 aprobado.
 
+### 13.23 Validación UX y RELEASE local de d2c98da (2026-11-11)
+
+Se ejecutó `git fetch origin` y el worktree de integración quedó sincronizado por
+fast-forward con `origin/feature/item-core-end-to-end-implementation` en
+`d2c98da82694ce3afe3c35b3a91c833406783740`. El worktree original conserva sus 15
+cambios locales y 17 stashes; no se usó `reset --hard` ni se descartaron cambios.
+
+Se revisaron y formatearon exclusivamente los archivos UX modificados del alcance:
+`canonical_items_page.dart`, `canonical_items_empty_state.dart` y
+`canonical_item_dialog.dart`. La revisión no alteró SQL, POS ni lógica de negocio.
+La versión objetivo mantiene los dos archivos grandes por encima del límite histórico
+de 300 líneas tras `dart format` (304 y 313 líneas); no se hizo una extracción
+estructural riesgosa dentro de esta validación.
+
+Pruebas de entidades canónicas: **7/7 aprobadas**. `flutter analyze --no-pub` no
+terminó después de más de un minuto ni emitió diagnósticos; se canceló de forma
+controlada por bloqueo del analysis server y no se finalizaron procesos ajenos.
+
+El Docker `smoo_control` permaneció saludable. El script oficial
+`tool/start_item_core_qa_release.ps1 -LocalSupabaseQa` compiló Flutter Web RELEASE
+con credenciales privadas locales, `SMOO_APP_MODE=backoffice` y
+`SMOO_ITEM_CORE_V2_QA=true`. El puerto 18081 ya estaba ocupado por el PID 1720 y
+no se detuvo; se sirvió el nuevo build en `http://127.0.0.1:18082/` con PID 8236.
+HTML, `main.dart.js`, `sqlite3.wasm` y `drift_worker.js` respondieron HTTP 200.
+
+La apertura automática del navegador Windows fue bloqueada por la política del
+entorno de ejecución. No existe controlador de navegador disponible en esta sesión;
+por ello no se certifican login visual, estado vacío, búsqueda, selección, edición,
+creación persistente, recarga F5, responsive ni ausencia de errores visibles. El
+RELEASE queda accesible para revisión manual de Reynaldo y G3 permanece cerrado.
+
 
 ### 13.21 Primer ajuste UX en Artículos canónicos — PR #40 (2026-11-11)
 
