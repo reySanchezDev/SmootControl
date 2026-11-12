@@ -1510,6 +1510,10 @@ por ello no se certifican login visual, estado vacío, búsqueda, selección, ed
 creación persistente, recarga F5, responsive ni ausencia de errores visibles. El
 RELEASE queda accesible para revisión manual de Reynaldo y G3 permanece cerrado.
 
+La publicación de formato y esta evidencia quedó en `7e557aec81640602f86b0e39de2f9e5c7fc54ab0`;
+`HEAD` local y `origin/feature/item-core-end-to-end-implementation` coinciden en
+ese SHA.
+
 
 ### 13.21 Primer ajuste UX en Artículos canónicos — PR #40 (2026-11-11)
 
