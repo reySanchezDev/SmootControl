@@ -1478,3 +1478,10 @@ captura refleja credenciales introducidas que no corresponden a esa cuenta local
 El servidor RELEASE continúa activo en `http://127.0.0.1:18081/`. La autenticación
 visual, CRUD y persistencia tras F5 siguen pendientes de que Reynaldo use la cuenta
 local del archivo privado y acepte los escenarios G3; no se declara G3 aprobado.
+
+
+### 13.21 Primer ajuste UX en Artículos canónicos — PR #40 (2026-11-11)
+
+Tras la revisión visual del propietario de la lista vacía de Productos y el modal Nuevo artículo, se implementaron directamente en GitHub mejoras del Backoffice Executive Ivory: estado vacío guiado mediante componente reutilizable, distinción entre catálogo vacío y búsqueda sin resultados, CTA para crear el primer artículo, limpieza conjunta de filtros/búscador, etiquetas de acciones superiores más concisas; modal de edición ampliado a 780 px y contenido organizado en Identificación, Valores comerciales, Clasificaciones, Venta y operación, Estado, con mensajes de ayuda contextual. No se modificaron RPC, modelos, permisos, migraciones ni POS. El estado vacío no utiliza métricas ficticias ni crea títulos redundantes respecto a la pestaña.
+
+**Validación pendiente:** la implementación GitHub necesita formato/análisis Flutter, inspección y aceptación visual en el navegador Windows usando RELEASE del Docker local. Codex deberá actualizar el worktree al HEAD del PR #40, conservar modificaciones locales/stashes, ejecutar pruebas y compilar usando el script QA local; cualquier corrección suya exige commit + push a esta rama y reporte SHA local/remoto. No se declara UX terminada ni G3 aprobada únicamente por el diff. Continuar refinando listado responsive y formularios según pruebas del propietario.
