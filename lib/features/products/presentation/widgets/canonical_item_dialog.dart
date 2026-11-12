@@ -123,7 +123,7 @@ class _CanonicalItemDialogState extends State<CanonicalItemDialog> {
     return AlertDialog(
       title: Text(widget.item == null ? 'Nuevo artículo' : 'Editar artículo'),
       content: SizedBox(
-        width: 580,
+        width: 780,
         child: Form(
           key: _form,
           child: SingleChildScrollView(
@@ -131,6 +131,8 @@ class _CanonicalItemDialogState extends State<CanonicalItemDialog> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Text('Identificación', style: Theme.of(context).textTheme.titleMedium),
+                const SizedBox(height: 12),
                 TextFormField(
                   controller: _code,
                   decoration: const InputDecoration(
@@ -150,7 +152,8 @@ class _CanonicalItemDialogState extends State<CanonicalItemDialog> {
                 DropdownButtonFormField<CanonicalItemType>(
                   initialValue: _type,
                   decoration: const InputDecoration(
-                    labelText: 'Tipo técnico *',
+                    labelText: 'Tipo de artículo *',
+                    helperText: 'Define si el artículo controla existencias.',
                   ),
                   items: CanonicalItemType.values.map((type) {
                     return DropdownMenuItem(
@@ -174,6 +177,7 @@ class _CanonicalItemDialogState extends State<CanonicalItemDialog> {
                       : null,
                   decoration: const InputDecoration(
                     labelText: 'Unidad base *',
+                    helperText: 'Referencia para costos, precios y cantidades.',
                   ),
                   items: units.map((unit) {
                     return DropdownMenuItem(
@@ -184,6 +188,10 @@ class _CanonicalItemDialogState extends State<CanonicalItemDialog> {
                   onChanged: (id) => setState(() => _baseUnit = id),
                   validator: _required,
                 ),
+                const SizedBox(height: 20),
+                const Divider(),
+                Text('Valores comerciales', style: Theme.of(context).textTheme.titleMedium),
+                const SizedBox(height: 12),
                 Row(
                   children: [
                     Expanded(
@@ -214,9 +222,13 @@ class _CanonicalItemDialogState extends State<CanonicalItemDialog> {
                   ],
                 ),
                 const SizedBox(height: 16),
-                const Text('Clasificaciones funcionales'),
+                const Divider(),
+                Text('Clasificaciones funcionales', style: Theme.of(context).textTheme.titleMedium),
                 if (widget.classifications.isEmpty)
-                  const Text('No hay clasificaciones configuradas.'),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 12),
+                    child: Text('Podrás asignar clasificaciones cuando estén configuradas.'),
+                  ),
                 ...widget.classifications.map((classification) {
                   return CheckboxListTile(
                     dense: true,
@@ -235,6 +247,7 @@ class _CanonicalItemDialogState extends State<CanonicalItemDialog> {
                   );
                 }),
                 const Divider(),
+                Text('Venta y operación', style: Theme.of(context).textTheme.titleMedium),
                 SwitchListTile(
                   title: const Text('Se puede vender'),
                   value: _canSell,
@@ -247,12 +260,14 @@ class _CanonicalItemDialogState extends State<CanonicalItemDialog> {
                 ),
                 SwitchListTile(
                   title: const Text('Se puede comprar'),
+                  subtitle: const Text('Habilita su uso en abastecimiento.'),
                   value: _canPurchase,
                   onChanged: (value) =>
                       setState(() => _canPurchase = value),
                 ),
                 SwitchListTile(
                   title: const Text('Visible en POS'),
+                  subtitle: const Text('Disponible para los cajeros al vender.'),
                   value: _visibleInPos,
                   onChanged: _canSell
                       ? (value) => setState(() => _visibleInPos = value)
@@ -260,6 +275,7 @@ class _CanonicalItemDialogState extends State<CanonicalItemDialog> {
                 ),
                 SwitchListTile(
                   title: const Text('Utiliza receta'),
+                  subtitle: const Text('Consume ingredientes según la receta configurada.'),
                   value: _usesRecipe,
                   onChanged: _type == CanonicalItemType.service
                       ? null
@@ -267,10 +283,13 @@ class _CanonicalItemDialogState extends State<CanonicalItemDialog> {
                 ),
                 SwitchListTile(
                   title: const Text('Enviar a cocina'),
+                  subtitle: const Text('Envía la preparación a la estación configurada.'),
                   value: _sendToKitchen,
                   onChanged: (value) =>
                       setState(() => _sendToKitchen = value),
                 ),
+                const Divider(),
+                Text('Estado', style: Theme.of(context).textTheme.titleMedium),
                 SwitchListTile(
                   title: const Text('Activo'),
                   value: _isActive,
@@ -288,7 +307,7 @@ class _CanonicalItemDialogState extends State<CanonicalItemDialog> {
         ),
         FilledButton(
           onPressed: _save,
-          child: const Text('Guardar'),
+          child: const Text('Guardar artículo'),
         ),
       ],
     );
