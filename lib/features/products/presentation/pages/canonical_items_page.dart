@@ -9,6 +9,7 @@ import 'package:smoo_control/features/packaging/presentation/pages/canonical_pac
 import 'package:smoo_control/features/products/domain/entities/canonical_item.dart';
 import 'package:smoo_control/features/products/domain/entities/measurement_unit.dart';
 import 'package:smoo_control/features/products/presentation/widgets/canonical_item_dialog.dart';
+import 'package:smoo_control/features/products/presentation/widgets/canonical_items_empty_state.dart';
 import 'package:smoo_control/features/recipes/domain/entities/canonical_recipe.dart';
 import 'package:smoo_control/features/recipes/presentation/pages/canonical_recipe_dialog.dart';
 /// QA-only canonical article workspace, isolated from the legacy writers.
@@ -252,56 +253,14 @@ class _CanonicalItemsPageState extends State<CanonicalItemsPage> {
                         item.name.toLowerCase().contains(q);
                   }).toList();
                   if (visible.isEmpty) {
-                    final noRecords = items.isEmpty;
-                    return Center(
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 460),
-                        child: Padding(
-                          padding: const EdgeInsets.all(24),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                noRecords ? Icons.inventory_2_outlined
-                                    : Icons.search_off_outlined,
-                                size: 48,
-                                color: Theme.of(context).colorScheme.primary,
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                noRecords
-                                    ? 'Todavía no hay artículos'
-                                    : 'No encontramos coincidencias',
-                                style: Theme.of(context).textTheme.titleLarge,
-                                textAlign: TextAlign.center,
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                noRecords
-                                    ? 'Crea el primer artículo para organizar ventas, compras y consumo.'
-                                    : 'Probá con otro nombre, código o tipo de artículo.',
-                                textAlign: TextAlign.center,
-                              ),
-                              const SizedBox(height: 20),
-                              if (noRecords)
-                                FilledButton.icon(
-                                  onPressed: _busy ? null : () => _edit(null),
-                                  icon: const Icon(Icons.add),
-                                  label: const Text('Crear artículo'),
-                                )
-                              else
-                                OutlinedButton.icon(
-                                  onPressed: () => setState(() {
-                                    _query = '';
-                                    _filter = null;
-                                  }),
-                                  icon: const Icon(Icons.filter_alt_off_outlined),
-                                  label: const Text('Quitar filtros'),
-                                ),
-                            ],
-                          ),
-                        ),
-                      ),
+                    return CanonicalItemsEmptyState(
+                      noRecords: items.isEmpty,
+                      busy: _busy,
+                      onCreate: () => _edit(null),
+                      onClearFilters: () => setState(() {
+                        _query = '';
+                        _filter = null;
+                      }),
                     );
                   }
                   return ListView.builder(
