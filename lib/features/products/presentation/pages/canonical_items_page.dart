@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
+import 'package:smoo_control/core/design_system/app_message_dialog.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/core/result/app_result.dart';
 import 'package:smoo_control/features/admin_remote/data/repositories/supabase_admin_repository.dart';
@@ -27,6 +28,8 @@ class _CanonicalItemsPageState extends State<CanonicalItemsPage> {
       .getCanonicalItems();
   final _searchController = TextEditingController();
   CanonicalItem? _selected;
+  ({CanonicalItem? item, List<MeasurementUnit> units,
+    List<CanonicalClassification> classifications})? _editor;
   String _query = '';
   CanonicalItemType? _filter;
   bool _busy = false;
@@ -47,39 +50,43 @@ class _CanonicalItemsPageState extends State<CanonicalItemsPage> {
     if (_busy) return;
     setState(() => _busy = true);
     try {
-      final results = await Future.wait<Object>([
-        _repository.getMeasurementUnits(),
-        _repository.getCanonicalClassifications(),
-      ]);
+      final unitsResult = await _repository.getMeasurementUnits();
+      final classificationsResult = await _repository.getCanonicalClassifications();
       if (!mounted) return;
-      final unitsResult = results[0] as AppResult<List<MeasurementUnit>>;
-      final classesResult =
-          results[1] as AppResult<List<CanonicalClassification>>;
       if (unitsResult case AppFailureResult(:final error)) {
         _error(error.message);
         return;
       }
-      if (classesResult case AppFailureResult(:final error)) {
+      if (classificationsResult case AppFailureResult(:final error)) {
         _error(error.message);
         return;
       }
-      final units = (unitsResult as AppSuccess<List<MeasurementUnit>>).value;
-      final classes =
-          (classesResult as AppSuccess<List<CanonicalClassification>>).value;
-      final result = await showDialog<CanonicalItem>(
-        context: context,
-        builder: (_) => CanonicalItemDialog(
-          item: current,
-          units: units,
-          classifications: classes,
-        ),
-      );
-      if (result == null || !mounted) return;
-      final saved = await _repository.saveCanonicalItem(result);
+      setState(() => _editor = (
+        item: current,
+        units: (unitsResult as AppSuccess<List<MeasurementUnit>>).value,
+        classifications: (classificationsResult
+            as AppSuccess<List<CanonicalClassification>>).value,
+      ));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _saveEditor(CanonicalItem item) async {
+    if (_busy) return;
+    setState(() => _busy = true);
+    try {
+      final result = await _repository.saveCanonicalItem(item);
       if (!mounted) return;
-      switch (saved) {
+      switch (result) {
         case AppSuccess():
+          setState(() => _editor = null);
           _refresh();
+          await showAppMessageDialog(
+            context: context,
+            title: 'Artículo guardado',
+            message: 'Los cambios se guardaron correctamente.',
+          );
         case AppFailureResult(:final error):
           _error(error.message);
       }
@@ -176,7 +183,17 @@ class _CanonicalItemsPageState extends State<CanonicalItemsPage> {
   @override
   Widget build(BuildContext context) => AppPageScaffold(
     title: 'Artículos',
-    body: Column(
+    body: _editor != null
+        ? CanonicalItemEditor(
+            key: ValueKey(_editor!.item?.id ?? 'new'),
+            item: _editor!.item,
+            units: _editor!.units,
+            classifications: _editor!.classifications,
+            saving: _busy,
+            onBack: () => setState(() => _editor = null),
+            onSave: _saveEditor,
+          )
+        : Column(
       children: [
         Padding(
           padding: const EdgeInsets.all(16),
@@ -297,7 +314,7 @@ class _CanonicalItemsPageState extends State<CanonicalItemsPage> {
                           'Precio: ${item.price.toStringAsFixed(2)}',
                         ),
                         onTap: () => setState(() => _selected = item),
-                        onLongPress: () => _edit(item),
+
                       );
                     },
                   );
