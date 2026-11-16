@@ -62,6 +62,10 @@ void main() {
     await tester.enterText(
       find.widgetWithText(TextFormField, 'Nombre *'), 'Coca-Cola',
     );
+    await tester.tap(find.widgetWithText(DropdownButtonFormField<String>, 'Unidad base *'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Unidad (und)').last);
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Guardar'));
     await tester.pump();
     expect(saved?.name, 'Coca-Cola');
