@@ -5,6 +5,8 @@ import 'package:smoo_control/core/design_system/backoffice_selection_toolbar.dar
 import 'package:smoo_control/core/design_system/app_message_dialog.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/core/result/app_result.dart';
+import 'package:smoo_control/core/session/current_operator_service.dart';
+import 'package:smoo_control/features/roles/domain/services/default_access_roles.dart';
 import 'package:smoo_control/features/admin_remote/data/repositories/supabase_admin_repository.dart';
 import 'package:smoo_control/features/packaging/domain/entities/canonical_consumption_rule.dart';
 import 'package:smoo_control/features/packaging/domain/entities/sales_type.dart';
@@ -28,6 +30,24 @@ class _CanonicalItemsPageState extends State<CanonicalItemsPage> {
       serviceLocator<SupabaseAdminRepository>();
   late Future<AppResult<List<CanonicalItem>>> _items = _repository
       .getCanonicalItems();
+  late final Future<({bool products, bool packaging})> _access = _loadAccess();
+
+  Future<({bool products, bool packaging})> _loadAccess() async {
+    final session = serviceLocator<CurrentOperatorService>().session;
+    if (session == null) return (products: false, packaging: false);
+    if (session.roleId == DefaultAccessRoles.adminId) {
+      return (products: true, packaging: true);
+    }
+    final result = await _repository.getPermissionCodesForRole(session.roleId);
+    return result.when(
+      success: (codes) => (
+        products: codes.contains('productos.gestionar'),
+        packaging: codes.contains('empaques.gestionar'),
+      ),
+      failure: (_) => (products: false, packaging: false),
+    );
+  }
+
   ({CanonicalItem? item, List<MeasurementUnit> units,
     List<CanonicalClassification> classifications})? _editor;
   CanonicalItemType? _filter;
@@ -186,7 +206,12 @@ class _CanonicalItemsPageState extends State<CanonicalItemsPage> {
             }
             return snapshot.data!.when(
               failure: (failure) => Center(child: Text(failure.message)),
-              success: _catalog,
+              success: (items) => FutureBuilder<({bool products, bool packaging})>(
+                future: _access,
+                builder: (context, permission) => permission.hasData
+                    ? _catalog(items, permission.data!)
+                    : const Center(child: CircularProgressIndicator()),
+              ),
             );
           },
         ),
@@ -204,7 +229,8 @@ class _CanonicalItemsPageState extends State<CanonicalItemsPage> {
     ),
   );
 
-  Widget _catalog(List<CanonicalItem> items) {
+  Widget _catalog(List<CanonicalItem> items,
+      ({bool products, bool packaging}) access) {
     final visible = items.where((item) => _filter == null || item.type == _filter)
         .toList();
     return Column(
@@ -235,11 +261,12 @@ class _CanonicalItemsPageState extends State<CanonicalItemsPage> {
         ),
         Expanded(
           child: BackofficeCollectionView<CanonicalItem>(
+            key: ValueKey(_filter?.databaseValue ?? 'all'),
             items: visible,
             rowKey: (item) => item.id ?? item.code,
             rowLabel: (item) => item.name,
             onCreate: () => _edit(null),
-            createEnabled: !_busy,
+            createEnabled: !_busy && access.products,
             globalActions: [
               OutlinedButton.icon(
                 onPressed: _busy ? null : _refresh,
@@ -251,21 +278,21 @@ class _CanonicalItemsPageState extends State<CanonicalItemsPage> {
               BackofficeSelectionAction<CanonicalItem>(
                 label: 'Editar',
                 icon: Icons.edit_outlined,
-                enabledWhen: (_) => !_busy,
+                enabledWhen: (_) => !_busy && access.products,
                 onPressed: (item) => _edit(item),
               ),
               BackofficeSelectionAction<CanonicalItem>(
                 label: 'Receta',
                 icon: Icons.restaurant_menu_outlined,
                 enabledWhen: (item) =>
-                    !_busy && item.id != null &&
+                    !_busy && access.products && item.id != null &&
                     item.type != CanonicalItemType.service,
                 onPressed: _recipe,
               ),
               BackofficeSelectionAction<CanonicalItem>(
                 label: 'Empaques y reglas',
                 icon: Icons.inventory_2_outlined,
-                enabledWhen: (item) => !_busy && item.canSell,
+                enabledWhen: (item) => !_busy && access.packaging && item.canSell,
                 onPressed: _packagingRules,
               ),
             ],
