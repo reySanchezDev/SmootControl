@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:smoo_control/features/products/domain/entities/canonical_item.dart';
 import 'package:smoo_control/features/products/domain/entities/measurement_unit.dart';
-import 'package:smoo_control/features/products/presentation/widgets/canonical_item_dialog.dart';
+import 'package:smoo_control/features/products/presentation/widgets/canonical_item_editor.dart';
 
 void main() {
   const unit = MeasurementUnit(
