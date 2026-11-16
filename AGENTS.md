@@ -1,8 +1,8 @@
 # Agentes — SmooControl / Quantix Engineering Standards
 
-Este repositorio adopta la revisión **0.1.5** del repositorio privado
+Este repositorio adopta la revisión **0.1.6** del repositorio privado
 `reySanchezDev/QuantixEngineeringStandar`, commit
-`eb5bf0057c01a45382b2a0a8f7cc4b03cdfb66cf`.
+`d05610c86ceff1c181fe3a005fce9a2b7aaeefe7`.
 
 ## Antes de modificar código o UI
 
@@ -48,6 +48,8 @@ políticas universales sin ratificar el cambio en el repositorio central.
 - Ejecutar `dart format`, `flutter analyze`, pruebas y verificación de UI antes
   de considerar una tarea terminada; si el ambiente carece de Flutter,
   declararlo explícitamente, sin fingir resultados.
+
+- UX-048: editar seleccionados en una ficha que sustituye la lista dentro de la misma pestaña; «Regresar» restaura el listado, sin modal ni pestaña nueva.
 
 ## Build Web / preview con Supabase (obligatorio para Codex)
 
