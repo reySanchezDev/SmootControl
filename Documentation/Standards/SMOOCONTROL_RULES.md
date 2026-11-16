@@ -16,6 +16,10 @@
 
 | SMO-010 | En maestros administrativos, distinguir catálogos vacíos de filtros sin coincidencias; ofrecer orientación breve y una acción concreta sin métricas inventadas ni títulos redundantes. Formularios extensos agrupados por funciones de negocio, con controles relacionados y ayuda contextual, respetando layout responsive y diálogos existentes. |
 
+## Adopción del estándar UX-048
+
+En Productos y otros maestros administrativos, «Editar» solo se habilita al seleccionar un registro permitido. La ficha sustituye al listado **sin modal y sin pestaña nueva**, con un «Regresar» explícito, sin pérdida silenciosa de cambios ni del estado del listado. Usar la pantalla operativa y sus componentes existentes; no abrir vistas paralelas.
+
 ## Medición de SMO-001
 - Para archivos nuevos o modificados de código mantenido a mano, el límite provisional se mide por **líneas físicas completas**.
 - No dividir métodos o clases arbitrariamente sólo para alcanzar 300; aplicar responsabilidad única, módulos y cohesión.
