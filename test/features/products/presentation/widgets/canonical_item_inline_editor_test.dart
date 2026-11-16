@@ -43,6 +43,31 @@ void main() {
     expect(returns, 1);
   });
 
+
+  testWidgets('new article uses server-generated code, not manual input', (
+    tester,
+  ) async {
+    CanonicalItem? saved;
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: CanonicalItemEditor(
+          units: const [unit],
+          classifications: const [],
+          onBack: () {},
+          onSave: (value) => saved = value,
+        ),
+      ),
+    ));
+    expect(find.textContaining('Código'), findsNothing);
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Nombre *'), 'Coca-Cola',
+    );
+    await tester.tap(find.text('Guardar'));
+    await tester.pump();
+    expect(saved?.name, 'Coca-Cola');
+    expect(saved?.code, '');
+  });
+
   testWidgets('back warns before losing edited fields', (tester) async {
     var returns = 0;
     await tester.pumpWidget(MaterialApp(
