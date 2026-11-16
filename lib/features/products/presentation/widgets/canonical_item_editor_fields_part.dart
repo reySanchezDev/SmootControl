@@ -1,4 +1,4 @@
-part of 'canonical_item_dialog.dart';
+part of 'canonical_item_editor.dart';
 
 /// Business fields reused by the existing article editor, not a new screen.
 extension _CanonicalItemEditorFields on _CanonicalItemEditorState {
