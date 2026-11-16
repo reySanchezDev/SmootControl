@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:smoo_control/core/design_system/app_message_dialog.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
@@ -69,6 +71,10 @@ class _ArticlesSnapshot {
 }
 
 class _ArticlesPageState extends State<ArticlesPage> {
+  void _update(VoidCallback action) {
+    if (mounted) setState(action);
+  }
+
   SupabaseAdminRepository get _repo =>
       serviceLocator<SupabaseAdminRepository>();
   late Future<AppResult<_ArticlesSnapshot>> _future;
@@ -83,7 +89,7 @@ class _ArticlesPageState extends State<ArticlesPage> {
 
   Future<AppResult<_ArticlesSnapshot>> _load() async {
     final session = serviceLocator<CurrentOperatorService>().session;
-    if (session == null)
+    if (session == null) {
       return const AppSuccess(
         _ArticlesSnapshot(
           items: [],
@@ -92,6 +98,7 @@ class _ArticlesPageState extends State<ArticlesPage> {
           canPackaging: false,
         ),
       );
+    }
     final isAdmin = session.roleId == DefaultAccessRoles.adminId;
     final rights = isAdmin
         ? const AppSuccess(<String>[
@@ -275,7 +282,7 @@ class _ArticlesPageState extends State<ArticlesPage> {
               }
               return snapshot.data!.when(
                 failure: (failure) => Center(child: Text(failure.message)),
-                success: (value) => _articlesContent(value),
+                success: _articlesContent,
               );
             },
           ),

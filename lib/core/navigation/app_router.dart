@@ -20,12 +20,12 @@ import 'package:smoo_control/features/expenses/presentation/pages/expenses_page.
 import 'package:smoo_control/features/inventory/presentation/pages/inventory_movements_page.dart';
 import 'package:smoo_control/features/inventory/presentation/pages/inventory_page.dart';
 import 'package:smoo_control/features/modifiers/presentation/pages/modifiers_page.dart';
-import 'package:smoo_control/features/packaging/presentation/pages/packaging_page.dart';
 import 'package:smoo_control/features/packaging/presentation/pages/packaging_legacy_entry_page.dart';
+import 'package:smoo_control/features/packaging/presentation/pages/packaging_page.dart';
 import 'package:smoo_control/features/payment_methods/presentation/pages/payment_methods_page.dart';
 import 'package:smoo_control/features/pos/presentation/pages/pos_page.dart';
-import 'package:smoo_control/features/products/presentation/pages/measurement_units_page.dart';
 import 'package:smoo_control/features/products/presentation/pages/articles_page.dart';
+import 'package:smoo_control/features/products/presentation/pages/measurement_units_page.dart';
 import 'package:smoo_control/features/recipes/presentation/pages/recipes_page.dart';
 import 'package:smoo_control/features/reports/presentation/pages/inventory_value_report_page.dart';
 import 'package:smoo_control/features/reports/presentation/pages/monthly_operational_report_page.dart';

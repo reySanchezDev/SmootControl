@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 /// Reusable guided empty state for canonical administrative catalogs.
 class CanonicalItemsEmptyState extends StatelessWidget {
+  /// Creates an empty state with a context-specific recovery action.
   const CanonicalItemsEmptyState({
     required this.noRecords,
     required this.busy,
@@ -10,9 +11,16 @@ class CanonicalItemsEmptyState extends StatelessWidget {
     super.key,
   });
 
+  /// Whether the catalog has no records rather than no filter matches.
   final bool noRecords;
+
+  /// Whether the create action is temporarily unavailable.
   final bool busy;
+
+  /// Creates the first record.
   final VoidCallback onCreate;
+
+  /// Clears the active filters.
   final VoidCallback onClearFilters;
 
   @override
@@ -42,7 +50,8 @@ class CanonicalItemsEmptyState extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               noRecords
-                  ? 'Crea el primer artículo para organizar ventas, compras y consumo.'
+                  ? 'Crea el primer artículo para organizar ventas, compras y '
+                    'consumo.'
                   : 'Probá con otro nombre, código o tipo de artículo.',
               textAlign: TextAlign.center,
             ),

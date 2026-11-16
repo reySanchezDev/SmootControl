@@ -23,8 +23,11 @@ class CanonicalItemEditor extends StatefulWidget {
 
   /// Called after local validation; persistence is owned by the parent.
   final ValueChanged<CanonicalItem> onSave;
+
   /// Returns to the same catalog tab, never pushes a route.
   final VoidCallback onBack;
+
+  /// Whether persistence is currently in progress.
   final bool saving;
 
   /// Measurement units available to the restaurant.
@@ -37,6 +40,10 @@ class CanonicalItemEditor extends StatefulWidget {
 }
 
 class _CanonicalItemEditorState extends State<CanonicalItemEditor> {
+  void _update(VoidCallback action) {
+    if (mounted) setState(action);
+  }
+
   final _form = GlobalKey<FormState>();
   final _code = TextEditingController();
   final _name = TextEditingController();
@@ -122,7 +129,6 @@ class _CanonicalItemEditorState extends State<CanonicalItemEditor> {
     );
   }
 
-
   bool get _hasChanges {
     final previous = widget.item;
     return _code.text != (previous?.code ?? '') ||
@@ -137,7 +143,9 @@ class _CanonicalItemEditorState extends State<CanonicalItemEditor> {
         _usesRecipe != (previous?.usesRecipe ?? false) ||
         _sendToKitchen != (previous?.sendToKitchen ?? false) ||
         _isActive != (previous?.isActive ?? true) ||
-        !_classifications.containsAll(previous?.classificationIds ?? const []) ||
+        !_classifications.containsAll(
+          previous?.classificationIds ?? const [],
+        ) ||
         _classifications.length != (previous?.classificationIds.length ?? 0);
   }
 
@@ -185,7 +193,8 @@ class _CanonicalItemEditorState extends State<CanonicalItemEditor> {
                 onPressed: widget.saving ? null : _save,
                 icon: widget.saving
                     ? const SizedBox(
-                        width: 16, height: 16,
+                        width: 16,
+                        height: 16,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
                     : const Icon(Icons.save_outlined),

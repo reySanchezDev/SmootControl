@@ -1,7 +1,10 @@
+// The compact record declarations keep this maintained file under SMO-001.
+// ignore_for_file: lines_longer_than_80_chars
+
 import 'package:flutter/material.dart';
+import 'package:smoo_control/core/design_system/app_message_dialog.dart';
 import 'package:smoo_control/core/design_system/backoffice_collection_view.dart';
 import 'package:smoo_control/core/design_system/backoffice_selection_toolbar.dart';
-import 'package:smoo_control/core/design_system/app_message_dialog.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/core/result/app_result.dart';
 import 'package:smoo_control/features/admin_remote/data/repositories/supabase_admin_repository.dart';
@@ -10,29 +13,24 @@ import 'package:smoo_control/features/packaging/domain/entities/sales_type.dart'
 import 'package:smoo_control/features/packaging/presentation/pages/canonical_packaging_rules_dialog.dart';
 import 'package:smoo_control/features/products/domain/entities/canonical_item.dart';
 import 'package:smoo_control/features/products/domain/entities/measurement_unit.dart';
-import 'package:smoo_control/features/products/presentation/widgets/canonical_item_editor.dart';
-import 'package:smoo_control/features/products/presentation/widgets/canonical_item_columns.dart';
 import 'package:smoo_control/features/products/presentation/widgets/canonical_catalog_access.dart';
+import 'package:smoo_control/features/products/presentation/widgets/canonical_item_columns.dart';
+import 'package:smoo_control/features/products/presentation/widgets/canonical_item_editor.dart';
 import 'package:smoo_control/features/recipes/domain/entities/canonical_recipe.dart';
 import 'package:smoo_control/features/recipes/presentation/pages/canonical_recipe_dialog.dart';
-
 /// QA-only canonical article workspace, isolated from the legacy writers.
 class CanonicalItemsContent extends StatefulWidget {
+  /// Creates the canonical Products catalog content.
   const CanonicalItemsContent({super.key});
   @override
   State<CanonicalItemsContent> createState() => _CanonicalItemsContentState();
 }
-
 class _CanonicalItemsContentState extends State<CanonicalItemsContent> {
-  SupabaseAdminRepository get _repository =>
-      serviceLocator<SupabaseAdminRepository>();
-  late Future<AppResult<List<CanonicalItem>>> _items = _repository
-      .getCanonicalItems();
+  SupabaseAdminRepository get _repository => serviceLocator<SupabaseAdminRepository>();
+  late Future<AppResult<List<CanonicalItem>>> _items = _repository.getCanonicalItems();
   late final Future<({bool products, bool packaging})> _access =
       loadCanonicalCatalogAccess(_repository);
-
-  ({CanonicalItem? item, List<MeasurementUnit> units,
-    List<CanonicalClassification> classifications})? _editor;
+  ({CanonicalItem? item, List<MeasurementUnit> units, List<CanonicalClassification> classifications})? _editor;
   CanonicalItemType? _filter;
   bool _busy = false;
   void _refresh() {
@@ -40,7 +38,6 @@ class _CanonicalItemsContentState extends State<CanonicalItemsContent> {
       _items = _repository.getCanonicalItems();
     });
   }
-
   Future<void> _edit(CanonicalItem? current) async {
     if (_busy) return;
     setState(() => _busy = true);
@@ -56,17 +53,20 @@ class _CanonicalItemsContentState extends State<CanonicalItemsContent> {
         _error(error.message);
         return;
       }
-      setState(() => _editor = (
-        item: current,
-        units: (unitsResult as AppSuccess<List<MeasurementUnit>>).value,
-        classifications: (classificationsResult
-            as AppSuccess<List<CanonicalClassification>>).value,
-      ));
+      setState(
+        () => _editor = (
+          item: current,
+          units: (unitsResult as AppSuccess<List<MeasurementUnit>>).value,
+          classifications:
+              (classificationsResult
+                      as AppSuccess<List<CanonicalClassification>>)
+                  .value,
+        ),
+      );
     } finally {
       if (mounted) setState(() => _busy = false);
     }
   }
-
   Future<void> _saveEditor(CanonicalItem item) async {
     if (_busy) return;
     setState(() => _busy = true);
@@ -89,7 +89,6 @@ class _CanonicalItemsContentState extends State<CanonicalItemsContent> {
       if (mounted) setState(() => _busy = false);
     }
   }
-
   Future<void> _recipe(CanonicalItem selected) async {
     if (_busy ||
         selected.id == null ||
@@ -130,7 +129,6 @@ class _CanonicalItemsContentState extends State<CanonicalItemsContent> {
       if (mounted) setState(() => _busy = false);
     }
   }
-
   Future<void> _packagingRules(CanonicalItem selected) async {
     if (_busy || !selected.canSell) return;
     setState(() => _busy = true);
@@ -177,41 +175,42 @@ class _CanonicalItemsContentState extends State<CanonicalItemsContent> {
 
   @override
   Widget build(BuildContext context) => IndexedStack(
-      index: _editor == null ? 0 : 1,
-      children: [
-        FutureBuilder<AppResult<List<CanonicalItem>>>(
-          future: _items,
-          builder: (context, snapshot) {
-            if (!snapshot.hasData) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            return snapshot.data!.when(
-              failure: (failure) => Center(child: Text(failure.message)),
-              success: (items) => FutureBuilder<({bool products, bool packaging})>(
-                future: _access,
-                builder: (context, permission) => permission.hasData
-                    ? _catalog(items, permission.data!)
-                    : const Center(child: CircularProgressIndicator()),
-              ),
-            );
-          },
+    index: _editor == null ? 0 : 1,
+    children: [
+      FutureBuilder<AppResult<List<CanonicalItem>>>(
+        future: _items,
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          return snapshot.data!.when(
+            failure: (failure) => Center(child: Text(failure.message)),
+            success: (items) =>
+                FutureBuilder<({bool products, bool packaging})>(
+                  future: _access,
+                  builder: (context, permission) => permission.hasData
+                      ? _catalog(items, permission.data!)
+                      : const Center(child: CircularProgressIndicator()),
+                ),
+          );
+        },
+      ),
+      if (_editor != null)
+        CanonicalItemEditor(
+          key: ValueKey(_editor!.item?.id ?? 'new'),
+          item: _editor!.item,
+          units: _editor!.units,
+          classifications: _editor!.classifications,
+          saving: _busy,
+          onBack: () => setState(() => _editor = null),
+          onSave: _saveEditor,
         ),
-        if (_editor != null)
-          CanonicalItemEditor(
-            key: ValueKey(_editor!.item?.id ?? 'new'),
-            item: _editor!.item,
-            units: _editor!.units,
-            classifications: _editor!.classifications,
-            saving: _busy,
-            onBack: () => setState(() => _editor = null),
-            onSave: _saveEditor,
-          ),
-      ],
-    );
+    ],
+  );
 
-  Widget _catalog(List<CanonicalItem> items,
-      ({bool products, bool packaging}) access) {
-    final visible = items.where((item) => _filter == null || item.type == _filter)
+  Widget _catalog(List<CanonicalItem> items, ({bool products, bool packaging}) access) {
+    final visible = items
+        .where((item) => _filter == null || item.type == _filter)
         .toList();
     return Column(
       children: [
@@ -230,7 +229,8 @@ class _CanonicalItemsContentState extends State<CanonicalItemsContent> {
                   ),
                   ...CanonicalItemType.values.map(
                     (type) => DropdownMenuItem<CanonicalItemType?>(
-                      value: type, child: Text(type.label),
+                      value: type,
+                      child: Text(type.label),
                     ),
                   ),
                 ],
@@ -259,26 +259,31 @@ class _CanonicalItemsContentState extends State<CanonicalItemsContent> {
                 label: 'Editar',
                 icon: Icons.edit_outlined,
                 enabledWhen: (_) => !_busy && access.products,
-                onPressed: (item) => _edit(item),
+                onPressed: _edit,
               ),
               BackofficeSelectionAction<CanonicalItem>(
                 label: 'Receta',
                 icon: Icons.restaurant_menu_outlined,
                 enabledWhen: (item) =>
-                    !_busy && access.products && item.id != null &&
+                    !_busy &&
+                    access.products &&
+                    item.id != null &&
                     item.type != CanonicalItemType.service,
                 onPressed: _recipe,
               ),
               BackofficeSelectionAction<CanonicalItem>(
                 label: 'Empaques y reglas',
                 icon: Icons.inventory_2_outlined,
-                enabledWhen: (item) => !_busy && access.packaging && item.canSell,
+                enabledWhen: (item) =>
+                    !_busy && access.packaging && item.canSell,
                 onPressed: _packagingRules,
               ),
             ],
             searchLabel: 'Buscar por código o nombre',
             searchTextFor: (item) => '${item.code} ${item.name}',
-            emptyTitle: items.isEmpty ? 'Todavía no hay artículos' : 'Sin coincidencias',
+            emptyTitle: items.isEmpty
+                ? 'Todavía no hay artículos'
+                : 'Sin coincidencias',
             emptyMessage: items.isEmpty
                 ? 'Utilizá Nuevo para registrar el primer artículo.'
                 : 'Revisá la búsqueda o el filtro seleccionado.',

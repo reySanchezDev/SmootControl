@@ -39,7 +39,7 @@ extension _CanonicalItemEditorFields on _CanonicalItemEditorState {
         }).toList(),
         onChanged: (type) {
           if (type == null) return;
-          setState(() {
+          _update(() {
             _type = type;
             if (type == CanonicalItemType.service) {
               _usesRecipe = false;
@@ -61,7 +61,7 @@ extension _CanonicalItemEditorFields on _CanonicalItemEditorState {
             child: Text('${unit.name} (${unit.code})'),
           );
         }).toList(),
-        onChanged: (id) => setState(() => _baseUnit = id),
+        onChanged: (id) => _update(() => _baseUnit = id),
         validator: _required,
       ),
       const Divider(),
@@ -118,7 +118,7 @@ extension _CanonicalItemEditorFields on _CanonicalItemEditorState {
           title: Text(classification.name),
           value: _classifications.contains(classification.id),
           onChanged: (checked) {
-            setState(() {
+            _update(() {
               if (checked ?? false) {
                 _classifications.add(classification.id);
               } else {
@@ -137,7 +137,7 @@ extension _CanonicalItemEditorFields on _CanonicalItemEditorState {
         title: const Text('Se puede vender'),
         value: _canSell,
         onChanged: (value) {
-          setState(() {
+          _update(() {
             _canSell = value;
             if (!value) _visibleInPos = false;
           });
@@ -146,7 +146,7 @@ extension _CanonicalItemEditorFields on _CanonicalItemEditorState {
       SwitchListTile(
         title: const Text('Se puede comprar'),
         value: _canPurchase,
-        onChanged: (value) => setState(() => _canPurchase = value),
+        onChanged: (value) => _update(() => _canPurchase = value),
       ),
       SwitchListTile(
         title: const Text('Visible en POS'),
@@ -155,7 +155,7 @@ extension _CanonicalItemEditorFields on _CanonicalItemEditorState {
         ),
         value: _visibleInPos,
         onChanged: _canSell
-            ? (value) => setState(() => _visibleInPos = value)
+            ? (value) => _update(() => _visibleInPos = value)
             : null,
       ),
       SwitchListTile(
@@ -166,21 +166,20 @@ extension _CanonicalItemEditorFields on _CanonicalItemEditorState {
         value: _usesRecipe,
         onChanged: _type == CanonicalItemType.service
             ? null
-            : (value) => setState(() => _usesRecipe = value),
+            : (value) => _update(() => _usesRecipe = value),
       ),
       SwitchListTile(
         title: const Text('Enviar a cocina'),
         value: _sendToKitchen,
-        onChanged: (value) => setState(() => _sendToKitchen = value),
+        onChanged: (value) => _update(() => _sendToKitchen = value),
       ),
       const Divider(),
       Text('Estado', style: Theme.of(context).textTheme.titleMedium),
       SwitchListTile(
         title: const Text('Activo'),
         value: _isActive,
-        onChanged: (value) => setState(() => _isActive = value),
+        onChanged: (value) => _update(() => _isActive = value),
       ),
-
     ],
   );
 }

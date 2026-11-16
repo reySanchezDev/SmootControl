@@ -46,7 +46,7 @@ void main() {
 
   testWidgets('missing remote permission denies the route', (tester) async {
     if (!AppRunMode.isBackoffice) return;
-    await _pumpGuard(tester, permissions: const []);
+    await _pumpGuard(tester);
 
     expect(find.text('contenido protegido'), findsNothing);
     expect(find.byIcon(Icons.lock_outline), findsOneWidget);
@@ -96,10 +96,10 @@ Future<void> _pumpGuard(
   );
 
   await tester.pumpWidget(
-    MaterialApp(
+    const MaterialApp(
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      home: const RouteAccessGuard(
+      home: RouteAccessGuard(
         anyPermissions: [_requiredPermission],
         child: Text('contenido protegido'),
       ),

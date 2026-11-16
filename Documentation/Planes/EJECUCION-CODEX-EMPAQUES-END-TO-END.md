@@ -1538,3 +1538,21 @@ Se completó la consolidación estructural del cambio anterior: `ArticlesPage` c
 **Advertencia de alcance:** el formulario **legacy** `CreateProductDialog` sigue existiendo para el flujo anterior mientras la migración operacional V2 esté pendiente; no se eliminan escritores/recetas legacy antes de un corte autorizado. La regla UX-048 es universal, pero el despliegue de implementación a los demás maestros del Backoffice está pendiente, sujeto a pruebas de regresión por módulo. No inferir que todo el Backoffice ha migrado a fichas en la misma pestaña.
 
 **Gate actual:** solo cambios de código versionados, sin Flutter local ni revisión visual en este turno. Codex debe sincronizar HEAD GitHub, preservar 15 modificaciones locales y 17 stashes, ejecutar `dart format` de archivos tocados, `flutter analyze`, pruebas dirigidas, compilar RELEASE en Docker local con script oficial y abrir el navegador del propietario; realizar QA de selección/editar/guardar/regresar, permisos, F5, sin nueva pestaña ni modal de edición. Cualquier corrección debe subirla mediante commit/push al PR #40 para revisión del asistente, con SHA local/remoto iguales. No tocar Supabase remoto, 088, main o producción.
+
+### 13.24 Correcciones y validación Codex del SHA fdef5cae (2026-11-16)
+
+Se sincronizó `feature/item-core-end-to-end-implementation` y `refs/pull/40/head`
+al SHA `fdef5cae79456b193abb05f16a429d8f5366a261` en un worktree QA separado.
+Se conservaron sin cambios los 15 archivos locales del worktree original, los
+17 stashes y los worktrees existentes. Se corrigieron diagnósticos Dart del
+conjunto de cambios, se aplicó `dart format` a los archivos tocados y se
+mantuvieron los archivos de Productos bajo SMO-001 (300 líneas físicas).
+
+Evidencia comprobada: `flutter analyze --no-pub` sin incidencias; pruebas
+dirigidas de Productos, guardas de rutas y reglas de empaques, 10/10; el
+script oficial `tool/build_web_release.ps1 -CanonicalItemsQa` compiló Web
+RELEASE y generó `build/web/index.html` y los assets requeridos. No se pudo
+certificar persistencia contra Supabase Docker, F5 ni QA visual interactivo:
+Docker Desktop no tenía daemon disponible y no se encontró el archivo privado
+`Requerimiento/CredencialesSupabase.md`. No declarar esos gates como aprobados
+hasta levantar el Docker local y repetir el flujo autenticado.

@@ -1,5 +1,5 @@
-import 'package:smoo_control/core/navigation/app_routes.dart';
 import 'package:smoo_control/core/config/app_run_mode.dart';
+import 'package:smoo_control/core/navigation/app_routes.dart';
 import 'package:smoo_control/features/auth/domain/entities/auth_session.dart';
 
 /// Functional experience of a route, independent of screen dimensions.

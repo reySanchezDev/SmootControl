@@ -1,5 +1,4 @@
 part of 'articles_page.dart';
-
 extension _ArticlesPageView on _ArticlesPageState {
   Widget _articlesContent(_ArticlesSnapshot snapshot) {
     final availableTypes = <String>{
@@ -23,7 +22,6 @@ extension _ArticlesPageView on _ArticlesPageState {
       }
       return 'Sin categoría';
     }
-
     return Column(
       children: [
         if (snapshot.warning != null)
@@ -76,7 +74,7 @@ extension _ArticlesPageView on _ArticlesPageState {
                         ),
                     ],
                     onChanged: (value) {
-                      if (value != null) setState(() => _type = value);
+                      if (value != null) _update(() => _type = value);
                     },
                   ),
                 ),
@@ -94,7 +92,6 @@ extension _ArticlesPageView on _ArticlesPageState {
           child: BackofficeCollectionView<_Article>(
             key: ValueKey('articles-$activeType'),
             items: visible,
-            onCreate: null,
             globalActions: [
               if (snapshot.canProducts)
                 OutlinedButton.icon(
@@ -120,9 +117,9 @@ extension _ArticlesPageView on _ArticlesPageState {
                     : snapshot.canPackaging,
                 onPressed: (item) {
                   if (item.product != null) {
-                    _editProduct(item.product, snapshot);
+                    unawaited(_editProduct(item.product, snapshot));
                   } else {
-                    _editPackaging(item.packaging);
+                    unawaited(_editPackaging(item.packaging));
                   }
                 },
               ),
@@ -209,7 +206,6 @@ extension _ArticlesPageView on _ArticlesPageState {
     );
   }
 }
-
 class _ArticlePackagingDialog extends StatefulWidget {
   const _ArticlePackagingDialog({this.item});
   final PackagingItem? item;
@@ -217,14 +213,12 @@ class _ArticlePackagingDialog extends StatefulWidget {
   State<_ArticlePackagingDialog> createState() =>
       _ArticlePackagingDialogState();
 }
-
 class _ArticlePackagingDialogState extends State<_ArticlePackagingDialog> {
   final _name = TextEditingController();
   final _cost = TextEditingController();
   bool _stock = true;
   bool _active = true;
   String? _error;
-
   @override
   void initState() {
     super.initState();

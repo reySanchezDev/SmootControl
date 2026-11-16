@@ -60,7 +60,7 @@ void main() {
 
   testWidgets('new product form has no rule entry', (tester) async {
     await tester.pumpWidget(
-      MaterialApp(
+      const MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: CreateProductDialog(categories: [], modifierGroups: []),
