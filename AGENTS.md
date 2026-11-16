@@ -2,7 +2,7 @@
 
 Este repositorio adopta la revisión **0.1.9** del repositorio privado
 `reySanchezDev/QuantixEngineeringStandar`, commit
-`0a8cf61fc6c19347229edfff201e0dd185a04484`.
+`0c7c7b69bd77ab009fb0b0ce4d12c15f62371d14`.
 
 ## Antes de modificar código o UI
 
