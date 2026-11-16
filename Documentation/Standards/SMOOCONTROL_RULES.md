@@ -20,6 +20,10 @@
 
 En Productos y otros maestros administrativos, «Editar» solo se habilita al seleccionar un registro permitido. La ficha sustituye al listado **sin modal y sin pestaña nueva**, con un «Regresar» explícito, sin pérdida silenciosa de cambios ni del estado del listado. Usar la pantalla operativa y sus componentes existentes; no abrir vistas paralelas.
 
+## Maestro de artículos: numeración y disposición
+
+Los códigos de nuevos artículos canónicos se asignan automáticamente en PostgreSQL, no se solicitan en el formulario ni se regeneran al editar. Los UUID internos tampoco se muestran. La ficha usa secciones por negocio y grillas responsivas de dos columnas en escritorio y una en compacto, evitando formularios de una sola lista vertical extensa. Guardar debe preservar la autorización y la atomicidad del escritor canónico.
+
 ## Medición de SMO-001
 - Para archivos nuevos o modificados de código mantenido a mano, el límite provisional se mide por **líneas físicas completas**.
 - No dividir métodos o clases arbitrariamente sólo para alcanzar 300; aplicar responsabilidad única, módulos y cohesión.
