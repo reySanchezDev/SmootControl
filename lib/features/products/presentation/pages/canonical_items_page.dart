@@ -11,7 +11,7 @@ import 'package:smoo_control/features/packaging/domain/entities/sales_type.dart'
 import 'package:smoo_control/features/packaging/presentation/pages/canonical_packaging_rules_dialog.dart';
 import 'package:smoo_control/features/products/domain/entities/canonical_item.dart';
 import 'package:smoo_control/features/products/domain/entities/measurement_unit.dart';
-import 'package:smoo_control/features/products/presentation/widgets/canonical_item_dialog.dart';
+import 'package:smoo_control/features/products/presentation/widgets/canonical_item_editor.dart';
 import 'package:smoo_control/features/products/presentation/widgets/canonical_item_columns.dart';
 import 'package:smoo_control/features/products/presentation/widgets/canonical_catalog_access.dart';
 import 'package:smoo_control/features/recipes/domain/entities/canonical_recipe.dart';
