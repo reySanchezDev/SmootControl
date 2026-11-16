@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:smoo_control/core/design_system/app_page_scaffold.dart';
+import 'package:smoo_control/core/design_system/backoffice_collection_view.dart';
+import 'package:smoo_control/core/design_system/backoffice_selection_toolbar.dart';
 import 'package:smoo_control/core/design_system/app_message_dialog.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/core/result/app_result.dart';
@@ -10,7 +12,6 @@ import 'package:smoo_control/features/packaging/presentation/pages/canonical_pac
 import 'package:smoo_control/features/products/domain/entities/canonical_item.dart';
 import 'package:smoo_control/features/products/domain/entities/measurement_unit.dart';
 import 'package:smoo_control/features/products/presentation/widgets/canonical_item_dialog.dart';
-import 'package:smoo_control/features/products/presentation/widgets/canonical_items_empty_state.dart';
 import 'package:smoo_control/features/recipes/domain/entities/canonical_recipe.dart';
 import 'package:smoo_control/features/recipes/presentation/pages/canonical_recipe_dialog.dart';
 
@@ -26,22 +27,12 @@ class _CanonicalItemsPageState extends State<CanonicalItemsPage> {
       serviceLocator<SupabaseAdminRepository>();
   late Future<AppResult<List<CanonicalItem>>> _items = _repository
       .getCanonicalItems();
-  final _searchController = TextEditingController();
-  CanonicalItem? _selected;
   ({CanonicalItem? item, List<MeasurementUnit> units,
     List<CanonicalClassification> classifications})? _editor;
-  String _query = '';
   CanonicalItemType? _filter;
   bool _busy = false;
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
-
   void _refresh() {
     setState(() {
-      _selected = null;
       _items = _repository.getCanonicalItems();
     });
   }
@@ -182,9 +173,24 @@ class _CanonicalItemsPageState extends State<CanonicalItemsPage> {
 
   @override
   Widget build(BuildContext context) => AppPageScaffold(
-    title: 'Artículos',
-    body: _editor != null
-        ? CanonicalItemEditor(
+    title: 'Productos',
+    body: IndexedStack(
+      index: _editor == null ? 0 : 1,
+      children: [
+        FutureBuilder<AppResult<List<CanonicalItem>>>(
+          future: _items,
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            return snapshot.data!.when(
+              failure: (failure) => Center(child: Text(failure.message)),
+              success: _catalog,
+            );
+          },
+        ),
+        if (_editor != null)
+          CanonicalItemEditor(
             key: ValueKey(_editor!.item?.id ?? 'new'),
             item: _editor!.item,
             units: _editor!.units,
@@ -192,138 +198,125 @@ class _CanonicalItemsPageState extends State<CanonicalItemsPage> {
             saving: _busy,
             onBack: () => setState(() => _editor = null),
             onSave: _saveEditor,
-          )
-        : Column(
+          ),
+      ],
+    ),
+  );
+
+  Widget _catalog(List<CanonicalItem> items) {
+    final visible = items.where((item) => _filter == null || item.type == _filter)
+        .toList();
+    return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.all(16),
-          child: Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            crossAxisAlignment: WrapCrossAlignment.center,
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 4),
+          child: Row(
             children: [
-              SizedBox(
-                width: 300,
-                child: TextField(
-                  controller: _searchController,
-                  decoration: const InputDecoration(
-                    labelText: 'Buscar por código o nombre',
-                    prefixIcon: Icon(Icons.search),
-                  ),
-                  onChanged: (value) => setState(() => _query = value),
-                ),
-              ),
+              const Text('Tipo'),
+              const SizedBox(width: 12),
               DropdownButton<CanonicalItemType?>(
                 value: _filter,
-                hint: const Text('Todos los tipos'),
+                hint: const Text('Todos'),
                 items: [
                   const DropdownMenuItem<CanonicalItemType?>(
-                    child: Text('Todos los tipos'),
+                    child: Text('Todos'),
                   ),
                   ...CanonicalItemType.values.map(
                     (type) => DropdownMenuItem<CanonicalItemType?>(
-                      value: type,
-                      child: Text(type.label),
+                      value: type, child: Text(type.label),
                     ),
                   ),
                 ],
-                onChanged: (value) => setState(() => _filter = value),
+                onChanged: (type) => setState(() => _filter = type),
               ),
-              FilledButton.icon(
-                onPressed: _busy ? null : () => _edit(null),
-                icon: const Icon(Icons.add),
-                label: const Text('Nuevo'),
-              ),
-              OutlinedButton.icon(
-                onPressed: _busy || _selected == null
-                    ? null
-                    : () => _edit(_selected),
-                icon: const Icon(Icons.edit_outlined),
-                label: const Text('Editar'),
-              ),
-              OutlinedButton.icon(
-                onPressed:
-                    _busy ||
-                        _selected == null ||
-                        _selected!.type == CanonicalItemType.service
-                    ? null
-                    : () => _recipe(_selected!),
-                icon: const Icon(Icons.restaurant_menu_outlined),
-                label: const Text('Receta'),
-              ),
-              OutlinedButton.icon(
-                onPressed: _busy || _selected?.canSell != true
-                    ? null
-                    : () => _packagingRules(_selected!),
-                icon: const Icon(Icons.inventory_2_outlined),
-                label: const Text('Empaques y reglas'),
-              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: BackofficeCollectionView<CanonicalItem>(
+            items: visible,
+            rowKey: (item) => item.id ?? item.code,
+            rowLabel: (item) => item.name,
+            onCreate: () => _edit(null),
+            createEnabled: !_busy,
+            globalActions: [
               OutlinedButton.icon(
                 onPressed: _busy ? null : _refresh,
                 icon: const Icon(Icons.refresh),
                 label: const Text('Actualizar'),
               ),
             ],
-          ),
-        ),
-        Expanded(
-          child: FutureBuilder<AppResult<List<CanonicalItem>>>(
-            future: _items,
-            builder: (context, snapshot) {
-              if (!snapshot.hasData) {
-                return const Center(child: CircularProgressIndicator());
-              }
-              return snapshot.data!.when(
-                failure: (failure) => Center(
-                  child: Text(failure.message),
-                ),
-                success: (items) {
-                  final q = _query.trim().toLowerCase();
-                  final visible = items.where((item) {
-                    if (_filter != null && item.type != _filter) return false;
-                    if (q.isEmpty) return true;
-                    return item.code.toLowerCase().contains(q) ||
-                        item.name.toLowerCase().contains(q);
-                  }).toList();
-                  if (visible.isEmpty) {
-                    return CanonicalItemsEmptyState(
-                      noRecords: items.isEmpty,
-                      busy: _busy,
-                      onCreate: () => _edit(null),
-                      onClearFilters: () => setState(() {
-                        _searchController.clear();
-                        _query = '';
-                        _filter = null;
-                      }),
-                    );
-                  }
-                  return ListView.builder(
-                    itemCount: visible.length,
-                    itemBuilder: (context, index) {
-                      final item = visible[index];
-                      return ListTile(
-                        selected: _selected?.id == item.id,
-                        title: Text('${item.code} · ${item.name}'),
-                        subtitle: Text(
-                          '${item.type.label} · '
-                          '${item.isActive ? 'Activo' : 'Inactivo'} · '
-                          '${item.canSell ? 'Vendible' : 'No vendible'}',
-                        ),
-                        trailing: Text(
-                          'Costo: ${item.cost.toStringAsFixed(2)}  '
-                          'Precio: ${item.price.toStringAsFixed(2)}',
-                        ),
-                        onTap: () => setState(() => _selected = item),
-
-                      );
-                    },
-                  );
-                },
-              );
-            },
+            selectionActions: [
+              BackofficeSelectionAction<CanonicalItem>(
+                label: 'Editar',
+                icon: Icons.edit_outlined,
+                enabledWhen: (_) => !_busy,
+                onPressed: (item) => _edit(item),
+              ),
+              BackofficeSelectionAction<CanonicalItem>(
+                label: 'Receta',
+                icon: Icons.restaurant_menu_outlined,
+                enabledWhen: (item) =>
+                    !_busy && item.id != null &&
+                    item.type != CanonicalItemType.service,
+                onPressed: _recipe,
+              ),
+              BackofficeSelectionAction<CanonicalItem>(
+                label: 'Empaques y reglas',
+                icon: Icons.inventory_2_outlined,
+                enabledWhen: (item) => !_busy && item.canSell,
+                onPressed: _packagingRules,
+              ),
+            ],
+            searchLabel: 'Buscar por código o nombre',
+            searchTextFor: (item) => '${item.code} ${item.name}',
+            emptyTitle: items.isEmpty ? 'Todavía no hay artículos' : 'Sin coincidencias',
+            emptyMessage: items.isEmpty
+                ? 'Utilizá Nuevo para registrar el primer artículo.'
+                : 'Revisá la búsqueda o el filtro seleccionado.',
+            compactBuilder: (context, item) => ListTile(
+              title: Text(item.name),
+              subtitle: Text('${item.code} · ${item.type.label}'),
+            ),
+            columns: [
+              BackofficeListColumn<CanonicalItem>(
+                label: 'Código', width: 130,
+                compare: (a, b) => a.code.compareTo(b.code),
+                cell: (_, item) => Text(item.code),
+              ),
+              BackofficeListColumn<CanonicalItem>(
+                label: 'Nombre', width: 280,
+                compare: (a, b) => a.name.compareTo(b.name),
+                cell: (_, item) => Text(item.name),
+              ),
+              BackofficeListColumn<CanonicalItem>(
+                label: 'Tipo', width: 170,
+                compare: (a, b) => a.type.label.compareTo(b.type.label),
+                cell: (_, item) => Text(item.type.label),
+              ),
+              BackofficeListColumn<CanonicalItem>(
+                label: 'Costo', width: 110,
+                alignment: Alignment.centerRight,
+                compare: (a, b) => a.cost.compareTo(b.cost),
+                cell: (_, item) => Text(item.cost.toStringAsFixed(2)),
+              ),
+              BackofficeListColumn<CanonicalItem>(
+                label: 'Precio', width: 110,
+                alignment: Alignment.centerRight,
+                compare: (a, b) => a.price.compareTo(b.price),
+                cell: (_, item) => Text(item.price.toStringAsFixed(2)),
+              ),
+              BackofficeListColumn<CanonicalItem>(
+                label: 'Estado', width: 110,
+                alignment: Alignment.center,
+                compare: (a, b) => a.isActive == b.isActive
+                    ? 0 : a.isActive ? 1 : -1,
+                cell: (_, item) => Text(item.isActive ? 'Activo' : 'Inactivo'),
+              ),
+            ],
           ),
         ),
       ],
-    ),
-  );
+    );
+  }
 }
