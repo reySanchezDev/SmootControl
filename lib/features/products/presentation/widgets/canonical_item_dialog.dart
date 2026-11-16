@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:smoo_control/core/design_system/app_message_dialog.dart';
-
-part 'canonical_item_editor_fields_part.dart';
 import 'package:smoo_control/features/products/domain/entities/canonical_item.dart';
 import 'package:smoo_control/features/products/domain/entities/measurement_unit.dart';
+
+part 'canonical_item_editor_fields_part.dart';
 
 /// Creates and edits all three canonical types through one article form.
 class CanonicalItemEditor extends StatefulWidget {
