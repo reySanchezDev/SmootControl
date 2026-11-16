@@ -5,8 +5,6 @@ import 'package:smoo_control/core/design_system/backoffice_selection_toolbar.dar
 import 'package:smoo_control/core/design_system/app_message_dialog.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
 import 'package:smoo_control/core/result/app_result.dart';
-import 'package:smoo_control/core/session/current_operator_service.dart';
-import 'package:smoo_control/features/roles/domain/services/default_access_roles.dart';
 import 'package:smoo_control/features/admin_remote/data/repositories/supabase_admin_repository.dart';
 import 'package:smoo_control/features/packaging/domain/entities/canonical_consumption_rule.dart';
 import 'package:smoo_control/features/packaging/domain/entities/sales_type.dart';
@@ -15,6 +13,7 @@ import 'package:smoo_control/features/products/domain/entities/canonical_item.da
 import 'package:smoo_control/features/products/domain/entities/measurement_unit.dart';
 import 'package:smoo_control/features/products/presentation/widgets/canonical_item_dialog.dart';
 import 'package:smoo_control/features/products/presentation/widgets/canonical_item_columns.dart';
+import 'package:smoo_control/features/products/presentation/widgets/canonical_catalog_access.dart';
 import 'package:smoo_control/features/recipes/domain/entities/canonical_recipe.dart';
 import 'package:smoo_control/features/recipes/presentation/pages/canonical_recipe_dialog.dart';
 
@@ -30,23 +29,8 @@ class _CanonicalItemsPageState extends State<CanonicalItemsPage> {
       serviceLocator<SupabaseAdminRepository>();
   late Future<AppResult<List<CanonicalItem>>> _items = _repository
       .getCanonicalItems();
-  late final Future<({bool products, bool packaging})> _access = _loadAccess();
-
-  Future<({bool products, bool packaging})> _loadAccess() async {
-    final session = serviceLocator<CurrentOperatorService>().session;
-    if (session == null) return (products: false, packaging: false);
-    if (session.roleId == DefaultAccessRoles.adminId) {
-      return (products: true, packaging: true);
-    }
-    final result = await _repository.getPermissionCodesForRole(session.roleId);
-    return result.when(
-      success: (codes) => (
-        products: codes.contains('productos.gestionar'),
-        packaging: codes.contains('empaques.gestionar'),
-      ),
-      failure: (_) => (products: false, packaging: false),
-    );
-  }
+  late final Future<({bool products, bool packaging})> _access =
+      loadCanonicalCatalogAccess(_repository);
 
   ({CanonicalItem? item, List<MeasurementUnit> units,
     List<CanonicalClassification> classifications})? _editor;
