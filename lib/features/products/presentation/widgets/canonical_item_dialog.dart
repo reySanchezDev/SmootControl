@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:smoo_control/core/design_system/app_message_dialog.dart';
+
+part 'canonical_item_editor_fields_part.dart';
 import 'package:smoo_control/features/products/domain/entities/canonical_item.dart';
 import 'package:smoo_control/features/products/domain/entities/measurement_unit.dart';
 
 /// Creates and edits all three canonical types through one article form.
-class CanonicalItemDialog extends StatefulWidget {
+class CanonicalItemEditor extends StatefulWidget {
   /// Creates the form with data already authorized for the current tenant.
-  const CanonicalItemDialog({
+  const CanonicalItemEditor({
     required this.units,
     required this.classifications,
+    required this.onSave,
+    required this.onBack,
+    this.saving = false,
     this.item,
     super.key,
   });
@@ -15,16 +21,22 @@ class CanonicalItemDialog extends StatefulWidget {
   /// Existing article or null to create.
   final CanonicalItem? item;
 
+  /// Called after local validation; persistence is owned by the parent.
+  final ValueChanged<CanonicalItem> onSave;
+  /// Returns to the same catalog tab, never pushes a route.
+  final VoidCallback onBack;
+  final bool saving;
+
   /// Measurement units available to the restaurant.
   final List<MeasurementUnit> units;
 
   /// Independent functional classifications.
   final List<CanonicalClassification> classifications;
   @override
-  State<CanonicalItemDialog> createState() => _CanonicalItemDialogState();
+  State<CanonicalItemEditor> createState() => _CanonicalItemEditorState();
 }
 
-class _CanonicalItemDialogState extends State<CanonicalItemDialog> {
+class _CanonicalItemEditorState extends State<CanonicalItemEditor> {
   final _form = GlobalKey<FormState>();
   final _code = TextEditingController();
   final _name = TextEditingController();
@@ -90,7 +102,7 @@ class _CanonicalItemDialogState extends State<CanonicalItemDialog> {
     }
     if (_visibleInPos && !_canSell) return;
     if (_usesRecipe && _type == CanonicalItemType.service) return;
-    Navigator.of(context).pop(
+    widget.onSave(
       CanonicalItem(
         id: widget.item?.id,
         code: _code.text.trim(),
@@ -110,212 +122,92 @@ class _CanonicalItemDialogState extends State<CanonicalItemDialog> {
     );
   }
 
+
+  bool get _hasChanges {
+    final previous = widget.item;
+    return _code.text != (previous?.code ?? '') ||
+        _name.text != (previous?.name ?? '') ||
+        _cost.text != (previous?.cost.toString() ?? '0') ||
+        _price.text != (previous?.price.toString() ?? '0') ||
+        _baseUnit != previous?.baseUnitId ||
+        _type != (previous?.type ?? CanonicalItemType.inventory) ||
+        _canSell != (previous?.canSell ?? false) ||
+        _canPurchase != (previous?.canPurchase ?? true) ||
+        _visibleInPos != (previous?.visibleInPos ?? false) ||
+        _usesRecipe != (previous?.usesRecipe ?? false) ||
+        _sendToKitchen != (previous?.sendToKitchen ?? false) ||
+        _isActive != (previous?.isActive ?? true) ||
+        !_classifications.containsAll(previous?.classificationIds ?? const []) ||
+        _classifications.length != (previous?.classificationIds.length ?? 0);
+  }
+
+  Future<void> _back() async {
+    if (widget.saving) return;
+    if (_hasChanges) {
+      final discard = await showAppConfirmationDialog(
+        context,
+        title: 'Cambios sin guardar',
+        message: '¿Descartar los cambios y regresar a Productos?',
+        confirmLabel: 'Descartar',
+        cancelLabel: 'Seguir editando',
+        destructive: true,
+      );
+      if (!discard || !mounted) return;
+    }
+    widget.onBack();
+  }
+
   @override
   Widget build(BuildContext context) {
     final units = widget.units.where((unit) => unit.isActive).toList();
     if (_baseUnit != null && !units.any((unit) => unit.id == _baseUnit)) {
-      final prior = widget.units.where((unit) => unit.id == _baseUnit);
-      units.addAll(prior);
+      units.addAll(widget.units.where((unit) => unit.id == _baseUnit));
     }
-    return AlertDialog(
-      title: Text(widget.item == null ? 'Nuevo artículo' : 'Editar artículo'),
-      content: SizedBox(
-        width: 780,
-        child: Form(
-          key: _form,
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Identificación',
-                  style: Theme.of(context).textTheme.titleMedium,
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+          child: Row(
+            children: [
+              OutlinedButton.icon(
+                onPressed: widget.saving ? null : _back,
+                icon: const Icon(Icons.arrow_back),
+                label: const Text('Regresar'),
+              ),
+              const SizedBox(width: 20),
+              Expanded(
+                child: Text(
+                  widget.item == null ? 'Nuevo artículo' : 'Editar artículo',
+                  style: Theme.of(context).textTheme.titleLarge,
                 ),
-                TextFormField(
-                  controller: _code,
-                  decoration: const InputDecoration(
-                    labelText: 'Código *',
-                  ),
-                  maxLength: 64,
-                  validator: _required,
-                ),
-                TextFormField(
-                  controller: _name,
-                  decoration: const InputDecoration(
-                    labelText: 'Nombre *',
-                  ),
-                  maxLength: 250,
-                  validator: _required,
-                ),
-                DropdownButtonFormField<CanonicalItemType>(
-                  initialValue: _type,
-                  decoration: const InputDecoration(
-                    labelText: 'Tipo de artículo *',
-                    helperText: 'Define si el artículo controla existencias.',
-                  ),
-                  items: CanonicalItemType.values.map((type) {
-                    return DropdownMenuItem(
-                      value: type,
-                      child: Text(type.label),
-                    );
-                  }).toList(),
-                  onChanged: (type) {
-                    if (type == null) return;
-                    setState(() {
-                      _type = type;
-                      if (type == CanonicalItemType.service) {
-                        _usesRecipe = false;
-                      }
-                    });
-                  },
-                ),
-                DropdownButtonFormField<String>(
-                  initialValue: units.any((unit) => unit.id == _baseUnit)
-                      ? _baseUnit
-                      : null,
-                  decoration: const InputDecoration(
-                    labelText: 'Unidad base *',
-                    helperText: 'Referencia para costos, precios y cantidades.',
-                  ),
-                  items: units.map((unit) {
-                    return DropdownMenuItem(
-                      value: unit.id,
-                      child: Text('${unit.name} (${unit.code})'),
-                    );
-                  }).toList(),
-                  onChanged: (id) => setState(() => _baseUnit = id),
-                  validator: _required,
-                ),
-                const Divider(),
-                Text(
-                  'Valores comerciales',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextFormField(
-                        controller: _cost,
-                        decoration: const InputDecoration(
-                          labelText: 'Costo por unidad base',
-                        ),
-                        keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true,
-                        ),
-                        validator: _nonnegative,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: TextFormField(
-                        controller: _price,
-                        decoration: const InputDecoration(
-                          labelText: 'Precio por unidad base',
-                        ),
-                        keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true,
-                        ),
-                        validator: _nonnegative,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                const Divider(),
-                Text(
-                  'Clasificaciones funcionales',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                if (widget.classifications.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 12),
-                    child: Text(
-                      'Podrás asignar clasificaciones cuando estén configuradas.',
-                    ),
-                  ),
-                ...widget.classifications.map((classification) {
-                  return CheckboxListTile(
-                    dense: true,
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(classification.name),
-                    value: _classifications.contains(classification.id),
-                    onChanged: (checked) {
-                      setState(() {
-                        if (checked ?? false) {
-                          _classifications.add(classification.id);
-                        } else {
-                          _classifications.remove(classification.id);
-                        }
-                      });
-                    },
-                  );
-                }),
-                const Divider(),
-                Text(
-                  'Venta y operación',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                SwitchListTile(
-                  title: const Text('Se puede vender'),
-                  value: _canSell,
-                  onChanged: (value) {
-                    setState(() {
-                      _canSell = value;
-                      if (!value) _visibleInPos = false;
-                    });
-                  },
-                ),
-                SwitchListTile(
-                  title: const Text('Se puede comprar'),
-                  value: _canPurchase,
-                  onChanged: (value) => setState(() => _canPurchase = value),
-                ),
-                SwitchListTile(
-                  title: const Text('Visible en POS'),
-                  subtitle: const Text(
-                    'Disponible para los cajeros al vender.',
-                  ),
-                  value: _visibleInPos,
-                  onChanged: _canSell
-                      ? (value) => setState(() => _visibleInPos = value)
-                      : null,
-                ),
-                SwitchListTile(
-                  title: const Text('Utiliza receta'),
-                  subtitle: const Text(
-                    'Consume ingredientes según la receta configurada.',
-                  ),
-                  value: _usesRecipe,
-                  onChanged: _type == CanonicalItemType.service
-                      ? null
-                      : (value) => setState(() => _usesRecipe = value),
-                ),
-                SwitchListTile(
-                  title: const Text('Enviar a cocina'),
-                  value: _sendToKitchen,
-                  onChanged: (value) => setState(() => _sendToKitchen = value),
-                ),
-                const Divider(),
-                Text('Estado', style: Theme.of(context).textTheme.titleMedium),
-                SwitchListTile(
-                  title: const Text('Activo'),
-                  value: _isActive,
-                  onChanged: (value) => setState(() => _isActive = value),
-                ),
-              ],
-            ),
+              ),
+              FilledButton.icon(
+                onPressed: widget.saving ? null : _save,
+                icon: widget.saving
+                    ? const SizedBox(
+                        width: 16, height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.save_outlined),
+                label: const Text('Guardar'),
+              ),
+            ],
           ),
         ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancelar'),
-        ),
-        FilledButton(
-          onPressed: _save,
-          child: const Text('Guardar artículo'),
+        const Divider(height: 1),
+        Expanded(
+          child: Form(
+            key: _form,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 980),
+                  child: _fields(context, units),
+                ),
+              ),
+            ),
+          ),
         ),
       ],
     );
