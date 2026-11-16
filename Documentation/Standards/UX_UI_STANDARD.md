@@ -1,6 +1,6 @@
 # UX/UI — Estándar universal Quantix
 
-**Versión:** 0.1.4. **Estado:** reglas recopiladas del propietario, con interpretaciones puntuales pendientes de ratificación.
+**Versión:** 0.1.6. **Estado:** reglas recopiladas del propietario, con interpretaciones puntuales pendientes de ratificación.
 **Principio:** software comprensible para usuarios no técnicos, productividad, coherencia visual y funcional, sin duplicar información.
 
 ## A. Vistas de registros
@@ -68,6 +68,12 @@
 | UX-039 | **Contraste y legibilidad de texto sobre cualquier tema o fondo:** todos los textos visibles (títulos, párrafos, enlaces, placeholders, CTA, captions, etiquetas, métricas y pies) deben destacar y ser legibles sobre su fondo efectivo en todos los estados, idiomas, resoluciones y temas visuales. Aplicar WCAG 2.2 nivel AA: contraste **≥ 4.5:1** para texto normal, **≥ 3:1** para texto grande (18 pt / 24 px o 14 pt / ~18.7 px negrita); indicadores visuales relevantes de controles e iconos **≥ 3:1** cuando corresponda al criterio 1.4.11. Medir contra el fondo **real** incluyendo degradados, fotografías, overlays y transparencias, tomando la zona de menor contraste. Evitar texto blanco pálido sobre crema, opacidad baja, filtros, animaciones o temas estacionales que hagan desaparecer contenido. Elegir colores semánticos/tokens centralizados y, si hace falta, modificar el fondo u overlay, no solamente la tipografía. No aprobar el diseño sin verificación visual y medición automatizada donde sea posible. |
 
 | UX-040 | **Acciones explícitas y autodescriptivas, sin menús genéricos:** cada operación disponible para un usuario debe presentar una etiqueta visible que explique exactamente lo que hace («Editar», «Inactivar», «Quitar nivel», «Ver detalle», «Aprobar», etc.). No ocultar acciones bajo controles ambiguos como «Más», «…», «Opciones» o iconos sin texto visible, ni exigir exploración para conocer las acciones disponibles. En tablas, formularios y barras de herramientas, mantener todas las acciones pertinentes identificadas claramente, sus estados visibles y sus permisos, con diseño responsive sin truncamiento ni desbordes. Cuando existan muchas acciones, agruparlas en secciones o barras contextuales con encabezados específicos y etiquetas visibles, sin esconderlas en un menú genérico. No inventar acciones ni exponer operaciones no autorizadas. |
+## Ficha de edición dentro de la pestaña
+
+| ID | Regla |
+|---|---|
+| UX-048 | En listados administrativos, seleccionar una fila habilita «Editar» cuando los permisos y el estado lo permitan. Editar muestra la ficha completa **en el mismo espacio de la pestaña activa**, reemplazando el listado sin modal ni pestaña nueva. «Regresar» vuelve al listado de origen conservando búsqueda, filtros, orden, paginación y selección válidos. Con cambios pendientes se confirma Guardar/Descartar/Seguir editando conforme a UX-025. No duplicar páginas operativas; mantener permisos y persistencia existentes. No altera los diálogos de confirmación ni el POS. |
+
 ## Criterios pendientes de precisar
 - **UX-015:** distinguir confirmación previa obligatoria de aviso tras éxito; no agregar ventanas extra sin ratificación.
 - **UX-011:** «todas las columnas» se refiere a datos disponibles, no acciones ni consultas que el sistema no realiza; documentar alcance por módulo.
