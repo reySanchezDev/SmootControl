@@ -1,185 +1,161 @@
 part of 'canonical_item_editor.dart';
 
-/// Business fields reused by the existing article editor, not a new screen.
+/// Compact business sections arranged as a responsive form, not a list of rows.
 extension _CanonicalItemEditorFields on _CanonicalItemEditorState {
-  Widget _fields(BuildContext context, List<MeasurementUnit> units) => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Text(
-        'Identificación',
-        style: Theme.of(context).textTheme.titleMedium,
-      ),
-      TextFormField(
-        controller: _code,
-        decoration: const InputDecoration(
-          labelText: 'Código *',
+  Widget _section(BuildContext context, String title, Widget content) =>
+      Padding(
+        padding: const EdgeInsets.only(bottom: 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title, style: Theme.of(context).textTheme.titleMedium),
+            const Divider(height: 20),
+            content,
+          ],
         ),
-        maxLength: 64,
-        validator: _required,
-      ),
-      TextFormField(
-        controller: _name,
-        decoration: const InputDecoration(
-          labelText: 'Nombre *',
-        ),
-        maxLength: 250,
-        validator: _required,
-      ),
-      DropdownButtonFormField<CanonicalItemType>(
-        initialValue: _type,
-        decoration: const InputDecoration(
-          labelText: 'Tipo de artículo *',
-          helperText: 'Define si el artículo controla existencias.',
-        ),
-        items: CanonicalItemType.values.map((type) {
-          return DropdownMenuItem(
-            value: type,
-            child: Text(type.label),
+      );
+
+  Widget _fields(BuildContext context, List<MeasurementUnit> units) =>
+      LayoutBuilder(
+        builder: (context, constraints) {
+          final gap = 18.0;
+          final wide = constraints.maxWidth >= 680;
+          final fieldWidth = wide ? (constraints.maxWidth - gap) / 2
+              : constraints.maxWidth;
+          Widget grid(List<Widget> fields) => Wrap(
+            spacing: gap,
+            runSpacing: 14,
+            children: [
+              for (final field in fields)
+                SizedBox(width: fieldWidth, child: field),
+            ],
           );
-        }).toList(),
-        onChanged: (type) {
-          if (type == null) return;
-          _update(() {
-            _type = type;
-            if (type == CanonicalItemType.service) {
-              _usesRecipe = false;
-            }
-          });
-        },
-      ),
-      DropdownButtonFormField<String>(
-        initialValue: units.any((unit) => unit.id == _baseUnit)
-            ? _baseUnit
-            : null,
-        decoration: const InputDecoration(
-          labelText: 'Unidad base *',
-          helperText: 'Referencia para costos, precios y cantidades.',
-        ),
-        items: units.map((unit) {
-          return DropdownMenuItem(
-            value: unit.id,
-            child: Text('${unit.name} (${unit.code})'),
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _section(context, 'Información general', grid([
+                TextFormField(
+                  controller: _name,
+                  decoration: const InputDecoration(labelText: 'Nombre *'),
+                  maxLength: 250,
+                  validator: _required,
+                ),
+                DropdownButtonFormField<CanonicalItemType>(
+                  initialValue: _type,
+                  isExpanded: true,
+                  decoration: const InputDecoration(labelText: 'Tipo *'),
+                  items: CanonicalItemType.values.map((type) =>
+                    DropdownMenuItem(value: type, child: Text(type.label))
+                  ).toList(),
+                  onChanged: (type) {
+                    if (type == null) return;
+                    _update(() {
+                      _type = type;
+                      if (type == CanonicalItemType.service) {
+                        _usesRecipe = false;
+                      }
+                    });
+                  },
+                ),
+                DropdownButtonFormField<String>(
+                  initialValue: units.any((unit) => unit.id == _baseUnit)
+                      ? _baseUnit : null,
+                  isExpanded: true,
+                  decoration: const InputDecoration(labelText: 'Unidad base *'),
+                  items: units.map((unit) => DropdownMenuItem(
+                    value: unit.id, child: Text('${unit.name} (${unit.code})'),
+                  )).toList(),
+                  onChanged: (id) => _update(() => _baseUnit = id),
+                  validator: _required,
+                ),
+              ])),
+              _section(context, 'Valores comerciales', grid([
+                TextFormField(
+                  controller: _cost,
+                  decoration: const InputDecoration(
+                    labelText: 'Costo por unidad base',
+                  ),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  validator: _nonnegative,
+                ),
+                TextFormField(
+                  controller: _price,
+                  decoration: const InputDecoration(
+                    labelText: 'Precio por unidad base',
+                  ),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  validator: _nonnegative,
+                ),
+              ])),
+              _section(context, 'Clasificaciones', widget.classifications.isEmpty
+                  ? const Text('No hay clasificaciones configuradas.')
+                  : Wrap(
+                      spacing: 12,
+                      runSpacing: 8,
+                      children: [
+                        for (final classification in widget.classifications)
+                          FilterChip(
+                            label: Text(classification.name),
+                            selected: _classifications.contains(classification.id),
+                            onSelected: (selected) => _update(() {
+                              if (selected) {
+                                _classifications.add(classification.id);
+                              } else {
+                                _classifications.remove(classification.id);
+                              }
+                            }),
+                          ),
+                      ],
+                    )),
+              _section(context, 'Operación', grid([
+                SwitchListTile(
+                  title: const Text('Se puede vender'),
+                  contentPadding: EdgeInsets.zero,
+                  value: _canSell,
+                  onChanged: (value) => _update(() {
+                    _canSell = value;
+                    if (!value) _visibleInPos = false;
+                  }),
+                ),
+                SwitchListTile(
+                  title: const Text('Se puede comprar'),
+                  contentPadding: EdgeInsets.zero,
+                  value: _canPurchase,
+                  onChanged: (value) => _update(() => _canPurchase = value),
+                ),
+                SwitchListTile(
+                  title: const Text('Visible en POS'),
+                  contentPadding: EdgeInsets.zero,
+                  value: _visibleInPos,
+                  onChanged: _canSell
+                      ? (value) => _update(() => _visibleInPos = value) : null,
+                ),
+                SwitchListTile(
+                  title: const Text('Utiliza receta'),
+                  contentPadding: EdgeInsets.zero,
+                  value: _usesRecipe,
+                  onChanged: _type == CanonicalItemType.service ? null
+                      : (value) => _update(() => _usesRecipe = value),
+                ),
+                SwitchListTile(
+                  title: const Text('Enviar a cocina'),
+                  contentPadding: EdgeInsets.zero,
+                  value: _sendToKitchen,
+                  onChanged: (value) => _update(() => _sendToKitchen = value),
+                ),
+                SwitchListTile(
+                  title: const Text('Activo'),
+                  contentPadding: EdgeInsets.zero,
+                  value: _isActive,
+                  onChanged: (value) => _update(() => _isActive = value),
+                ),
+              ])),
+            ],
           );
-        }).toList(),
-        onChanged: (id) => _update(() => _baseUnit = id),
-        validator: _required,
-      ),
-      const Divider(),
-      Text(
-        'Valores comerciales',
-        style: Theme.of(context).textTheme.titleMedium,
-      ),
-      Row(
-        children: [
-          Expanded(
-            child: TextFormField(
-              controller: _cost,
-              decoration: const InputDecoration(
-                labelText: 'Costo por unidad base',
-              ),
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
-              validator: _nonnegative,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: TextFormField(
-              controller: _price,
-              decoration: const InputDecoration(
-                labelText: 'Precio por unidad base',
-              ),
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
-              validator: _nonnegative,
-            ),
-          ),
-        ],
-      ),
-      const SizedBox(height: 16),
-      const Divider(),
-      Text(
-        'Clasificaciones funcionales',
-        style: Theme.of(context).textTheme.titleMedium,
-      ),
-      if (widget.classifications.isEmpty)
-        const Padding(
-          padding: EdgeInsets.symmetric(vertical: 12),
-          child: Text(
-            'Podrás asignar clasificaciones cuando estén configuradas.',
-          ),
-        ),
-      ...widget.classifications.map((classification) {
-        return CheckboxListTile(
-          dense: true,
-          contentPadding: EdgeInsets.zero,
-          title: Text(classification.name),
-          value: _classifications.contains(classification.id),
-          onChanged: (checked) {
-            _update(() {
-              if (checked ?? false) {
-                _classifications.add(classification.id);
-              } else {
-                _classifications.remove(classification.id);
-              }
-            });
-          },
-        );
-      }),
-      const Divider(),
-      Text(
-        'Venta y operación',
-        style: Theme.of(context).textTheme.titleMedium,
-      ),
-      SwitchListTile(
-        title: const Text('Se puede vender'),
-        value: _canSell,
-        onChanged: (value) {
-          _update(() {
-            _canSell = value;
-            if (!value) _visibleInPos = false;
-          });
         },
-      ),
-      SwitchListTile(
-        title: const Text('Se puede comprar'),
-        value: _canPurchase,
-        onChanged: (value) => _update(() => _canPurchase = value),
-      ),
-      SwitchListTile(
-        title: const Text('Visible en POS'),
-        subtitle: const Text(
-          'Disponible para los cajeros al vender.',
-        ),
-        value: _visibleInPos,
-        onChanged: _canSell
-            ? (value) => _update(() => _visibleInPos = value)
-            : null,
-      ),
-      SwitchListTile(
-        title: const Text('Utiliza receta'),
-        subtitle: const Text(
-          'Consume ingredientes según la receta configurada.',
-        ),
-        value: _usesRecipe,
-        onChanged: _type == CanonicalItemType.service
-            ? null
-            : (value) => _update(() => _usesRecipe = value),
-      ),
-      SwitchListTile(
-        title: const Text('Enviar a cocina'),
-        value: _sendToKitchen,
-        onChanged: (value) => _update(() => _sendToKitchen = value),
-      ),
-      const Divider(),
-      Text('Estado', style: Theme.of(context).textTheme.titleMedium),
-      SwitchListTile(
-        title: const Text('Activo'),
-        value: _isActive,
-        onChanged: (value) => _update(() => _isActive = value),
-      ),
-    ],
-  );
+      );
 }
