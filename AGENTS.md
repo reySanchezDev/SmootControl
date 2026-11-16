@@ -1,8 +1,8 @@
 # Agentes — SmooControl / Quantix Engineering Standards
 
-Este repositorio adopta la revisión **0.1.6** del repositorio privado
+Este repositorio adopta la revisión **0.1.9** del repositorio privado
 `reySanchezDev/QuantixEngineeringStandar`, commit
-`d05610c86ceff1c181fe3a005fce9a2b7aaeefe7`.
+`0a8cf61fc6c19347229edfff201e0dd185a04484`.
 
 ## Antes de modificar código o UI
 
