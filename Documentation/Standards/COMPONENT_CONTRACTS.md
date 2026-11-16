@@ -24,6 +24,8 @@ Estos contratos describen comportamientos exigidos sin imponer un framework ni d
 - Enter/foco acorde al tipo de control; requeridos marcados, errores contextualizados.
 - Protección de cambios pendientes al cerrar/abandonar, sin bloquear alternar pestañas.
 
+- **UX-048 — Maestro/ficha:** selección habilita Editar; la ficha sustituye el listado dentro de la pestaña actual; Regresar restaura el contexto sin abrir pestaña/ruta alternativa. Proteger cambios pendientes y conservar permisos/estado.
+
 ## Diálogos
 - Variantes compartidas: informativo, error, éxito, advertencia, confirmación y destructivo.
 - Botones claros, accesibilidad y decisión retornada inequívocamente.
