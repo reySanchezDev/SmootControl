@@ -5,29 +5,42 @@ BEGIN;
 
 CREATE SCHEMA IF NOT EXISTS item_core_internal;
 
-CREATE TABLE public.items (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  restaurant_id uuid NOT NULL REFERENCES public.restaurants(id),
-  code text NOT NULL CHECK (length(btrim(code)) BETWEEN 1 AND 64),
-  name text NOT NULL CHECK (length(btrim(name)) BETWEEN 1 AND 250),
-  item_type text NOT NULL CHECK (item_type IN ('inventory','non_inventory','service')),
-  base_unit_id uuid NOT NULL REFERENCES public.measurement_units(id),
-  base_unit_cost numeric(18,6) NOT NULL DEFAULT 0 CHECK (base_unit_cost >= 0),
-  base_unit_price numeric(18,4) NOT NULL DEFAULT 0 CHECK (base_unit_price >= 0),
-  can_sell boolean NOT NULL DEFAULT false,
-  can_purchase boolean NOT NULL DEFAULT false,
-  visible_in_pos boolean NOT NULL DEFAULT false,
-  uses_recipe boolean NOT NULL DEFAULT false,
-  send_to_kitchen boolean NOT NULL DEFAULT false,
-  is_active boolean NOT NULL DEFAULT true,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  CONSTRAINT items_pos_requires_sellable CHECK (NOT visible_in_pos OR can_sell),
-  CONSTRAINT items_recipe_nonservice CHECK (NOT uses_recipe OR item_type <> 'service'),
-  CONSTRAINT items_tenant_id_unique UNIQUE (restaurant_id, id)
-);
-CREATE UNIQUE INDEX items_tenant_code_ci_uidx
-  ON public.items (restaurant_id, lower(btrim(code)));
+ALTER TABLE public.items
+  ADD COLUMN IF NOT EXISTS base_unit_cost numeric(18,6) NOT NULL DEFAULT 0
+    CHECK (base_unit_cost >= 0),
+  ADD COLUMN IF NOT EXISTS base_unit_price numeric(18,4) NOT NULL DEFAULT 0
+    CHECK (base_unit_price >= 0),
+  ADD COLUMN IF NOT EXISTS can_sell boolean NOT NULL DEFAULT false,
+  ADD COLUMN IF NOT EXISTS can_purchase boolean NOT NULL DEFAULT false,
+  ADD COLUMN IF NOT EXISTS visible_in_pos boolean NOT NULL DEFAULT false,
+  ADD COLUMN IF NOT EXISTS uses_recipe boolean NOT NULL DEFAULT false,
+  ADD COLUMN IF NOT EXISTS send_to_kitchen boolean NOT NULL DEFAULT false;
+
+UPDATE public.items
+SET base_unit_cost = unit_cost,
+    base_unit_price = unit_price,
+    can_sell = is_sellable
+WHERE base_unit_cost = 0
+   OR base_unit_price = 0
+   OR can_sell IS DISTINCT FROM is_sellable;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'items_pos_requires_sellable'
+  ) THEN
+    ALTER TABLE public.items ADD CONSTRAINT items_pos_requires_sellable
+      CHECK (NOT visible_in_pos OR can_sell);
+  END IF;
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'items_recipe_nonservice'
+  ) THEN
+    ALTER TABLE public.items ADD CONSTRAINT items_recipe_nonservice
+      CHECK (NOT uses_recipe OR item_type <> 'service');
+  END IF;
+END;
+$$;
+
 CREATE INDEX items_active_type_idx ON public.items (restaurant_id, item_type, is_active);
 
 CREATE TABLE public.item_units (

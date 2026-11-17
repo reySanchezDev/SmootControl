@@ -288,7 +288,7 @@ RETURNS trigger
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public, pg_temp
-AS $
+AS $$
 BEGIN
   IF TG_OP = 'UPDATE' AND (
     NEW.id IS DISTINCT FROM OLD.id OR
@@ -301,7 +301,7 @@ BEGIN
   END IF;
   RETURN NEW;
 END;
-$;
+$$;
 
 REVOKE ALL ON FUNCTION public.guard_item_master_identity() FROM PUBLIC;
 CREATE TRIGGER items_identity_guard

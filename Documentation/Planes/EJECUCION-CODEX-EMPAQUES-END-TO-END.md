@@ -1683,3 +1683,39 @@ login interactivo cuando backend esté listo. Validar creación sin Código,
 edición y F5 en Docker; si hay correcciones, commit/push al mismo PR y reportar
 SHA local/remoto. Registrar evidencia de migraciones, objetos, REST, QA y
 bloqueos. No aprobar G3 por HTTP 200.
+
+### 13.31 Réplica remota local y aplicación real de Item Core (2026-11-17)
+
+Se localizó la credencial privada remota en el worktree original, sin copiarla
+al branch ni imprimir sus valores. El proyecto remoto `SmooControl` confirmó
+ledger 083, sin `public.items`; el dump completo se guardó fuera de Git con
+esquema, datos y roles. También se creó un respaldo completo del Docker local
+antes de reemplazar su esquema público.
+
+La réplica local quedó con los datos remotos compatibles: 1 restaurante, 144
+productos, 2 perfiles y 1 usuario Auth. Las tablas internas de Auth de sesiones
+y tokens se omitieron durante la restauración porque el servicio Auth local
+tiene una versión distinta; `auth.users`, `auth.identities` y todo `public` sí
+se restauraron. El remoto no fue modificado.
+
+La aplicación de migraciones detectó y corrigió tres defectos de la cadena:
+
+- 088 tenía un delimitador PL/pgSQL inválido (`AS $`), corregido a `AS $$`.
+- 089 intentaba recrear `public.items` con un modelo incompatible; ahora es
+  aditiva sobre 088, conserva el backfill y añade las columnas V2 requeridas.
+- 097 generaba código pero no llenaba `item_class`, `source_kind` y
+  `source_id`, obligatorios desde 088. Se corrigió 097 y se añadió 098 para
+  reparar instalaciones donde 097 ya estaba aplicada.
+
+El Docker local terminó con ledger 098. La prueba SQL transaccional real pasó:
+creación sin código manual con `ART-n`, edición sin cambiar código, rechazo de
+tenant ajeno, rollback y grants RPC. La prueba persistente creó `ART-3`, la
+editó y confirmó en PostgreSQL que el código sobrevivió; quedó el artículo
+sintético `QA Item Core Persisted 20261117 Edited` para QA local.
+
+Flutter analyze terminó sin errores y las pruebas dirigidas pasaron 10/10. El
+script oficial compiló el RELEASE contra el Supabase Docker de la réplica y lo
+dejó en `http://127.0.0.1:8096/` (HTTP 200); el bundle contiene la URL local y
+no contiene literales `service_role`. La inspección visual interactiva final,
+login Auth con credenciales del propietario y F5 desde navegador quedan para
+la revisión de Rey; el backend ya está preparado para esa prueba real.
