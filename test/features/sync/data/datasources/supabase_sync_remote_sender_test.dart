@@ -653,7 +653,7 @@ void main() {
 
         expect(requests.map((request) => request.url.path), [
           '/rest/v1/rpc/pos_sync_cash_register_session',
-          '/rest/v1/rpc/pos_sync_sale',
+          '/rest/v1/rpc/pos_sync_sale_v2',
         ]);
         expect(
           requests.every((request) {

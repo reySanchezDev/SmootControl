@@ -78,3 +78,13 @@
 - Acción pendiente: liberar espacio local con una limpieza aprobada del
   propietario y repetir pruebas/análisis/build.
 
+## H-009 — Casos POS no venta pendientes
+
+- Severidad: media.
+- Estado: acotado, no resuelto en esta etapa.
+- Evidencia: la migración 102 certifica venta canónica, descuento de stock y
+  reintento idempotente en Docker; consumo, ajuste, descarga manual y
+  anulación requieren casos separados antes de retirar `product_id`.
+- Acción: completar esos casos y mantener las tablas legadas mientras existan
+  consumidores activos.
+

@@ -110,6 +110,7 @@ extension on SupabaseSyncRemoteSender {
     return {
       'id': _remoteUuid(payload['id'], scope: 'sale_items'),
       'sale_id': saleId,
+      'item_id': payload['productId'],
       'product_id': payload['productId'],
       'table_account_id': _nullableRemoteUuid(
         payload['tableAccountId'],

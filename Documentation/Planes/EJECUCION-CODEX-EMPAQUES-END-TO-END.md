@@ -1816,3 +1816,21 @@ La línea base Flutter de la siguiente etapa quedó comprobada: snapshot canóni
 archivos canónicos auditados no reportó diagnósticos. Estos resultados validan
 la base técnica, pero no certifican aún venta ni movimientos de inventario con
 `items`; el POS probado todavía usa el contrato legado.
+
+### Addendum POS canónico local (2026-11-17)
+
+La Fase 1 quedó implementada en `c5ed2a2`: el pull operativo incorpora
+`item_catalog_v2`, Flutter lo persiste en `localCanonicalItems` y lo proyecta al
+read-model POS con categoría, código comercial, precio, costo y
+`tracksInventory`.
+
+La migración local 102 avanzó la Fase 2: `sale_items`, `inventory_stock` e
+`inventory_movements` tienen `item_id` con FK a `items`; `pos_sync_sale_v2`
+mantiene validación de dispositivo/caja, compatibilidad histórica, stock e
+idempotencia; y Flutter transmite `item_id` en líneas y movimientos.
+
+Evidencia Docker: venta canónica con `item_id`, `product_id` nulo, stock 10→9
+y movimiento -1. El reintento del mismo payload mantuvo stock 9 y una sola
+línea/un solo movimiento. Analyze focalizado sin diagnósticos y pruebas Flutter
+dirigidas 13/13 pasaron. La Fase 2 queda pendiente para consumo, ajustes,
+descargas manuales y anulación antes de retirar `products`.

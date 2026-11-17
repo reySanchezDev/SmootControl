@@ -63,7 +63,7 @@ extension on SupabaseSyncRemoteSender {
       allowAuthFallback: false,
     );
 
-    final result = await _deviceRpc('pos_sync_sale', {
+    final result = await _deviceRpc('pos_sync_sale_v2', {
       'p_payload': {
         'sale': {
           'id': saleId,
