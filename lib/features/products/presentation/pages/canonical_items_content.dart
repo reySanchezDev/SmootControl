@@ -213,7 +213,7 @@ class _CanonicalItemsContentState extends State<CanonicalItemsContent> {
                 label: const Text('Actualizar'),
               ),
             ],
-            belowSearch: _typeFilter(),
+            searchTrailing: _typeFilter(),
             selectionActions: [
               BackofficeSelectionAction<CanonicalItem>(
                 label: 'Editar',
@@ -261,29 +261,25 @@ class _CanonicalItemsContentState extends State<CanonicalItemsContent> {
     );
   }
 
-  Widget _typeFilter() => Padding(
-    padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-    child: Row(
-      children: [
-        const Text('Tipo'),
-        const SizedBox(width: 12),
-        DropdownButton<CanonicalItemType?>(
-          value: _filter,
-          hint: const Text('Todos'),
-          items: [
-            const DropdownMenuItem<CanonicalItemType?>(
-              child: Text('Todos'),
+  Widget _typeFilter() => Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      const Text('Tipo'),
+      const SizedBox(width: 12),
+      DropdownButton<CanonicalItemType?>(
+        value: _filter,
+        hint: const Text('Todos'),
+        items: [
+          const DropdownMenuItem<CanonicalItemType?>(child: Text('Todos')),
+          ...CanonicalItemType.values.map(
+            (type) => DropdownMenuItem<CanonicalItemType?>(
+              value: type,
+              child: Text(type.label),
             ),
-            ...CanonicalItemType.values.map(
-              (type) => DropdownMenuItem<CanonicalItemType?>(
-                value: type,
-                child: Text(type.label),
-              ),
-            ),
-          ],
-          onChanged: (type) => setState(() => _filter = type),
-        ),
-      ],
-    ),
+          ),
+        ],
+        onChanged: (type) => setState(() => _filter = type),
+      ),
+    ],
   );
 }
