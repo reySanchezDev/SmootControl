@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:smoo_control/core/design_system/backoffice_collection_view.dart';
+import 'package:smoo_control/features/catalog/domain/entities/product_category.dart';
 import 'package:smoo_control/features/products/domain/entities/canonical_item.dart';
 
 /// Shared columns for the canonical catalog; generated code stays internal.
-List<BackofficeListColumn<CanonicalItem>> canonicalItemColumns() => [
+List<BackofficeListColumn<CanonicalItem>> canonicalItemColumns(
+  List<ProductCategory> categories,
+) => [
   BackofficeListColumn<CanonicalItem>(
     label: 'Código comercial',
     width: 150,
@@ -12,6 +15,14 @@ List<BackofficeListColumn<CanonicalItem>> canonicalItemColumns() => [
       b.commercialCode ?? 0,
     ),
     cell: (_, item) => Text(item.commercialCode?.toString() ?? '—'),
+  ),
+  BackofficeListColumn<CanonicalItem>(
+    label: 'Categoría',
+    width: 180,
+    compare: (a, b) => _categoryName(a, categories).compareTo(
+      _categoryName(b, categories),
+    ),
+    cell: (_, item) => Text(_categoryName(item, categories)),
   ),
   BackofficeListColumn<CanonicalItem>(
     label: 'Nombre',
@@ -51,3 +62,13 @@ List<BackofficeListColumn<CanonicalItem>> canonicalItemColumns() => [
     cell: (_, item) => Text(item.isActive ? 'Activo' : 'Inactivo'),
   ),
 ];
+
+String _categoryName(
+  CanonicalItem item,
+  List<ProductCategory> categories,
+) {
+  for (final category in categories) {
+    if (category.id == item.categoryId) return category.name;
+  }
+  return 'Sin categoría';
+}

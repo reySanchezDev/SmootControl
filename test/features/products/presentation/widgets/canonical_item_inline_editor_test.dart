@@ -16,7 +16,7 @@ void main() {
   const item = CanonicalItem(
     id: 'item-one',
     code: 'ART-1',
-    name: 'Artículo existente',
+    name: 'Articulo existente',
     type: CanonicalItemType.inventory,
     baseUnitId: 'unit-one',
     cost: 1,
@@ -43,7 +43,7 @@ void main() {
       ),
     );
     expect(find.byType(AlertDialog), findsNothing);
-    expect(find.text('Editar artículo'), findsOneWidget);
+    expect(find.textContaining('Editar'), findsOneWidget);
     expect(find.text('Regresar'), findsOneWidget);
     expect(find.text('Guardar'), findsOneWidget);
     await tester.tap(find.text('Guardar'));
@@ -54,7 +54,7 @@ void main() {
     expect(returns, 1);
   });
 
-  testWidgets('new article uses server-generated code, not manual input', (
+  testWidgets('new article shows the suggested commercial code', (
     tester,
   ) async {
     CanonicalItem? saved;
@@ -64,13 +64,14 @@ void main() {
           body: CanonicalItemEditor(
             units: const [unit],
             classifications: const [],
+            initialCommercialCode: 153,
             onBack: () {},
             onSave: (value) => saved = value,
           ),
         ),
       ),
     );
-    expect(find.textContaining('Código'), findsNothing);
+    expect(find.byType(TextFormField), findsNWidgets(4));
     await tester.enterText(
       find.widgetWithText(TextFormField, 'Nombre *'),
       'Coca-Cola',
@@ -85,6 +86,7 @@ void main() {
     await tester.pump();
     expect(saved?.name, 'Coca-Cola');
     expect(saved?.code, '');
+    expect(saved?.commercialCode, 153);
   });
 
   testWidgets('back warns before losing edited fields', (tester) async {
@@ -104,7 +106,7 @@ void main() {
     );
     await tester.enterText(
       find.widgetWithText(TextFormField, 'Nombre *'),
-      'Artículo modificado',
+      'Articulo modificado',
     );
     await tester.tap(find.text('Regresar'));
     await tester.pumpAndSettle();

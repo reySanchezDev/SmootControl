@@ -1,7 +1,6 @@
 // The compact record declarations keep this maintained file under SMO-001.
 
 import 'package:flutter/material.dart';
-import 'package:smoo_control/core/design_system/app_message_dialog.dart';
 import 'package:smoo_control/core/design_system/backoffice_collection_view.dart';
 import 'package:smoo_control/core/design_system/backoffice_selection_toolbar.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
@@ -25,6 +24,7 @@ part 'canonical_items_content_actions_part.dart';
 class CanonicalItemsContent extends StatefulWidget {
   /// Creates the canonical Products catalog content.
   const CanonicalItemsContent({super.key});
+
   @override
   State<CanonicalItemsContent> createState() => _CanonicalItemsContentState();
 }
@@ -36,11 +36,13 @@ class _CanonicalItemsContentState extends State<CanonicalItemsContent> {
       .getCanonicalItems();
   late final Future<({bool products, bool packaging})> _access =
       loadCanonicalCatalogAccess(_repository);
+  late Future<List<ProductCategory>> _categories = _loadCategories();
   ({
     CanonicalItem? item,
     List<MeasurementUnit> units,
     List<ProductCategory> categories,
     List<CanonicalClassification> classifications,
+    int? initialCommercialCode,
   })?
   _editor;
   CanonicalItemType? _filter;
@@ -48,7 +50,24 @@ class _CanonicalItemsContentState extends State<CanonicalItemsContent> {
   void _refresh() {
     setState(() {
       _items = _repository.getCanonicalItems();
+      _categories = _loadCategories();
     });
+  }
+
+  Future<List<ProductCategory>> _loadCategories() async {
+    final result = await _repository.getCategories();
+    return result is AppSuccess<List<ProductCategory>>
+        ? result.value
+        : const [];
+  }
+
+  int _nextCommercialCode(List<CanonicalItem> items) {
+    var maximum = 0;
+    for (final item in items) {
+      final code = item.commercialCode ?? 0;
+      if (code > maximum) maximum = code;
+    }
+    return maximum + 1;
   }
 
   Future<void> _edit(CanonicalItem? current) async {
@@ -59,6 +78,7 @@ class _CanonicalItemsContentState extends State<CanonicalItemsContent> {
       final classificationsResult = await _repository
           .getCanonicalClassifications();
       final categoriesResult = await _repository.getCategories();
+      final itemsResult = await _items;
       if (!mounted) return;
       if (unitsResult case AppFailureResult(:final error)) {
         _error(error.message);
@@ -72,6 +92,11 @@ class _CanonicalItemsContentState extends State<CanonicalItemsContent> {
         _error(error.message);
         return;
       }
+      final nextCommercialCode =
+          current?.commercialCode ??
+          (itemsResult is AppSuccess<List<CanonicalItem>>
+              ? _nextCommercialCode(itemsResult.value)
+              : null);
       setState(
         () => _editor = (
           item: current,
@@ -84,6 +109,7 @@ class _CanonicalItemsContentState extends State<CanonicalItemsContent> {
               (classificationsResult
                       as AppSuccess<List<CanonicalClassification>>)
                   .value,
+          initialCommercialCode: nextCommercialCode,
         ),
       );
     } finally {
@@ -101,10 +127,8 @@ class _CanonicalItemsContentState extends State<CanonicalItemsContent> {
         case AppSuccess():
           setState(() => _editor = null);
           _refresh();
-          await showAppMessageDialog(
-            context: context,
-            title: 'Artículo guardado',
-            message: 'Los cambios se guardaron correctamente.',
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Artículo guardado correctamente.')),
           );
         case AppFailureResult(:final error):
           _error(error.message);
@@ -129,9 +153,20 @@ class _CanonicalItemsContentState extends State<CanonicalItemsContent> {
             success: (items) =>
                 FutureBuilder<({bool products, bool packaging})>(
                   future: _access,
-                  builder: (context, permission) => permission.hasData
-                      ? _catalog(items, permission.data!)
-                      : const Center(child: CircularProgressIndicator()),
+                  builder: (context, permission) => !permission.hasData
+                      ? const Center(child: CircularProgressIndicator())
+                      : FutureBuilder<List<ProductCategory>>(
+                          future: _categories,
+                          builder: (context, categories) => categories.hasData
+                              ? _catalog(
+                                  items,
+                                  permission.data!,
+                                  categories.data!,
+                                )
+                              : const Center(
+                                  child: CircularProgressIndicator(),
+                                ),
+                        ),
                 ),
           );
         },
@@ -153,6 +188,7 @@ class _CanonicalItemsContentState extends State<CanonicalItemsContent> {
   Widget _catalog(
     List<CanonicalItem> items,
     ({bool products, bool packaging}) access,
+    List<ProductCategory> categories,
   ) {
     final visible = items
         .where((item) => _filter == null || item.type == _filter)
@@ -239,7 +275,7 @@ class _CanonicalItemsContentState extends State<CanonicalItemsContent> {
                 '${item.commercialCode ?? '—'} · ${item.type.label}',
               ),
             ),
-            columns: canonicalItemColumns(),
+            columns: canonicalItemColumns(categories),
           ),
         ),
       ],

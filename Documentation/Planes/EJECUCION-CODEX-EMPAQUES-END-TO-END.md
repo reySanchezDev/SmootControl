@@ -971,6 +971,19 @@ POS operativo ni laboratorio principal; no se fusionó el PR #37.
 
 **G2 ABIERTO:** CI sintético no reemplaza JWT/RLS de Supabase real ni dispositivos físicos. No hay permiso para activar el catálogo V2, hacer migraciones, cambiar `main` o producción. **Evidencia GitHub Actions:** run `43065082221`, PR #38 (commit probado `4073a404b33d35a0ce5653fbff980fbb32875172`), **15/15 jobs success**, **417 pruebas Flutter PASS** y 17 diagnósticos heredados, **0 nuevos** (`PASS NON-REGRESSION ONLY`; `flutter analyze` global todavía no limpio). El job G2 funcional sobre PostgreSQL 16 desechable pasó. Esto certifica simulación de dos almacenes y contratos aislados, no hardware real ni RLS del proyecto Supabase.
 
+### 13.34 Feedback, sugerencia de codigo y categoria visible (2026-11-17)
+
+Productos usa el mensaje inferior negro compartido (`SnackBar`) para exito y
+errores operativos; la confirmacion de cambios pendientes conserva su dialogo
+de decision. Al crear un articulo, el formulario propone el maximo
+`commercial_code` cargado mas uno; el usuario puede editarlo y el RPC mantiene
+la unicidad por restaurante bajo concurrencia. Al editar, se conserva el codigo
+actual y tambien se detectan cambios de categoria como cambios pendientes.
+
+La lista canonica agrega la columna Categoria y resuelve el nombre contra las
+categorias activas del restaurante. No se anadio SQL: la persistencia ya esta
+cubierta por la migracion 100 aplicada solo al Docker local.
+
 ### 12.30 Piloto en Supabase de producción: autorización y perímetro (2026-11-11)
 
 **Decisión del propietario:** utilizar el proyecto Supabase de producción como entorno piloto porque los registros actuales son de ensayo y habrá una limpieza posterior. Esta autorización identifica el entorno, pero **NO implica** permiso para borrar datos indiscriminadamente, saltar respaldo/rollback, desactivar RLS, publicar migraciones, cambiar POS operativo ni poner en riesgo credenciales de clientes. G2 sigue abierto.

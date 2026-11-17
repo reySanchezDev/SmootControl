@@ -15,6 +15,7 @@ class CanonicalItemEditor extends StatefulWidget {
     required this.onSave,
     required this.onBack,
     this.categories = const [],
+    this.initialCommercialCode,
     this.saving = false,
     this.item,
     super.key,
@@ -40,6 +41,9 @@ class CanonicalItemEditor extends StatefulWidget {
 
   /// Active product categories available to the tenant.
   final List<ProductCategory> categories;
+
+  /// Suggested next code for a new article.
+  final int? initialCommercialCode;
   @override
   State<CanonicalItemEditor> createState() => _CanonicalItemEditorState();
 }
@@ -68,7 +72,9 @@ class _CanonicalItemEditorState extends State<CanonicalItemEditor> {
   void initState() {
     super.initState();
     final item = widget.item;
-    _commercialCode.text = item?.commercialCode?.toString() ?? '';
+    _commercialCode.text =
+        (item?.commercialCode ?? widget.initialCommercialCode)?.toString() ??
+        '';
     _name.text = item?.name ?? '';
     _cost.text = item?.cost.toString() ?? '0';
     _price.text = item?.price.toString() ?? '0';
@@ -140,11 +146,16 @@ class _CanonicalItemEditorState extends State<CanonicalItemEditor> {
 
   bool get _hasChanges {
     final previous = widget.item;
+    final previousCommercialCode =
+        previous?.commercialCode?.toString() ??
+        widget.initialCommercialCode?.toString() ??
+        '';
     return _name.text != (previous?.name ?? '') ||
-        _commercialCode.text != (previous?.commercialCode?.toString() ?? '') ||
+        _commercialCode.text != previousCommercialCode ||
         _cost.text != (previous?.cost.toString() ?? '0') ||
         _price.text != (previous?.price.toString() ?? '0') ||
         _baseUnit != previous?.baseUnitId ||
+        _categoryId != previous?.categoryId ||
         _type != (previous?.type ?? CanonicalItemType.inventory) ||
         _canSell != (previous?.canSell ?? false) ||
         _canPurchase != (previous?.canPurchase ?? true) ||
