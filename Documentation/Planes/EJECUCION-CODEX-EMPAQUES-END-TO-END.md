@@ -1810,3 +1810,9 @@ hasta vaciar la matriz de dependencias y certificar ventas, inventario,
 anulaciones, reintentos e idempotencia sobre Docker local. La Fase 0 del plan
 queda completa; las Fases 1–4 están pendientes. No se ejecutó eliminación
 destructiva ni se modificó remoto, `main`, producción o migración 088.
+
+La línea base Flutter de la siguiente etapa quedó comprobada: snapshot canónico
+18/18, applier 7/7 y POS/cola/orden local 31/31. El análisis Dart de los
+archivos canónicos auditados no reportó diagnósticos. Estos resultados validan
+la base técnica, pero no certifican aún venta ni movimientos de inventario con
+`items`; el POS probado todavía usa el contrato legado.

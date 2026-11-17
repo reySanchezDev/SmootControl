@@ -15,3 +15,12 @@
 | E2E-11 | Reintento idempotente | No certificado con contrato canónico |
 | E2E-12 | F5 y sincronización posterior | No certificado |
 
+## Línea base Flutter 2026-11-17
+
+- `item_catalog_snapshot_v2_test.dart`: 18/18 aprobadas.
+- `item_catalog_snapshot_applier_test.dart`: 7/7 aprobadas.
+- POS BLoC, orden local y cola de sincronización: 31/31 aprobadas.
+- Análisis Dart de los archivos canónicos auditados: sin diagnósticos.
+- La suite aún no certifica el flujo `items` en POS: los tests existentes
+  siguen modelando `products` y no hay venta canónica contra Docker.
+

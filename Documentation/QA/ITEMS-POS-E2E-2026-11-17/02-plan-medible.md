@@ -16,6 +16,12 @@
   sin duplicar reglas de negocio.
 - [ ] Criterio: item nuevo visible en POS tras pull y F5, con categoría y precio.
 
+### Evidencia de arranque
+
+La línea base del modelo canónico y del applier está verde. El POS existente
+también está verde sobre su contrato legado; esto no se cuenta como avance de
+la Fase 1 hasta que el catálogo real consuma `items`.
+
 ## Fase 2 — Venta e inventario canónicos (0%)
 
 - [ ] Implementar un RPC versionado de venta con `item_id` y validación tenant,
