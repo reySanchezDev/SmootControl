@@ -34,6 +34,7 @@ extension _AppDatabaseMigrations on AppDatabase {
     await _upgradeSchemaFrom33(migrator, from);
     await _upgradeSchemaFrom34(migrator, from);
     await _upgradeSchemaFrom35(migrator, from);
+    await _upgradeSchemaFrom36(migrator, from);
   }
 
   Future<void> _upgradeSchemaFrom7To20(Migrator migrator, int from) async {
@@ -275,6 +276,31 @@ extension _AppDatabaseMigrations on AppDatabase {
       await migrator.createTable(localCanonicalClassifications);
       await migrator.createTable(localCanonicalClassificationLinks);
       await migrator.createTable(localCanonicalConsumptionRules);
+    }
+  }
+
+  Future<void> _upgradeSchemaFrom36(Migrator migrator, int from) async {
+    if (from < 36) {
+      await migrator.addColumn(
+        localCanonicalItems,
+        localCanonicalItems.categoryId,
+      );
+      await migrator.addColumn(
+        localCanonicalItems,
+        localCanonicalItems.commercialCode,
+      );
+      await migrator.addColumn(
+        localCanonicalItems,
+        localCanonicalItems.priceInCents,
+      );
+      await migrator.addColumn(
+        localCanonicalItems,
+        localCanonicalItems.costInCents,
+      );
+      await migrator.addColumn(
+        localCanonicalItems,
+        localCanonicalItems.tracksInventory,
+      );
     }
   }
 }

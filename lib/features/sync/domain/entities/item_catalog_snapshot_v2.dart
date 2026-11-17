@@ -37,6 +37,11 @@ final class ItemCatalogEntryV2 {
     required this.canSell,
     required this.visibleInPos,
     required this.isActive,
+    this.categoryId,
+    this.commercialCode,
+    this.priceInCents = 0,
+    this.costInCents = 0,
+    this.tracksInventory = false,
   });
 
   /// Canonical UUID; never a commercial code.
@@ -62,6 +67,21 @@ final class ItemCatalogEntryV2 {
 
   /// Whether the article remains active.
   final bool isActive;
+
+  /// Product category used by the POS menu, when configured.
+  final String? categoryId;
+
+  /// User-facing commercial code, never used as technical identity.
+  final String? commercialCode;
+
+  /// Sale price in minor currency units.
+  final int priceInCents;
+
+  /// Cost in minor currency units.
+  final int costInCents;
+
+  /// Whether a sale consumes stock for this article.
+  final bool tracksInventory;
 }
 
 /// Unit conversion defined for an article.
@@ -218,6 +238,13 @@ final class ItemCatalogSnapshotV2 {
       final canSell = _boolean(row['can_sell'], 'can_sell');
       final visibleInPos = _boolean(row['visible_in_pos'], 'visible_in_pos');
       final isActive = _boolean(row['is_active'], 'is_active');
+      final categoryId = row['category_id'] == null
+          ? null
+          : _uuid(row['category_id'], 'category_id');
+      final commercialCode = row['commercial_code']?.toString();
+      final priceInCents = _moneyCents(row['base_unit_price']);
+      final costInCents = _moneyCents(row['base_unit_cost']);
+      final tracksInventory = row['tracks_inventory'] == true;
       if (!itemIds.add(id) || !codes.add(code.toLowerCase())) {
         throw const FormatException('duplicate_catalog_item_or_code');
       }
@@ -234,6 +261,11 @@ final class ItemCatalogSnapshotV2 {
           canSell: canSell,
           visibleInPos: visibleInPos,
           isActive: isActive,
+          categoryId: categoryId,
+          commercialCode: commercialCode,
+          priceInCents: priceInCents,
+          costInCents: costInCents,
+          tracksInventory: tracksInventory,
         ),
       );
     }
@@ -349,8 +381,7 @@ final class ItemCatalogSnapshotV2 {
         throw const FormatException('invalid_consumption_source');
       }
       if (!items.any(
-        (item) =>
-            item.id == consumed && item.type != ItemCatalogTypeV2.service,
+        (item) => item.id == consumed && item.type != ItemCatalogTypeV2.service,
       )) {
         throw const FormatException('invalid_consumed_item');
       }
@@ -452,14 +483,25 @@ final class ItemCatalogSnapshotV2 {
     return value;
   }
 
+  static int _moneyCents(Object? value) {
+    if (value == null) return 0;
+    final parsed = num.tryParse(value.toString());
+    if (parsed == null || !parsed.isFinite) {
+      throw const FormatException('invalid_catalog_money');
+    }
+    return (parsed * 100).round();
+  }
+
   static List<Map<String, Object?>> _rows(Object? value, String label) {
     if (value is! List) throw FormatException('invalid_$label');
-    return value.map((row) {
-      if (row is! Map<String, Object?>) {
-        throw FormatException('invalid_${label}_row');
-      }
-      return row;
-    }).toList(growable: false);
+    return value
+        .map((row) {
+          if (row is! Map<String, Object?>) {
+            throw FormatException('invalid_${label}_row');
+          }
+          return row;
+        })
+        .toList(growable: false);
   }
 
   static void _checkTenant(Map<String, Object?> row, String tenantId) {

@@ -48,6 +48,22 @@ class LocalCanonicalItems extends Table {
   /// Whether the article is active.
   BoolColumn get isActive => boolean()();
 
+  /// Optional product category used by the POS menu.
+  TextColumn get categoryId => text().nullable()();
+
+  /// User-facing commercial code.
+  TextColumn get commercialCode => text().nullable()();
+
+  /// Sale price in minor currency units.
+  IntColumn get priceInCents => integer().withDefault(const Constant(0))();
+
+  /// Cost in minor currency units.
+  IntColumn get costInCents => integer().withDefault(const Constant(0))();
+
+  /// Whether this item consumes stock when sold.
+  BoolColumn get tracksInventory =>
+      boolean().withDefault(const Constant(false))();
+
   @override
   Set<Column<Object>> get primaryKey => {id};
 }

@@ -458,6 +458,67 @@ class $LocalCanonicalItemsTable extends LocalCanonicalItems
       'CHECK ("is_active" IN (0, 1))',
     ),
   );
+  static const VerificationMeta _categoryIdMeta = const VerificationMeta(
+    'categoryId',
+  );
+  @override
+  late final GeneratedColumn<String> categoryId = GeneratedColumn<String>(
+    'category_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _commercialCodeMeta = const VerificationMeta(
+    'commercialCode',
+  );
+  @override
+  late final GeneratedColumn<String> commercialCode = GeneratedColumn<String>(
+    'commercial_code',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _priceInCentsMeta = const VerificationMeta(
+    'priceInCents',
+  );
+  @override
+  late final GeneratedColumn<int> priceInCents = GeneratedColumn<int>(
+    'price_in_cents',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _costInCentsMeta = const VerificationMeta(
+    'costInCents',
+  );
+  @override
+  late final GeneratedColumn<int> costInCents = GeneratedColumn<int>(
+    'cost_in_cents',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _tracksInventoryMeta = const VerificationMeta(
+    'tracksInventory',
+  );
+  @override
+  late final GeneratedColumn<bool> tracksInventory = GeneratedColumn<bool>(
+    'tracks_inventory',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("tracks_inventory" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -469,6 +530,11 @@ class $LocalCanonicalItemsTable extends LocalCanonicalItems
     canSell,
     visibleInPos,
     isActive,
+    categoryId,
+    commercialCode,
+    priceInCents,
+    costInCents,
+    tracksInventory,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -560,6 +626,48 @@ class $LocalCanonicalItemsTable extends LocalCanonicalItems
     } else if (isInserting) {
       context.missing(_isActiveMeta);
     }
+    if (data.containsKey('category_id')) {
+      context.handle(
+        _categoryIdMeta,
+        categoryId.isAcceptableOrUnknown(data['category_id']!, _categoryIdMeta),
+      );
+    }
+    if (data.containsKey('commercial_code')) {
+      context.handle(
+        _commercialCodeMeta,
+        commercialCode.isAcceptableOrUnknown(
+          data['commercial_code']!,
+          _commercialCodeMeta,
+        ),
+      );
+    }
+    if (data.containsKey('price_in_cents')) {
+      context.handle(
+        _priceInCentsMeta,
+        priceInCents.isAcceptableOrUnknown(
+          data['price_in_cents']!,
+          _priceInCentsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('cost_in_cents')) {
+      context.handle(
+        _costInCentsMeta,
+        costInCents.isAcceptableOrUnknown(
+          data['cost_in_cents']!,
+          _costInCentsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('tracks_inventory')) {
+      context.handle(
+        _tracksInventoryMeta,
+        tracksInventory.isAcceptableOrUnknown(
+          data['tracks_inventory']!,
+          _tracksInventoryMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -605,6 +713,26 @@ class $LocalCanonicalItemsTable extends LocalCanonicalItems
         DriftSqlType.bool,
         data['${effectivePrefix}is_active'],
       )!,
+      categoryId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}category_id'],
+      ),
+      commercialCode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}commercial_code'],
+      ),
+      priceInCents: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}price_in_cents'],
+      )!,
+      costInCents: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}cost_in_cents'],
+      )!,
+      tracksInventory: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}tracks_inventory'],
+      )!,
     );
   }
 
@@ -642,6 +770,21 @@ class LocalCanonicalItem extends DataClass
 
   /// Whether the article is active.
   final bool isActive;
+
+  /// Optional product category used by the POS menu.
+  final String? categoryId;
+
+  /// User-facing commercial code.
+  final String? commercialCode;
+
+  /// Sale price in minor currency units.
+  final int priceInCents;
+
+  /// Cost in minor currency units.
+  final int costInCents;
+
+  /// Whether this item consumes stock when sold.
+  final bool tracksInventory;
   const LocalCanonicalItem({
     required this.id,
     required this.restaurantId,
@@ -652,6 +795,11 @@ class LocalCanonicalItem extends DataClass
     required this.canSell,
     required this.visibleInPos,
     required this.isActive,
+    this.categoryId,
+    this.commercialCode,
+    required this.priceInCents,
+    required this.costInCents,
+    required this.tracksInventory,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -665,6 +813,15 @@ class LocalCanonicalItem extends DataClass
     map['can_sell'] = Variable<bool>(canSell);
     map['visible_in_pos'] = Variable<bool>(visibleInPos);
     map['is_active'] = Variable<bool>(isActive);
+    if (!nullToAbsent || categoryId != null) {
+      map['category_id'] = Variable<String>(categoryId);
+    }
+    if (!nullToAbsent || commercialCode != null) {
+      map['commercial_code'] = Variable<String>(commercialCode);
+    }
+    map['price_in_cents'] = Variable<int>(priceInCents);
+    map['cost_in_cents'] = Variable<int>(costInCents);
+    map['tracks_inventory'] = Variable<bool>(tracksInventory);
     return map;
   }
 
@@ -679,6 +836,15 @@ class LocalCanonicalItem extends DataClass
       canSell: Value(canSell),
       visibleInPos: Value(visibleInPos),
       isActive: Value(isActive),
+      categoryId: categoryId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(categoryId),
+      commercialCode: commercialCode == null && nullToAbsent
+          ? const Value.absent()
+          : Value(commercialCode),
+      priceInCents: Value(priceInCents),
+      costInCents: Value(costInCents),
+      tracksInventory: Value(tracksInventory),
     );
   }
 
@@ -697,6 +863,11 @@ class LocalCanonicalItem extends DataClass
       canSell: serializer.fromJson<bool>(json['canSell']),
       visibleInPos: serializer.fromJson<bool>(json['visibleInPos']),
       isActive: serializer.fromJson<bool>(json['isActive']),
+      categoryId: serializer.fromJson<String?>(json['categoryId']),
+      commercialCode: serializer.fromJson<String?>(json['commercialCode']),
+      priceInCents: serializer.fromJson<int>(json['priceInCents']),
+      costInCents: serializer.fromJson<int>(json['costInCents']),
+      tracksInventory: serializer.fromJson<bool>(json['tracksInventory']),
     );
   }
   @override
@@ -712,6 +883,11 @@ class LocalCanonicalItem extends DataClass
       'canSell': serializer.toJson<bool>(canSell),
       'visibleInPos': serializer.toJson<bool>(visibleInPos),
       'isActive': serializer.toJson<bool>(isActive),
+      'categoryId': serializer.toJson<String?>(categoryId),
+      'commercialCode': serializer.toJson<String?>(commercialCode),
+      'priceInCents': serializer.toJson<int>(priceInCents),
+      'costInCents': serializer.toJson<int>(costInCents),
+      'tracksInventory': serializer.toJson<bool>(tracksInventory),
     };
   }
 
@@ -725,6 +901,11 @@ class LocalCanonicalItem extends DataClass
     bool? canSell,
     bool? visibleInPos,
     bool? isActive,
+    Value<String?> categoryId = const Value.absent(),
+    Value<String?> commercialCode = const Value.absent(),
+    int? priceInCents,
+    int? costInCents,
+    bool? tracksInventory,
   }) => LocalCanonicalItem(
     id: id ?? this.id,
     restaurantId: restaurantId ?? this.restaurantId,
@@ -735,6 +916,13 @@ class LocalCanonicalItem extends DataClass
     canSell: canSell ?? this.canSell,
     visibleInPos: visibleInPos ?? this.visibleInPos,
     isActive: isActive ?? this.isActive,
+    categoryId: categoryId.present ? categoryId.value : this.categoryId,
+    commercialCode: commercialCode.present
+        ? commercialCode.value
+        : this.commercialCode,
+    priceInCents: priceInCents ?? this.priceInCents,
+    costInCents: costInCents ?? this.costInCents,
+    tracksInventory: tracksInventory ?? this.tracksInventory,
   );
   LocalCanonicalItem copyWithCompanion(LocalCanonicalItemsCompanion data) {
     return LocalCanonicalItem(
@@ -753,6 +941,21 @@ class LocalCanonicalItem extends DataClass
           ? data.visibleInPos.value
           : this.visibleInPos,
       isActive: data.isActive.present ? data.isActive.value : this.isActive,
+      categoryId: data.categoryId.present
+          ? data.categoryId.value
+          : this.categoryId,
+      commercialCode: data.commercialCode.present
+          ? data.commercialCode.value
+          : this.commercialCode,
+      priceInCents: data.priceInCents.present
+          ? data.priceInCents.value
+          : this.priceInCents,
+      costInCents: data.costInCents.present
+          ? data.costInCents.value
+          : this.costInCents,
+      tracksInventory: data.tracksInventory.present
+          ? data.tracksInventory.value
+          : this.tracksInventory,
     );
   }
 
@@ -767,7 +970,12 @@ class LocalCanonicalItem extends DataClass
           ..write('baseUnitId: $baseUnitId, ')
           ..write('canSell: $canSell, ')
           ..write('visibleInPos: $visibleInPos, ')
-          ..write('isActive: $isActive')
+          ..write('isActive: $isActive, ')
+          ..write('categoryId: $categoryId, ')
+          ..write('commercialCode: $commercialCode, ')
+          ..write('priceInCents: $priceInCents, ')
+          ..write('costInCents: $costInCents, ')
+          ..write('tracksInventory: $tracksInventory')
           ..write(')'))
         .toString();
   }
@@ -783,6 +991,11 @@ class LocalCanonicalItem extends DataClass
     canSell,
     visibleInPos,
     isActive,
+    categoryId,
+    commercialCode,
+    priceInCents,
+    costInCents,
+    tracksInventory,
   );
   @override
   bool operator ==(Object other) =>
@@ -796,7 +1009,12 @@ class LocalCanonicalItem extends DataClass
           other.baseUnitId == this.baseUnitId &&
           other.canSell == this.canSell &&
           other.visibleInPos == this.visibleInPos &&
-          other.isActive == this.isActive);
+          other.isActive == this.isActive &&
+          other.categoryId == this.categoryId &&
+          other.commercialCode == this.commercialCode &&
+          other.priceInCents == this.priceInCents &&
+          other.costInCents == this.costInCents &&
+          other.tracksInventory == this.tracksInventory);
 }
 
 class LocalCanonicalItemsCompanion extends UpdateCompanion<LocalCanonicalItem> {
@@ -809,6 +1027,11 @@ class LocalCanonicalItemsCompanion extends UpdateCompanion<LocalCanonicalItem> {
   final Value<bool> canSell;
   final Value<bool> visibleInPos;
   final Value<bool> isActive;
+  final Value<String?> categoryId;
+  final Value<String?> commercialCode;
+  final Value<int> priceInCents;
+  final Value<int> costInCents;
+  final Value<bool> tracksInventory;
   final Value<int> rowid;
   const LocalCanonicalItemsCompanion({
     this.id = const Value.absent(),
@@ -820,6 +1043,11 @@ class LocalCanonicalItemsCompanion extends UpdateCompanion<LocalCanonicalItem> {
     this.canSell = const Value.absent(),
     this.visibleInPos = const Value.absent(),
     this.isActive = const Value.absent(),
+    this.categoryId = const Value.absent(),
+    this.commercialCode = const Value.absent(),
+    this.priceInCents = const Value.absent(),
+    this.costInCents = const Value.absent(),
+    this.tracksInventory = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   LocalCanonicalItemsCompanion.insert({
@@ -832,6 +1060,11 @@ class LocalCanonicalItemsCompanion extends UpdateCompanion<LocalCanonicalItem> {
     required bool canSell,
     required bool visibleInPos,
     required bool isActive,
+    this.categoryId = const Value.absent(),
+    this.commercialCode = const Value.absent(),
+    this.priceInCents = const Value.absent(),
+    this.costInCents = const Value.absent(),
+    this.tracksInventory = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        restaurantId = Value(restaurantId),
@@ -852,6 +1085,11 @@ class LocalCanonicalItemsCompanion extends UpdateCompanion<LocalCanonicalItem> {
     Expression<bool>? canSell,
     Expression<bool>? visibleInPos,
     Expression<bool>? isActive,
+    Expression<String>? categoryId,
+    Expression<String>? commercialCode,
+    Expression<int>? priceInCents,
+    Expression<int>? costInCents,
+    Expression<bool>? tracksInventory,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -864,6 +1102,11 @@ class LocalCanonicalItemsCompanion extends UpdateCompanion<LocalCanonicalItem> {
       if (canSell != null) 'can_sell': canSell,
       if (visibleInPos != null) 'visible_in_pos': visibleInPos,
       if (isActive != null) 'is_active': isActive,
+      if (categoryId != null) 'category_id': categoryId,
+      if (commercialCode != null) 'commercial_code': commercialCode,
+      if (priceInCents != null) 'price_in_cents': priceInCents,
+      if (costInCents != null) 'cost_in_cents': costInCents,
+      if (tracksInventory != null) 'tracks_inventory': tracksInventory,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -878,6 +1121,11 @@ class LocalCanonicalItemsCompanion extends UpdateCompanion<LocalCanonicalItem> {
     Value<bool>? canSell,
     Value<bool>? visibleInPos,
     Value<bool>? isActive,
+    Value<String?>? categoryId,
+    Value<String?>? commercialCode,
+    Value<int>? priceInCents,
+    Value<int>? costInCents,
+    Value<bool>? tracksInventory,
     Value<int>? rowid,
   }) {
     return LocalCanonicalItemsCompanion(
@@ -890,6 +1138,11 @@ class LocalCanonicalItemsCompanion extends UpdateCompanion<LocalCanonicalItem> {
       canSell: canSell ?? this.canSell,
       visibleInPos: visibleInPos ?? this.visibleInPos,
       isActive: isActive ?? this.isActive,
+      categoryId: categoryId ?? this.categoryId,
+      commercialCode: commercialCode ?? this.commercialCode,
+      priceInCents: priceInCents ?? this.priceInCents,
+      costInCents: costInCents ?? this.costInCents,
+      tracksInventory: tracksInventory ?? this.tracksInventory,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -924,6 +1177,21 @@ class LocalCanonicalItemsCompanion extends UpdateCompanion<LocalCanonicalItem> {
     if (isActive.present) {
       map['is_active'] = Variable<bool>(isActive.value);
     }
+    if (categoryId.present) {
+      map['category_id'] = Variable<String>(categoryId.value);
+    }
+    if (commercialCode.present) {
+      map['commercial_code'] = Variable<String>(commercialCode.value);
+    }
+    if (priceInCents.present) {
+      map['price_in_cents'] = Variable<int>(priceInCents.value);
+    }
+    if (costInCents.present) {
+      map['cost_in_cents'] = Variable<int>(costInCents.value);
+    }
+    if (tracksInventory.present) {
+      map['tracks_inventory'] = Variable<bool>(tracksInventory.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -942,6 +1210,11 @@ class LocalCanonicalItemsCompanion extends UpdateCompanion<LocalCanonicalItem> {
           ..write('canSell: $canSell, ')
           ..write('visibleInPos: $visibleInPos, ')
           ..write('isActive: $isActive, ')
+          ..write('categoryId: $categoryId, ')
+          ..write('commercialCode: $commercialCode, ')
+          ..write('priceInCents: $priceInCents, ')
+          ..write('costInCents: $costInCents, ')
+          ..write('tracksInventory: $tracksInventory, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -31627,6 +31900,11 @@ typedef $$LocalCanonicalItemsTableCreateCompanionBuilder =
       required bool canSell,
       required bool visibleInPos,
       required bool isActive,
+      Value<String?> categoryId,
+      Value<String?> commercialCode,
+      Value<int> priceInCents,
+      Value<int> costInCents,
+      Value<bool> tracksInventory,
       Value<int> rowid,
     });
 typedef $$LocalCanonicalItemsTableUpdateCompanionBuilder =
@@ -31640,6 +31918,11 @@ typedef $$LocalCanonicalItemsTableUpdateCompanionBuilder =
       Value<bool> canSell,
       Value<bool> visibleInPos,
       Value<bool> isActive,
+      Value<String?> categoryId,
+      Value<String?> commercialCode,
+      Value<int> priceInCents,
+      Value<int> costInCents,
+      Value<bool> tracksInventory,
       Value<int> rowid,
     });
 
@@ -31694,6 +31977,31 @@ class $$LocalCanonicalItemsTableFilterComposer
 
   ColumnFilters<bool> get isActive => $composableBuilder(
     column: $table.isActive,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get categoryId => $composableBuilder(
+    column: $table.categoryId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get commercialCode => $composableBuilder(
+    column: $table.commercialCode,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get priceInCents => $composableBuilder(
+    column: $table.priceInCents,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get costInCents => $composableBuilder(
+    column: $table.costInCents,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get tracksInventory => $composableBuilder(
+    column: $table.tracksInventory,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -31751,6 +32059,31 @@ class $$LocalCanonicalItemsTableOrderingComposer
     column: $table.isActive,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get categoryId => $composableBuilder(
+    column: $table.categoryId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get commercialCode => $composableBuilder(
+    column: $table.commercialCode,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get priceInCents => $composableBuilder(
+    column: $table.priceInCents,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get costInCents => $composableBuilder(
+    column: $table.costInCents,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get tracksInventory => $composableBuilder(
+    column: $table.tracksInventory,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$LocalCanonicalItemsTableAnnotationComposer
@@ -31794,6 +32127,31 @@ class $$LocalCanonicalItemsTableAnnotationComposer
 
   GeneratedColumn<bool> get isActive =>
       $composableBuilder(column: $table.isActive, builder: (column) => column);
+
+  GeneratedColumn<String> get categoryId => $composableBuilder(
+    column: $table.categoryId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get commercialCode => $composableBuilder(
+    column: $table.commercialCode,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get priceInCents => $composableBuilder(
+    column: $table.priceInCents,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get costInCents => $composableBuilder(
+    column: $table.costInCents,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get tracksInventory => $composableBuilder(
+    column: $table.tracksInventory,
+    builder: (column) => column,
+  );
 }
 
 class $$LocalCanonicalItemsTableTableManager
@@ -31848,6 +32206,11 @@ class $$LocalCanonicalItemsTableTableManager
                 Value<bool> canSell = const Value.absent(),
                 Value<bool> visibleInPos = const Value.absent(),
                 Value<bool> isActive = const Value.absent(),
+                Value<String?> categoryId = const Value.absent(),
+                Value<String?> commercialCode = const Value.absent(),
+                Value<int> priceInCents = const Value.absent(),
+                Value<int> costInCents = const Value.absent(),
+                Value<bool> tracksInventory = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => LocalCanonicalItemsCompanion(
                 id: id,
@@ -31859,6 +32222,11 @@ class $$LocalCanonicalItemsTableTableManager
                 canSell: canSell,
                 visibleInPos: visibleInPos,
                 isActive: isActive,
+                categoryId: categoryId,
+                commercialCode: commercialCode,
+                priceInCents: priceInCents,
+                costInCents: costInCents,
+                tracksInventory: tracksInventory,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -31872,6 +32240,11 @@ class $$LocalCanonicalItemsTableTableManager
                 required bool canSell,
                 required bool visibleInPos,
                 required bool isActive,
+                Value<String?> categoryId = const Value.absent(),
+                Value<String?> commercialCode = const Value.absent(),
+                Value<int> priceInCents = const Value.absent(),
+                Value<int> costInCents = const Value.absent(),
+                Value<bool> tracksInventory = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => LocalCanonicalItemsCompanion.insert(
                 id: id,
@@ -31883,6 +32256,11 @@ class $$LocalCanonicalItemsTableTableManager
                 canSell: canSell,
                 visibleInPos: visibleInPos,
                 isActive: isActive,
+                categoryId: categoryId,
+                commercialCode: commercialCode,
+                priceInCents: priceInCents,
+                costInCents: costInCents,
+                tracksInventory: tracksInventory,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

@@ -41,34 +41,30 @@ final class ItemCatalogSnapshotApplier {
       // Canonical data is tenant-owned. Never erase a second restaurant's
       // catalog when the current restaurant receives a newer snapshot.
       final oldItems =
-          await (_database.select(_database.localCanonicalItems)
-                ..where(
-                  (row) => row.restaurantId.equals(snapshot.restaurantId),
-                ))
+          await (_database.select(_database.localCanonicalItems)..where(
+                (row) => row.restaurantId.equals(snapshot.restaurantId),
+              ))
               .get();
       final oldIds = oldItems.map((item) => item.id).toList(growable: false);
       if (oldIds.isNotEmpty) {
-        await (_database.delete(_database.localCanonicalClassificationLinks)
-              ..where((row) => row.itemId.isIn(oldIds)))
-            .go();
-        await (_database.delete(_database.localCanonicalItemUnits)
-              ..where((row) => row.itemId.isIn(oldIds)))
-            .go();
+        await (_database.delete(
+          _database.localCanonicalClassificationLinks,
+        )..where((row) => row.itemId.isIn(oldIds))).go();
+        await (_database.delete(
+          _database.localCanonicalItemUnits,
+        )..where((row) => row.itemId.isIn(oldIds))).go();
       }
-      await (_database.delete(_database.localCanonicalConsumptionRules)
-            ..where(
-              (row) => row.restaurantId.equals(snapshot.restaurantId),
-            ))
+      await (_database.delete(_database.localCanonicalConsumptionRules)..where(
+            (row) => row.restaurantId.equals(snapshot.restaurantId),
+          ))
           .go();
-      await (_database.delete(_database.localCanonicalClassifications)
-            ..where(
-              (row) => row.restaurantId.equals(snapshot.restaurantId),
-            ))
+      await (_database.delete(_database.localCanonicalClassifications)..where(
+            (row) => row.restaurantId.equals(snapshot.restaurantId),
+          ))
           .go();
-      await (_database.delete(_database.localCanonicalItems)
-            ..where(
-              (row) => row.restaurantId.equals(snapshot.restaurantId),
-            ))
+      await (_database.delete(_database.localCanonicalItems)..where(
+            (row) => row.restaurantId.equals(snapshot.restaurantId),
+          ))
           .go();
 
       for (final item in snapshot.items) {
@@ -85,6 +81,11 @@ final class ItemCatalogSnapshotApplier {
                 canSell: item.canSell,
                 visibleInPos: item.visibleInPos,
                 isActive: item.isActive,
+                categoryId: Value(item.categoryId),
+                commercialCode: Value(item.commercialCode),
+                priceInCents: Value(item.priceInCents),
+                costInCents: Value(item.costInCents),
+                tracksInventory: Value(item.tracksInventory),
               ),
             );
       }
