@@ -112,3 +112,19 @@ empaques y consumo de personal.
 6. Revocar o convertir los RPC legados únicamente después de repetir esta
    auditoría y obtener cero invocaciones activas fuera de compatibilidad
    histórica explícitamente aislada.
+
+## Avance de corrección — fase 1
+
+- Migración 105: el snapshot canónico ahora incluye stock por `item_id`.
+- POS local: `CanonicalItemPosProjector` persiste ese stock en Drift y la ruta
+  con snapshot canónico ya no consulta ni aplica `products`,
+  `product_modifier_groups` o `inventory_stock.product_id`.
+- Inventario administrativo: la lectura de stock usa `items` y
+  `inventory_stock.item_id`.
+- Drift local subió a schema 38 para conservar `quantity_on_hand` del snapshot.
+- Verificación: SQL local devolvió 157 artículos y stock 11 para el fixture;
+  analyze sin diagnósticos y pruebas dirigidas 30/30 aprobadas.
+
+La auditoría completa aún permanece abierta porque cola administrativa,
+escrituras de inventario, ventas administrativas, recetas, empaques y consumo
+de personal todavía requieren migración.

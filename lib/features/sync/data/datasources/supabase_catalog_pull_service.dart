@@ -105,6 +105,7 @@ final class SupabaseCatalogPullService implements ICatalogPullService {
     final shouldRefreshProducts = effectiveScopes.contains(
       CatalogPullScope.products,
     );
+    final hasCanonicalItemSnapshot = _deviceItemCatalogSnapshot != null;
     final shouldRefreshModifiers = effectiveScopes.contains(
       CatalogPullScope.modifiers,
     );
@@ -164,20 +165,21 @@ final class SupabaseCatalogPullService implements ICatalogPullService {
     final modifierOptions = shouldRefreshModifiers
         ? await _getRows('modifier_options')
         : const <Map<String, Object?>>[];
-    final productModifierGroups = shouldRefreshProducts
+    final productModifierGroups =
+        shouldRefreshProducts && !hasCanonicalItemSnapshot
         ? await _getRows(
             'product_modifier_groups',
             select: 'product_id,modifier_group_id,display_order',
           )
         : const <Map<String, Object?>>[];
-    final products = shouldRefreshProducts
+    final products = shouldRefreshProducts && !hasCanonicalItemSnapshot
         ? await _getRowsByQuery('products', {
             'restaurant_id': 'eq.${_restaurantService.restaurantId}',
             'or': '(is_raw_material.eq.false,is_raw_material.is.null)',
             'select': '*',
           })
         : const <Map<String, Object?>>[];
-    final inventoryStock = shouldRefreshProducts
+    final inventoryStock = shouldRefreshProducts && !hasCanonicalItemSnapshot
         ? _stockForProducts(await _getRows('inventory_stock'), products)
         : const <Map<String, Object?>>[];
     if (shouldRefreshPackaging && _deviceCatalogRows == null) {
@@ -237,7 +239,7 @@ final class SupabaseCatalogPullService implements ICatalogPullService {
         await _applyModifierGroups(modifierGroups);
         await _applyModifierOptions(modifierOptions);
       }
-      if (shouldRefreshProducts) {
+      if (shouldRefreshProducts && !hasCanonicalItemSnapshot) {
         await _applyProducts(products, modifierIdsByProduct);
         await _applyInventoryStock(inventoryStock);
       }

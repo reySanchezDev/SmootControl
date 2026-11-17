@@ -70,6 +70,23 @@ final class CanonicalItemPosProjector {
               ),
               mode: InsertMode.insertOrReplace,
             );
+        if (item.tracksInventory) {
+          await _database
+              .into(_database.localInventoryStock)
+              .insert(
+                LocalInventoryStockCompanion(
+                  productId: Value(item.id),
+                  quantityOnHand: Value(item.quantityOnHand),
+                  remoteId: Value(item.id),
+                  syncStatus: const Value('synced'),
+                  syncError: const Value(null),
+                  createdAt: Value(now),
+                  updatedAt: Value(now),
+                  syncedAt: Value(now),
+                ),
+                mode: InsertMode.insertOrReplace,
+              );
+        }
       }
 
       final projected = await (_database.select(

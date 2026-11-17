@@ -42,6 +42,7 @@ final class ItemCatalogEntryV2 {
     this.priceInCents = 0,
     this.costInCents = 0,
     this.tracksInventory = false,
+    this.quantityOnHand = 0,
   });
 
   /// Canonical UUID; never a commercial code.
@@ -82,6 +83,9 @@ final class ItemCatalogEntryV2 {
 
   /// Whether a sale consumes stock for this article.
   final bool tracksInventory;
+
+  /// Tenant-scoped stock included in the authoritative POS snapshot.
+  final int quantityOnHand;
 }
 
 /// Unit conversion defined for an article.
@@ -245,6 +249,7 @@ final class ItemCatalogSnapshotV2 {
       final priceInCents = _moneyCents(row['base_unit_price']);
       final costInCents = _moneyCents(row['base_unit_cost']);
       final tracksInventory = row['tracks_inventory'] == true;
+      final quantityOnHand = _integer(row['quantity_on_hand']);
       if (!itemIds.add(id) || !codes.add(code.toLowerCase())) {
         throw const FormatException('duplicate_catalog_item_or_code');
       }
@@ -266,6 +271,7 @@ final class ItemCatalogSnapshotV2 {
           priceInCents: priceInCents,
           costInCents: costInCents,
           tracksInventory: tracksInventory,
+          quantityOnHand: quantityOnHand,
         ),
       );
     }
@@ -490,6 +496,15 @@ final class ItemCatalogSnapshotV2 {
       throw const FormatException('invalid_catalog_money');
     }
     return (parsed * 100).round();
+  }
+
+  static int _integer(Object? value) {
+    if (value == null) return 0;
+    final parsed = int.tryParse(value.toString());
+    if (parsed == null || parsed < 0) {
+      throw const FormatException('invalid_catalog_stock');
+    }
+    return parsed;
   }
 
   static List<Map<String, Object?>> _rows(Object? value, String label) {

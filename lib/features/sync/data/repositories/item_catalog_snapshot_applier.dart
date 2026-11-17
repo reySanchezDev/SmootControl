@@ -86,6 +86,7 @@ final class ItemCatalogSnapshotApplier {
                 priceInCents: Value(item.priceInCents),
                 costInCents: Value(item.costInCents),
                 tracksInventory: Value(item.tracksInventory),
+                quantityOnHand: Value(item.quantityOnHand),
               ),
             );
       }

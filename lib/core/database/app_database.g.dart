@@ -519,6 +519,18 @@ class $LocalCanonicalItemsTable extends LocalCanonicalItems
     ),
     defaultValue: const Constant(false),
   );
+  static const VerificationMeta _quantityOnHandMeta = const VerificationMeta(
+    'quantityOnHand',
+  );
+  @override
+  late final GeneratedColumn<int> quantityOnHand = GeneratedColumn<int>(
+    'quantity_on_hand',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -535,6 +547,7 @@ class $LocalCanonicalItemsTable extends LocalCanonicalItems
     priceInCents,
     costInCents,
     tracksInventory,
+    quantityOnHand,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -668,6 +681,15 @@ class $LocalCanonicalItemsTable extends LocalCanonicalItems
         ),
       );
     }
+    if (data.containsKey('quantity_on_hand')) {
+      context.handle(
+        _quantityOnHandMeta,
+        quantityOnHand.isAcceptableOrUnknown(
+          data['quantity_on_hand']!,
+          _quantityOnHandMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -733,6 +755,10 @@ class $LocalCanonicalItemsTable extends LocalCanonicalItems
         DriftSqlType.bool,
         data['${effectivePrefix}tracks_inventory'],
       )!,
+      quantityOnHand: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}quantity_on_hand'],
+      )!,
     );
   }
 
@@ -785,6 +811,9 @@ class LocalCanonicalItem extends DataClass
 
   /// Whether this item consumes stock when sold.
   final bool tracksInventory;
+
+  /// Current stock included in the canonical snapshot.
+  final int quantityOnHand;
   const LocalCanonicalItem({
     required this.id,
     required this.restaurantId,
@@ -800,6 +829,7 @@ class LocalCanonicalItem extends DataClass
     required this.priceInCents,
     required this.costInCents,
     required this.tracksInventory,
+    required this.quantityOnHand,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -822,6 +852,7 @@ class LocalCanonicalItem extends DataClass
     map['price_in_cents'] = Variable<int>(priceInCents);
     map['cost_in_cents'] = Variable<int>(costInCents);
     map['tracks_inventory'] = Variable<bool>(tracksInventory);
+    map['quantity_on_hand'] = Variable<int>(quantityOnHand);
     return map;
   }
 
@@ -845,6 +876,7 @@ class LocalCanonicalItem extends DataClass
       priceInCents: Value(priceInCents),
       costInCents: Value(costInCents),
       tracksInventory: Value(tracksInventory),
+      quantityOnHand: Value(quantityOnHand),
     );
   }
 
@@ -868,6 +900,7 @@ class LocalCanonicalItem extends DataClass
       priceInCents: serializer.fromJson<int>(json['priceInCents']),
       costInCents: serializer.fromJson<int>(json['costInCents']),
       tracksInventory: serializer.fromJson<bool>(json['tracksInventory']),
+      quantityOnHand: serializer.fromJson<int>(json['quantityOnHand']),
     );
   }
   @override
@@ -888,6 +921,7 @@ class LocalCanonicalItem extends DataClass
       'priceInCents': serializer.toJson<int>(priceInCents),
       'costInCents': serializer.toJson<int>(costInCents),
       'tracksInventory': serializer.toJson<bool>(tracksInventory),
+      'quantityOnHand': serializer.toJson<int>(quantityOnHand),
     };
   }
 
@@ -906,6 +940,7 @@ class LocalCanonicalItem extends DataClass
     int? priceInCents,
     int? costInCents,
     bool? tracksInventory,
+    int? quantityOnHand,
   }) => LocalCanonicalItem(
     id: id ?? this.id,
     restaurantId: restaurantId ?? this.restaurantId,
@@ -923,6 +958,7 @@ class LocalCanonicalItem extends DataClass
     priceInCents: priceInCents ?? this.priceInCents,
     costInCents: costInCents ?? this.costInCents,
     tracksInventory: tracksInventory ?? this.tracksInventory,
+    quantityOnHand: quantityOnHand ?? this.quantityOnHand,
   );
   LocalCanonicalItem copyWithCompanion(LocalCanonicalItemsCompanion data) {
     return LocalCanonicalItem(
@@ -956,6 +992,9 @@ class LocalCanonicalItem extends DataClass
       tracksInventory: data.tracksInventory.present
           ? data.tracksInventory.value
           : this.tracksInventory,
+      quantityOnHand: data.quantityOnHand.present
+          ? data.quantityOnHand.value
+          : this.quantityOnHand,
     );
   }
 
@@ -975,7 +1014,8 @@ class LocalCanonicalItem extends DataClass
           ..write('commercialCode: $commercialCode, ')
           ..write('priceInCents: $priceInCents, ')
           ..write('costInCents: $costInCents, ')
-          ..write('tracksInventory: $tracksInventory')
+          ..write('tracksInventory: $tracksInventory, ')
+          ..write('quantityOnHand: $quantityOnHand')
           ..write(')'))
         .toString();
   }
@@ -996,6 +1036,7 @@ class LocalCanonicalItem extends DataClass
     priceInCents,
     costInCents,
     tracksInventory,
+    quantityOnHand,
   );
   @override
   bool operator ==(Object other) =>
@@ -1014,7 +1055,8 @@ class LocalCanonicalItem extends DataClass
           other.commercialCode == this.commercialCode &&
           other.priceInCents == this.priceInCents &&
           other.costInCents == this.costInCents &&
-          other.tracksInventory == this.tracksInventory);
+          other.tracksInventory == this.tracksInventory &&
+          other.quantityOnHand == this.quantityOnHand);
 }
 
 class LocalCanonicalItemsCompanion extends UpdateCompanion<LocalCanonicalItem> {
@@ -1032,6 +1074,7 @@ class LocalCanonicalItemsCompanion extends UpdateCompanion<LocalCanonicalItem> {
   final Value<int> priceInCents;
   final Value<int> costInCents;
   final Value<bool> tracksInventory;
+  final Value<int> quantityOnHand;
   final Value<int> rowid;
   const LocalCanonicalItemsCompanion({
     this.id = const Value.absent(),
@@ -1048,6 +1091,7 @@ class LocalCanonicalItemsCompanion extends UpdateCompanion<LocalCanonicalItem> {
     this.priceInCents = const Value.absent(),
     this.costInCents = const Value.absent(),
     this.tracksInventory = const Value.absent(),
+    this.quantityOnHand = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   LocalCanonicalItemsCompanion.insert({
@@ -1065,6 +1109,7 @@ class LocalCanonicalItemsCompanion extends UpdateCompanion<LocalCanonicalItem> {
     this.priceInCents = const Value.absent(),
     this.costInCents = const Value.absent(),
     this.tracksInventory = const Value.absent(),
+    this.quantityOnHand = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        restaurantId = Value(restaurantId),
@@ -1090,6 +1135,7 @@ class LocalCanonicalItemsCompanion extends UpdateCompanion<LocalCanonicalItem> {
     Expression<int>? priceInCents,
     Expression<int>? costInCents,
     Expression<bool>? tracksInventory,
+    Expression<int>? quantityOnHand,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -1107,6 +1153,7 @@ class LocalCanonicalItemsCompanion extends UpdateCompanion<LocalCanonicalItem> {
       if (priceInCents != null) 'price_in_cents': priceInCents,
       if (costInCents != null) 'cost_in_cents': costInCents,
       if (tracksInventory != null) 'tracks_inventory': tracksInventory,
+      if (quantityOnHand != null) 'quantity_on_hand': quantityOnHand,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -1126,6 +1173,7 @@ class LocalCanonicalItemsCompanion extends UpdateCompanion<LocalCanonicalItem> {
     Value<int>? priceInCents,
     Value<int>? costInCents,
     Value<bool>? tracksInventory,
+    Value<int>? quantityOnHand,
     Value<int>? rowid,
   }) {
     return LocalCanonicalItemsCompanion(
@@ -1143,6 +1191,7 @@ class LocalCanonicalItemsCompanion extends UpdateCompanion<LocalCanonicalItem> {
       priceInCents: priceInCents ?? this.priceInCents,
       costInCents: costInCents ?? this.costInCents,
       tracksInventory: tracksInventory ?? this.tracksInventory,
+      quantityOnHand: quantityOnHand ?? this.quantityOnHand,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -1192,6 +1241,9 @@ class LocalCanonicalItemsCompanion extends UpdateCompanion<LocalCanonicalItem> {
     if (tracksInventory.present) {
       map['tracks_inventory'] = Variable<bool>(tracksInventory.value);
     }
+    if (quantityOnHand.present) {
+      map['quantity_on_hand'] = Variable<int>(quantityOnHand.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -1215,6 +1267,7 @@ class LocalCanonicalItemsCompanion extends UpdateCompanion<LocalCanonicalItem> {
           ..write('priceInCents: $priceInCents, ')
           ..write('costInCents: $costInCents, ')
           ..write('tracksInventory: $tracksInventory, ')
+          ..write('quantityOnHand: $quantityOnHand, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -31955,6 +32008,7 @@ typedef $$LocalCanonicalItemsTableCreateCompanionBuilder =
       Value<int> priceInCents,
       Value<int> costInCents,
       Value<bool> tracksInventory,
+      Value<int> quantityOnHand,
       Value<int> rowid,
     });
 typedef $$LocalCanonicalItemsTableUpdateCompanionBuilder =
@@ -31973,6 +32027,7 @@ typedef $$LocalCanonicalItemsTableUpdateCompanionBuilder =
       Value<int> priceInCents,
       Value<int> costInCents,
       Value<bool> tracksInventory,
+      Value<int> quantityOnHand,
       Value<int> rowid,
     });
 
@@ -32052,6 +32107,11 @@ class $$LocalCanonicalItemsTableFilterComposer
 
   ColumnFilters<bool> get tracksInventory => $composableBuilder(
     column: $table.tracksInventory,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get quantityOnHand => $composableBuilder(
+    column: $table.quantityOnHand,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -32134,6 +32194,11 @@ class $$LocalCanonicalItemsTableOrderingComposer
     column: $table.tracksInventory,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<int> get quantityOnHand => $composableBuilder(
+    column: $table.quantityOnHand,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$LocalCanonicalItemsTableAnnotationComposer
@@ -32202,6 +32267,11 @@ class $$LocalCanonicalItemsTableAnnotationComposer
     column: $table.tracksInventory,
     builder: (column) => column,
   );
+
+  GeneratedColumn<int> get quantityOnHand => $composableBuilder(
+    column: $table.quantityOnHand,
+    builder: (column) => column,
+  );
 }
 
 class $$LocalCanonicalItemsTableTableManager
@@ -32261,6 +32331,7 @@ class $$LocalCanonicalItemsTableTableManager
                 Value<int> priceInCents = const Value.absent(),
                 Value<int> costInCents = const Value.absent(),
                 Value<bool> tracksInventory = const Value.absent(),
+                Value<int> quantityOnHand = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => LocalCanonicalItemsCompanion(
                 id: id,
@@ -32277,6 +32348,7 @@ class $$LocalCanonicalItemsTableTableManager
                 priceInCents: priceInCents,
                 costInCents: costInCents,
                 tracksInventory: tracksInventory,
+                quantityOnHand: quantityOnHand,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -32295,6 +32367,7 @@ class $$LocalCanonicalItemsTableTableManager
                 Value<int> priceInCents = const Value.absent(),
                 Value<int> costInCents = const Value.absent(),
                 Value<bool> tracksInventory = const Value.absent(),
+                Value<int> quantityOnHand = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => LocalCanonicalItemsCompanion.insert(
                 id: id,
@@ -32311,6 +32384,7 @@ class $$LocalCanonicalItemsTableTableManager
                 priceInCents: priceInCents,
                 costInCents: costInCents,
                 tracksInventory: tracksInventory,
+                quantityOnHand: quantityOnHand,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

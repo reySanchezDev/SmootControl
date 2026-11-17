@@ -64,6 +64,9 @@ class LocalCanonicalItems extends Table {
   BoolColumn get tracksInventory =>
       boolean().withDefault(const Constant(false))();
 
+  /// Current stock included in the canonical snapshot.
+  IntColumn get quantityOnHand => integer().withDefault(const Constant(0))();
+
   @override
   Set<Column<Object>> get primaryKey => {id};
 }
