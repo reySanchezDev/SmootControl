@@ -93,11 +93,12 @@ mixin _SupabaseAdminPackagingMixin on _SupabaseAdminRepositoryBase
       'packaging_rules_read_failed',
       'No se pudieron leer reglas de empaque.',
       () async {
-        final rows = await _getRows('product_packaging_rules', {
+        final rows = await _getRows('item_consumption_rules', {
           'restaurant_id': 'eq.$_restaurantId',
           'select':
-              'id,product_id,sales_type_id,packaging_item_id,'
-              'quantity_per_unit,is_active',
+              'id,source_item_id,sales_type_id,consumed_item_id,quantity,'
+              'is_active',
+          'scope': 'eq.per_sale_line',
         });
         return rows.map(_packagingRuleFromRow).toList();
       },
@@ -112,15 +113,30 @@ mixin _SupabaseAdminPackagingMixin on _SupabaseAdminRepositoryBase
       'packaging_rule_save_failed',
       'No se pudo guardar regla de empaque.',
       () async {
-        await _upsert('product_packaging_rules', {
-          'id': rule.id,
-          'restaurant_id': _restaurantId,
-          'product_id': rule.productId,
-          'sales_type_id': rule.salesTypeId,
-          'packaging_item_id': rule.packagingItemId,
-          'quantity_per_unit': rule.quantityPerUnit,
-          'is_active': rule.isActive,
-          'updated_at': DateTime.now().toIso8601String(),
+        final itemRows = await _getRows('items', {
+          'id': 'eq.${rule.packagingItemId}',
+          'restaurant_id': 'eq.$_restaurantId',
+          'select': 'base_unit_id',
+          'limit': '1',
+        });
+        final unitId = itemRows.isEmpty
+            ? ''
+            : _text(itemRows.first['base_unit_id']);
+        if (unitId.isEmpty) {
+          throw StateError('El empaque no tiene unidad base.');
+        }
+        await _rpc('app_upsert_item_consumption_rule_v2', {
+          'p_restaurant_id': _restaurantId,
+          'p_payload': {
+            'id': rule.id,
+            'source_item_id': rule.productId,
+            'consumed_item_id': rule.packagingItemId,
+            'sales_type_id': rule.salesTypeId,
+            'scope': 'per_sale_line',
+            'quantity': rule.quantityPerUnit,
+            'unit_id': unitId,
+            'is_active': rule.isActive,
+          },
         });
         return rule;
       },

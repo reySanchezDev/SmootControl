@@ -1863,3 +1863,15 @@ artículo inválido. Se aplicó únicamente al Docker local; no se tocó remoto,
 Pendientes medibles: migrar recetas, modificadores, empaques y consumo de
 personal; repetir el preflight de invocaciones; y revocar RPC/tablas heredadas
 solo cuando no existan consumidores activos ni filas incompatibles.
+
+### Addendum recetas y empaques canónicos (2026-11-17)
+
+Las migraciones 108 y 109 trasladaron al modelo `items` las recetas POS y las
+reglas de consumo de empaques. Se probó localmente consumo y reversión de una
+receta con movimientos `item_id`, y se verificó el backfill de 3 recetas y 8
+reglas de empaque. La aplicación y las pruebas no modificaron remoto, `main`,
+producción, POS fuera de sus contratos SQL canónicos ni migración 088.
+
+Pendientes para el cierre final: migrar consumo de personal, reportes y
+restantes funciones administrativas; ejecutar el preflight de cero referencias
+operativas; y solo entonces retirar las dependencias heredadas.

@@ -156,3 +156,18 @@ de personal todavía requieren migración.
 La limpieza integral sigue bloqueada hasta migrar modificadores, recetas,
 empaques, consumo de personal y los RPC heredados identificados en esta
 auditoría.
+
+## Avance de corrección - fases 4 y 5
+
+- Migración 108 copió las recetas compatibles a `item_recipes` e
+  `item_recipe_lines` y sustituyó el cálculo de costo, consumo y reversión POS
+  por `item_id`. La prueba local transaccional consumió 6 unidades de materia
+  prima y la reversión las restituyó; se confirmaron dos movimientos canónicos.
+- Migración 109 copió 8 reglas de empaque a `item_consumption_rules` y cambió
+  los RPC POS de filtrado de inventario/empaque para resolver por artículos.
+- El repositorio administrativo de empaques ya lee y escribe el RPC canónico
+  `app_upsert_item_consumption_rule_v2`.
+
+La migración aún no se considera cierre final: quedan consumo de personal,
+reportes históricos y algunos contratos administrativos heredados por migrar y
+verificar antes de revocar `products`.
