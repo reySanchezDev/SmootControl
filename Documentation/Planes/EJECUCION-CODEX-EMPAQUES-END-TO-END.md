@@ -1620,3 +1620,50 @@ cliente. El RELEASE queda disponible para QA visual; la comprobación visual
 interactiva de dos columnas, ausencia de Código y persistencia requiere que Rey
 realice el login del laboratorio. No se tocó main, remoto, producción, 088 ni
 POS.
+
+### 13.29 Auditoría de recuperación local y plan de cierre (2026-11-17)
+
+El propietario probó el RELEASE local y reportó el error real al crear un
+artículo: `new row for relation "items" violates check constraint
+"items_code_check"`. La auditoría trazó el flujo completo y confirmó la causa:
+`CanonicalItemEditor` elimina el campo Código y envía `code: ''`; el cliente
+llama correctamente a `app_upsert_item_v2`, pero el Docker local todavía tiene
+la RPC anterior, que lee ese código vacío y no genera un código server-side.
+
+Estado local comprobado antes de modificar código: el contenedor PostgreSQL
+está sano, `public.items` existe con la restricción de código no vacío, la RPC
+instalada no usa secuencia y sí lee `p_payload->>'code'`, y
+`supabase_migrations.schema_migrations` llega hasta 087. El checkout contiene
+088–097; por tanto el laboratorio local está atrasado respecto del código del
+PR y no representa aún el contrato Item Core esperado.
+
+#### Plan de implementación y seguimiento
+
+1. **Línea base local:** respaldar fuera de Git el esquema/datos del Docker,
+   capturar estado de contenedores, ledger de migraciones, tablas, funciones,
+   permisos y políticas. No conectar ni escribir en Supabase remoto.
+2. **Reconciliación SQL:** revisar 088–097 en orden contra el esquema real,
+   corregir cualquier incompatibilidad y aplicar la cadena completa únicamente
+   al Docker local. La 088 no se modifica; la 097 corregida debe generar
+   `ART-n`, conservar el código en edición y mantener el RPC protegido por
+   tenant/permisos.
+3. **Pruebas de base:** probar creación sin código, unicidad concurrente,
+   relectura, edición sin renumeración, rechazo por rol/JWT, aislamiento entre
+   restaurantes y rollback. Confirmar los resultados consultando PostgreSQL,
+   sin imprimir credenciales.
+4. **Integración Flutter:** corregir solo las diferencias que revele la prueba
+   real contra Docker; mantener el editor sin Código, la ficha en la pestaña
+   actual, el estado del listado, confirmación de cambios pendientes y feedback
+   modal de persistencia. Ejecutar `dart format`, analyze y pruebas dirigidas.
+5. **Cierre RELEASE:** compilar con el lanzador oficial y credenciales privadas
+   locales, verificar defines sin exponer secretos, abrir un puerto libre y
+   ejecutar QA visual/funcional: permisos, Guardar, relectura, F5, responsive y
+   ausencia de Código.
+6. **Entrega trazable:** actualizar este Plan Rector con evidencia real,
+   commit y push a la rama del PR #40, verificar SHA local/remoto coincidentes y
+   dejar el RELEASE local para QA del propietario.
+
+**Criterio de terminado:** no se declara finalizado hasta que la prueba que
+falló (`Guardar` de un artículo nuevo) genere y persista un `ART-n` en el
+Docker local, y el flujo completo sobreviva relectura y F5. Se mantienen fuera
+de alcance `main`, producción, Supabase remoto y POS.
