@@ -5,7 +5,8 @@ extension on SupabaseCatalogPullService {
     final now = DateTime.now();
     final pendingDeltas = await _pendingInventoryDeltasByProduct();
     for (final row in rows) {
-      final productId = _optionalText(row['product_id']);
+      final productId =
+          _optionalText(row['item_id']) ?? _optionalText(row['product_id']);
       if (productId == null) continue;
       final remoteQuantity = _int(row['quantity_on_hand']);
       final localPendingDelta = pendingDeltas[productId] ?? 0;

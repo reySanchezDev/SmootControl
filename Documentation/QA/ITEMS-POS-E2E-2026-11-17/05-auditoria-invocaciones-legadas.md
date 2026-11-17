@@ -2,7 +2,7 @@
 
 Fecha: 2026-11-17  
 Rama: `feature/item-core-end-to-end-implementation`  
-SHA auditado: `109f4c66f0500a8486d0a948b67069d914ea2433`
+SHA auditado: `f02e4895aeeed66f5b7b3d6c2b1d00ee883efa08`
 
 ## Alcance y método
 
@@ -197,3 +197,30 @@ verificar antes de revocar `products`.
 - `117_remove_legacy_product_catalog.sql` se aplicó únicamente al Supabase Docker local. Eliminó `products`, `product_modifier_groups`, `product_packaging_rules`, `product_recipes` y `product_recipe_lines`. La consulta posterior no encontró tablas legacy ni funciones activas con referencias a esos objetos.
 
 Evidencia local posterior: la consulta de funciones con `public.products`, `public.product_modifier_groups`, `public.product_packaging_rules` o `public.product_recipes` devolvió cero filas; la consulta de tablas legacy también devolvió cero filas. No se ejecutó migración 088.
+## Fase 8 — auditoría de invocaciones y frontera POS canónica
+
+- La auditoría estática encontró una escritura residual de categorías hacia
+  `/products` en el sincronizador administrativo. Se corrigió a `/items` y se
+  agregó cobertura dirigida.
+- El pull de catálogo POS ahora interpreta filtros `neq.*` y aplica existencias
+  por `item_id`, con fallback únicamente para snapshots locales antiguos.
+- La migración 118 reconcilia el contador comercial con el máximo existente
+  antes de asignar `ART-n`, evitando colisiones tras datos históricos.
+- La migración 119 separa el payload canónico de movimientos del adaptador
+  legado dentro de `pos_sync_sale_v2`; el movimiento se registra una sola vez
+  por `item_id`.
+
+La búsqueda de llamadas activas en Dart y la inspección de `pg_proc` no
+encontraron invocaciones remotas activas a las tablas retiradas. Los nombres
+históricos que permanecen en migraciones antiguas o identificadores internos
+de colas no son llamadas SQL activas y no se reescribieron para preservar la
+historia de migraciones.
+
+## Fase 9 — E2E transaccional local comprobado
+
+`supabase/tests/local_item_e2e_transaction.sql` pasó contra el Supabase Docker
+local y terminó con `ROLLBACK`: alta sin código, código comercial único,
+edición conservando código, receta, regla de consumo, venta POS, descuento de
+stock por `item_id`, entrada y salida de inventario, e informe de desempeño.
+La prueba se ejecutó con JWT sintético de administrador y tenant de laboratorio;
+no imprime secretos ni toca Supabase remoto.

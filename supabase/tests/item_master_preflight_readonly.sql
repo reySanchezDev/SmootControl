@@ -2,44 +2,44 @@
 -- No updates, deletes, DDL, DB reset or service credentials.
 BEGIN READ ONLY;
 
-SELECT 'products' AS entity, count(*) AS count
-FROM public.products
+SELECT 'items' AS entity, count(*) AS count
+FROM public.items
 UNION ALL SELECT 'packaging_items', count(*) FROM public.packaging_items
 UNION ALL SELECT 'inventory_stock', count(*) FROM public.inventory_stock
 UNION ALL SELECT 'inventory_movements', count(*) FROM public.inventory_movements
 UNION ALL SELECT 'packaging_stock', count(*) FROM public.packaging_stock
 UNION ALL SELECT 'packaging_movements', count(*) FROM public.packaging_movements
-UNION ALL SELECT 'product_packaging_rules', count(*)
-FROM public.product_packaging_rules;
+UNION ALL SELECT 'item_consumption_rules', count(*)
+FROM public.item_consumption_rules;
 
 -- Each count MUST be zero before applying the migration.
-SELECT 'product-packaging UUID collision' AS issue, count(*) AS blockers
-FROM public.products p JOIN public.packaging_items k ON k.id = p.id
+SELECT 'item-packaging UUID collision' AS issue, count(*) AS blockers
+FROM public.items p JOIN public.packaging_items k ON k.id = p.id
 UNION ALL
 SELECT 'case-insensitive product codes', count(*) FROM (
   SELECT restaurant_id, lower(btrim(code))
-  FROM public.products GROUP BY restaurant_id, lower(btrim(code))
+  FROM public.items GROUP BY restaurant_id, lower(btrim(code))
   HAVING count(*) > 1
 ) q
 UNION ALL
 SELECT 'product code vs reserved packaging code', count(*)
-FROM public.products p
+FROM public.items p
 JOIN public.packaging_items k
   ON k.restaurant_id = p.restaurant_id
  AND lower(btrim(p.code)) = lower('PKG-' || k.id::text)
 UNION ALL
 SELECT 'invalid or blank product codes', count(*)
-FROM public.products
+FROM public.items
 WHERE length(btrim(code)) = 0
 UNION ALL
 SELECT 'cross-tenant product category', count(*)
-FROM public.products p JOIN public.product_categories c ON c.id = p.category_id
+FROM public.items p JOIN public.product_categories c ON c.id = p.category_id
 WHERE p.restaurant_id <> c.restaurant_id
 UNION ALL
-SELECT 'cross-tenant packaging rule references', count(*)
-FROM public.product_packaging_rules r
-JOIN public.products p ON p.id = r.product_id
-JOIN public.packaging_items k ON k.id = r.packaging_item_id
+SELECT 'cross-tenant item consumption rule references', count(*)
+FROM public.item_consumption_rules r
+JOIN public.items p ON p.id = r.source_item_id
+JOIN public.packaging_items k ON k.id = r.consumed_item_id
 JOIN public.sales_types s ON s.id = r.sales_type_id
 WHERE p.restaurant_id <> r.restaurant_id
    OR k.restaurant_id <> r.restaurant_id
@@ -47,7 +47,7 @@ WHERE p.restaurant_id <> r.restaurant_id
 UNION ALL
 SELECT 'product stock tenant mismatch', count(*)
 FROM public.inventory_stock s
-JOIN public.products p ON p.id = s.product_id
+JOIN public.items p ON p.id = s.item_id
 WHERE s.restaurant_id <> p.restaurant_id
 UNION ALL
 SELECT 'packaging stock tenant mismatch', count(*)
@@ -119,12 +119,12 @@ FROM information_schema.columns
 WHERE table_schema = 'public'
   AND (
     table_name IN (
-      'products','packaging_items','product_categories','measurement_units',
-      'product_recipes','product_recipe_lines','product_packaging_rules',
+      'items','packaging_items','product_categories','measurement_units',
+      'item_recipes','item_recipe_lines','item_consumption_rules',
       'sale_items','sales','inventory_stock','inventory_movements',
       'packaging_stock','packaging_movements','inventory_adjustment_lines',
       'employee_raw_material_consumption_lines','modifier_groups',
-      'modifier_options','product_modifier_groups','items',
+      'modifier_options','item_modifier_groups','items',
       'item_stock','item_ledger_entries'
     )
     OR column_name IN ('product_id','packaging_item_id','component_product_id',

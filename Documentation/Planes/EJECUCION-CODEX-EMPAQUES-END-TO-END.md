@@ -1892,3 +1892,21 @@ operativas; y solo entonces retirar las dependencias heredadas.
 - [x] Eliminar localmente objetos legacy después del preflight de referencias.
 - [ ] Ejecutar build RELEASE QA y validación visual final después del cierre de base de datos.
 - [ ] Confirmar push y SHA remoto del commit de cierre.
+
+### Addendum de auditoría y E2E local — 2026-11-17
+
+- [x] Auditoría estática de llamadas activas y auditoría de `pg_proc`: cero
+  referencias operativas a `products`, `product_modifier_groups`,
+  `product_packaging_rules`, `product_recipes` y `product_recipe_lines`.
+- [x] Corregido el último endpoint residual del sincronizador administrativo;
+  pull POS canónico validado con filtros `neq` y existencias por `item_id`.
+- [x] Migración 118 aplicada solo en Docker local para reconciliar el contador
+  de código comercial; migración 119 aplicada solo en Docker local para evitar
+  doble registro de movimientos en `pos_sync_sale_v2`.
+- [x] Prueba transaccional real local aprobada: crear/editar artículo,
+  receta, regla de consumo, venta POS, descuento/entrada/salida de inventario y
+  reporte; la transacción termina en rollback.
+- [x] `flutter analyze --no-pub` sin diagnósticos; suite dirigida de staff,
+  inventario, ventas, empaques, recetas, sync y reportes: 124 pruebas aprobadas.
+- [ ] Build RELEASE/QA y aceptación visual del propietario permanecen como
+  gate separado; no se declara cumplido sin ejecutarlo en esta rama.

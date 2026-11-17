@@ -65,7 +65,7 @@ void main() {
       final categoryPatchBody =
           jsonDecode(dataRequests[0].body) as Map<String, Object?>;
       expect(categoryPatchBody['parent_id'], 'category-root');
-      expect(dataRequests[1].url.path, '/rest/v1/products');
+      expect(dataRequests[1].url.path, '/rest/v1/items');
       expect(
         dataRequests[1].url.queryParameters['category_id'],
         'eq.category-child',

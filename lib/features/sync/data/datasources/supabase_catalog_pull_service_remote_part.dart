@@ -146,6 +146,10 @@ extension on SupabaseCatalogPullService {
       final expected = expression.substring(3);
       return rows.where((row) => _optionalText(row[key]) == expected);
     }
+    if (expression.startsWith('neq.')) {
+      final expected = expression.substring(4);
+      return rows.where((row) => _optionalText(row[key]) != expected);
+    }
     if (expression == 'is.null') {
       return rows.where((row) => _optionalText(row[key]) == null);
     }

@@ -100,7 +100,7 @@ extension on SupabaseSyncRemoteSender {
         {'parent_id': 'eq.${item.entityId}'},
       );
       await _patchWhere(
-        'products',
+        'items',
         {'category_id': parentId, 'updated_at': now},
         {'category_id': 'eq.${item.entityId}'},
       );
