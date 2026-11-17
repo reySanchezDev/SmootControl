@@ -50,6 +50,7 @@ class _CanonicalItemEditorState extends State<CanonicalItemEditor> {
   }
 
   final _form = GlobalKey<FormState>();
+  final _commercialCode = TextEditingController();
   final _name = TextEditingController();
   final _cost = TextEditingController(text: '0');
   final _price = TextEditingController(text: '0');
@@ -67,6 +68,7 @@ class _CanonicalItemEditorState extends State<CanonicalItemEditor> {
   void initState() {
     super.initState();
     final item = widget.item;
+    _commercialCode.text = item?.commercialCode?.toString() ?? '';
     _name.text = item?.name ?? '';
     _cost.text = item?.cost.toString() ?? '0';
     _price.text = item?.price.toString() ?? '0';
@@ -84,6 +86,7 @@ class _CanonicalItemEditorState extends State<CanonicalItemEditor> {
 
   @override
   void dispose() {
+    _commercialCode.dispose();
     _name.dispose();
     _cost.dispose();
     _price.dispose();
@@ -116,6 +119,7 @@ class _CanonicalItemEditorState extends State<CanonicalItemEditor> {
     widget.onSave(
       CanonicalItem(
         id: widget.item?.id,
+        commercialCode: int.tryParse(_commercialCode.text.trim()),
         categoryId: _categoryId,
         code: widget.item?.code ?? '',
         name: _name.text.trim(),
@@ -137,6 +141,7 @@ class _CanonicalItemEditorState extends State<CanonicalItemEditor> {
   bool get _hasChanges {
     final previous = widget.item;
     return _name.text != (previous?.name ?? '') ||
+        _commercialCode.text != (previous?.commercialCode?.toString() ?? '') ||
         _cost.text != (previous?.cost.toString() ?? '0') ||
         _price.text != (previous?.price.toString() ?? '0') ||
         _baseUnit != previous?.baseUnitId ||

@@ -41,6 +41,22 @@ extension _CanonicalItemEditorFields on _CanonicalItemEditorState {
             'Información general',
             grid([
               TextFormField(
+                controller: _commercialCode,
+                decoration: const InputDecoration(
+                  labelText: 'Código comercial',
+                  helperText: 'Dejá vacío para asignarlo automáticamente',
+                ),
+                keyboardType: TextInputType.number,
+                validator: (value) {
+                  final code = int.tryParse((value ?? '').trim());
+                  return value != null &&
+                          value.trim().isNotEmpty &&
+                          (code == null || code <= 0)
+                      ? 'Ingresá un número válido'
+                      : null;
+                },
+              ),
+              TextFormField(
                 controller: _name,
                 decoration: const InputDecoration(labelText: 'Nombre *'),
                 maxLength: 250,

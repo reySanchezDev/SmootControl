@@ -59,6 +59,7 @@ final class CanonicalItem {
     required this.type,
     required this.baseUnitId,
     this.id,
+    this.commercialCode,
     this.categoryId,
     this.cost = 0,
     this.price = 0,
@@ -78,6 +79,7 @@ final class CanonicalItem {
   }) {
     return CanonicalItem(
       id: row['id']?.toString(),
+      commercialCode: int.tryParse(row['commercial_code']?.toString() ?? ''),
       categoryId: row['category_id']?.toString(),
       code: row['code']?.toString() ?? '',
       name: row['name']?.toString() ?? '',
@@ -100,6 +102,9 @@ final class CanonicalItem {
 
   /// Product category assigned to this article.
   final String? categoryId;
+
+  /// User-facing numeric code, unique within the restaurant.
+  final int? commercialCode;
 
   /// Unique business code within the restaurant.
   final String code;
@@ -143,6 +148,7 @@ final class CanonicalItem {
   /// The trusted RPC, not direct table DML, performs every update.
   Map<String, Object?> toPayload() => {
     if (id != null) 'id': id,
+    if (commercialCode != null) 'commercial_code': commercialCode,
     'category_id': categoryId,
     'code': code.trim(),
     'name': name.trim(),

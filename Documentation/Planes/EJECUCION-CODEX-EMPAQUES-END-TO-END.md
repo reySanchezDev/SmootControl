@@ -1739,3 +1739,18 @@ Evidencia local: `ITEM_CATEGORY_PERSISTENCE=PASS`, ledger 099, REST/Auth HTTP
 quedó disponible en `http://127.0.0.1:8097/`, HTTP 200, conectado al Docker
 local; el escaneo del bundle confirmó la define local y ausencia de
 `service_role`. No se modificó el remoto.
+
+### 13.33 Código comercial entero por restaurante (2026-11-17)
+
+Se separó el identificador comercial del UUID técnico y del `code` heredado.
+La migración 100 añade `items.commercial_code bigint`, lo rellena de forma
+determinista para los artículos existentes y crea un contador bloqueado por
+restaurante en `item_core_internal`. El índice único es `(restaurant_id,
+commercial_code)`, por lo que la numeración puede iniciar en 1 por tenant sin
+colisiones entre restaurantes.
+
+El RPC permite código manual positivo o asignación automática concurrente; no
+usa `MAX()+1`. El editor acepta ambos modos, la lista muestra Código comercial
+y la búsqueda usa código comercial o nombre. El UUID y el `code` técnico no se
+exponen. Prueba local: automático 153, manual 987654, duplicado rechazado y
+rollback confirmado. La migración fue aplicada únicamente al Docker local.

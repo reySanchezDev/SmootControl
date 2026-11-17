@@ -224,8 +224,9 @@ class _CanonicalItemsContentState extends State<CanonicalItemsContent> {
                 onPressed: _packagingRules,
               ),
             ],
-            searchLabel: 'Buscar por nombre',
-            searchTextFor: (item) => item.name,
+            searchLabel: 'Buscar por código comercial o nombre',
+            searchTextFor: (item) =>
+                '${item.commercialCode ?? ''} ${item.name}',
             emptyTitle: items.isEmpty
                 ? 'Todavía no hay artículos'
                 : 'Sin coincidencias',
@@ -234,7 +235,9 @@ class _CanonicalItemsContentState extends State<CanonicalItemsContent> {
                 : 'Revisá la búsqueda o el filtro seleccionado.',
             compactBuilder: (context, item) => ListTile(
               title: Text(item.name),
-              subtitle: Text(item.type.label),
+              subtitle: Text(
+                '${item.commercialCode ?? '—'} · ${item.type.label}',
+              ),
             ),
             columns: canonicalItemColumns(),
           ),
