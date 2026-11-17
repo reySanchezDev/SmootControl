@@ -1667,3 +1667,19 @@ PR y no representa aún el contrato Item Core esperado.
 falló (`Guardar` de un artículo nuevo) genere y persista un `ART-n` en el
 Docker local, y el flujo completo sobreviva relectura y F5. Se mantienen fuera
 de alcance `main`, producción, Supabase remoto y POS.
+
+### 13.29 Resolución de inconsistencia del laboratorio y revisión 097 (2026-11-17)
+
+Se verificó el commit Codex `a6cfdc60a1167d357b93f87ff4e7d4eb01e8ac97` y run `44093521493` success. La evidencia previa de 089–096 y el ledger actual hasta 087 son contradictorios: no inferir cuál DB se está usando solo por el nombre Docker ni repetir compilación antes de resolverlo. Inspeccionar contexto Docker, proyecto Supabase, contenedor PostgreSQL, volumen, DB y puerto del Kong real, ledger y existencia de objetos 089–096 en la **misma** conexión usada por REST. Si solo faltan registros en ledger, no reaplicar DDL ni reparar ledger silenciosamente. Si faltan objetos y está verificado que se trata del laboratorio autorizado, generar respaldo restaurable (restauración en instancia aislada), aplicar explícitamente 089–097 en orden, excluyendo 088; verificar dependencias y registrar cada aplicación mediante procedimiento soportado por el ledger. No usar reset/push general, ni tocar remoto. Si hay divergencias parciales, detener aplicación y documentarlas antes de adaptar migraciones.
+
+Se revisó 097 antes de instalación: numeración toma en cuenta códigos históricos ART-n sin distinguir mayúsculas/minúsculas; solo consume un consecutivo cuando se crea un artículo, preserva código en actualización y rechaza IDs inexistentes o de otro tenant. Se agregó prueba SQL desechable de la migración real y job CI PostgreSQL 17 (autonumeración, edición sin consumo ni cambio de código, rechazo de tenant/ID y ACL). La prueba usa guardas sintéticas y no certifica JWT/RLS del laboratorio. No se ha aplicado 097 en este turno. PostgreSQL sequence puede tener huecos por rollback; no se promete numeración sin huecos.
+
+Handoff: Codex sincroniza HEAD, preserva 15 cambios, 17 stashes y 21 worktrees;
+recupera el esquema local como arriba y usa el RELEASE 8095 ya compilado si
+corresponde al frontend vigente. El propietario ya confirmó que dispone de
+credenciales QA y pudo entrar anteriormente; no volver a crear/resetear cuentas
+por falta de contraseña en la sesión de Codex. Pedir al propietario únicamente
+login interactivo cuando backend esté listo. Validar creación sin Código,
+edición y F5 en Docker; si hay correcciones, commit/push al mismo PR y reportar
+SHA local/remoto. Registrar evidencia de migraciones, objetos, REST, QA y
+bloqueos. No aprobar G3 por HTTP 200.
