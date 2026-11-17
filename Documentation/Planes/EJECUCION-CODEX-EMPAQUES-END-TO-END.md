@@ -984,6 +984,11 @@ La lista canonica agrega la columna Categoria y resuelve el nombre contra las
 categorias activas del restaurante. No se anadio SQL: la persistencia ya esta
 cubierta por la migracion 100 aplicada solo al Docker local.
 
+El feedback de Productos quedó alineado con las pantallas administrativas
+vecinas mediante `BackofficeActionFeedback`: éxito, error y validación usan
+diálogo modal tipificado con Aceptar; no quedan mensajes operativos directos
+por `SnackBar` en este flujo.
+
 ### 12.30 Piloto en Supabase de producción: autorización y perímetro (2026-11-11)
 
 **Decisión del propietario:** utilizar el proyecto Supabase de producción como entorno piloto porque los registros actuales son de ensayo y habrá una limpieza posterior. Esta autorización identifica el entorno, pero **NO implica** permiso para borrar datos indiscriminadamente, saltar respaldo/rollback, desactivar RLS, publicar migraciones, cambiar POS operativo ni poner en riesgo credenciales de clientes. G2 sigue abierto.

@@ -81,8 +81,10 @@ extension _CanonicalItemsContentActions on _CanonicalItemsContentState {
 
   void _error(String message) {
     if (!mounted) return;
-    ScaffoldMessenger.of(
+    BackofficeActionFeedback.show(
       context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+      outcome: BackofficeActionOutcome.error,
+      message: message,
+    );
   }
 }

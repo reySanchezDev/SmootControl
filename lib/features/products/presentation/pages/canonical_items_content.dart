@@ -1,6 +1,7 @@
 // The compact record declarations keep this maintained file under SMO-001.
 
 import 'package:flutter/material.dart';
+import 'package:smoo_control/core/design_system/backoffice_action_feedback.dart';
 import 'package:smoo_control/core/design_system/backoffice_collection_view.dart';
 import 'package:smoo_control/core/design_system/backoffice_selection_toolbar.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
@@ -127,8 +128,10 @@ class _CanonicalItemsContentState extends State<CanonicalItemsContent> {
         case AppSuccess():
           setState(() => _editor = null);
           _refresh();
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Artículo guardado correctamente.')),
+          BackofficeActionFeedback.show(
+            context,
+            outcome: BackofficeActionOutcome.success,
+            message: 'Artículo guardado correctamente.',
           );
         case AppFailureResult(:final error):
           _error(error.message);

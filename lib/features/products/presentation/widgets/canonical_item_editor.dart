@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:smoo_control/core/design_system/app_message_dialog.dart';
+import 'package:smoo_control/core/design_system/backoffice_action_feedback.dart';
 import 'package:smoo_control/features/catalog/domain/entities/product_category.dart';
 import 'package:smoo_control/features/products/domain/entities/canonical_item.dart';
 import 'package:smoo_control/features/products/domain/entities/measurement_unit.dart';
@@ -115,8 +116,10 @@ class _CanonicalItemEditorState extends State<CanonicalItemEditor> {
   void _save() {
     if (!_form.currentState!.validate()) return;
     if (_baseUnit == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Seleccioná una unidad base.')),
+      BackofficeActionFeedback.show(
+        context,
+        outcome: BackofficeActionOutcome.warning,
+        message: 'Seleccioná una unidad base.',
       );
       return;
     }
