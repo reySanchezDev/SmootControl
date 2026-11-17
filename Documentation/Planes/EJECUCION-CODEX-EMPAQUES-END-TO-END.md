@@ -1834,3 +1834,10 @@ y movimiento -1. El reintento del mismo payload mantuvo stock 9 y una sola
 línea/un solo movimiento. Analyze focalizado sin diagnósticos y pruebas Flutter
 dirigidas 13/13 pasaron. La Fase 2 queda pendiente para consumo, ajustes,
 descargas manuales y anulación antes de retirar `products`.
+
+La prueba de anulación inicialmente descubrió un defecto en la expresión del
+identificador de reversión. La migración 103 lo corrigió de forma explícita y
+se aplicó localmente: la anulación restauró stock 9→10, creó un único
+movimiento `sale_void` y persistió la anulación; el reintento mantuvo stock 10
+y un solo movimiento de reversión. Un dispositivo con restaurante/credencial
+inválidos fue rechazado por `assert_pos_device`.

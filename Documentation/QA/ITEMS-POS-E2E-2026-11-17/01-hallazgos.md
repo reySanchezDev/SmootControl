@@ -88,3 +88,13 @@
 - Acción: completar esos casos y mantener las tablas legadas mientras existan
   consumidores activos.
 
+## H-010 — Reversión POS corregida en migración 103
+
+- Severidad: alta durante la prueba; cerrada.
+- Evidencia: la migración 102 tenía una expresión ambigua al construir el ID
+  `void:<movimiento>`. La migración 103 la corrigió; anulación real restauró
+  stock 9→10, creó un movimiento `sale_void` y el reintento no duplicó la
+  reversión.
+- Control adicional: el RPC rechazó un restaurante/credencial POS no
+  autorizados mediante `assert_pos_device`.
+
