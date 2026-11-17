@@ -34,7 +34,7 @@ extension _SupabaseSalesAdminRepositorySupport on SupabaseSalesAdminRepository {
       saleId: _requiredText(row, 'sale_id'),
       tableAccountId: _optionalText(row['table_account_id']),
       productId:
-          _optionalText(row['product_id']) ??
+          _optionalText(row['item_id']) ??
           _optionalText(row['product_code']) ??
           _requiredText(row, 'id'),
       productName: _requiredText(row, 'product_name'),

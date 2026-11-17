@@ -102,7 +102,7 @@ final class SupabaseSalesAdminRepository implements ISalesRepository {
     try {
       final rows = await _getRows('sale_items', {
         'select':
-            'id,sale_id,table_account_id,product_id,product_code,'
+            'id,sale_id,table_account_id,item_id,product_code,'
             'product_name,category_name,selected_options_label,quantity,'
             'unit_price,unit_cost,created_at',
         'sale_id': 'eq.$saleId',

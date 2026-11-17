@@ -128,3 +128,14 @@ empaques y consumo de personal.
 La auditoría completa aún permanece abierta porque cola administrativa,
 escrituras de inventario, ventas administrativas, recetas, empaques y consumo
 de personal todavía requieren migración.
+
+## Avance de corrección — fase 2 de lecturas
+
+- Migración 106 añadió `inventory_adjustment_lines.item_id` y backfill de 53
+  líneas locales.
+- Ventas administrativas leen `sale_items.item_id`.
+- Detalle e historial de movimientos leen `item_id` y resuelven nombres desde
+  `items`.
+- No se alteró todavía la cola administrativa de productos ni sus relaciones de
+  modificadores: esa migración queda bloqueada hasta disponer del contrato
+  canónico de modificadores, para no perder funcionalidad.
