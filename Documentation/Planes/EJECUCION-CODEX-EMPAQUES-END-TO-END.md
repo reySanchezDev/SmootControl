@@ -971,6 +971,27 @@ POS operativo ni laboratorio principal; no se fusionó el PR #37.
 
 **G2 ABIERTO:** CI sintético no reemplaza JWT/RLS de Supabase real ni dispositivos físicos. No hay permiso para activar el catálogo V2, hacer migraciones, cambiar `main` o producción. **Evidencia GitHub Actions:** run `43065082221`, PR #38 (commit probado `4073a404b33d35a0ce5653fbff980fbb32875172`), **15/15 jobs success**, **417 pruebas Flutter PASS** y 17 diagnósticos heredados, **0 nuevos** (`PASS NON-REGRESSION ONLY`; `flutter analyze` global todavía no limpio). El job G2 funcional sobre PostgreSQL 16 desechable pasó. Esto certifica simulación de dos almacenes y contratos aislados, no hardware real ni RLS del proyecto Supabase.
 
+### 13.35 Auditoría E2E real de Items, POS y sincronización (2026-11-17)
+
+En el Docker local se creó y editó el artículo de prueba `E2E CANONICAL POS
+GAP EDITED 201` mediante `app_upsert_item_v2`, conservando el mismo UUID y
+código comercial `201`. La categoría, precio y `visible_in_pos` quedaron
+persistidos. `pos_pull_item_catalog_v2` respondió contrato 2, snapshot completo,
+revisión 17 e incluyó el UUID y código comercial editados.
+
+La venta E2E del nuevo maestro no pudo certificarse: el esquema local no expone
+`pos_sync_sale_v2`; el POS/Synchronization actual continúa serializando
+`productId` y leyendo el catálogo legacy `products`, mientras el nuevo artículo
+vive en `items`. Por tanto, Backoffice y pull canónico funcionan, pero vender un
+`items.id` desde POS y sincronizarlo todavía requiere el corte F2 de escritores,
+Drift y RPC de ventas. No se declara PASS E2E mientras exista esta separación.
+
+Los contratos Flutter POS/sync existentes no pudieron completarse en esta
+sesión por `Espacio en disco insuficiente` en el compilador temporal de Flutter;
+el contrato SQL desechable tampoco arrancó porque Docker no pudo descargar
+`postgres:16` por fallo TLS contra Docker Hub. El laboratorio principal no fue
+reiniciado, recreado ni borrado.
+
 ### 13.34 Feedback, sugerencia de codigo y categoria visible (2026-11-17)
 
 Productos usa el mensaje inferior negro compartido (`SnackBar`) para exito y
