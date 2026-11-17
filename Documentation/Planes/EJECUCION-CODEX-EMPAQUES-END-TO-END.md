@@ -1586,3 +1586,37 @@ Cambios en PR #40: migración **097_item_master_generated_business_code.sql**, a
 El estándar particular de SmooControl del repositorio central `QuantixEngineeringStandar` documenta el requisito, con copia aprobada en `Documentation/Standards/SMOOCONTROL_RULES.md`; la revisión exacta se actualizó en `AGENTS.md`.
 
 **Gate:** modificación publicada, 097 **no ejecutada todavía en Docker ni remoto**, y no hay verificación Flutter/QA visual de esta revisión. Codex debe sincronizar HEAD en worktree QA preservando 15 cambios locales y 17 stashes; verificar migraciones 089–096, revisar/aplicar **solo 097 en Docker local**, probar login de laboratorio, creación sin código y relectura de código autogenerado, edición sin renumeración, tenant/roles, rollback y F5; ejecutar `dart format`, `flutter analyze`, pruebas Flutter, compilar RELEASE con `-LocalSupabaseQa` y abrir navegador para aceptación visual. Si corrige código, commit/push en PR #40 para revisión por ChatGPT. No ejecutar 088, no tocar Supabase remoto, POS, producción ni main.
+
+### 13.28 QA de corrección 097 y RELEASE local (2026-11-17)
+
+Se hizo `git fetch` y fast-forward del worktree QA desde GitHub. El SHA inicial
+`68712b9cc81b7024148b44a8f35db73243003add` coincidió con la rama remota y el
+PR #40. El worktree original mantuvo sus 15 cambios locales, 17 stashes y sus
+worktrees; Docker Desktop se inició sin reset, recreate ni borrado.
+
+La inspección de `supabase_migrations.schema_migrations` del contenedor local
+demostró que la base llega hasta 087. Los archivos 089–096 sí están presentes
+en el checkout, pero no están aplicados en ese Docker; por ello 097 no se
+ejecutó y 088 no se ejecutó. Se evitó `supabase db push --local` porque habría
+intentado aplicar migraciones anteriores y violado el alcance pedido. La 097
+del PR estaba corrupta (regex `ART-n` concatenada con definiciones repetidas de
+la RPC); se corrigió antes de cualquier aplicación, conservando la lógica de
+generación server-side, edición sin renumeración y permisos `authenticated`.
+
+`dart format` y el analizador Flutter/Dart terminaron sin errores. Las pruebas
+dirigidas del editor y del catálogo pasaron 5/5: edición inline y Regresar,
+creación sin campo Código, confirmación por cambios pendientes y dos escenarios
+de permisos del catálogo. El script oficial
+`tool/start_item_core_qa_release.ps1 -CanonicalItemsQa -LocalSupabaseQa
+-CredentialsPath <archivo-privado> -Port 8095` compiló Web RELEASE, validó los
+defines locales sin imprimir secretos, abrió el navegador Windows y dejó
+`http://127.0.0.1:8095/`; la raíz respondió HTTP 200. El bundle contiene la URL
+loopback y no contiene los literales `service_role`/`SUPABASE_SERVICE_ROLE`.
+
+No se declara aprobado el flujo autenticado de creación/relectura/edición,
+tenant/RLS, rollback, Guardar contra RPC ni F5: la base local no tiene 089–096
+instaladas y no se dispuso de una contraseña Auth sintética para operar el
+cliente. El RELEASE queda disponible para QA visual; la comprobación visual
+interactiva de dos columnas, ausencia de Código y persistencia requiere que Rey
+realice el login del laboratorio. No se tocó main, remoto, producción, 088 ni
+POS.
