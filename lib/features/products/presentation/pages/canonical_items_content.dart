@@ -48,6 +48,11 @@ class _CanonicalItemsContentState extends State<CanonicalItemsContent> {
   _editor;
   CanonicalItemType? _filter;
   bool _busy = false;
+
+  void _setBusy(bool value) {
+    if (mounted) setState(() => _busy = value);
+  }
+
   void _refresh() {
     setState(() {
       _items = _repository.getCanonicalItems();

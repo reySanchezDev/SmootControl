@@ -5,12 +5,14 @@ mixin _SupabaseAdminCanonicalItemsMixin on _SupabaseAdminRepositoryBase {
   /// Fetches the canonical master, never the legacy UNION projection.
   Future<AppResult<List<CanonicalItem>>> getCanonicalItems() => _guard(
     'canonical_items_read_failed',
-    'No se pudo cargar el maestro de artículos.',
+    'No se pudo cargar el maestro de '
+        'artículos.',
     () async {
       final rows = await _getRows('items', {
         'restaurant_id': 'eq.$_restaurantId',
         'select':
-            'id,code,commercial_code,name,item_type,category_id,base_unit_id,base_unit_cost,'
+            'id,code,commercial_code,name,item_type,category_id,base_unit_id,'
+            'base_unit_cost,'
             'base_unit_price,can_sell,can_purchase,visible_in_pos,'
             'uses_recipe,send_to_kitchen,is_active',
         'order': 'name.asc',

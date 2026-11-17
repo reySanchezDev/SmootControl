@@ -1850,3 +1850,16 @@ ajuste `-2` y el reintento del mismo ajuste: stock 10→15→13, dos movimientos
 inventariables y uno no inventariable: los stocks quedaron 13→11 y 4→3; se
 crearon tres líneas de venta y no se creó movimiento para el no inventariable.
 Analyze focalizado y 13 pruebas Flutter del sender quedaron verdes.
+
+### Addendum escrituras administrativas canónicas (2026-11-17)
+
+La migración 107 implementó los contratos v2 de compras y ajustes de inventario
+administrativos sobre `items/item_id`. El servicio Flutter fue actualizado para
+usar esos contratos. En Docker local se verificó compra, ajuste, persistencia
+de la línea canónica, autorización por restaurante y rollback atómico ante un
+artículo inválido. Se aplicó únicamente al Docker local; no se tocó remoto,
+`main`, producción, POS ni migración 088.
+
+Pendientes medibles: migrar recetas, modificadores, empaques y consumo de
+personal; repetir el preflight de invocaciones; y revocar RPC/tablas heredadas
+solo cuando no existan consumidores activos ni filas incompatibles.

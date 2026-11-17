@@ -139,3 +139,20 @@ de personal todavía requieren migración.
 - No se alteró todavía la cola administrativa de productos ni sus relaciones de
   modificadores: esa migración queda bloqueada hasta disponer del contrato
   canónico de modificadores, para no perder funcionalidad.
+
+## Avance de corrección - fase 3: escrituras administrativas
+
+- Migración 107 crea `app_register_inventory_purchase_batch_v2` y
+  `app_register_inventory_adjustment_batch_v2`; ambos validan `items`, exigen
+  permiso administrativo y escriben movimientos con `item_id`.
+- `inventory_adjustment_lines.product_id` queda nullable para nuevas líneas;
+  el FK histórico se conserva mientras existan consumidores heredados.
+- El servicio Flutter de compras y ajustes usa los RPC v2 y envía `item_id`.
+- Evidencia local: compra 11→13; ajuste 13→12; ajuste persistido con
+  `item_id` y `product_id` nulo; lote inválido hizo rollback completo; otro
+  restaurante fue rechazado por autorización. Pruebas dirigidas 4/4 y analyze
+  dirigido sin diagnósticos.
+
+La limpieza integral sigue bloqueada hasta migrar modificadores, recetas,
+empaques, consumo de personal y los RPC heredados identificados en esta
+auditoría.

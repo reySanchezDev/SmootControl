@@ -7,7 +7,7 @@ extension _CanonicalItemsContentActions on _CanonicalItemsContentState {
         selected.type == CanonicalItemType.service) {
       return;
     }
-    setState(() => _busy = true);
+    _setBusy(true);
     try {
       final catalog = await _repository.getCanonicalItems();
       final units = await _repository.getMeasurementUnits();
@@ -38,13 +38,13 @@ extension _CanonicalItemsContentActions on _CanonicalItemsContentState {
         if (mounted) _refresh();
       }
     } finally {
-      if (mounted) setState(() => _busy = false);
+      _setBusy(false);
     }
   }
 
   Future<void> _packagingRules(CanonicalItem selected) async {
     if (_busy || !selected.canSell) return;
-    setState(() => _busy = true);
+    _setBusy(true);
     try {
       final catalog = await _repository.getCanonicalItems();
       final saleTypes = await _repository.getSalesTypes();
@@ -75,7 +75,7 @@ extension _CanonicalItemsContentActions on _CanonicalItemsContentState {
         if (mounted) _refresh();
       }
     } finally {
-      if (mounted) setState(() => _busy = false);
+      _setBusy(false);
     }
   }
 
