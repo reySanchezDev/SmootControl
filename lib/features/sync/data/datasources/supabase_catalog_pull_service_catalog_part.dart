@@ -128,6 +128,7 @@ extension on SupabaseCatalogPullService {
               modifierGroupIdsJson: Value(
                 StringListCodec.encode(modifierIdsByProduct[id] ?? const []),
               ),
+              sourceKind: const Value('legacy_product'),
               remoteId: Value(id),
               syncStatus: const Value('synced'),
               syncError: const Value(null),

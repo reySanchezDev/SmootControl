@@ -96,7 +96,17 @@ extension on SupabaseCatalogPullService {
       throw StateError('Respuesta invalida descargando catalogo POS.');
     }
 
+    final canonical = decoded['item_catalog_v2'];
+    if (canonical is Map) {
+      _deviceItemCatalogSnapshot = canonical.map(
+        (key, value) => MapEntry(key.toString(), value),
+      );
+    }
+
     return decoded.map((key, value) {
+      if (key == 'item_catalog_v2') {
+        return MapEntry(key.toString(), <Map<String, Object?>>[]);
+      }
       final rows = value is List
           ? value.map(_mapRow).toList(growable: false)
           : <Map<String, Object?>>[];

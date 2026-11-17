@@ -35,6 +35,7 @@ extension _AppDatabaseMigrations on AppDatabase {
     await _upgradeSchemaFrom34(migrator, from);
     await _upgradeSchemaFrom35(migrator, from);
     await _upgradeSchemaFrom36(migrator, from);
+    await _upgradeSchemaFrom37(migrator, from);
   }
 
   Future<void> _upgradeSchemaFrom7To20(Migrator migrator, int from) async {
@@ -301,6 +302,16 @@ extension _AppDatabaseMigrations on AppDatabase {
         localCanonicalItems,
         localCanonicalItems.tracksInventory,
       );
+    }
+  }
+
+  Future<void> _upgradeSchemaFrom37(Migrator migrator, int from) async {
+    if (from < 37 &&
+        !await _columnExists(
+          localProducts.actualTableName,
+          localProducts.sourceKind.$name,
+        )) {
+      await migrator.addColumn(localProducts, localProducts.sourceKind);
     }
   }
 }

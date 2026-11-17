@@ -8,6 +8,9 @@ import 'package:smoo_control/core/session/current_remote_session_service.dart';
 import 'package:smoo_control/core/session/current_restaurant_service.dart';
 import 'package:smoo_control/core/utils/business_date_formatter.dart';
 import 'package:smoo_control/features/products/data/models/string_list_codec.dart';
+import 'package:smoo_control/features/sync/data/repositories/canonical_item_pos_projector.dart';
+import 'package:smoo_control/features/sync/data/repositories/item_catalog_snapshot_applier.dart';
+import 'package:smoo_control/features/sync/domain/entities/item_catalog_snapshot_v2.dart';
 import 'package:smoo_control/features/sync/domain/services/catalog_pull_summary.dart';
 import 'package:smoo_control/features/sync/domain/services/i_catalog_pull_service.dart';
 
@@ -46,6 +49,7 @@ final class SupabaseCatalogPullService implements ICatalogPullService {
   DateTime? _expiresAt;
   bool _temporaryTokenOnly = false;
   Map<String, List<Map<String, Object?>>>? _deviceCatalogRows;
+  Map<String, Object?>? _deviceItemCatalogSnapshot;
 
   @override
   Future<CatalogPullSummary> pullOperationalCatalog() {
@@ -78,6 +82,7 @@ final class SupabaseCatalogPullService implements ICatalogPullService {
     if (scopes.isEmpty) return const CatalogPullSummary.empty();
 
     _deviceCatalogRows = null;
+    _deviceItemCatalogSnapshot = null;
     await _prepareDeviceCatalogIfNeeded();
 
     final effectiveScopes = {...scopes};
@@ -263,6 +268,17 @@ final class SupabaseCatalogPullService implements ICatalogPullService {
       }
     });
 
+    if (shouldRefreshProducts && _deviceItemCatalogSnapshot != null) {
+      final snapshot = ItemCatalogSnapshotV2.fromJson(
+        _deviceItemCatalogSnapshot!,
+        expectedRestaurantId: _restaurantService.restaurantId,
+      );
+      await ItemCatalogSnapshotApplier(_database).apply(snapshot);
+      await CanonicalItemPosProjector(_database).project(
+        _restaurantService.restaurantId,
+      );
+    }
+
     return CatalogPullSummary(
       businessSettings: restaurantRows.isEmpty && invoiceSettings.isEmpty
           ? 0
@@ -289,5 +305,4 @@ final class SupabaseCatalogPullService implements ICatalogPullService {
       users: profiles.length,
     );
   }
-
 }

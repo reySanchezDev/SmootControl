@@ -203,6 +203,10 @@ class LocalProducts extends Table with SyncColumns {
   TextColumn get modifierGroupIdsJson =>
       text().withDefault(const Constant('[]'))();
 
+  /// Source of truth during the POS catalog cutover.
+  TextColumn get sourceKind =>
+      text().withDefault(const Constant('legacy_product'))();
+
   @override
   Set<Column<Object>> get primaryKey => {id};
 }

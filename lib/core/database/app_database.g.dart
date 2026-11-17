@@ -3517,6 +3517,18 @@ class $LocalProductsTable extends LocalProducts
         requiredDuringInsert: false,
         defaultValue: const Constant('[]'),
       );
+  static const VerificationMeta _sourceKindMeta = const VerificationMeta(
+    'sourceKind',
+  );
+  @override
+  late final GeneratedColumn<String> sourceKind = GeneratedColumn<String>(
+    'source_kind',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('legacy_product'),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     remoteId,
@@ -3536,6 +3548,7 @@ class $LocalProductsTable extends LocalProducts
     tracksInventory,
     optionGroupsJson,
     modifierGroupIdsJson,
+    sourceKind,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -3681,6 +3694,12 @@ class $LocalProductsTable extends LocalProducts
         ),
       );
     }
+    if (data.containsKey('source_kind')) {
+      context.handle(
+        _sourceKindMeta,
+        sourceKind.isAcceptableOrUnknown(data['source_kind']!, _sourceKindMeta),
+      );
+    }
     return context;
   }
 
@@ -3758,6 +3777,10 @@ class $LocalProductsTable extends LocalProducts
         DriftSqlType.string,
         data['${effectivePrefix}modifier_group_ids_json'],
       )!,
+      sourceKind: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source_kind'],
+      )!,
     );
   }
 
@@ -3818,6 +3841,9 @@ class LocalProduct extends DataClass implements Insertable<LocalProduct> {
 
   /// JSON list of reusable modifier group ids assigned to this product.
   final String modifierGroupIdsJson;
+
+  /// Source of truth during the POS catalog cutover.
+  final String sourceKind;
   const LocalProduct({
     this.remoteId,
     required this.syncStatus,
@@ -3836,6 +3862,7 @@ class LocalProduct extends DataClass implements Insertable<LocalProduct> {
     required this.tracksInventory,
     required this.optionGroupsJson,
     required this.modifierGroupIdsJson,
+    required this.sourceKind,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -3863,6 +3890,7 @@ class LocalProduct extends DataClass implements Insertable<LocalProduct> {
     map['tracks_inventory'] = Variable<bool>(tracksInventory);
     map['option_groups_json'] = Variable<String>(optionGroupsJson);
     map['modifier_group_ids_json'] = Variable<String>(modifierGroupIdsJson);
+    map['source_kind'] = Variable<String>(sourceKind);
     return map;
   }
 
@@ -3891,6 +3919,7 @@ class LocalProduct extends DataClass implements Insertable<LocalProduct> {
       tracksInventory: Value(tracksInventory),
       optionGroupsJson: Value(optionGroupsJson),
       modifierGroupIdsJson: Value(modifierGroupIdsJson),
+      sourceKind: Value(sourceKind),
     );
   }
 
@@ -3919,6 +3948,7 @@ class LocalProduct extends DataClass implements Insertable<LocalProduct> {
       modifierGroupIdsJson: serializer.fromJson<String>(
         json['modifierGroupIdsJson'],
       ),
+      sourceKind: serializer.fromJson<String>(json['sourceKind']),
     );
   }
   @override
@@ -3942,6 +3972,7 @@ class LocalProduct extends DataClass implements Insertable<LocalProduct> {
       'tracksInventory': serializer.toJson<bool>(tracksInventory),
       'optionGroupsJson': serializer.toJson<String>(optionGroupsJson),
       'modifierGroupIdsJson': serializer.toJson<String>(modifierGroupIdsJson),
+      'sourceKind': serializer.toJson<String>(sourceKind),
     };
   }
 
@@ -3963,6 +3994,7 @@ class LocalProduct extends DataClass implements Insertable<LocalProduct> {
     bool? tracksInventory,
     String? optionGroupsJson,
     String? modifierGroupIdsJson,
+    String? sourceKind,
   }) => LocalProduct(
     remoteId: remoteId.present ? remoteId.value : this.remoteId,
     syncStatus: syncStatus ?? this.syncStatus,
@@ -3981,6 +4013,7 @@ class LocalProduct extends DataClass implements Insertable<LocalProduct> {
     tracksInventory: tracksInventory ?? this.tracksInventory,
     optionGroupsJson: optionGroupsJson ?? this.optionGroupsJson,
     modifierGroupIdsJson: modifierGroupIdsJson ?? this.modifierGroupIdsJson,
+    sourceKind: sourceKind ?? this.sourceKind,
   );
   LocalProduct copyWithCompanion(LocalProductsCompanion data) {
     return LocalProduct(
@@ -4019,6 +4052,9 @@ class LocalProduct extends DataClass implements Insertable<LocalProduct> {
       modifierGroupIdsJson: data.modifierGroupIdsJson.present
           ? data.modifierGroupIdsJson.value
           : this.modifierGroupIdsJson,
+      sourceKind: data.sourceKind.present
+          ? data.sourceKind.value
+          : this.sourceKind,
     );
   }
 
@@ -4041,7 +4077,8 @@ class LocalProduct extends DataClass implements Insertable<LocalProduct> {
           ..write('isRawMaterial: $isRawMaterial, ')
           ..write('tracksInventory: $tracksInventory, ')
           ..write('optionGroupsJson: $optionGroupsJson, ')
-          ..write('modifierGroupIdsJson: $modifierGroupIdsJson')
+          ..write('modifierGroupIdsJson: $modifierGroupIdsJson, ')
+          ..write('sourceKind: $sourceKind')
           ..write(')'))
         .toString();
   }
@@ -4065,6 +4102,7 @@ class LocalProduct extends DataClass implements Insertable<LocalProduct> {
     tracksInventory,
     optionGroupsJson,
     modifierGroupIdsJson,
+    sourceKind,
   );
   @override
   bool operator ==(Object other) =>
@@ -4086,7 +4124,8 @@ class LocalProduct extends DataClass implements Insertable<LocalProduct> {
           other.isRawMaterial == this.isRawMaterial &&
           other.tracksInventory == this.tracksInventory &&
           other.optionGroupsJson == this.optionGroupsJson &&
-          other.modifierGroupIdsJson == this.modifierGroupIdsJson);
+          other.modifierGroupIdsJson == this.modifierGroupIdsJson &&
+          other.sourceKind == this.sourceKind);
 }
 
 class LocalProductsCompanion extends UpdateCompanion<LocalProduct> {
@@ -4107,6 +4146,7 @@ class LocalProductsCompanion extends UpdateCompanion<LocalProduct> {
   final Value<bool> tracksInventory;
   final Value<String> optionGroupsJson;
   final Value<String> modifierGroupIdsJson;
+  final Value<String> sourceKind;
   final Value<int> rowid;
   const LocalProductsCompanion({
     this.remoteId = const Value.absent(),
@@ -4126,6 +4166,7 @@ class LocalProductsCompanion extends UpdateCompanion<LocalProduct> {
     this.tracksInventory = const Value.absent(),
     this.optionGroupsJson = const Value.absent(),
     this.modifierGroupIdsJson = const Value.absent(),
+    this.sourceKind = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   LocalProductsCompanion.insert({
@@ -4146,6 +4187,7 @@ class LocalProductsCompanion extends UpdateCompanion<LocalProduct> {
     this.tracksInventory = const Value.absent(),
     this.optionGroupsJson = const Value.absent(),
     this.modifierGroupIdsJson = const Value.absent(),
+    this.sourceKind = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : createdAt = Value(createdAt),
        updatedAt = Value(updatedAt),
@@ -4171,6 +4213,7 @@ class LocalProductsCompanion extends UpdateCompanion<LocalProduct> {
     Expression<bool>? tracksInventory,
     Expression<String>? optionGroupsJson,
     Expression<String>? modifierGroupIdsJson,
+    Expression<String>? sourceKind,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -4192,6 +4235,7 @@ class LocalProductsCompanion extends UpdateCompanion<LocalProduct> {
       if (optionGroupsJson != null) 'option_groups_json': optionGroupsJson,
       if (modifierGroupIdsJson != null)
         'modifier_group_ids_json': modifierGroupIdsJson,
+      if (sourceKind != null) 'source_kind': sourceKind,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -4214,6 +4258,7 @@ class LocalProductsCompanion extends UpdateCompanion<LocalProduct> {
     Value<bool>? tracksInventory,
     Value<String>? optionGroupsJson,
     Value<String>? modifierGroupIdsJson,
+    Value<String>? sourceKind,
     Value<int>? rowid,
   }) {
     return LocalProductsCompanion(
@@ -4234,6 +4279,7 @@ class LocalProductsCompanion extends UpdateCompanion<LocalProduct> {
       tracksInventory: tracksInventory ?? this.tracksInventory,
       optionGroupsJson: optionGroupsJson ?? this.optionGroupsJson,
       modifierGroupIdsJson: modifierGroupIdsJson ?? this.modifierGroupIdsJson,
+      sourceKind: sourceKind ?? this.sourceKind,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -4294,6 +4340,9 @@ class LocalProductsCompanion extends UpdateCompanion<LocalProduct> {
         modifierGroupIdsJson.value,
       );
     }
+    if (sourceKind.present) {
+      map['source_kind'] = Variable<String>(sourceKind.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -4320,6 +4369,7 @@ class LocalProductsCompanion extends UpdateCompanion<LocalProduct> {
           ..write('tracksInventory: $tracksInventory, ')
           ..write('optionGroupsJson: $optionGroupsJson, ')
           ..write('modifierGroupIdsJson: $modifierGroupIdsJson, ')
+          ..write('sourceKind: $sourceKind, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -33477,6 +33527,7 @@ typedef $$LocalProductsTableCreateCompanionBuilder =
       Value<bool> tracksInventory,
       Value<String> optionGroupsJson,
       Value<String> modifierGroupIdsJson,
+      Value<String> sourceKind,
       Value<int> rowid,
     });
 typedef $$LocalProductsTableUpdateCompanionBuilder =
@@ -33498,6 +33549,7 @@ typedef $$LocalProductsTableUpdateCompanionBuilder =
       Value<bool> tracksInventory,
       Value<String> optionGroupsJson,
       Value<String> modifierGroupIdsJson,
+      Value<String> sourceKind,
       Value<int> rowid,
     });
 
@@ -33592,6 +33644,11 @@ class $$LocalProductsTableFilterComposer
 
   ColumnFilters<String> get modifierGroupIdsJson => $composableBuilder(
     column: $table.modifierGroupIdsJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sourceKind => $composableBuilder(
+    column: $table.sourceKind,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -33689,6 +33746,11 @@ class $$LocalProductsTableOrderingComposer
     column: $table.modifierGroupIdsJson,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get sourceKind => $composableBuilder(
+    column: $table.sourceKind,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$LocalProductsTableAnnotationComposer
@@ -33768,6 +33830,11 @@ class $$LocalProductsTableAnnotationComposer
     column: $table.modifierGroupIdsJson,
     builder: (column) => column,
   );
+
+  GeneratedColumn<String> get sourceKind => $composableBuilder(
+    column: $table.sourceKind,
+    builder: (column) => column,
+  );
 }
 
 class $$LocalProductsTableTableManager
@@ -33818,6 +33885,7 @@ class $$LocalProductsTableTableManager
                 Value<bool> tracksInventory = const Value.absent(),
                 Value<String> optionGroupsJson = const Value.absent(),
                 Value<String> modifierGroupIdsJson = const Value.absent(),
+                Value<String> sourceKind = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => LocalProductsCompanion(
                 remoteId: remoteId,
@@ -33837,6 +33905,7 @@ class $$LocalProductsTableTableManager
                 tracksInventory: tracksInventory,
                 optionGroupsJson: optionGroupsJson,
                 modifierGroupIdsJson: modifierGroupIdsJson,
+                sourceKind: sourceKind,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -33858,6 +33927,7 @@ class $$LocalProductsTableTableManager
                 Value<bool> tracksInventory = const Value.absent(),
                 Value<String> optionGroupsJson = const Value.absent(),
                 Value<String> modifierGroupIdsJson = const Value.absent(),
+                Value<String> sourceKind = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => LocalProductsCompanion.insert(
                 remoteId: remoteId,
@@ -33877,6 +33947,7 @@ class $$LocalProductsTableTableManager
                 tracksInventory: tracksInventory,
                 optionGroupsJson: optionGroupsJson,
                 modifierGroupIdsJson: modifierGroupIdsJson,
+                sourceKind: sourceKind,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
