@@ -1793,3 +1793,20 @@ usa `MAX()+1`. El editor acepta ambos modos, la lista muestra Código comercial
 y la búsqueda usa código comercial o nombre. El UUID y el `code` técnico no se
 exponen. Prueba local: automático 153, manual 987654, duplicado rechazado y
 rollback confirmado. La migración fue aplicada únicamente al Docker local.
+
+### 13.36 Auditoría integral Items → POS → Inventario y compuerta de limpieza (2026-11-17)
+
+Se creó `Documentation/QA/ITEMS-POS-E2E-2026-11-17/` con hallazgos,
+casos de prueba, matriz de dependencias y plan medible.
+
+La auditoría confirmó que el RPC canónico `pos_pull_item_catalog_v2` existe,
+pero el cliente Flutter todavía consume `products`/`localProducts`. La
+serialización de ventas todavía usa `productId`/`product_id` y la ruta SQL
+vigente `pos_sync_sale`; no existe aún un contrato de venta `item_id`
+certificado.
+
+Por seguridad queda bloqueada la eliminación de tablas y funciones legadas
+hasta vaciar la matriz de dependencias y certificar ventas, inventario,
+anulaciones, reintentos e idempotencia sobre Docker local. La Fase 0 del plan
+queda completa; las Fases 1–4 están pendientes. No se ejecutó eliminación
+destructiva ni se modificó remoto, `main`, producción o migración 088.
