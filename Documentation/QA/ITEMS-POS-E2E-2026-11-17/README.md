@@ -32,6 +32,7 @@ matriz de dependencias vacía y pruebas verdes.
 | Descarga de inventario | No certificada para item nuevo | Flujo actual usa `product_id`/`products` |
 | Anulación y reversión | No certificada para item nuevo | Depende de la ruta legada de ventas |
 | Limpieza de objetos legados | No autorizada todavía | Hay dependencias activas |
+| Certificación Flutter/RELEASE | Bloqueada por entorno | C: tiene aproximadamente 20 MB libres |
 
 ## Documentos
 

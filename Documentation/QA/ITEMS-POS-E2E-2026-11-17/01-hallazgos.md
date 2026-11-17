@@ -68,3 +68,13 @@
 - Acción: migrar columnas y contratos a `item_id` explícito, conciliando filas,
   antes de retirar `products`.
 
+## H-008 — El laboratorio no tiene espacio suficiente para certificar Flutter
+
+- Severidad: bloqueante de ejecución.
+- Evidencia: la unidad `C:` reporta aproximadamente 20 MB libres; `build/` del
+  worktree QA ocupa unos 93 MB y `.dart_tool/` unos 100 MB.
+- Impacto: Flutter falla al crear artefactos temporales y no es válido reportar
+  la suite o el RELEASE como certificados.
+- Acción pendiente: liberar espacio local con una limpieza aprobada del
+  propietario y repetir pruebas/análisis/build.
+
