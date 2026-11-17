@@ -48,6 +48,7 @@ class BackofficeCollectionView<T> extends StatefulWidget {
     this.onCreate,
     this.createEnabled = true,
     this.globalActions = const [],
+    this.belowSearch,
     this.rowKey,
     this.rowLabel,
     this.selectionActions,
@@ -89,6 +90,9 @@ class BackofficeCollectionView<T> extends StatefulWidget {
 
   /// Explicit page commands shown alongside selected-record commands.
   final List<Widget> globalActions;
+
+  /// Optional secondary filter rendered below the shared search field.
+  final Widget? belowSearch;
 
   /// Stable identity used only in selection-based catalog lists.
   final String Function(T item)? rowKey;
@@ -197,6 +201,7 @@ class _BackofficeCollectionViewState<T>
                   }),
                 ),
               ),
+            if (widget.belowSearch != null) widget.belowSearch!,
             Expanded(
               child: filtered.isEmpty
                   ? Center(

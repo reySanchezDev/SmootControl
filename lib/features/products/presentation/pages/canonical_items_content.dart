@@ -198,31 +198,6 @@ class _CanonicalItemsContentState extends State<CanonicalItemsContent> {
         .toList();
     return Column(
       children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 10, 16, 4),
-          child: Row(
-            children: [
-              const Text('Tipo'),
-              const SizedBox(width: 12),
-              DropdownButton<CanonicalItemType?>(
-                value: _filter,
-                hint: const Text('Todos'),
-                items: [
-                  const DropdownMenuItem<CanonicalItemType?>(
-                    child: Text('Todos'),
-                  ),
-                  ...CanonicalItemType.values.map(
-                    (type) => DropdownMenuItem<CanonicalItemType?>(
-                      value: type,
-                      child: Text(type.label),
-                    ),
-                  ),
-                ],
-                onChanged: (type) => setState(() => _filter = type),
-              ),
-            ],
-          ),
-        ),
         Expanded(
           child: BackofficeCollectionView<CanonicalItem>(
             key: ValueKey(_filter?.databaseValue ?? 'all'),
@@ -238,6 +213,7 @@ class _CanonicalItemsContentState extends State<CanonicalItemsContent> {
                 label: const Text('Actualizar'),
               ),
             ],
+            belowSearch: _typeFilter(),
             selectionActions: [
               BackofficeSelectionAction<CanonicalItem>(
                 label: 'Editar',
@@ -284,4 +260,30 @@ class _CanonicalItemsContentState extends State<CanonicalItemsContent> {
       ],
     );
   }
+
+  Widget _typeFilter() => Padding(
+    padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+    child: Row(
+      children: [
+        const Text('Tipo'),
+        const SizedBox(width: 12),
+        DropdownButton<CanonicalItemType?>(
+          value: _filter,
+          hint: const Text('Todos'),
+          items: [
+            const DropdownMenuItem<CanonicalItemType?>(
+              child: Text('Todos'),
+            ),
+            ...CanonicalItemType.values.map(
+              (type) => DropdownMenuItem<CanonicalItemType?>(
+                value: type,
+                child: Text(type.label),
+              ),
+            ),
+          ],
+          onChanged: (type) => setState(() => _filter = type),
+        ),
+      ],
+    ),
+  );
 }
