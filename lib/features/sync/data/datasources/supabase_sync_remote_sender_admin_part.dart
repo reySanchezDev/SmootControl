@@ -111,27 +111,21 @@ extension on SupabaseSyncRemoteSender {
   }
 
   Future<void> _pushProduct(SyncQueueItem item) async {
-    await _upsert('products', _productPayload(item));
+    await _adminRpc('app_upsert_item_v2', {
+      'p_restaurant_id': _restaurantId,
+      'p_payload': _itemPayload(item),
+    });
+    await _adminRpc('app_set_item_modifier_groups_v2', {
+      'p_restaurant_id': _restaurantId,
+      'p_item_id': item.entityId,
+      'p_group_ids': _stringList(item.payload['modifierGroupIds']),
+    });
+  }
 
-    final groupIds = _stringList(item.payload['modifierGroupIds']);
-    await _deleteWhere(
-      'product_modifier_groups',
-      {'product_id': 'eq.${item.entityId}'},
-    );
-
-    var displayOrder = 0;
-    for (final groupId in groupIds) {
-      await _upsert(
-        'product_modifier_groups',
-        {
-          'restaurant_id': _restaurantId,
-          'product_id': item.entityId,
-          'modifier_group_id': groupId,
-          'display_order': displayOrder,
-        },
-        conflictColumn: 'product_id,modifier_group_id',
-      );
-      displayOrder++;
-    }
+  Future<void> _pushItemConsumptionRule(SyncQueueItem item) async {
+    await _adminRpc('app_upsert_item_consumption_rule_v2', {
+      'p_restaurant_id': _restaurantId,
+      'p_payload': _itemConsumptionRulePayload(item),
+    });
   }
 }

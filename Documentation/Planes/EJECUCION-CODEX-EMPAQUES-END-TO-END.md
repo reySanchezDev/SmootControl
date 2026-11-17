@@ -1872,6 +1872,23 @@ receta con movimientos `item_id`, y se verificó el backfill de 3 recetas y 8
 reglas de empaque. La aplicación y las pruebas no modificaron remoto, `main`,
 producción, POS fuera de sus contratos SQL canónicos ni migración 088.
 
+### Addendum consumo de personal canónico (2026-11-17)
+
+Las migraciones 110 y 111 trasladaron el consumo administrativo y POS de
+materia prima a `items/item_id`, incluyendo descuento, edición, eliminación y
+reversión de inventario. Docker local verificó guardar y eliminar un consumo
+con stock 140→138→140. El análisis dirigido y las pruebas del módulo quedaron
+verdes. La eliminación de `products` sigue condicionada al preflight final de
+reportes y dependencias históricas.
+
 Pendientes para el cierre final: migrar consumo de personal, reportes y
 restantes funciones administrativas; ejecutar el preflight de cero referencias
 operativas; y solo entonces retirar las dependencias heredadas.
+## Addendum de cierre — 2026-11-17
+
+- [x] Migrar consumidores administrativos y POS restantes a `items`.
+- [x] Migrar recetas, modifiers, reglas de consumo y reportes a contratos canónicos.
+- [x] Eliminar compatibilidad activa de funciones de inventario con `products`.
+- [x] Eliminar localmente objetos legacy después del preflight de referencias.
+- [ ] Ejecutar build RELEASE QA y validación visual final después del cierre de base de datos.
+- [ ] Confirmar push y SHA remoto del commit de cierre.

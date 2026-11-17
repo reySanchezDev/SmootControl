@@ -31,11 +31,11 @@ final class SupabaseProductRecipesService {
   /// Loads the active recipe for a product, if it exists.
   Future<AppResult<ProductRecipe?>> loadActiveRecipe(String productId) async {
     return _guard('recipe_read_failed', 'No se pudo leer la receta.', () async {
-      final recipes = await _getRows('product_recipes', {
+      final recipes = await _getRows('item_recipes', {
         'restaurant_id': 'eq.${_restaurantService.restaurantId}',
-        'product_id': 'eq.$productId',
+        'item_id': 'eq.$productId',
         'status': 'eq.active',
-        'select': 'id,product_id,version',
+        'select': 'id,item_id,version',
         'limit': '1',
       });
       if (recipes.isEmpty) return null;
@@ -43,7 +43,7 @@ final class SupabaseProductRecipesService {
       final lines = await _recipeLines(_text(recipe['id']));
       return ProductRecipe(
         id: _text(recipe['id']),
-        productId: _text(recipe['product_id']),
+        productId: _text(recipe['item_id']),
         version: _int(recipe['version'], fallback: 1),
         lines: lines,
       );
@@ -56,13 +56,13 @@ final class SupabaseProductRecipesService {
     required List<ProductRecipeLine> lines,
   }) async {
     return _guard('recipe_save_failed', 'No se pudo guardar la receta.', () {
-      return _postRpc('app_save_product_recipe', {
+      return _postRpc('app_save_item_recipe_v2', {
         'p_restaurant_id': _restaurantService.restaurantId,
-        'p_product_id': productId,
+        'p_item_id': productId,
         'p_lines': [
           for (final line in lines)
             {
-              'component_product_id': line.componentProductId,
+              'component_item_id': line.componentProductId,
               'quantity': line.quantity,
               'unit_id': line.unitId,
               'waste_percent': line.wastePercent,

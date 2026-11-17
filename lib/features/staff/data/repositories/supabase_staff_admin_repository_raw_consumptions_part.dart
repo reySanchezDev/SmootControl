@@ -107,7 +107,7 @@ mixin _SupabaseStaffRawConsumptionsMixin on _SupabaseStaffAdminRepositoryBase {
       final map = _map(row);
       return RawMaterialStaffConsumptionLine(
         id: _text(map['id']),
-        productId: _text(map['product_id']),
+        productId: _text(map['item_id'] ?? map['product_id']),
         productName: _text(map['product_name']),
         quantity: _double(map['quantity']),
         inventoryQuantity: _doubleOrNull(map['inventory_quantity']),
@@ -125,7 +125,7 @@ mixin _SupabaseStaffRawConsumptionsMixin on _SupabaseStaffAdminRepositoryBase {
   ) {
     return {
       'id': line.id,
-      'product_id': line.productId,
+      'item_id': line.productId,
       'quantity': line.quantity,
       'unit_id': line.unitId,
       'unit_price': _money(line.unitPriceInCents),

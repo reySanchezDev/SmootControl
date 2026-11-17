@@ -288,18 +288,12 @@ void main() {
           ),
         );
 
-        expect(requests.map((request) => request.method), [
-          'POST',
-          'DELETE',
-          'POST',
-        ]);
-        expect(requests[0].url.path, '/rest/v1/products');
-        expect(requests[1].url.path, '/rest/v1/product_modifier_groups');
+        expect(requests.map((request) => request.method), ['POST', 'POST']);
+        expect(requests[0].url.path, '/rest/v1/rpc/app_upsert_item_v2');
         expect(
-          requests[1].url.queryParameters['product_id'],
-          'eq.product-chicken',
+          requests[1].url.path,
+          '/rest/v1/rpc/app_set_item_modifier_groups_v2',
         );
-        expect(requests[2].url.path, '/rest/v1/product_modifier_groups');
       },
     );
 
@@ -348,12 +342,11 @@ void main() {
           ),
         );
 
-        expect(requests.map((request) => request.method), ['POST', 'DELETE']);
-        expect(requests[0].url.path, '/rest/v1/products');
-        expect(requests[1].url.path, '/rest/v1/product_modifier_groups');
+        expect(requests.map((request) => request.method), ['POST', 'POST']);
+        expect(requests[0].url.path, '/rest/v1/rpc/app_upsert_item_v2');
         expect(
-          requests[1].url.queryParameters['product_id'],
-          'eq.product-chicken',
+          requests[1].url.path,
+          '/rest/v1/rpc/app_set_item_modifier_groups_v2',
         );
       },
     );

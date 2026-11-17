@@ -213,7 +213,8 @@ extension on SupabaseCatalogPullService {
   ) {
     final grouped = <String, List<_ProductModifierLink>>{};
     for (final row in rows) {
-      final productId = _optionalText(row['product_id']);
+      final productId =
+          _optionalText(row['item_id']) ?? _optionalText(row['product_id']);
       final groupId = _optionalText(row['modifier_group_id']);
       if (productId == null || groupId == null) continue;
       grouped

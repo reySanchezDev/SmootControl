@@ -157,6 +157,21 @@ La limpieza integral sigue bloqueada hasta migrar modificadores, recetas,
 empaques, consumo de personal y los RPC heredados identificados en esta
 auditoría.
 
+## Avance de corrección - fase 6: consumo de personal
+
+- Migración 110 añadió `employee_raw_material_consumption_lines.item_id`,
+  backfill de 6 líneas y contratos administrativos canónicos para listar,
+  guardar y eliminar consumos.
+- La prueba local guardó una línea con `item_id`, descontó stock 140→138 y la
+  eliminación lo restituyó a 140; el registro y sus movimientos se eliminaron
+  dentro de la misma transacción de prueba.
+- Migración 111 reemplazó el núcleo POS de consumo de personal para líneas y
+  movimientos con `item_id`, manteniendo idempotencia por identificador.
+- Analyze dirigido sin diagnósticos y pruebas de staff aprobadas.
+
+El preflight final todavía debe cubrir reportes, sincronizadores históricos y
+las dependencias estructurales restantes antes de ejecutar una eliminación.
+
 ## Avance de corrección - fases 4 y 5
 
 - Migración 108 copió las recetas compatibles a `item_recipes` e
@@ -171,3 +186,14 @@ auditoría.
 La migración aún no se considera cierre final: quedan consumo de personal,
 reportes históricos y algunos contratos administrativos heredados por migrar y
 verificar antes de revocar `products`.
+## Fase 7 — cierre de consumidores y objetos legacy
+
+- `112_item_modifier_group_contract.sql` creó `item_modifier_groups`, migró 20 asignaciones y el repositorio administrativo dejó de leer/escribir `product_modifier_groups`.
+- `113_item_sales_report_contract.sql` llevó costos, desempeño y guardado de recetas al contrato de `items`/`item_recipes`.
+- `114_remove_pos_sale_product_compatibility.sql` eliminó del RPC POS la compatibilidad explícita con `public.products`.
+- `115_close_legacy_item_consumers.sql` completó backfills nulos, retiró RPCs administrativos sin consumidores y dejó `apply_inventory_movement` como adaptador hacia `apply_inventory_movement_v2`.
+- `116_canonical_inventory_movement_rpc.sql` eliminó el fallback de `apply_inventory_movement_v2` a `products`; el movimiento valida y persiste por `item_id`.
+- El servicio de recetas, reportes, sincronización POS y repositorio administrativo fueron revisados y llevados a `items`, `item_recipes`, `item_modifier_groups` e `item_consumption_rules`.
+- `117_remove_legacy_product_catalog.sql` se aplicó únicamente al Supabase Docker local. Eliminó `products`, `product_modifier_groups`, `product_packaging_rules`, `product_recipes` y `product_recipe_lines`. La consulta posterior no encontró tablas legacy ni funciones activas con referencias a esos objetos.
+
+Evidencia local posterior: la consulta de funciones con `public.products`, `public.product_modifier_groups`, `public.product_packaging_rules` o `public.product_recipes` devolvió cero filas; la consulta de tablas legacy también devolvió cero filas. No se ejecutó migración 088.

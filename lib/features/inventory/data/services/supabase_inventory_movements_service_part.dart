@@ -23,7 +23,9 @@ String _genericTitle(
   Map<String, String> products,
 ) {
   final firstProduct =
-      products[rows.first['product_id']?.toString()] ?? 'Producto';
+      products[(rows.first['item_id'] ?? rows.first['product_id'])
+          ?.toString()] ??
+      'Producto';
   return switch (type) {
     InventoryMovementDocumentType.purchase => 'Compra - $firstProduct',
     InventoryMovementDocumentType.sale => 'Venta',

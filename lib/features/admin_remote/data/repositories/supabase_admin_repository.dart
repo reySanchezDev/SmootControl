@@ -25,7 +25,6 @@ import 'package:smoo_control/features/packaging/domain/entities/sales_type.dart'
 import 'package:smoo_control/features/packaging/domain/repositories/i_packaging_repository.dart';
 import 'package:smoo_control/features/payment_methods/domain/entities/payment_method.dart';
 import 'package:smoo_control/features/payment_methods/domain/repositories/i_payment_methods_repository.dart';
-import 'package:smoo_control/features/products/data/models/product_option_group_codec.dart';
 import 'package:smoo_control/features/products/domain/entities/canonical_item.dart';
 import 'package:smoo_control/features/products/domain/entities/measurement_unit.dart';
 import 'package:smoo_control/features/products/domain/entities/product.dart';

@@ -69,17 +69,6 @@ extension on SupabaseSyncRemoteSender {
     _ensureSuccess(response, table);
   }
 
-  Future<void> _deleteWhere(
-    String table,
-    Map<String, String> query,
-  ) async {
-    final response = await _client.delete(
-      _config.restUri(table, query),
-      headers: await _headers(prefer: 'return=minimal'),
-    );
-    _ensureSuccess(response, table);
-  }
-
   Future<void> _patchWhere(
     String table,
     Map<String, Object?> payload,

@@ -15,10 +15,10 @@ void main() {
     test('loads active recipe with ingredient labels', () async {
       final service = _service(
         client: MockClient((request) async {
-          if (request.url.path.endsWith('/product_recipes')) {
+          if (request.url.path.endsWith('/item_recipes')) {
             return http.Response(
               jsonEncode([
-                {'id': 'recipe-1', 'product_id': 'burger', 'version': 2},
+                {'id': 'recipe-1', 'item_id': 'burger', 'version': 2},
               ]),
               200,
             );
@@ -26,12 +26,12 @@ void main() {
           return http.Response(
             jsonEncode([
               {
-                'component_product_id': 'bread',
+                'component_item_id': 'bread',
                 'quantity': 1,
                 'unit_id': 'unit',
                 'waste_percent': 0,
                 'display_order': 0,
-                'products': {'name': 'Pan hamburguesa'},
+                'items': {'name': 'Pan hamburguesa'},
                 'measurement_units': {'name': 'Unidad', 'code': 'unit'},
               },
             ]),
@@ -72,13 +72,13 @@ void main() {
       expect(result, isA<AppSuccess<void>>());
       expect(
         requests.single.url.path,
-        '/rest/v1/rpc/app_save_product_recipe',
+        '/rest/v1/rpc/app_save_item_recipe_v2',
       );
       final body = jsonDecode(requests.single.body) as Map<String, Object?>;
       expect(body['p_restaurant_id'], 'restaurant-1');
-      expect(body['p_product_id'], 'burger');
+      expect(body['p_item_id'], 'burger');
       final lines = body['p_lines']! as List<Object?>;
-      expect(lines.single, containsPair('component_product_id', 'bread'));
+      expect(lines.single, containsPair('component_item_id', 'bread'));
       expect(lines.single, containsPair('quantity', 1));
       expect(lines.single, containsPair('unit_id', 'unit'));
     });

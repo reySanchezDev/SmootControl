@@ -168,14 +168,14 @@ final class SupabaseCatalogPullService implements ICatalogPullService {
     final productModifierGroups =
         shouldRefreshProducts && !hasCanonicalItemSnapshot
         ? await _getRows(
-            'product_modifier_groups',
-            select: 'product_id,modifier_group_id,display_order',
+            'item_modifier_groups',
+            select: 'item_id,modifier_group_id,display_order',
           )
         : const <Map<String, Object?>>[];
     final products = shouldRefreshProducts && !hasCanonicalItemSnapshot
-        ? await _getRowsByQuery('products', {
+        ? await _getRowsByQuery('items', {
             'restaurant_id': 'eq.${_restaurantService.restaurantId}',
-            'or': '(is_raw_material.eq.false,is_raw_material.is.null)',
+            'item_class': 'neq.raw_material',
             'select': '*',
           })
         : const <Map<String, Object?>>[];
@@ -192,7 +192,7 @@ final class SupabaseCatalogPullService implements ICatalogPullService {
         ? await _getRows('packaging_items')
         : const <Map<String, Object?>>[];
     final packagingRules = shouldRefreshPackaging
-        ? await _getRows('product_packaging_rules')
+        ? await _getRows('item_consumption_rules')
         : const <Map<String, Object?>>[];
     final packagingStock = shouldRefreshPackaging
         ? await _getRows('packaging_stock')
