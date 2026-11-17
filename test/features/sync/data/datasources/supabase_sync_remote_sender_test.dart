@@ -121,7 +121,7 @@ void main() {
 
       final rpcRequest = requests.singleWhere(
         (request) =>
-            request.url.path == '/rest/v1/rpc/apply_inventory_movement',
+            request.url.path == '/rest/v1/rpc/apply_inventory_movement_v2',
       );
       final body = jsonDecode(rpcRequest.body) as Map<String, Object?>;
 

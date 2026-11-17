@@ -98,3 +98,13 @@
 - Control adicional: el RPC rechazó un restaurante/credencial POS no
   autorizados mediante `assert_pos_device`.
 
+## H-011 — Movimientos independientes aún usaban `product_id`
+
+- Severidad: alta durante la prueba; cerrada.
+- Evidencia: el sender Flutter llamaba `apply_inventory_movement`, cuyo
+  contrato solo validaba `products`.
+- Corrección: migración 104 y `apply_inventory_movement_v2`, con `item_id`,
+  validación de tenant, control de stock e idempotencia; el sender ya usa el
+  RPC versionado.
+- Prueba: entrada, ajuste y reintento sobre artículo canónico aprobados.
+

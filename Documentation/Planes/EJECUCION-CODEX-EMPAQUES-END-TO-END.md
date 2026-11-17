@@ -1841,3 +1841,12 @@ se aplicó localmente: la anulación restauró stock 9→10, creó un único
 movimiento `sale_void` y persistió la anulación; el reintento mantuvo stock 10
 y un solo movimiento de reversión. Un dispositivo con restaurante/credencial
 inválidos fue rechazado por `assert_pos_device`.
+
+La migración 104 extendió el contrato de movimientos independientes mediante
+`apply_inventory_movement_v2`, conservando compatibilidad con productos
+históricos y aceptando `item_id`. Se comprobó en Docker una entrada `+5`, un
+ajuste `-2` y el reintento del mismo ajuste: stock 10→15→13, dos movimientos
+únicos y sin duplicación. También se ejecutó una venta mixta con dos artículos
+inventariables y uno no inventariable: los stocks quedaron 13→11 y 4→3; se
+crearon tres líneas de venta y no se creó movimiento para el no inventariable.
+Analyze focalizado y 13 pruebas Flutter del sender quedaron verdes.
