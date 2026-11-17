@@ -9,7 +9,8 @@ mixin _SupabaseAdminCanonicalItemsMixin on _SupabaseAdminRepositoryBase {
     () async {
       final rows = await _getRows('items', {
         'restaurant_id': 'eq.$_restaurantId',
-        'select': 'id,code,name,item_type,base_unit_id,base_unit_cost,'
+        'select':
+            'id,code,name,item_type,category_id,base_unit_id,base_unit_cost,'
             'base_unit_price,can_sell,can_purchase,visible_in_pos,'
             'uses_recipe,send_to_kitchen,is_active',
         'order': 'name.asc',
@@ -35,7 +36,7 @@ mixin _SupabaseAdminCanonicalItemsMixin on _SupabaseAdminRepositoryBase {
 
   /// Fetches functional labels independently of technical article types.
   Future<AppResult<List<CanonicalClassification>>>
-      getCanonicalClassifications() => _guard(
+  getCanonicalClassifications() => _guard(
     'canonical_classifications_read_failed',
     'No se pudieron cargar las clasificaciones.',
     () async {
@@ -57,13 +58,14 @@ mixin _SupabaseAdminCanonicalItemsMixin on _SupabaseAdminRepositoryBase {
 
   /// Reads canonical packaging rules without the legacy packaging master.
   Future<AppResult<List<CanonicalConsumptionRule>>>
-      getCanonicalConsumptionRules() => _guard(
+  getCanonicalConsumptionRules() => _guard(
     'canonical_rules_read_failed',
     'No se pudieron cargar las reglas de consumo.',
     () async {
       final rows = await _getRows('item_consumption_rules', {
         'restaurant_id': 'eq.$_restaurantId',
-        'select': 'id,source_item_id,consumed_item_id,sales_type_id,'
+        'select':
+            'id,source_item_id,consumed_item_id,sales_type_id,'
             'scope,quantity,unit_id,priority,is_active',
         'order': 'priority.asc',
       });

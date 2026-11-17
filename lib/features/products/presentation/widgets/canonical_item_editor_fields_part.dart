@@ -18,6 +18,7 @@ extension _CanonicalItemEditorFields on _CanonicalItemEditorState {
   Widget _fields(
     BuildContext context,
     List<MeasurementUnit> units,
+    List<ProductCategory> categories,
   ) => LayoutBuilder(
     builder: (context, constraints) {
       const gap = 18.0;
@@ -83,6 +84,28 @@ extension _CanonicalItemEditorFields on _CanonicalItemEditorState {
                     .toList(),
                 onChanged: (id) => _update(() => _baseUnit = id),
                 validator: _required,
+              ),
+              DropdownButtonFormField<String?>(
+                initialValue:
+                    categories.any(
+                      (category) => category.id == _categoryId,
+                    )
+                    ? _categoryId
+                    : null,
+                isExpanded: true,
+                decoration: const InputDecoration(labelText: 'Categoría'),
+                items: [
+                  const DropdownMenuItem<String?>(
+                    child: Text('Sin categoría'),
+                  ),
+                  ...categories.map(
+                    (category) => DropdownMenuItem<String?>(
+                      value: category.id,
+                      child: Text(category.name),
+                    ),
+                  ),
+                ],
+                onChanged: (id) => _update(() => _categoryId = id),
               ),
             ]),
           ),

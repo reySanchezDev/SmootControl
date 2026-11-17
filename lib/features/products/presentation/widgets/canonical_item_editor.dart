@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:smoo_control/core/design_system/app_message_dialog.dart';
+import 'package:smoo_control/features/catalog/domain/entities/product_category.dart';
 import 'package:smoo_control/features/products/domain/entities/canonical_item.dart';
 import 'package:smoo_control/features/products/domain/entities/measurement_unit.dart';
 
@@ -13,6 +14,7 @@ class CanonicalItemEditor extends StatefulWidget {
     required this.classifications,
     required this.onSave,
     required this.onBack,
+    this.categories = const [],
     this.saving = false,
     this.item,
     super.key,
@@ -35,6 +37,9 @@ class CanonicalItemEditor extends StatefulWidget {
 
   /// Independent functional classifications.
   final List<CanonicalClassification> classifications;
+
+  /// Active product categories available to the tenant.
+  final List<ProductCategory> categories;
   @override
   State<CanonicalItemEditor> createState() => _CanonicalItemEditorState();
 }
@@ -56,6 +61,7 @@ class _CanonicalItemEditorState extends State<CanonicalItemEditor> {
   late bool _sendToKitchen;
   late bool _isActive;
   late Set<String> _classifications;
+  String? _categoryId;
   String? _baseUnit;
   @override
   void initState() {
@@ -72,6 +78,7 @@ class _CanonicalItemEditorState extends State<CanonicalItemEditor> {
     _sendToKitchen = item?.sendToKitchen ?? false;
     _isActive = item?.isActive ?? true;
     _classifications = {...?item?.classificationIds};
+    _categoryId = item?.categoryId;
     _baseUnit = item?.baseUnitId;
   }
 
@@ -109,6 +116,7 @@ class _CanonicalItemEditorState extends State<CanonicalItemEditor> {
     widget.onSave(
       CanonicalItem(
         id: widget.item?.id,
+        categoryId: _categoryId,
         code: widget.item?.code ?? '',
         name: _name.text.trim(),
         type: _type,
@@ -208,7 +216,7 @@ class _CanonicalItemEditorState extends State<CanonicalItemEditor> {
               child: Center(
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 980),
-                  child: _fields(context, units),
+                  child: _fields(context, units, widget.categories),
                 ),
               ),
             ),

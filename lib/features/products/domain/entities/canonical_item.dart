@@ -7,7 +7,8 @@ enum CanonicalItemType {
   nonInventory('Sin inventario'),
 
   /// Non-physical service.
-  service('Servicio');
+  service('Servicio')
+  ;
 
   const CanonicalItemType(this.label);
 
@@ -58,6 +59,7 @@ final class CanonicalItem {
     required this.type,
     required this.baseUnitId,
     this.id,
+    this.categoryId,
     this.cost = 0,
     this.price = 0,
     this.canSell = false,
@@ -76,6 +78,7 @@ final class CanonicalItem {
   }) {
     return CanonicalItem(
       id: row['id']?.toString(),
+      categoryId: row['category_id']?.toString(),
       code: row['code']?.toString() ?? '',
       name: row['name']?.toString() ?? '',
       type: CanonicalItemType.parse(row['item_type']),
@@ -94,6 +97,9 @@ final class CanonicalItem {
 
   /// UUID assigned by PostgreSQL, not by the user.
   final String? id;
+
+  /// Product category assigned to this article.
+  final String? categoryId;
 
   /// Unique business code within the restaurant.
   final String code;
@@ -137,6 +143,7 @@ final class CanonicalItem {
   /// The trusted RPC, not direct table DML, performs every update.
   Map<String, Object?> toPayload() => {
     if (id != null) 'id': id,
+    'category_id': categoryId,
     'code': code.trim(),
     'name': name.trim(),
     'item_type': type.databaseValue,

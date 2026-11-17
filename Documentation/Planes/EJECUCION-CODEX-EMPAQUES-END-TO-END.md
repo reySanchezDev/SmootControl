@@ -1719,3 +1719,23 @@ dejó en `http://127.0.0.1:8096/` (HTTP 200); el bundle contiene la URL local y
 no contiene literales `service_role`. La inspección visual interactiva final,
 login Auth con credenciales del propietario y F5 desde navegador quedan para
 la revisión de Rey; el backend ya está preparado para esa prueba real.
+
+### 13.32 Corrección de visibilidad y categorización de Productos (2026-11-17)
+
+La lista canónica de Productos ya no presenta la columna Código, ni lo muestra
+en la vista compacta o en el criterio de búsqueda. El código `ART-n` permanece
+interno para persistencia y relectura.
+
+La auditoría confirmó que `items.category_id` ya referenciaba
+`product_categories`, pero el editor solo cargaba `item_classifications`; en el
+Docker restaurado había 16 categorías de producto y 0 clasificaciones técnicas.
+El editor ahora carga las categorías reales del restaurante y permite elegir
+“Sin categoría” o una categoría activa. La migración 099 valida tenant/estado y
+persiste `category_id` en `app_upsert_item_v2`, sin mezclarlo con las
+clasificaciones técnicas.
+
+Evidencia local: `ITEM_CATEGORY_PERSISTENCE=PASS`, ledger 099, REST/Auth HTTP
+200, análisis Dart sin diagnósticos y pruebas dirigidas 9/9. El RELEASE oficial
+quedó disponible en `http://127.0.0.1:8097/`, HTTP 200, conectado al Docker
+local; el escaneo del bundle confirmó la define local y ausencia de
+`service_role`. No se modificó el remoto.
