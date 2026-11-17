@@ -53,3 +53,18 @@
 - Acción: usar el Supabase Docker local ya existente para pruebas de integración
   y dejar el runner desechable como prueba adicional cuando la red lo permita.
 
+## H-007 — Los identificadores coinciden por backfill, pero las FK siguen legadas
+
+- Severidad: crítica.
+- Evidencia local: `items=155`, `products=144`; los 2,500 `sale_items` enlazan
+  por UUID tanto con `items` como con `products`, y los 56 registros de stock
+  también coinciden por UUID.
+- Evidencia estructural: `sale_items.product_id`, `inventory_stock.product_id`,
+  `inventory_movements.product_id`, `inventory_adjustment_lines.product_id` y
+  las tablas de recetas/modificadores/empaques siguen teniendo FK hacia
+  `products`.
+- Impacto: que los UUID coincidan no convierte el modelo en canónico; eliminar
+  `products` rompería integridad referencial y funciones operativas.
+- Acción: migrar columnas y contratos a `item_id` explícito, conciliando filas,
+  antes de retirar `products`.
+

@@ -18,3 +18,10 @@
 4. Pruebas E2E verdes en Docker local.
 5. Migración de retiro revisada y aplicada primero en una copia restaurable.
 
+## Estado de datos local
+
+La base Docker contiene 155 `items` y 144 `products`. Los 2,500 `sale_items`
+y 56 registros de stock coinciden actualmente por UUID, pero las FK todavía
+apuntan a `products`. El dato coincidente permite una migración controlada,
+pero no justifica borrar el maestro antiguo sin cambiar las FK.
+
