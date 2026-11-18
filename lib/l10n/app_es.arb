@@ -665,5 +665,16 @@
   "discardChangesAction": "Descartar cambios",
   "continueEditingAction": "Seguir editando",
   "confirmChangesTitle": "Confirmar cambios",
-  "confirmChangesMessage": "¿Deseás guardar los cambios realizados?"
+  "confirmChangesMessage": "¿Deseás guardar los cambios realizados?",
+  "canonicalItemCodeField": "Código comercial",
+  "canonicalItemCodeAutoAssigned": "Se asigna automáticamente al guardar.",
+  "canonicalItemTypeField": "Tipo de artículo",
+  "canonicalItemTypeInventory": "Inventariable",
+  "canonicalItemTypeNonInventory": "No inventariable",
+  "canonicalItemTypeService": "Servicio",
+  "canonicalItemRoleField": "Función operativa",
+  "canonicalItemRoleSaleProduct": "Producto de venta",
+  "canonicalItemRoleRawMaterial": "Materia prima",
+  "canonicalItemRolePackaging": "Empaque",
+  "canonicalItemRoleImmutableHelp": "Se define al crear para conservar la trazabilidad del artículo."
 }

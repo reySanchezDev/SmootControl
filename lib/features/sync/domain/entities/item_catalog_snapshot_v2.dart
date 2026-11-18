@@ -261,7 +261,14 @@ final class ItemCatalogSnapshotV2 {
       final commercialCode = row['commercial_code']?.toString();
       final priceInCents = _moneyCents(row['base_unit_price']);
       final costInCents = _moneyCents(row['base_unit_cost']);
-      final tracksInventory = row['tracks_inventory'] == true;
+      final reportedTracksInventory = _boolean(
+        row['tracks_inventory'],
+        'tracks_inventory',
+      );
+      final tracksInventory = type == ItemCatalogTypeV2.inventory;
+      if (reportedTracksInventory != tracksInventory) {
+        throw const FormatException('item_inventory_tracking_mismatch');
+      }
       final quantityOnHand = _integer(row['quantity_on_hand']);
       if (!itemIds.add(id) || !codes.add(code.toLowerCase())) {
         throw const FormatException('duplicate_catalog_item_or_code');

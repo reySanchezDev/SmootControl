@@ -1,7 +1,7 @@
 # Revisión de arquitectura: identidad, tipo, función y existencias de artículos
 
 **Fecha:** 2026-11-18
-**Estado:** recomendación técnica para revisión del equipo; no autoriza cambios de código, datos, esquema ni producción.
+**Estado:** propuesta base implementada y validada en el worktree y Supabase Docker local; pendiente revisión visual/funcional. La edición de Función operativa sigue bloqueada y se documenta como caso separado para decisión de arquitectura.
 **Documentos revisados:** auditoría original, propuesta Clase/Stock y referencia Business Central/LS Central.
 
 ## Decisión recomendada
@@ -90,4 +90,36 @@ No se recomienda permitir Servicio + stock, ni exponer `tracks_inventory` como t
 - Decidir si una misma materia prima puede venderse directamente además de usarse como ingrediente. Si se requiere multirol, evaluar relaciones de roles después de cerrar los flujos actuales; no convertir el enum a multiselección sin caso de uso probado.
 - Confirmar el flujo comercial de servicios en POS y si compra de artículo no inventariable debe registrarse como costo/gasto o solo línea comercial.
 
-**No se modificaron artículos, migraciones, reglas de POS ni interfaces.** Esta revisión corrige la recomendación arquitectónica para que el equipo la apruebe antes de iniciar implementación.
+## Registro de implementación local — 2026-11-18
+
+La dirección recomendada se aplicó localmente con `item_type` como autoridad y `tracks_inventory` como proyección estricta. La edición de Función operativa no se habilitó: requiere resolver primero la transición de identidad/procedencia y las dependencias heredadas descritas en [el análisis pendiente de cambio de función](ANALISIS-CAMBIO-FUNCION-OPERATIVA-ITEMS-Y-BUSINESS-CENTRAL-2026-11-18.md). No aplicada a Supabase remoto.
+
+| Fase | Resultado | Evidencia/criterio comprobado |
+|---|---|---|
+| A — ratificar modelo | Implementada según esta recomendación | UI distingue Tipo de artículo y Función operativa; Servicio aparece una sola vez. |
+| B — reconciliar datos | Completada para el Docker local | Preflight de migración 128 verificó datos/historial antes de corregir inconsistencias seguras; la migración aborta ante saldo/movimientos que requieran decisión manual. |
+| C — contrato SQL | Aplicada al Docker local | `128_item_type_inventory_authority`; derivación por trigger, restricción de igualdad, código comercial asignado/protegido por servidor, permisos y rechazo de downgrade con saldo. |
+| D — Backoffice | Implementada | Código comercial de solo lectura, rol operativo inmutable en edición para preservar procedencia; Servicio fuerza compatibilidad y deshabilita receta/stock. |
+| E — consumidores | Validación local automatizada completada | E2E transaccional cubre alta/edición, receta, regla de empaque, sincronización POS, descuento de artículo/ingrediente/empaque, ajustes y consulta de reporte. |
+| F — compatibilidad | Validación de snapshot cubierta | El snapshot rechaza divergencia entre `item_type` y `tracks_inventory`; se requiere revisar dispositivos antiguos antes de rollout. |
+| G — liberación | RELEASE local disponible; QA visual pendiente | Build oficial exitoso en `http://127.0.0.1:8104/`, con Supabase loopback y tenant fixture comprobados en el bundle; autenticación local HTTP 200. |
+
+### Resultados de pruebas locales comprobadas
+
+- Migración 128 aplicada en Supabase Docker local, sin ejecutar la migración 088 ni contactar Supabase remoto.
+- `item_type_stock_authority_local.sql`: creación, derivación de inventario, inmutabilidad del código, permisos del RPC, bloqueo del cambio de tipo con saldo y rollback.
+- `local_item_e2e_transaction.sql`: alta/edición, código generado, receta, compra inicial, regla de empaque, venta por `pos_sync_sale_v2`, descuento del producto inventariable, componente de receta y empaque canónico; registra tres movimientos ligados a la venta, valida ajustes de entrada/salida y reporte, y termina en `ROLLBACK`.
+- `canonical_inventory_packaging_purchase_adjustment.sql` y `canonical_recipe_negative_stock_rule.sql`: compra/ajuste y política de negativos de materia prima.
+- Pruebas Flutter dirigidas para entidad, editor y snapshot: 29 pruebas aprobadas.
+- `flutter analyze` completo: sin errores. `dart format` de los archivos Dart tocados: sin cambios pendientes.
+- RELEASE Web compilado con `tool/build_web_release.ps1 -CanonicalItemsQa -LocalSupabaseQa -RestaurantIdOverride ...`; define local, UUID tenant y endpoint Auth verificados sin mostrar la clave. Disponible en `http://127.0.0.1:8104/` para QA visual.
+
+La prueba E2E construye el payload de empaques que el POS realmente genera localmente a partir de sus reglas y que envía en `packaging_movements`; el RPC enruta el movimiento de empaque canónico al ledger de inventario. No interpreta que el servidor cree el movimiento sin ese payload.
+
+### Pendientes antes de promover
+
+1. El propietario debe hacer QA visual/funcional del RELEASE local y confirmar los comportamientos de interfaz.
+2. Revisar en dispositivos POS antiguos el contrato de snapshot/versión antes de desplegar.
+3. Obtener aprobación del propietario para revisar el diff y, por separado, autorizar publicación/aplicación remota.
+
+La actualización de código/documentación de esta rama se publicará en GitHub. No se ejecutaron escrituras a Supabase remoto, `main`, producción, migración 088 ni POS remoto.

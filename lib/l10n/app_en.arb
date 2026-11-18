@@ -665,5 +665,16 @@
   "discardChangesAction": "Discard changes",
   "continueEditingAction": "Keep editing",
   "confirmChangesTitle": "Confirm changes",
-  "confirmChangesMessage": "Do you want to save your changes?"
+  "confirmChangesMessage": "Do you want to save your changes?",
+  "canonicalItemCodeField": "Commercial code",
+  "canonicalItemCodeAutoAssigned": "Assigned automatically when saved.",
+  "canonicalItemTypeField": "Item type",
+  "canonicalItemTypeInventory": "Inventory",
+  "canonicalItemTypeNonInventory": "Non-inventory",
+  "canonicalItemTypeService": "Service",
+  "canonicalItemRoleField": "Operational role",
+  "canonicalItemRoleSaleProduct": "Sale product",
+  "canonicalItemRoleRawMaterial": "Raw material",
+  "canonicalItemRolePackaging": "Packaging",
+  "canonicalItemRoleImmutableHelp": "Set when created to preserve the article's traceability."
 }

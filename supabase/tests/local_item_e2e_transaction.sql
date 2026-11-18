@@ -24,6 +24,8 @@ DECLARE
   v_result jsonb;
   v_stock_before numeric;
   v_stock_after numeric;
+  v_component_stock_before numeric;
+  v_packaging_stock_before numeric;
   v_report_rows integer;
 BEGIN
   v_device_id := gen_random_uuid();
@@ -39,6 +41,7 @@ BEGIN
   SELECT id INTO v_packaging_item
   FROM public.items
   WHERE restaurant_id = v_restaurant AND item_class = 'packaging'
+    AND tracks_inventory AND can_purchase AND is_active
   LIMIT 1;
   SELECT id INTO v_sales_type
   FROM public.sales_types
@@ -46,7 +49,20 @@ BEGIN
   LIMIT 1;
   SELECT * INTO v_existing
   FROM public.items
-  WHERE restaurant_id = v_restaurant AND tracks_inventory
+  WHERE restaurant_id = v_restaurant AND item_class = 'raw_material'
+    AND tracks_inventory AND is_active
+    AND EXISTS (
+      SELECT 1 FROM public.inventory_stock stock
+      WHERE stock.restaurant_id = v_restaurant
+        AND stock.item_id = public.items.id
+        AND stock.quantity_on_hand >= 1
+    )
+    AND EXISTS (
+      SELECT 1 FROM public.measurement_units unit
+      WHERE unit.id = public.items.base_unit_id
+        AND (unit.restaurant_id IS NULL OR unit.restaurant_id = v_restaurant)
+        AND unit.is_active
+    )
   LIMIT 1;
   PERFORM public.register_pos_device(
     v_restaurant, v_device_id, v_device_secret, 'QA E2E temporal'
@@ -63,7 +79,8 @@ BEGIN
       'name', 'QA ITEM E2E ' || substr(gen_random_uuid()::text, 1, 8),
       'item_type', 'inventory', 'base_unit_id', v_existing.base_unit_id,
       'base_unit_cost', 1, 'base_unit_price', 2,
-      'can_sell', true, 'visible_in_pos', true, 'is_active', true
+      'can_sell', true, 'can_purchase', true,
+      'visible_in_pos', true, 'is_active', true
     )
   );
   IF v_item.code !~ '^ART-[0-9]+$' THEN
@@ -75,7 +92,8 @@ BEGIN
     jsonb_build_object('id', v_item.id, 'name', 'QA ITEM E2E EDITADO',
       'item_type', 'inventory', 'base_unit_id', v_item.base_unit_id,
       'base_unit_cost', 1, 'base_unit_price', 2,
-      'can_sell', true, 'visible_in_pos', true, 'uses_recipe', true,
+      'can_sell', true, 'can_purchase', true,
+      'visible_in_pos', true, 'uses_recipe', true,
       'is_active', true)
   );
   IF v_item.code !~ '^ART-[0-9]+$' OR v_item.name <> 'QA ITEM E2E EDITADO' THEN
@@ -111,26 +129,52 @@ BEGIN
     RAISE EXCEPTION 'La regla canonica de consumo no persistio.';
   END IF;
 
+  PERFORM public.app_register_inventory_purchase_batch_v2(
+    v_restaurant,
+    jsonb_build_array(
+      jsonb_build_object(
+        'movement_id', 'qa-e2e-product-stock-' || substr(v_sale_id::text, 1, 8),
+        'item_id', v_item.id, 'quantity', 5, 'unit_cost', 1
+      ),
+      jsonb_build_object(
+        'movement_id', 'qa-e2e-packaging-stock-' || substr(v_sale_id::text, 1, 8),
+        'item_id', v_packaging_item, 'quantity', 5, 'unit_cost', 1
+      )
+    )
+  );
   SELECT quantity_on_hand INTO v_stock_before
   FROM public.inventory_stock
+  WHERE restaurant_id = v_restaurant AND item_id = v_item.id;
+  SELECT quantity_on_hand INTO v_component_stock_before
+  FROM public.inventory_stock
   WHERE restaurant_id = v_restaurant AND item_id = v_existing.id;
+  SELECT quantity_on_hand INTO v_packaging_stock_before
+  FROM public.inventory_stock
+  WHERE restaurant_id = v_restaurant AND item_id = v_packaging_item;
   v_result := public.pos_sync_sale_v2(
     v_restaurant, v_device_id, v_device_secret,
     jsonb_build_object(
       'sale', jsonb_build_object('id', v_sale_id, 'local_id', v_sale_id::text,
         'invoice_number', 'QA-E2E-' || substr(v_sale_id::text, 1, 8),
         'cash_register_session_id', v_cash_session, 'user_id', v_user_id,
-        'payment_method_id', v_payment_method, 'total_amount', 2,
+        'payment_method_id', v_payment_method, 'sales_type_id', v_sales_type,
+        'total_amount', 2,
         'total_cost', 1, 'gross_profit', 1, 'status', 'completed',
         'sold_at', now(), 'business_date', current_date),
       'items', jsonb_build_array(jsonb_build_object(
-        'id', v_line_id, 'item_id', v_existing.id, 'product_code', v_existing.code,
-        'product_name', v_existing.name, 'category_name', 'QA', 'quantity', 1,
+        'id', v_line_id, 'item_id', v_item.id, 'product_code', v_item.code,
+        'product_name', v_item.name, 'category_name', 'QA', 'quantity', 1,
         'unit_price', 2, 'unit_cost', 1, 'subtotal', 2, 'gross_profit', 1)),
       'inventory_movements', jsonb_build_array(jsonb_build_object(
         'id', 'qa-e2e-movement-' || substr(v_sale_id::text, 1, 8),
-        'item_id', v_existing.id, 'movement_type', 'sale', 'quantity_delta', -1,
-        'unit_cost', 1, 'created_at', now()))
+        'item_id', v_item.id, 'movement_type', 'sale', 'quantity_delta', -1,
+        'unit_cost', 1, 'created_at', now())),
+      'packaging_movements', jsonb_build_array(jsonb_build_object(
+        'id', 'qa-e2e-packaging-' || substr(v_sale_id::text, 1, 8),
+        'packaging_item_id', v_packaging_item,
+        'movement_type', 'packaging_sale', 'quantity_delta', -1,
+        'unit_cost', 1, 'reference_type', 'sale',
+        'reference_id', v_sale_id::text, 'created_at', now()))
     )
   );
   RAISE NOTICE 'POS result %', v_result;
@@ -142,28 +186,61 @@ BEGIN
   END IF;
   SELECT quantity_on_hand INTO v_stock_after
   FROM public.inventory_stock
-  WHERE restaurant_id = v_restaurant AND item_id = v_existing.id;
+  WHERE restaurant_id = v_restaurant AND item_id = v_item.id;
   IF v_stock_after <> v_stock_before - 1 THEN
     RAISE EXCEPTION 'El POS no desconto stock canonico: % -> %', v_stock_before, v_stock_after;
   END IF;
-  IF NOT EXISTS (SELECT 1 FROM public.sale_items WHERE id = v_line_id AND item_id = v_existing.id)
-     OR NOT EXISTS (SELECT 1 FROM public.inventory_movements
-       WHERE id = 'qa-e2e-movement-' || substr(v_sale_id::text, 1, 8)
-       AND item_id = v_existing.id) THEN
-    RAISE EXCEPTION 'La venta no persistio item_id en detalle/movimiento.';
-  END IF;
-
-  PERFORM public.apply_inventory_movement_v2(
-    'qa-e2e-adjustment-in', v_restaurant, v_existing.id, NULL,
-    'adjustment', 1, 'qa_e2e', v_sale_id::text, NULL, 'QA E2E', now(), 1
-  );
-  PERFORM public.apply_inventory_movement_v2(
-    'qa-e2e-adjustment-out', v_restaurant, v_existing.id, NULL,
-    'adjustment', -1, 'qa_e2e', v_sale_id::text, NULL, 'QA E2E', now(), 1
-  );
   SELECT quantity_on_hand INTO v_stock_after
   FROM public.inventory_stock
   WHERE restaurant_id = v_restaurant AND item_id = v_existing.id;
+  IF v_stock_after <> v_component_stock_before - 1 THEN
+    RAISE EXCEPTION 'La receta no desconto la materia prima: % -> %',
+      v_component_stock_before, v_stock_after;
+  END IF;
+  SELECT quantity_on_hand INTO v_stock_after
+  FROM public.inventory_stock
+  WHERE restaurant_id = v_restaurant AND item_id = v_packaging_item;
+  IF v_stock_after <> v_packaging_stock_before - 1 THEN
+    RAISE EXCEPTION 'La venta no desconto el empaque: % -> %',
+      v_packaging_stock_before, v_stock_after;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.sale_items WHERE id = v_line_id AND item_id = v_item.id)
+     OR NOT EXISTS (SELECT 1 FROM public.inventory_movements
+       WHERE id = 'qa-e2e-movement-' || substr(v_sale_id::text, 1, 8)
+       AND item_id = v_item.id)
+     OR NOT EXISTS (SELECT 1 FROM public.inventory_movements
+       WHERE id = 'qa-e2e-packaging-' || substr(v_sale_id::text, 1, 8)
+       AND item_id = v_packaging_item AND movement_type = 'sale'
+       AND reference_id = v_sale_id::text) THEN
+    RAISE EXCEPTION 'La venta no persistio item_id en detalle/movimiento.';
+  END IF;
+
+  PERFORM public.app_register_inventory_adjustment_batch_v2(
+    v_restaurant,
+    jsonb_build_array(jsonb_build_object(
+      'movement_id', 'qa-e2e-adjustment-in', 'item_id', v_item.id,
+      'expected_quantity', (SELECT quantity_on_hand FROM public.inventory_stock
+        WHERE restaurant_id = v_restaurant AND item_id = v_item.id),
+      'counted_quantity', (SELECT quantity_on_hand + 1 FROM public.inventory_stock
+        WHERE restaurant_id = v_restaurant AND item_id = v_item.id)
+    )),
+    'QA E2E entrada'
+  );
+  SELECT quantity_on_hand INTO v_stock_after
+  FROM public.inventory_stock
+  WHERE restaurant_id = v_restaurant AND item_id = v_item.id;
+  PERFORM public.app_register_inventory_adjustment_batch_v2(
+    v_restaurant,
+    jsonb_build_array(jsonb_build_object(
+      'movement_id', 'qa-e2e-adjustment-out', 'item_id', v_item.id,
+      'expected_quantity', v_stock_after,
+      'counted_quantity', v_stock_after - 1
+    )),
+    'QA E2E salida'
+  );
+  SELECT quantity_on_hand INTO v_stock_after
+  FROM public.inventory_stock
+  WHERE restaurant_id = v_restaurant AND item_id = v_item.id;
   IF v_stock_after <> v_stock_before - 1 THEN
     RAISE EXCEPTION 'Los movimientos de ajuste no conservaron el stock esperado.';
   END IF;

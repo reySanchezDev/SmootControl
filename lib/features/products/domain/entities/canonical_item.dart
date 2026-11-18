@@ -48,6 +48,11 @@ enum CanonicalItemClass {
 
   const CanonicalItemClass(this.label, this.databaseValue);
 
+  /// Roles users may assign while creating an article.
+  static List<CanonicalItemClass> get selectableValues => values
+      .where((itemClass) => itemClass != CanonicalItemClass.service)
+      .toList(growable: false);
+
   /// Human-facing label.
   final String label;
 
@@ -184,10 +189,12 @@ final class CanonicalItem {
   /// Independent functional classification IDs.
   final List<String> classificationIds;
 
+  /// Inventory tracking is a projection of [type], never an independent flag.
+  bool get tracksInventory => type == CanonicalItemType.inventory;
+
   /// The trusted RPC, not direct table DML, performs every update.
   Map<String, Object?> toPayload() => {
     if (id != null) 'id': id,
-    if (commercialCode != null) 'commercial_code': commercialCode,
     'category_id': categoryId,
     'code': code.trim(),
     'name': name.trim(),

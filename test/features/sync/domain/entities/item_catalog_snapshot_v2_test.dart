@@ -28,6 +28,7 @@ Map<String, Object?> _catalog({
         'code': 'HAMB-01',
         'name': 'Hamburguesa',
         'item_type': 'non_inventory',
+        'tracks_inventory': false,
         'base_unit_id': _unitId,
         'can_sell': true,
         'visible_in_pos': true,
@@ -39,6 +40,7 @@ Map<String, Object?> _catalog({
         'code': 'BAG-01',
         'name': 'Bolsa',
         'item_type': 'inventory',
+        'tracks_inventory': true,
         'base_unit_id': _unitId,
         'can_sell': false,
         'visible_in_pos': false,
@@ -106,6 +108,20 @@ void main() {
       expect(snapshot.classificationLinks, hasLength(1));
       expect(snapshot.items.last.canSell, isFalse);
       expect(snapshot.snapshotId, _snapshotId);
+    });
+
+    test('rejects a stock flag that disagrees with item type', () {
+      final catalog = _catalog();
+      final items = catalog['items']! as List<Map<String, Object?>>;
+      items.last['tracks_inventory'] = false;
+
+      expect(
+        () => ItemCatalogSnapshotV2.fromJson(
+          catalog,
+          expectedRestaurantId: _restaurant,
+        ),
+        throwsFormatException,
+      );
     });
 
     test('rejects partial snapshots before local inactivation', () {
@@ -185,8 +201,7 @@ void main() {
 
     test('rejects consumed items that have no matching unit', () {
       final catalog = _catalog();
-      final rules =
-          catalog['consumption_rules']! as List<Map<String, Object?>>;
+      final rules = catalog['consumption_rules']! as List<Map<String, Object?>>;
       rules.first['unit_id'] = '30000000-0000-0000-0000-000000000099';
 
       expect(
@@ -200,8 +215,7 @@ void main() {
 
     test('rejects decimal quantities that would lose precision', () {
       final catalog = _catalog();
-      final rules =
-          catalog['consumption_rules']! as List<Map<String, Object?>>;
+      final rules = catalog['consumption_rules']! as List<Map<String, Object?>>;
       rules.first['quantity'] = '0.0000001';
 
       expect(
@@ -217,6 +231,7 @@ void main() {
       final catalog = _catalog();
       final items = catalog['items']! as List<Map<String, Object?>>;
       items.last['item_type'] = 'service';
+      items.last['tracks_inventory'] = false;
 
       expect(
         () => ItemCatalogSnapshotV2.fromJson(
@@ -229,8 +244,7 @@ void main() {
 
     test('rejects an order rule without a source for per-line scope', () {
       final catalog = _catalog();
-      final rules =
-          catalog['consumption_rules']! as List<Map<String, Object?>>;
+      final rules = catalog['consumption_rules']! as List<Map<String, Object?>>;
       rules.first['source_item_id'] = null;
 
       expect(
@@ -256,8 +270,7 @@ void main() {
     test('rejects classification links outside the local tenant', () {
       final catalog = _catalog();
       final links =
-          catalog['item_classification_links']!
-              as List<Map<String, Object?>>;
+          catalog['item_classification_links']! as List<Map<String, Object?>>;
       links.single['restaurant_id'] = _otherRestaurant;
       expect(
         () => ItemCatalogSnapshotV2.fromJson(
@@ -271,8 +284,7 @@ void main() {
     test('rejects links to inactive classifications', () {
       final catalog = _catalog();
       final classes =
-          catalog['item_classifications']!
-              as List<Map<String, Object?>>;
+          catalog['item_classifications']! as List<Map<String, Object?>>;
       classes.single['is_active'] = false;
       expect(
         () => ItemCatalogSnapshotV2.fromJson(
@@ -285,14 +297,15 @@ void main() {
 
     test('rejects duplicate classification codes regardless of case', () {
       final catalog = _catalog();
-      (catalog['item_classifications']! as List<Map<String, Object?>>)
-          .add(<String, Object?>{
-        'restaurant_id': _restaurant,
-        'id': '50000000-0000-0000-0000-000000000002',
-        'code': 'packaging',
-        'name': 'Duplicado',
-        'is_active': true,
-      });
+      (catalog['item_classifications']! as List<Map<String, Object?>>).add(
+        <String, Object?>{
+          'restaurant_id': _restaurant,
+          'id': '50000000-0000-0000-0000-000000000002',
+          'code': 'packaging',
+          'name': 'Duplicado',
+          'is_active': true,
+        },
+      );
       expect(
         () => ItemCatalogSnapshotV2.fromJson(
           catalog,
@@ -305,8 +318,7 @@ void main() {
     test('rejects duplicate item-classification assignments', () {
       final catalog = _catalog();
       final links =
-          catalog['item_classification_links']!
-              as List<Map<String, Object?>>;
+          catalog['item_classification_links']! as List<Map<String, Object?>>;
       links.add(Map<String, Object?>.from(links.single));
       expect(
         () => ItemCatalogSnapshotV2.fromJson(

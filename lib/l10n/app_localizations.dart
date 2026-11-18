@@ -3157,6 +3157,72 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'¿Deseás guardar los cambios realizados?'**
   String get confirmChangesMessage;
+
+  /// No description provided for @canonicalItemCodeField.
+  ///
+  /// In es, this message translates to:
+  /// **'Código comercial'**
+  String get canonicalItemCodeField;
+
+  /// No description provided for @canonicalItemCodeAutoAssigned.
+  ///
+  /// In es, this message translates to:
+  /// **'Se asigna automáticamente al guardar.'**
+  String get canonicalItemCodeAutoAssigned;
+
+  /// No description provided for @canonicalItemTypeField.
+  ///
+  /// In es, this message translates to:
+  /// **'Tipo de artículo'**
+  String get canonicalItemTypeField;
+
+  /// No description provided for @canonicalItemTypeInventory.
+  ///
+  /// In es, this message translates to:
+  /// **'Inventariable'**
+  String get canonicalItemTypeInventory;
+
+  /// No description provided for @canonicalItemTypeNonInventory.
+  ///
+  /// In es, this message translates to:
+  /// **'No inventariable'**
+  String get canonicalItemTypeNonInventory;
+
+  /// No description provided for @canonicalItemTypeService.
+  ///
+  /// In es, this message translates to:
+  /// **'Servicio'**
+  String get canonicalItemTypeService;
+
+  /// No description provided for @canonicalItemRoleField.
+  ///
+  /// In es, this message translates to:
+  /// **'Función operativa'**
+  String get canonicalItemRoleField;
+
+  /// No description provided for @canonicalItemRoleSaleProduct.
+  ///
+  /// In es, this message translates to:
+  /// **'Producto de venta'**
+  String get canonicalItemRoleSaleProduct;
+
+  /// No description provided for @canonicalItemRoleRawMaterial.
+  ///
+  /// In es, this message translates to:
+  /// **'Materia prima'**
+  String get canonicalItemRoleRawMaterial;
+
+  /// No description provided for @canonicalItemRolePackaging.
+  ///
+  /// In es, this message translates to:
+  /// **'Empaque'**
+  String get canonicalItemRolePackaging;
+
+  /// No description provided for @canonicalItemRoleImmutableHelp.
+  ///
+  /// In es, this message translates to:
+  /// **'Se define al crear para conservar la trazabilidad del artículo.'**
+  String get canonicalItemRoleImmutableHelp;
 }
 
 class _AppLocalizationsDelegate

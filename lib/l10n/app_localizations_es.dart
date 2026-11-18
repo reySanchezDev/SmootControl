@@ -1646,4 +1646,39 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get confirmChangesMessage => '¿Deseás guardar los cambios realizados?';
+
+  @override
+  String get canonicalItemCodeField => 'Código comercial';
+
+  @override
+  String get canonicalItemCodeAutoAssigned =>
+      'Se asigna automáticamente al guardar.';
+
+  @override
+  String get canonicalItemTypeField => 'Tipo de artículo';
+
+  @override
+  String get canonicalItemTypeInventory => 'Inventariable';
+
+  @override
+  String get canonicalItemTypeNonInventory => 'No inventariable';
+
+  @override
+  String get canonicalItemTypeService => 'Servicio';
+
+  @override
+  String get canonicalItemRoleField => 'Función operativa';
+
+  @override
+  String get canonicalItemRoleSaleProduct => 'Producto de venta';
+
+  @override
+  String get canonicalItemRoleRawMaterial => 'Materia prima';
+
+  @override
+  String get canonicalItemRolePackaging => 'Empaque';
+
+  @override
+  String get canonicalItemRoleImmutableHelp =>
+      'Se define al crear para conservar la trazabilidad del artículo.';
 }
