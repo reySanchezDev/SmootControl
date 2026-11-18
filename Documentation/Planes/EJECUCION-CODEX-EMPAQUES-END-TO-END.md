@@ -2014,4 +2014,29 @@ operativas; y solo entonces retirar las dependencias heredadas.
   Supabase remoto.
 
 **Estado actual:** F0/paridad de migraciones aprobada; F1, F2 y F3 pendientes.
-No se modificó código, esquema ni datos en este addendum.
+No se modificó código, esquema ni datos en el addendum anterior.
+
+### Corrección de stock negativo por receta — 2026-11-18
+
+- [x] Migración 125 aplicada en Docker local: el movimiento canónico permite
+  quedar bajo cero solo para `recipe_consumption` de `raw_material` cuando la
+  regla del restaurante está activa.
+- [x] Migración 126 aplicada en Docker local: la anulación revierte el
+  movimiento de receta original aunque el saldo permanezca negativo y la regla
+  ya se haya apagado.
+- [x] Helpers internos de movimiento y receta dejaron de aceptar ejecución
+  directa por `authenticated`; el flujo POS conserva acceso mediante RPC
+  SECURITY DEFINER.
+- [x] Migración 127 conectó el consumo y reverso de recetas al RPC canónico
+  `pos_sync_sale_v2`; la prueba comprueba que ambos hooks están presentes en la
+  función activa. Antes de esta conexión, la ruta de sincronización vigente no
+  invocaba la explosión de receta.
+- [x] `supabase/tests/canonical_recipe_negative_stock_rule.sql` pasó en Docker
+  local y terminó en `ROLLBACK`: regla ON, regla OFF con rechazo atómico,
+  reintento idempotente, anulación con saldo aún negativo, producto vendible y
+  empaque estrictos, y permisos del helper.
+- [ ] Migraciones 125-127 no están aplicadas a Supabase remoto. Promoción
+  pendiente del proceso de release.
+
+**Estado actualizado:** corrección implementada y probada solo en Docker local;
+paridad remota/release pendiente.
