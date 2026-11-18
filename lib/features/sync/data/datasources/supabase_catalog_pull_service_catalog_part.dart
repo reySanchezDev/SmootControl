@@ -80,7 +80,10 @@ extension on SupabaseCatalogPullService {
               isActive: Value(_bool(row['is_active'], defaultValue: true)),
               isAvailableInPos: Value(
                 local?.isAvailableInPos ??
-                    _bool(row['is_available_in_pos'], defaultValue: true),
+                    _bool(
+                      row['visible_in_pos'] ?? row['is_available_in_pos'],
+                      defaultValue: true,
+                    ),
               ),
               remoteId: Value(id),
               syncStatus: const Value('synced'),
@@ -102,7 +105,7 @@ extension on SupabaseCatalogPullService {
     final now = DateTime.now();
     final remoteIds = <String>{};
     for (final row in rows) {
-      final id = _requiredText(row['id'], table: 'products');
+      final id = _requiredText(row['id'], table: 'items');
       final categoryId = _optionalText(row['category_id']);
       if (categoryId == null) continue;
       remoteIds.add(id);
@@ -113,21 +116,27 @@ extension on SupabaseCatalogPullService {
               id: Value(id),
               categoryId: Value(categoryId),
               name: Value(_text(row['name'], defaultValue: 'Producto')),
-              priceInCents: Value(_moneyCents(row['price'])),
-              costInCents: Value(_moneyCents(row['cost'])),
+              priceInCents: Value(
+                _moneyCents(row['base_unit_price'] ?? row['price']),
+              ),
+              costInCents: Value(
+                _moneyCents(row['base_unit_cost'] ?? row['cost']),
+              ),
               isActive: Value(_bool(row['is_active'], defaultValue: true)),
               isAvailableInPos: Value(
-                !_bool(row['is_raw_material']) &&
+                row['item_class'] != 'raw_material' &&
                     _bool(row['is_available_in_pos'], defaultValue: true),
               ),
-              isRawMaterial: Value(_bool(row['is_raw_material'])),
+              isRawMaterial: Value(row['item_class'] == 'raw_material'),
               tracksInventory: Value(
-                _bool(row['tracks_inventory']),
+                _bool(row['tracks_inventory']) ||
+                    row['item_class'] == 'raw_material',
               ),
               optionGroupsJson: Value(_jsonListText(row['option_groups'])),
               modifierGroupIdsJson: Value(
                 StringListCodec.encode(modifierIdsByProduct[id] ?? const []),
               ),
+              sourceKind: const Value('legacy_product'),
               remoteId: Value(id),
               syncStatus: const Value('synced'),
               syncError: const Value(null),

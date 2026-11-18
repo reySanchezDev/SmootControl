@@ -82,26 +82,26 @@ final class SupabaseInventoryValueReportService {
   }
 
   Future<List<_RemoteInventoryProduct>> _loadProducts() async {
-    final rows = await _getRows('products', {
+    final rows = await _getRows('items', {
       'restaurant_id': 'eq.${_restaurantService.restaurantId}',
       'tracks_inventory': 'eq.true',
       'is_active': 'eq.true',
       'select':
-          'id,name,category_id,cost,price,is_raw_material,'
-          'purchase_to_inventory_factor',
+          'id,name,category_id,base_unit_cost,base_unit_price,item_class,'
+          'purchase_to_base_factor',
       'order': 'name.asc',
     });
 
     return rows.map((row) {
       return _RemoteInventoryProduct(
         categoryId: _optionalText(row['category_id']) ?? '',
-        costInCents: _moneyToCents(row['cost']),
+        costInCents: _moneyToCents(row['base_unit_cost']),
         id: _requiredText(row, 'id'),
-        isRawMaterial: _bool(row['is_raw_material']),
+        isRawMaterial: row['item_class'] == 'raw_material',
         name: _requiredText(row, 'name'),
-        priceInCents: _moneyToCents(row['price']),
+        priceInCents: _moneyToCents(row['base_unit_price']),
         purchaseToInventoryFactor: _decimal(
-          row['purchase_to_inventory_factor'],
+          row['purchase_to_base_factor'],
         ),
       );
     }).toList();
@@ -126,12 +126,12 @@ final class SupabaseInventoryValueReportService {
   Future<Map<String, double>> _loadStockByProductId() async {
     final rows = await _getRows('inventory_stock', {
       'restaurant_id': 'eq.${_restaurantService.restaurantId}',
-      'select': 'product_id,quantity_on_hand',
+      'select': 'item_id,quantity_on_hand',
     });
 
     return {
       for (final row in rows)
-        _requiredText(row, 'product_id'): _decimal(row['quantity_on_hand']),
+        _requiredText(row, 'item_id'): _decimal(row['quantity_on_hand']),
     };
   }
 
@@ -194,12 +194,6 @@ final class SupabaseInventoryValueReportService {
     if (value == null) return 0;
     if (value is num) return (value * 100).round();
     return ((num.tryParse(value.toString()) ?? 0) * 100).round();
-  }
-
-  bool _bool(Object? value) {
-    if (value is bool) return value;
-    if (value is num) return value != 0;
-    return value?.toString().toLowerCase() == 'true';
   }
 
   String? _optionalText(Object? value) {

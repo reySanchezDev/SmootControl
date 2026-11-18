@@ -2,12 +2,12 @@ part of 'supabase_product_recipes_service.dart';
 
 extension _RecipeServiceRows on SupabaseProductRecipesService {
   Future<List<ProductRecipeLine>> _recipeLines(String recipeId) async {
-    final rows = await _getRows('product_recipe_lines', {
+    final rows = await _getRows('item_recipe_lines', {
       'recipe_id': 'eq.$recipeId',
       'is_active': 'eq.true',
       'select':
-          'component_product_id,quantity,unit_id,waste_percent,display_order,'
-          'products(name),measurement_units(name,code)',
+          'component_item_id,quantity,unit_id,waste_percent,display_order,'
+          'items(name),measurement_units(name,code)',
       'order': 'display_order.asc',
     });
     return rows.map(_lineFromRow).toList();
@@ -16,8 +16,8 @@ extension _RecipeServiceRows on SupabaseProductRecipesService {
   ProductRecipeLine _lineFromRow(Map<String, Object?> row) {
     final unit = _map(row['measurement_units']);
     return ProductRecipeLine(
-      componentProductId: _text(row['component_product_id']),
-      componentName: _text(_map(row['products'])['name']),
+      componentProductId: _text(row['component_item_id']),
+      componentName: _text(_map(row['items'])['name']),
       quantity: _double(row['quantity']),
       unitId: _text(row['unit_id']),
       unitName: _unitLabel(unit),

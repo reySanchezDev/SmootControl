@@ -8,6 +8,7 @@ import 'package:smoo_control/core/design_system/app_text.dart';
 import 'package:smoo_control/core/formatters/money_formatter.dart';
 import 'package:smoo_control/features/catalog/domain/entities/product_category.dart';
 import 'package:smoo_control/features/modifiers/domain/entities/modifier_group.dart';
+import 'package:smoo_control/features/packaging/presentation/pages/product_packaging_rules_action.dart';
 import 'package:smoo_control/features/products/domain/entities/measurement_unit.dart';
 import 'package:smoo_control/features/products/domain/entities/product.dart';
 import 'package:smoo_control/features/products/presentation/widgets/modifier_group_selector.dart';

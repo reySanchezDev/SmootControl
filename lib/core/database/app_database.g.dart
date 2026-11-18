@@ -3,6 +3,2684 @@
 part of 'app_database.dart';
 
 // ignore_for_file: type=lint
+class $LocalCanonicalCatalogSnapshotsTable
+    extends LocalCanonicalCatalogSnapshots
+    with
+        TableInfo<
+          $LocalCanonicalCatalogSnapshotsTable,
+          LocalCanonicalCatalogSnapshot
+        > {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LocalCanonicalCatalogSnapshotsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _restaurantIdMeta = const VerificationMeta(
+    'restaurantId',
+  );
+  @override
+  late final GeneratedColumn<String> restaurantId = GeneratedColumn<String>(
+    'restaurant_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _snapshotIdMeta = const VerificationMeta(
+    'snapshotId',
+  );
+  @override
+  late final GeneratedColumn<String> snapshotId = GeneratedColumn<String>(
+    'snapshot_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _revisionMeta = const VerificationMeta(
+    'revision',
+  );
+  @override
+  late final GeneratedColumn<int> revision = GeneratedColumn<int>(
+    'revision',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _appliedAtMeta = const VerificationMeta(
+    'appliedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> appliedAt = GeneratedColumn<DateTime>(
+    'applied_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    restaurantId,
+    snapshotId,
+    revision,
+    appliedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_canonical_catalog_snapshots';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LocalCanonicalCatalogSnapshot> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('restaurant_id')) {
+      context.handle(
+        _restaurantIdMeta,
+        restaurantId.isAcceptableOrUnknown(
+          data['restaurant_id']!,
+          _restaurantIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_restaurantIdMeta);
+    }
+    if (data.containsKey('snapshot_id')) {
+      context.handle(
+        _snapshotIdMeta,
+        snapshotId.isAcceptableOrUnknown(data['snapshot_id']!, _snapshotIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_snapshotIdMeta);
+    }
+    if (data.containsKey('revision')) {
+      context.handle(
+        _revisionMeta,
+        revision.isAcceptableOrUnknown(data['revision']!, _revisionMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_revisionMeta);
+    }
+    if (data.containsKey('applied_at')) {
+      context.handle(
+        _appliedAtMeta,
+        appliedAt.isAcceptableOrUnknown(data['applied_at']!, _appliedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_appliedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {restaurantId};
+  @override
+  LocalCanonicalCatalogSnapshot map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalCanonicalCatalogSnapshot(
+      restaurantId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}restaurant_id'],
+      )!,
+      snapshotId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}snapshot_id'],
+      )!,
+      revision: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}revision'],
+      )!,
+      appliedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}applied_at'],
+      )!,
+    );
+  }
+
+  @override
+  $LocalCanonicalCatalogSnapshotsTable createAlias(String alias) {
+    return $LocalCanonicalCatalogSnapshotsTable(attachedDatabase, alias);
+  }
+}
+
+class LocalCanonicalCatalogSnapshot extends DataClass
+    implements Insertable<LocalCanonicalCatalogSnapshot> {
+  /// Restaurant owning the snapshot.
+  final String restaurantId;
+
+  /// Backend-issued immutable snapshot identifier.
+  final String snapshotId;
+
+  /// Strictly increasing backend revision.
+  final int revision;
+
+  /// Local commit timestamp.
+  final DateTime appliedAt;
+  const LocalCanonicalCatalogSnapshot({
+    required this.restaurantId,
+    required this.snapshotId,
+    required this.revision,
+    required this.appliedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['restaurant_id'] = Variable<String>(restaurantId);
+    map['snapshot_id'] = Variable<String>(snapshotId);
+    map['revision'] = Variable<int>(revision);
+    map['applied_at'] = Variable<DateTime>(appliedAt);
+    return map;
+  }
+
+  LocalCanonicalCatalogSnapshotsCompanion toCompanion(bool nullToAbsent) {
+    return LocalCanonicalCatalogSnapshotsCompanion(
+      restaurantId: Value(restaurantId),
+      snapshotId: Value(snapshotId),
+      revision: Value(revision),
+      appliedAt: Value(appliedAt),
+    );
+  }
+
+  factory LocalCanonicalCatalogSnapshot.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalCanonicalCatalogSnapshot(
+      restaurantId: serializer.fromJson<String>(json['restaurantId']),
+      snapshotId: serializer.fromJson<String>(json['snapshotId']),
+      revision: serializer.fromJson<int>(json['revision']),
+      appliedAt: serializer.fromJson<DateTime>(json['appliedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'restaurantId': serializer.toJson<String>(restaurantId),
+      'snapshotId': serializer.toJson<String>(snapshotId),
+      'revision': serializer.toJson<int>(revision),
+      'appliedAt': serializer.toJson<DateTime>(appliedAt),
+    };
+  }
+
+  LocalCanonicalCatalogSnapshot copyWith({
+    String? restaurantId,
+    String? snapshotId,
+    int? revision,
+    DateTime? appliedAt,
+  }) => LocalCanonicalCatalogSnapshot(
+    restaurantId: restaurantId ?? this.restaurantId,
+    snapshotId: snapshotId ?? this.snapshotId,
+    revision: revision ?? this.revision,
+    appliedAt: appliedAt ?? this.appliedAt,
+  );
+  LocalCanonicalCatalogSnapshot copyWithCompanion(
+    LocalCanonicalCatalogSnapshotsCompanion data,
+  ) {
+    return LocalCanonicalCatalogSnapshot(
+      restaurantId: data.restaurantId.present
+          ? data.restaurantId.value
+          : this.restaurantId,
+      snapshotId: data.snapshotId.present
+          ? data.snapshotId.value
+          : this.snapshotId,
+      revision: data.revision.present ? data.revision.value : this.revision,
+      appliedAt: data.appliedAt.present ? data.appliedAt.value : this.appliedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalCanonicalCatalogSnapshot(')
+          ..write('restaurantId: $restaurantId, ')
+          ..write('snapshotId: $snapshotId, ')
+          ..write('revision: $revision, ')
+          ..write('appliedAt: $appliedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(restaurantId, snapshotId, revision, appliedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalCanonicalCatalogSnapshot &&
+          other.restaurantId == this.restaurantId &&
+          other.snapshotId == this.snapshotId &&
+          other.revision == this.revision &&
+          other.appliedAt == this.appliedAt);
+}
+
+class LocalCanonicalCatalogSnapshotsCompanion
+    extends UpdateCompanion<LocalCanonicalCatalogSnapshot> {
+  final Value<String> restaurantId;
+  final Value<String> snapshotId;
+  final Value<int> revision;
+  final Value<DateTime> appliedAt;
+  final Value<int> rowid;
+  const LocalCanonicalCatalogSnapshotsCompanion({
+    this.restaurantId = const Value.absent(),
+    this.snapshotId = const Value.absent(),
+    this.revision = const Value.absent(),
+    this.appliedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LocalCanonicalCatalogSnapshotsCompanion.insert({
+    required String restaurantId,
+    required String snapshotId,
+    required int revision,
+    required DateTime appliedAt,
+    this.rowid = const Value.absent(),
+  }) : restaurantId = Value(restaurantId),
+       snapshotId = Value(snapshotId),
+       revision = Value(revision),
+       appliedAt = Value(appliedAt);
+  static Insertable<LocalCanonicalCatalogSnapshot> custom({
+    Expression<String>? restaurantId,
+    Expression<String>? snapshotId,
+    Expression<int>? revision,
+    Expression<DateTime>? appliedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (restaurantId != null) 'restaurant_id': restaurantId,
+      if (snapshotId != null) 'snapshot_id': snapshotId,
+      if (revision != null) 'revision': revision,
+      if (appliedAt != null) 'applied_at': appliedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LocalCanonicalCatalogSnapshotsCompanion copyWith({
+    Value<String>? restaurantId,
+    Value<String>? snapshotId,
+    Value<int>? revision,
+    Value<DateTime>? appliedAt,
+    Value<int>? rowid,
+  }) {
+    return LocalCanonicalCatalogSnapshotsCompanion(
+      restaurantId: restaurantId ?? this.restaurantId,
+      snapshotId: snapshotId ?? this.snapshotId,
+      revision: revision ?? this.revision,
+      appliedAt: appliedAt ?? this.appliedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (restaurantId.present) {
+      map['restaurant_id'] = Variable<String>(restaurantId.value);
+    }
+    if (snapshotId.present) {
+      map['snapshot_id'] = Variable<String>(snapshotId.value);
+    }
+    if (revision.present) {
+      map['revision'] = Variable<int>(revision.value);
+    }
+    if (appliedAt.present) {
+      map['applied_at'] = Variable<DateTime>(appliedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalCanonicalCatalogSnapshotsCompanion(')
+          ..write('restaurantId: $restaurantId, ')
+          ..write('snapshotId: $snapshotId, ')
+          ..write('revision: $revision, ')
+          ..write('appliedAt: $appliedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $LocalCanonicalItemsTable extends LocalCanonicalItems
+    with TableInfo<$LocalCanonicalItemsTable, LocalCanonicalItem> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LocalCanonicalItemsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _restaurantIdMeta = const VerificationMeta(
+    'restaurantId',
+  );
+  @override
+  late final GeneratedColumn<String> restaurantId = GeneratedColumn<String>(
+    'restaurant_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _codeMeta = const VerificationMeta('code');
+  @override
+  late final GeneratedColumn<String> code = GeneratedColumn<String>(
+    'code',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _itemTypeMeta = const VerificationMeta(
+    'itemType',
+  );
+  @override
+  late final GeneratedColumn<String> itemType = GeneratedColumn<String>(
+    'item_type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _baseUnitIdMeta = const VerificationMeta(
+    'baseUnitId',
+  );
+  @override
+  late final GeneratedColumn<String> baseUnitId = GeneratedColumn<String>(
+    'base_unit_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _canSellMeta = const VerificationMeta(
+    'canSell',
+  );
+  @override
+  late final GeneratedColumn<bool> canSell = GeneratedColumn<bool>(
+    'can_sell',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("can_sell" IN (0, 1))',
+    ),
+  );
+  static const VerificationMeta _visibleInPosMeta = const VerificationMeta(
+    'visibleInPos',
+  );
+  @override
+  late final GeneratedColumn<bool> visibleInPos = GeneratedColumn<bool>(
+    'visible_in_pos',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("visible_in_pos" IN (0, 1))',
+    ),
+  );
+  static const VerificationMeta _isActiveMeta = const VerificationMeta(
+    'isActive',
+  );
+  @override
+  late final GeneratedColumn<bool> isActive = GeneratedColumn<bool>(
+    'is_active',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_active" IN (0, 1))',
+    ),
+  );
+  static const VerificationMeta _categoryIdMeta = const VerificationMeta(
+    'categoryId',
+  );
+  @override
+  late final GeneratedColumn<String> categoryId = GeneratedColumn<String>(
+    'category_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _commercialCodeMeta = const VerificationMeta(
+    'commercialCode',
+  );
+  @override
+  late final GeneratedColumn<String> commercialCode = GeneratedColumn<String>(
+    'commercial_code',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _priceInCentsMeta = const VerificationMeta(
+    'priceInCents',
+  );
+  @override
+  late final GeneratedColumn<int> priceInCents = GeneratedColumn<int>(
+    'price_in_cents',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _costInCentsMeta = const VerificationMeta(
+    'costInCents',
+  );
+  @override
+  late final GeneratedColumn<int> costInCents = GeneratedColumn<int>(
+    'cost_in_cents',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _tracksInventoryMeta = const VerificationMeta(
+    'tracksInventory',
+  );
+  @override
+  late final GeneratedColumn<bool> tracksInventory = GeneratedColumn<bool>(
+    'tracks_inventory',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("tracks_inventory" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _quantityOnHandMeta = const VerificationMeta(
+    'quantityOnHand',
+  );
+  @override
+  late final GeneratedColumn<int> quantityOnHand = GeneratedColumn<int>(
+    'quantity_on_hand',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    restaurantId,
+    code,
+    name,
+    itemType,
+    baseUnitId,
+    canSell,
+    visibleInPos,
+    isActive,
+    categoryId,
+    commercialCode,
+    priceInCents,
+    costInCents,
+    tracksInventory,
+    quantityOnHand,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_canonical_items';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LocalCanonicalItem> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('restaurant_id')) {
+      context.handle(
+        _restaurantIdMeta,
+        restaurantId.isAcceptableOrUnknown(
+          data['restaurant_id']!,
+          _restaurantIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_restaurantIdMeta);
+    }
+    if (data.containsKey('code')) {
+      context.handle(
+        _codeMeta,
+        code.isAcceptableOrUnknown(data['code']!, _codeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_codeMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('item_type')) {
+      context.handle(
+        _itemTypeMeta,
+        itemType.isAcceptableOrUnknown(data['item_type']!, _itemTypeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_itemTypeMeta);
+    }
+    if (data.containsKey('base_unit_id')) {
+      context.handle(
+        _baseUnitIdMeta,
+        baseUnitId.isAcceptableOrUnknown(
+          data['base_unit_id']!,
+          _baseUnitIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_baseUnitIdMeta);
+    }
+    if (data.containsKey('can_sell')) {
+      context.handle(
+        _canSellMeta,
+        canSell.isAcceptableOrUnknown(data['can_sell']!, _canSellMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_canSellMeta);
+    }
+    if (data.containsKey('visible_in_pos')) {
+      context.handle(
+        _visibleInPosMeta,
+        visibleInPos.isAcceptableOrUnknown(
+          data['visible_in_pos']!,
+          _visibleInPosMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_visibleInPosMeta);
+    }
+    if (data.containsKey('is_active')) {
+      context.handle(
+        _isActiveMeta,
+        isActive.isAcceptableOrUnknown(data['is_active']!, _isActiveMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_isActiveMeta);
+    }
+    if (data.containsKey('category_id')) {
+      context.handle(
+        _categoryIdMeta,
+        categoryId.isAcceptableOrUnknown(data['category_id']!, _categoryIdMeta),
+      );
+    }
+    if (data.containsKey('commercial_code')) {
+      context.handle(
+        _commercialCodeMeta,
+        commercialCode.isAcceptableOrUnknown(
+          data['commercial_code']!,
+          _commercialCodeMeta,
+        ),
+      );
+    }
+    if (data.containsKey('price_in_cents')) {
+      context.handle(
+        _priceInCentsMeta,
+        priceInCents.isAcceptableOrUnknown(
+          data['price_in_cents']!,
+          _priceInCentsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('cost_in_cents')) {
+      context.handle(
+        _costInCentsMeta,
+        costInCents.isAcceptableOrUnknown(
+          data['cost_in_cents']!,
+          _costInCentsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('tracks_inventory')) {
+      context.handle(
+        _tracksInventoryMeta,
+        tracksInventory.isAcceptableOrUnknown(
+          data['tracks_inventory']!,
+          _tracksInventoryMeta,
+        ),
+      );
+    }
+    if (data.containsKey('quantity_on_hand')) {
+      context.handle(
+        _quantityOnHandMeta,
+        quantityOnHand.isAcceptableOrUnknown(
+          data['quantity_on_hand']!,
+          _quantityOnHandMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  LocalCanonicalItem map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalCanonicalItem(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      restaurantId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}restaurant_id'],
+      )!,
+      code: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}code'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      itemType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}item_type'],
+      )!,
+      baseUnitId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}base_unit_id'],
+      )!,
+      canSell: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}can_sell'],
+      )!,
+      visibleInPos: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}visible_in_pos'],
+      )!,
+      isActive: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_active'],
+      )!,
+      categoryId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}category_id'],
+      ),
+      commercialCode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}commercial_code'],
+      ),
+      priceInCents: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}price_in_cents'],
+      )!,
+      costInCents: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}cost_in_cents'],
+      )!,
+      tracksInventory: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}tracks_inventory'],
+      )!,
+      quantityOnHand: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}quantity_on_hand'],
+      )!,
+    );
+  }
+
+  @override
+  $LocalCanonicalItemsTable createAlias(String alias) {
+    return $LocalCanonicalItemsTable(attachedDatabase, alias);
+  }
+}
+
+class LocalCanonicalItem extends DataClass
+    implements Insertable<LocalCanonicalItem> {
+  /// Canonical article identifier.
+  final String id;
+
+  /// Owning restaurant.
+  final String restaurantId;
+
+  /// Commercial code.
+  final String code;
+
+  /// Display name.
+  final String name;
+
+  /// inventory, non_inventory or service.
+  final String itemType;
+
+  /// Canonical base measurement-unit identifier.
+  final String baseUnitId;
+
+  /// Whether the article can be sold.
+  final bool canSell;
+
+  /// Whether the article is visible in POS.
+  final bool visibleInPos;
+
+  /// Whether the article is active.
+  final bool isActive;
+
+  /// Optional product category used by the POS menu.
+  final String? categoryId;
+
+  /// User-facing commercial code.
+  final String? commercialCode;
+
+  /// Sale price in minor currency units.
+  final int priceInCents;
+
+  /// Cost in minor currency units.
+  final int costInCents;
+
+  /// Whether this item consumes stock when sold.
+  final bool tracksInventory;
+
+  /// Current stock included in the canonical snapshot.
+  final int quantityOnHand;
+  const LocalCanonicalItem({
+    required this.id,
+    required this.restaurantId,
+    required this.code,
+    required this.name,
+    required this.itemType,
+    required this.baseUnitId,
+    required this.canSell,
+    required this.visibleInPos,
+    required this.isActive,
+    this.categoryId,
+    this.commercialCode,
+    required this.priceInCents,
+    required this.costInCents,
+    required this.tracksInventory,
+    required this.quantityOnHand,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['restaurant_id'] = Variable<String>(restaurantId);
+    map['code'] = Variable<String>(code);
+    map['name'] = Variable<String>(name);
+    map['item_type'] = Variable<String>(itemType);
+    map['base_unit_id'] = Variable<String>(baseUnitId);
+    map['can_sell'] = Variable<bool>(canSell);
+    map['visible_in_pos'] = Variable<bool>(visibleInPos);
+    map['is_active'] = Variable<bool>(isActive);
+    if (!nullToAbsent || categoryId != null) {
+      map['category_id'] = Variable<String>(categoryId);
+    }
+    if (!nullToAbsent || commercialCode != null) {
+      map['commercial_code'] = Variable<String>(commercialCode);
+    }
+    map['price_in_cents'] = Variable<int>(priceInCents);
+    map['cost_in_cents'] = Variable<int>(costInCents);
+    map['tracks_inventory'] = Variable<bool>(tracksInventory);
+    map['quantity_on_hand'] = Variable<int>(quantityOnHand);
+    return map;
+  }
+
+  LocalCanonicalItemsCompanion toCompanion(bool nullToAbsent) {
+    return LocalCanonicalItemsCompanion(
+      id: Value(id),
+      restaurantId: Value(restaurantId),
+      code: Value(code),
+      name: Value(name),
+      itemType: Value(itemType),
+      baseUnitId: Value(baseUnitId),
+      canSell: Value(canSell),
+      visibleInPos: Value(visibleInPos),
+      isActive: Value(isActive),
+      categoryId: categoryId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(categoryId),
+      commercialCode: commercialCode == null && nullToAbsent
+          ? const Value.absent()
+          : Value(commercialCode),
+      priceInCents: Value(priceInCents),
+      costInCents: Value(costInCents),
+      tracksInventory: Value(tracksInventory),
+      quantityOnHand: Value(quantityOnHand),
+    );
+  }
+
+  factory LocalCanonicalItem.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalCanonicalItem(
+      id: serializer.fromJson<String>(json['id']),
+      restaurantId: serializer.fromJson<String>(json['restaurantId']),
+      code: serializer.fromJson<String>(json['code']),
+      name: serializer.fromJson<String>(json['name']),
+      itemType: serializer.fromJson<String>(json['itemType']),
+      baseUnitId: serializer.fromJson<String>(json['baseUnitId']),
+      canSell: serializer.fromJson<bool>(json['canSell']),
+      visibleInPos: serializer.fromJson<bool>(json['visibleInPos']),
+      isActive: serializer.fromJson<bool>(json['isActive']),
+      categoryId: serializer.fromJson<String?>(json['categoryId']),
+      commercialCode: serializer.fromJson<String?>(json['commercialCode']),
+      priceInCents: serializer.fromJson<int>(json['priceInCents']),
+      costInCents: serializer.fromJson<int>(json['costInCents']),
+      tracksInventory: serializer.fromJson<bool>(json['tracksInventory']),
+      quantityOnHand: serializer.fromJson<int>(json['quantityOnHand']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'restaurantId': serializer.toJson<String>(restaurantId),
+      'code': serializer.toJson<String>(code),
+      'name': serializer.toJson<String>(name),
+      'itemType': serializer.toJson<String>(itemType),
+      'baseUnitId': serializer.toJson<String>(baseUnitId),
+      'canSell': serializer.toJson<bool>(canSell),
+      'visibleInPos': serializer.toJson<bool>(visibleInPos),
+      'isActive': serializer.toJson<bool>(isActive),
+      'categoryId': serializer.toJson<String?>(categoryId),
+      'commercialCode': serializer.toJson<String?>(commercialCode),
+      'priceInCents': serializer.toJson<int>(priceInCents),
+      'costInCents': serializer.toJson<int>(costInCents),
+      'tracksInventory': serializer.toJson<bool>(tracksInventory),
+      'quantityOnHand': serializer.toJson<int>(quantityOnHand),
+    };
+  }
+
+  LocalCanonicalItem copyWith({
+    String? id,
+    String? restaurantId,
+    String? code,
+    String? name,
+    String? itemType,
+    String? baseUnitId,
+    bool? canSell,
+    bool? visibleInPos,
+    bool? isActive,
+    Value<String?> categoryId = const Value.absent(),
+    Value<String?> commercialCode = const Value.absent(),
+    int? priceInCents,
+    int? costInCents,
+    bool? tracksInventory,
+    int? quantityOnHand,
+  }) => LocalCanonicalItem(
+    id: id ?? this.id,
+    restaurantId: restaurantId ?? this.restaurantId,
+    code: code ?? this.code,
+    name: name ?? this.name,
+    itemType: itemType ?? this.itemType,
+    baseUnitId: baseUnitId ?? this.baseUnitId,
+    canSell: canSell ?? this.canSell,
+    visibleInPos: visibleInPos ?? this.visibleInPos,
+    isActive: isActive ?? this.isActive,
+    categoryId: categoryId.present ? categoryId.value : this.categoryId,
+    commercialCode: commercialCode.present
+        ? commercialCode.value
+        : this.commercialCode,
+    priceInCents: priceInCents ?? this.priceInCents,
+    costInCents: costInCents ?? this.costInCents,
+    tracksInventory: tracksInventory ?? this.tracksInventory,
+    quantityOnHand: quantityOnHand ?? this.quantityOnHand,
+  );
+  LocalCanonicalItem copyWithCompanion(LocalCanonicalItemsCompanion data) {
+    return LocalCanonicalItem(
+      id: data.id.present ? data.id.value : this.id,
+      restaurantId: data.restaurantId.present
+          ? data.restaurantId.value
+          : this.restaurantId,
+      code: data.code.present ? data.code.value : this.code,
+      name: data.name.present ? data.name.value : this.name,
+      itemType: data.itemType.present ? data.itemType.value : this.itemType,
+      baseUnitId: data.baseUnitId.present
+          ? data.baseUnitId.value
+          : this.baseUnitId,
+      canSell: data.canSell.present ? data.canSell.value : this.canSell,
+      visibleInPos: data.visibleInPos.present
+          ? data.visibleInPos.value
+          : this.visibleInPos,
+      isActive: data.isActive.present ? data.isActive.value : this.isActive,
+      categoryId: data.categoryId.present
+          ? data.categoryId.value
+          : this.categoryId,
+      commercialCode: data.commercialCode.present
+          ? data.commercialCode.value
+          : this.commercialCode,
+      priceInCents: data.priceInCents.present
+          ? data.priceInCents.value
+          : this.priceInCents,
+      costInCents: data.costInCents.present
+          ? data.costInCents.value
+          : this.costInCents,
+      tracksInventory: data.tracksInventory.present
+          ? data.tracksInventory.value
+          : this.tracksInventory,
+      quantityOnHand: data.quantityOnHand.present
+          ? data.quantityOnHand.value
+          : this.quantityOnHand,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalCanonicalItem(')
+          ..write('id: $id, ')
+          ..write('restaurantId: $restaurantId, ')
+          ..write('code: $code, ')
+          ..write('name: $name, ')
+          ..write('itemType: $itemType, ')
+          ..write('baseUnitId: $baseUnitId, ')
+          ..write('canSell: $canSell, ')
+          ..write('visibleInPos: $visibleInPos, ')
+          ..write('isActive: $isActive, ')
+          ..write('categoryId: $categoryId, ')
+          ..write('commercialCode: $commercialCode, ')
+          ..write('priceInCents: $priceInCents, ')
+          ..write('costInCents: $costInCents, ')
+          ..write('tracksInventory: $tracksInventory, ')
+          ..write('quantityOnHand: $quantityOnHand')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    restaurantId,
+    code,
+    name,
+    itemType,
+    baseUnitId,
+    canSell,
+    visibleInPos,
+    isActive,
+    categoryId,
+    commercialCode,
+    priceInCents,
+    costInCents,
+    tracksInventory,
+    quantityOnHand,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalCanonicalItem &&
+          other.id == this.id &&
+          other.restaurantId == this.restaurantId &&
+          other.code == this.code &&
+          other.name == this.name &&
+          other.itemType == this.itemType &&
+          other.baseUnitId == this.baseUnitId &&
+          other.canSell == this.canSell &&
+          other.visibleInPos == this.visibleInPos &&
+          other.isActive == this.isActive &&
+          other.categoryId == this.categoryId &&
+          other.commercialCode == this.commercialCode &&
+          other.priceInCents == this.priceInCents &&
+          other.costInCents == this.costInCents &&
+          other.tracksInventory == this.tracksInventory &&
+          other.quantityOnHand == this.quantityOnHand);
+}
+
+class LocalCanonicalItemsCompanion extends UpdateCompanion<LocalCanonicalItem> {
+  final Value<String> id;
+  final Value<String> restaurantId;
+  final Value<String> code;
+  final Value<String> name;
+  final Value<String> itemType;
+  final Value<String> baseUnitId;
+  final Value<bool> canSell;
+  final Value<bool> visibleInPos;
+  final Value<bool> isActive;
+  final Value<String?> categoryId;
+  final Value<String?> commercialCode;
+  final Value<int> priceInCents;
+  final Value<int> costInCents;
+  final Value<bool> tracksInventory;
+  final Value<int> quantityOnHand;
+  final Value<int> rowid;
+  const LocalCanonicalItemsCompanion({
+    this.id = const Value.absent(),
+    this.restaurantId = const Value.absent(),
+    this.code = const Value.absent(),
+    this.name = const Value.absent(),
+    this.itemType = const Value.absent(),
+    this.baseUnitId = const Value.absent(),
+    this.canSell = const Value.absent(),
+    this.visibleInPos = const Value.absent(),
+    this.isActive = const Value.absent(),
+    this.categoryId = const Value.absent(),
+    this.commercialCode = const Value.absent(),
+    this.priceInCents = const Value.absent(),
+    this.costInCents = const Value.absent(),
+    this.tracksInventory = const Value.absent(),
+    this.quantityOnHand = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LocalCanonicalItemsCompanion.insert({
+    required String id,
+    required String restaurantId,
+    required String code,
+    required String name,
+    required String itemType,
+    required String baseUnitId,
+    required bool canSell,
+    required bool visibleInPos,
+    required bool isActive,
+    this.categoryId = const Value.absent(),
+    this.commercialCode = const Value.absent(),
+    this.priceInCents = const Value.absent(),
+    this.costInCents = const Value.absent(),
+    this.tracksInventory = const Value.absent(),
+    this.quantityOnHand = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       restaurantId = Value(restaurantId),
+       code = Value(code),
+       name = Value(name),
+       itemType = Value(itemType),
+       baseUnitId = Value(baseUnitId),
+       canSell = Value(canSell),
+       visibleInPos = Value(visibleInPos),
+       isActive = Value(isActive);
+  static Insertable<LocalCanonicalItem> custom({
+    Expression<String>? id,
+    Expression<String>? restaurantId,
+    Expression<String>? code,
+    Expression<String>? name,
+    Expression<String>? itemType,
+    Expression<String>? baseUnitId,
+    Expression<bool>? canSell,
+    Expression<bool>? visibleInPos,
+    Expression<bool>? isActive,
+    Expression<String>? categoryId,
+    Expression<String>? commercialCode,
+    Expression<int>? priceInCents,
+    Expression<int>? costInCents,
+    Expression<bool>? tracksInventory,
+    Expression<int>? quantityOnHand,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (restaurantId != null) 'restaurant_id': restaurantId,
+      if (code != null) 'code': code,
+      if (name != null) 'name': name,
+      if (itemType != null) 'item_type': itemType,
+      if (baseUnitId != null) 'base_unit_id': baseUnitId,
+      if (canSell != null) 'can_sell': canSell,
+      if (visibleInPos != null) 'visible_in_pos': visibleInPos,
+      if (isActive != null) 'is_active': isActive,
+      if (categoryId != null) 'category_id': categoryId,
+      if (commercialCode != null) 'commercial_code': commercialCode,
+      if (priceInCents != null) 'price_in_cents': priceInCents,
+      if (costInCents != null) 'cost_in_cents': costInCents,
+      if (tracksInventory != null) 'tracks_inventory': tracksInventory,
+      if (quantityOnHand != null) 'quantity_on_hand': quantityOnHand,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LocalCanonicalItemsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? restaurantId,
+    Value<String>? code,
+    Value<String>? name,
+    Value<String>? itemType,
+    Value<String>? baseUnitId,
+    Value<bool>? canSell,
+    Value<bool>? visibleInPos,
+    Value<bool>? isActive,
+    Value<String?>? categoryId,
+    Value<String?>? commercialCode,
+    Value<int>? priceInCents,
+    Value<int>? costInCents,
+    Value<bool>? tracksInventory,
+    Value<int>? quantityOnHand,
+    Value<int>? rowid,
+  }) {
+    return LocalCanonicalItemsCompanion(
+      id: id ?? this.id,
+      restaurantId: restaurantId ?? this.restaurantId,
+      code: code ?? this.code,
+      name: name ?? this.name,
+      itemType: itemType ?? this.itemType,
+      baseUnitId: baseUnitId ?? this.baseUnitId,
+      canSell: canSell ?? this.canSell,
+      visibleInPos: visibleInPos ?? this.visibleInPos,
+      isActive: isActive ?? this.isActive,
+      categoryId: categoryId ?? this.categoryId,
+      commercialCode: commercialCode ?? this.commercialCode,
+      priceInCents: priceInCents ?? this.priceInCents,
+      costInCents: costInCents ?? this.costInCents,
+      tracksInventory: tracksInventory ?? this.tracksInventory,
+      quantityOnHand: quantityOnHand ?? this.quantityOnHand,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (restaurantId.present) {
+      map['restaurant_id'] = Variable<String>(restaurantId.value);
+    }
+    if (code.present) {
+      map['code'] = Variable<String>(code.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (itemType.present) {
+      map['item_type'] = Variable<String>(itemType.value);
+    }
+    if (baseUnitId.present) {
+      map['base_unit_id'] = Variable<String>(baseUnitId.value);
+    }
+    if (canSell.present) {
+      map['can_sell'] = Variable<bool>(canSell.value);
+    }
+    if (visibleInPos.present) {
+      map['visible_in_pos'] = Variable<bool>(visibleInPos.value);
+    }
+    if (isActive.present) {
+      map['is_active'] = Variable<bool>(isActive.value);
+    }
+    if (categoryId.present) {
+      map['category_id'] = Variable<String>(categoryId.value);
+    }
+    if (commercialCode.present) {
+      map['commercial_code'] = Variable<String>(commercialCode.value);
+    }
+    if (priceInCents.present) {
+      map['price_in_cents'] = Variable<int>(priceInCents.value);
+    }
+    if (costInCents.present) {
+      map['cost_in_cents'] = Variable<int>(costInCents.value);
+    }
+    if (tracksInventory.present) {
+      map['tracks_inventory'] = Variable<bool>(tracksInventory.value);
+    }
+    if (quantityOnHand.present) {
+      map['quantity_on_hand'] = Variable<int>(quantityOnHand.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalCanonicalItemsCompanion(')
+          ..write('id: $id, ')
+          ..write('restaurantId: $restaurantId, ')
+          ..write('code: $code, ')
+          ..write('name: $name, ')
+          ..write('itemType: $itemType, ')
+          ..write('baseUnitId: $baseUnitId, ')
+          ..write('canSell: $canSell, ')
+          ..write('visibleInPos: $visibleInPos, ')
+          ..write('isActive: $isActive, ')
+          ..write('categoryId: $categoryId, ')
+          ..write('commercialCode: $commercialCode, ')
+          ..write('priceInCents: $priceInCents, ')
+          ..write('costInCents: $costInCents, ')
+          ..write('tracksInventory: $tracksInventory, ')
+          ..write('quantityOnHand: $quantityOnHand, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $LocalCanonicalItemUnitsTable extends LocalCanonicalItemUnits
+    with TableInfo<$LocalCanonicalItemUnitsTable, LocalCanonicalItemUnit> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LocalCanonicalItemUnitsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _itemIdMeta = const VerificationMeta('itemId');
+  @override
+  late final GeneratedColumn<String> itemId = GeneratedColumn<String>(
+    'item_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _unitIdMeta = const VerificationMeta('unitId');
+  @override
+  late final GeneratedColumn<String> unitId = GeneratedColumn<String>(
+    'unit_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _quantityInBaseMeta = const VerificationMeta(
+    'quantityInBase',
+  );
+  @override
+  late final GeneratedColumn<String> quantityInBase = GeneratedColumn<String>(
+    'quantity_in_base',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [itemId, unitId, quantityInBase];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_canonical_item_units';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LocalCanonicalItemUnit> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('item_id')) {
+      context.handle(
+        _itemIdMeta,
+        itemId.isAcceptableOrUnknown(data['item_id']!, _itemIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_itemIdMeta);
+    }
+    if (data.containsKey('unit_id')) {
+      context.handle(
+        _unitIdMeta,
+        unitId.isAcceptableOrUnknown(data['unit_id']!, _unitIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_unitIdMeta);
+    }
+    if (data.containsKey('quantity_in_base')) {
+      context.handle(
+        _quantityInBaseMeta,
+        quantityInBase.isAcceptableOrUnknown(
+          data['quantity_in_base']!,
+          _quantityInBaseMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_quantityInBaseMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {itemId, unitId};
+  @override
+  LocalCanonicalItemUnit map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalCanonicalItemUnit(
+      itemId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}item_id'],
+      )!,
+      unitId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}unit_id'],
+      )!,
+      quantityInBase: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}quantity_in_base'],
+      )!,
+    );
+  }
+
+  @override
+  $LocalCanonicalItemUnitsTable createAlias(String alias) {
+    return $LocalCanonicalItemUnitsTable(attachedDatabase, alias);
+  }
+}
+
+class LocalCanonicalItemUnit extends DataClass
+    implements Insertable<LocalCanonicalItemUnit> {
+  /// Canonical article identifier.
+  final String itemId;
+
+  /// Measurement-unit identifier.
+  final String unitId;
+
+  /// Exact decimal conversion represented as text.
+  final String quantityInBase;
+  const LocalCanonicalItemUnit({
+    required this.itemId,
+    required this.unitId,
+    required this.quantityInBase,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['item_id'] = Variable<String>(itemId);
+    map['unit_id'] = Variable<String>(unitId);
+    map['quantity_in_base'] = Variable<String>(quantityInBase);
+    return map;
+  }
+
+  LocalCanonicalItemUnitsCompanion toCompanion(bool nullToAbsent) {
+    return LocalCanonicalItemUnitsCompanion(
+      itemId: Value(itemId),
+      unitId: Value(unitId),
+      quantityInBase: Value(quantityInBase),
+    );
+  }
+
+  factory LocalCanonicalItemUnit.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalCanonicalItemUnit(
+      itemId: serializer.fromJson<String>(json['itemId']),
+      unitId: serializer.fromJson<String>(json['unitId']),
+      quantityInBase: serializer.fromJson<String>(json['quantityInBase']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'itemId': serializer.toJson<String>(itemId),
+      'unitId': serializer.toJson<String>(unitId),
+      'quantityInBase': serializer.toJson<String>(quantityInBase),
+    };
+  }
+
+  LocalCanonicalItemUnit copyWith({
+    String? itemId,
+    String? unitId,
+    String? quantityInBase,
+  }) => LocalCanonicalItemUnit(
+    itemId: itemId ?? this.itemId,
+    unitId: unitId ?? this.unitId,
+    quantityInBase: quantityInBase ?? this.quantityInBase,
+  );
+  LocalCanonicalItemUnit copyWithCompanion(
+    LocalCanonicalItemUnitsCompanion data,
+  ) {
+    return LocalCanonicalItemUnit(
+      itemId: data.itemId.present ? data.itemId.value : this.itemId,
+      unitId: data.unitId.present ? data.unitId.value : this.unitId,
+      quantityInBase: data.quantityInBase.present
+          ? data.quantityInBase.value
+          : this.quantityInBase,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalCanonicalItemUnit(')
+          ..write('itemId: $itemId, ')
+          ..write('unitId: $unitId, ')
+          ..write('quantityInBase: $quantityInBase')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(itemId, unitId, quantityInBase);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalCanonicalItemUnit &&
+          other.itemId == this.itemId &&
+          other.unitId == this.unitId &&
+          other.quantityInBase == this.quantityInBase);
+}
+
+class LocalCanonicalItemUnitsCompanion
+    extends UpdateCompanion<LocalCanonicalItemUnit> {
+  final Value<String> itemId;
+  final Value<String> unitId;
+  final Value<String> quantityInBase;
+  final Value<int> rowid;
+  const LocalCanonicalItemUnitsCompanion({
+    this.itemId = const Value.absent(),
+    this.unitId = const Value.absent(),
+    this.quantityInBase = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LocalCanonicalItemUnitsCompanion.insert({
+    required String itemId,
+    required String unitId,
+    required String quantityInBase,
+    this.rowid = const Value.absent(),
+  }) : itemId = Value(itemId),
+       unitId = Value(unitId),
+       quantityInBase = Value(quantityInBase);
+  static Insertable<LocalCanonicalItemUnit> custom({
+    Expression<String>? itemId,
+    Expression<String>? unitId,
+    Expression<String>? quantityInBase,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (itemId != null) 'item_id': itemId,
+      if (unitId != null) 'unit_id': unitId,
+      if (quantityInBase != null) 'quantity_in_base': quantityInBase,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LocalCanonicalItemUnitsCompanion copyWith({
+    Value<String>? itemId,
+    Value<String>? unitId,
+    Value<String>? quantityInBase,
+    Value<int>? rowid,
+  }) {
+    return LocalCanonicalItemUnitsCompanion(
+      itemId: itemId ?? this.itemId,
+      unitId: unitId ?? this.unitId,
+      quantityInBase: quantityInBase ?? this.quantityInBase,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (itemId.present) {
+      map['item_id'] = Variable<String>(itemId.value);
+    }
+    if (unitId.present) {
+      map['unit_id'] = Variable<String>(unitId.value);
+    }
+    if (quantityInBase.present) {
+      map['quantity_in_base'] = Variable<String>(quantityInBase.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalCanonicalItemUnitsCompanion(')
+          ..write('itemId: $itemId, ')
+          ..write('unitId: $unitId, ')
+          ..write('quantityInBase: $quantityInBase, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $LocalCanonicalClassificationsTable extends LocalCanonicalClassifications
+    with
+        TableInfo<
+          $LocalCanonicalClassificationsTable,
+          LocalCanonicalClassification
+        > {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LocalCanonicalClassificationsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _restaurantIdMeta = const VerificationMeta(
+    'restaurantId',
+  );
+  @override
+  late final GeneratedColumn<String> restaurantId = GeneratedColumn<String>(
+    'restaurant_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _codeMeta = const VerificationMeta('code');
+  @override
+  late final GeneratedColumn<String> code = GeneratedColumn<String>(
+    'code',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _isActiveMeta = const VerificationMeta(
+    'isActive',
+  );
+  @override
+  late final GeneratedColumn<bool> isActive = GeneratedColumn<bool>(
+    'is_active',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_active" IN (0, 1))',
+    ),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    restaurantId,
+    code,
+    name,
+    isActive,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_canonical_classifications';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LocalCanonicalClassification> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('restaurant_id')) {
+      context.handle(
+        _restaurantIdMeta,
+        restaurantId.isAcceptableOrUnknown(
+          data['restaurant_id']!,
+          _restaurantIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_restaurantIdMeta);
+    }
+    if (data.containsKey('code')) {
+      context.handle(
+        _codeMeta,
+        code.isAcceptableOrUnknown(data['code']!, _codeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_codeMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('is_active')) {
+      context.handle(
+        _isActiveMeta,
+        isActive.isAcceptableOrUnknown(data['is_active']!, _isActiveMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_isActiveMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  LocalCanonicalClassification map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalCanonicalClassification(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      restaurantId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}restaurant_id'],
+      )!,
+      code: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}code'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      isActive: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_active'],
+      )!,
+    );
+  }
+
+  @override
+  $LocalCanonicalClassificationsTable createAlias(String alias) {
+    return $LocalCanonicalClassificationsTable(attachedDatabase, alias);
+  }
+}
+
+class LocalCanonicalClassification extends DataClass
+    implements Insertable<LocalCanonicalClassification> {
+  /// Canonical classification identifier.
+  final String id;
+
+  /// Owning restaurant.
+  final String restaurantId;
+
+  /// Tenant-unique business code.
+  final String code;
+
+  /// Display name.
+  final String name;
+
+  /// Whether new assignments are allowed.
+  final bool isActive;
+  const LocalCanonicalClassification({
+    required this.id,
+    required this.restaurantId,
+    required this.code,
+    required this.name,
+    required this.isActive,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['restaurant_id'] = Variable<String>(restaurantId);
+    map['code'] = Variable<String>(code);
+    map['name'] = Variable<String>(name);
+    map['is_active'] = Variable<bool>(isActive);
+    return map;
+  }
+
+  LocalCanonicalClassificationsCompanion toCompanion(bool nullToAbsent) {
+    return LocalCanonicalClassificationsCompanion(
+      id: Value(id),
+      restaurantId: Value(restaurantId),
+      code: Value(code),
+      name: Value(name),
+      isActive: Value(isActive),
+    );
+  }
+
+  factory LocalCanonicalClassification.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalCanonicalClassification(
+      id: serializer.fromJson<String>(json['id']),
+      restaurantId: serializer.fromJson<String>(json['restaurantId']),
+      code: serializer.fromJson<String>(json['code']),
+      name: serializer.fromJson<String>(json['name']),
+      isActive: serializer.fromJson<bool>(json['isActive']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'restaurantId': serializer.toJson<String>(restaurantId),
+      'code': serializer.toJson<String>(code),
+      'name': serializer.toJson<String>(name),
+      'isActive': serializer.toJson<bool>(isActive),
+    };
+  }
+
+  LocalCanonicalClassification copyWith({
+    String? id,
+    String? restaurantId,
+    String? code,
+    String? name,
+    bool? isActive,
+  }) => LocalCanonicalClassification(
+    id: id ?? this.id,
+    restaurantId: restaurantId ?? this.restaurantId,
+    code: code ?? this.code,
+    name: name ?? this.name,
+    isActive: isActive ?? this.isActive,
+  );
+  LocalCanonicalClassification copyWithCompanion(
+    LocalCanonicalClassificationsCompanion data,
+  ) {
+    return LocalCanonicalClassification(
+      id: data.id.present ? data.id.value : this.id,
+      restaurantId: data.restaurantId.present
+          ? data.restaurantId.value
+          : this.restaurantId,
+      code: data.code.present ? data.code.value : this.code,
+      name: data.name.present ? data.name.value : this.name,
+      isActive: data.isActive.present ? data.isActive.value : this.isActive,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalCanonicalClassification(')
+          ..write('id: $id, ')
+          ..write('restaurantId: $restaurantId, ')
+          ..write('code: $code, ')
+          ..write('name: $name, ')
+          ..write('isActive: $isActive')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, restaurantId, code, name, isActive);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalCanonicalClassification &&
+          other.id == this.id &&
+          other.restaurantId == this.restaurantId &&
+          other.code == this.code &&
+          other.name == this.name &&
+          other.isActive == this.isActive);
+}
+
+class LocalCanonicalClassificationsCompanion
+    extends UpdateCompanion<LocalCanonicalClassification> {
+  final Value<String> id;
+  final Value<String> restaurantId;
+  final Value<String> code;
+  final Value<String> name;
+  final Value<bool> isActive;
+  final Value<int> rowid;
+  const LocalCanonicalClassificationsCompanion({
+    this.id = const Value.absent(),
+    this.restaurantId = const Value.absent(),
+    this.code = const Value.absent(),
+    this.name = const Value.absent(),
+    this.isActive = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LocalCanonicalClassificationsCompanion.insert({
+    required String id,
+    required String restaurantId,
+    required String code,
+    required String name,
+    required bool isActive,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       restaurantId = Value(restaurantId),
+       code = Value(code),
+       name = Value(name),
+       isActive = Value(isActive);
+  static Insertable<LocalCanonicalClassification> custom({
+    Expression<String>? id,
+    Expression<String>? restaurantId,
+    Expression<String>? code,
+    Expression<String>? name,
+    Expression<bool>? isActive,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (restaurantId != null) 'restaurant_id': restaurantId,
+      if (code != null) 'code': code,
+      if (name != null) 'name': name,
+      if (isActive != null) 'is_active': isActive,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LocalCanonicalClassificationsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? restaurantId,
+    Value<String>? code,
+    Value<String>? name,
+    Value<bool>? isActive,
+    Value<int>? rowid,
+  }) {
+    return LocalCanonicalClassificationsCompanion(
+      id: id ?? this.id,
+      restaurantId: restaurantId ?? this.restaurantId,
+      code: code ?? this.code,
+      name: name ?? this.name,
+      isActive: isActive ?? this.isActive,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (restaurantId.present) {
+      map['restaurant_id'] = Variable<String>(restaurantId.value);
+    }
+    if (code.present) {
+      map['code'] = Variable<String>(code.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (isActive.present) {
+      map['is_active'] = Variable<bool>(isActive.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalCanonicalClassificationsCompanion(')
+          ..write('id: $id, ')
+          ..write('restaurantId: $restaurantId, ')
+          ..write('code: $code, ')
+          ..write('name: $name, ')
+          ..write('isActive: $isActive, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $LocalCanonicalClassificationLinksTable
+    extends LocalCanonicalClassificationLinks
+    with
+        TableInfo<
+          $LocalCanonicalClassificationLinksTable,
+          LocalCanonicalClassificationLink
+        > {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LocalCanonicalClassificationLinksTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _itemIdMeta = const VerificationMeta('itemId');
+  @override
+  late final GeneratedColumn<String> itemId = GeneratedColumn<String>(
+    'item_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _classificationIdMeta = const VerificationMeta(
+    'classificationId',
+  );
+  @override
+  late final GeneratedColumn<String> classificationId = GeneratedColumn<String>(
+    'classification_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [itemId, classificationId];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_canonical_classification_links';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LocalCanonicalClassificationLink> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('item_id')) {
+      context.handle(
+        _itemIdMeta,
+        itemId.isAcceptableOrUnknown(data['item_id']!, _itemIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_itemIdMeta);
+    }
+    if (data.containsKey('classification_id')) {
+      context.handle(
+        _classificationIdMeta,
+        classificationId.isAcceptableOrUnknown(
+          data['classification_id']!,
+          _classificationIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_classificationIdMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {itemId, classificationId};
+  @override
+  LocalCanonicalClassificationLink map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalCanonicalClassificationLink(
+      itemId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}item_id'],
+      )!,
+      classificationId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}classification_id'],
+      )!,
+    );
+  }
+
+  @override
+  $LocalCanonicalClassificationLinksTable createAlias(String alias) {
+    return $LocalCanonicalClassificationLinksTable(attachedDatabase, alias);
+  }
+}
+
+class LocalCanonicalClassificationLink extends DataClass
+    implements Insertable<LocalCanonicalClassificationLink> {
+  /// Canonical article identifier.
+  final String itemId;
+
+  /// Canonical classification identifier.
+  final String classificationId;
+  const LocalCanonicalClassificationLink({
+    required this.itemId,
+    required this.classificationId,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['item_id'] = Variable<String>(itemId);
+    map['classification_id'] = Variable<String>(classificationId);
+    return map;
+  }
+
+  LocalCanonicalClassificationLinksCompanion toCompanion(bool nullToAbsent) {
+    return LocalCanonicalClassificationLinksCompanion(
+      itemId: Value(itemId),
+      classificationId: Value(classificationId),
+    );
+  }
+
+  factory LocalCanonicalClassificationLink.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalCanonicalClassificationLink(
+      itemId: serializer.fromJson<String>(json['itemId']),
+      classificationId: serializer.fromJson<String>(json['classificationId']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'itemId': serializer.toJson<String>(itemId),
+      'classificationId': serializer.toJson<String>(classificationId),
+    };
+  }
+
+  LocalCanonicalClassificationLink copyWith({
+    String? itemId,
+    String? classificationId,
+  }) => LocalCanonicalClassificationLink(
+    itemId: itemId ?? this.itemId,
+    classificationId: classificationId ?? this.classificationId,
+  );
+  LocalCanonicalClassificationLink copyWithCompanion(
+    LocalCanonicalClassificationLinksCompanion data,
+  ) {
+    return LocalCanonicalClassificationLink(
+      itemId: data.itemId.present ? data.itemId.value : this.itemId,
+      classificationId: data.classificationId.present
+          ? data.classificationId.value
+          : this.classificationId,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalCanonicalClassificationLink(')
+          ..write('itemId: $itemId, ')
+          ..write('classificationId: $classificationId')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(itemId, classificationId);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalCanonicalClassificationLink &&
+          other.itemId == this.itemId &&
+          other.classificationId == this.classificationId);
+}
+
+class LocalCanonicalClassificationLinksCompanion
+    extends UpdateCompanion<LocalCanonicalClassificationLink> {
+  final Value<String> itemId;
+  final Value<String> classificationId;
+  final Value<int> rowid;
+  const LocalCanonicalClassificationLinksCompanion({
+    this.itemId = const Value.absent(),
+    this.classificationId = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LocalCanonicalClassificationLinksCompanion.insert({
+    required String itemId,
+    required String classificationId,
+    this.rowid = const Value.absent(),
+  }) : itemId = Value(itemId),
+       classificationId = Value(classificationId);
+  static Insertable<LocalCanonicalClassificationLink> custom({
+    Expression<String>? itemId,
+    Expression<String>? classificationId,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (itemId != null) 'item_id': itemId,
+      if (classificationId != null) 'classification_id': classificationId,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LocalCanonicalClassificationLinksCompanion copyWith({
+    Value<String>? itemId,
+    Value<String>? classificationId,
+    Value<int>? rowid,
+  }) {
+    return LocalCanonicalClassificationLinksCompanion(
+      itemId: itemId ?? this.itemId,
+      classificationId: classificationId ?? this.classificationId,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (itemId.present) {
+      map['item_id'] = Variable<String>(itemId.value);
+    }
+    if (classificationId.present) {
+      map['classification_id'] = Variable<String>(classificationId.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalCanonicalClassificationLinksCompanion(')
+          ..write('itemId: $itemId, ')
+          ..write('classificationId: $classificationId, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $LocalCanonicalConsumptionRulesTable
+    extends LocalCanonicalConsumptionRules
+    with
+        TableInfo<
+          $LocalCanonicalConsumptionRulesTable,
+          LocalCanonicalConsumptionRule
+        > {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LocalCanonicalConsumptionRulesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _restaurantIdMeta = const VerificationMeta(
+    'restaurantId',
+  );
+  @override
+  late final GeneratedColumn<String> restaurantId = GeneratedColumn<String>(
+    'restaurant_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _sourceItemIdMeta = const VerificationMeta(
+    'sourceItemId',
+  );
+  @override
+  late final GeneratedColumn<String> sourceItemId = GeneratedColumn<String>(
+    'source_item_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _consumedItemIdMeta = const VerificationMeta(
+    'consumedItemId',
+  );
+  @override
+  late final GeneratedColumn<String> consumedItemId = GeneratedColumn<String>(
+    'consumed_item_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _unitIdMeta = const VerificationMeta('unitId');
+  @override
+  late final GeneratedColumn<String> unitId = GeneratedColumn<String>(
+    'unit_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _scopeMeta = const VerificationMeta('scope');
+  @override
+  late final GeneratedColumn<String> scope = GeneratedColumn<String>(
+    'scope',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _quantityMeta = const VerificationMeta(
+    'quantity',
+  );
+  @override
+  late final GeneratedColumn<String> quantity = GeneratedColumn<String>(
+    'quantity',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    restaurantId,
+    sourceItemId,
+    consumedItemId,
+    unitId,
+    scope,
+    quantity,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_canonical_consumption_rules';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LocalCanonicalConsumptionRule> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('restaurant_id')) {
+      context.handle(
+        _restaurantIdMeta,
+        restaurantId.isAcceptableOrUnknown(
+          data['restaurant_id']!,
+          _restaurantIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_restaurantIdMeta);
+    }
+    if (data.containsKey('source_item_id')) {
+      context.handle(
+        _sourceItemIdMeta,
+        sourceItemId.isAcceptableOrUnknown(
+          data['source_item_id']!,
+          _sourceItemIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('consumed_item_id')) {
+      context.handle(
+        _consumedItemIdMeta,
+        consumedItemId.isAcceptableOrUnknown(
+          data['consumed_item_id']!,
+          _consumedItemIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_consumedItemIdMeta);
+    }
+    if (data.containsKey('unit_id')) {
+      context.handle(
+        _unitIdMeta,
+        unitId.isAcceptableOrUnknown(data['unit_id']!, _unitIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_unitIdMeta);
+    }
+    if (data.containsKey('scope')) {
+      context.handle(
+        _scopeMeta,
+        scope.isAcceptableOrUnknown(data['scope']!, _scopeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_scopeMeta);
+    }
+    if (data.containsKey('quantity')) {
+      context.handle(
+        _quantityMeta,
+        quantity.isAcceptableOrUnknown(data['quantity']!, _quantityMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_quantityMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  LocalCanonicalConsumptionRule map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalCanonicalConsumptionRule(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      restaurantId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}restaurant_id'],
+      )!,
+      sourceItemId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source_item_id'],
+      ),
+      consumedItemId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}consumed_item_id'],
+      )!,
+      unitId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}unit_id'],
+      )!,
+      scope: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}scope'],
+      )!,
+      quantity: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}quantity'],
+      )!,
+    );
+  }
+
+  @override
+  $LocalCanonicalConsumptionRulesTable createAlias(String alias) {
+    return $LocalCanonicalConsumptionRulesTable(attachedDatabase, alias);
+  }
+}
+
+class LocalCanonicalConsumptionRule extends DataClass
+    implements Insertable<LocalCanonicalConsumptionRule> {
+  /// Rule identifier.
+  final String id;
+
+  /// Owning restaurant.
+  final String restaurantId;
+
+  /// Optional sellable source article.
+  final String? sourceItemId;
+
+  /// Article consumed by this rule.
+  final String consumedItemId;
+
+  /// Unit used by the rule.
+  final String unitId;
+
+  /// per_order or per_sale_line.
+  final String scope;
+
+  /// Exact decimal quantity represented as text.
+  final String quantity;
+  const LocalCanonicalConsumptionRule({
+    required this.id,
+    required this.restaurantId,
+    this.sourceItemId,
+    required this.consumedItemId,
+    required this.unitId,
+    required this.scope,
+    required this.quantity,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['restaurant_id'] = Variable<String>(restaurantId);
+    if (!nullToAbsent || sourceItemId != null) {
+      map['source_item_id'] = Variable<String>(sourceItemId);
+    }
+    map['consumed_item_id'] = Variable<String>(consumedItemId);
+    map['unit_id'] = Variable<String>(unitId);
+    map['scope'] = Variable<String>(scope);
+    map['quantity'] = Variable<String>(quantity);
+    return map;
+  }
+
+  LocalCanonicalConsumptionRulesCompanion toCompanion(bool nullToAbsent) {
+    return LocalCanonicalConsumptionRulesCompanion(
+      id: Value(id),
+      restaurantId: Value(restaurantId),
+      sourceItemId: sourceItemId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sourceItemId),
+      consumedItemId: Value(consumedItemId),
+      unitId: Value(unitId),
+      scope: Value(scope),
+      quantity: Value(quantity),
+    );
+  }
+
+  factory LocalCanonicalConsumptionRule.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalCanonicalConsumptionRule(
+      id: serializer.fromJson<String>(json['id']),
+      restaurantId: serializer.fromJson<String>(json['restaurantId']),
+      sourceItemId: serializer.fromJson<String?>(json['sourceItemId']),
+      consumedItemId: serializer.fromJson<String>(json['consumedItemId']),
+      unitId: serializer.fromJson<String>(json['unitId']),
+      scope: serializer.fromJson<String>(json['scope']),
+      quantity: serializer.fromJson<String>(json['quantity']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'restaurantId': serializer.toJson<String>(restaurantId),
+      'sourceItemId': serializer.toJson<String?>(sourceItemId),
+      'consumedItemId': serializer.toJson<String>(consumedItemId),
+      'unitId': serializer.toJson<String>(unitId),
+      'scope': serializer.toJson<String>(scope),
+      'quantity': serializer.toJson<String>(quantity),
+    };
+  }
+
+  LocalCanonicalConsumptionRule copyWith({
+    String? id,
+    String? restaurantId,
+    Value<String?> sourceItemId = const Value.absent(),
+    String? consumedItemId,
+    String? unitId,
+    String? scope,
+    String? quantity,
+  }) => LocalCanonicalConsumptionRule(
+    id: id ?? this.id,
+    restaurantId: restaurantId ?? this.restaurantId,
+    sourceItemId: sourceItemId.present ? sourceItemId.value : this.sourceItemId,
+    consumedItemId: consumedItemId ?? this.consumedItemId,
+    unitId: unitId ?? this.unitId,
+    scope: scope ?? this.scope,
+    quantity: quantity ?? this.quantity,
+  );
+  LocalCanonicalConsumptionRule copyWithCompanion(
+    LocalCanonicalConsumptionRulesCompanion data,
+  ) {
+    return LocalCanonicalConsumptionRule(
+      id: data.id.present ? data.id.value : this.id,
+      restaurantId: data.restaurantId.present
+          ? data.restaurantId.value
+          : this.restaurantId,
+      sourceItemId: data.sourceItemId.present
+          ? data.sourceItemId.value
+          : this.sourceItemId,
+      consumedItemId: data.consumedItemId.present
+          ? data.consumedItemId.value
+          : this.consumedItemId,
+      unitId: data.unitId.present ? data.unitId.value : this.unitId,
+      scope: data.scope.present ? data.scope.value : this.scope,
+      quantity: data.quantity.present ? data.quantity.value : this.quantity,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalCanonicalConsumptionRule(')
+          ..write('id: $id, ')
+          ..write('restaurantId: $restaurantId, ')
+          ..write('sourceItemId: $sourceItemId, ')
+          ..write('consumedItemId: $consumedItemId, ')
+          ..write('unitId: $unitId, ')
+          ..write('scope: $scope, ')
+          ..write('quantity: $quantity')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    restaurantId,
+    sourceItemId,
+    consumedItemId,
+    unitId,
+    scope,
+    quantity,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalCanonicalConsumptionRule &&
+          other.id == this.id &&
+          other.restaurantId == this.restaurantId &&
+          other.sourceItemId == this.sourceItemId &&
+          other.consumedItemId == this.consumedItemId &&
+          other.unitId == this.unitId &&
+          other.scope == this.scope &&
+          other.quantity == this.quantity);
+}
+
+class LocalCanonicalConsumptionRulesCompanion
+    extends UpdateCompanion<LocalCanonicalConsumptionRule> {
+  final Value<String> id;
+  final Value<String> restaurantId;
+  final Value<String?> sourceItemId;
+  final Value<String> consumedItemId;
+  final Value<String> unitId;
+  final Value<String> scope;
+  final Value<String> quantity;
+  final Value<int> rowid;
+  const LocalCanonicalConsumptionRulesCompanion({
+    this.id = const Value.absent(),
+    this.restaurantId = const Value.absent(),
+    this.sourceItemId = const Value.absent(),
+    this.consumedItemId = const Value.absent(),
+    this.unitId = const Value.absent(),
+    this.scope = const Value.absent(),
+    this.quantity = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LocalCanonicalConsumptionRulesCompanion.insert({
+    required String id,
+    required String restaurantId,
+    this.sourceItemId = const Value.absent(),
+    required String consumedItemId,
+    required String unitId,
+    required String scope,
+    required String quantity,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       restaurantId = Value(restaurantId),
+       consumedItemId = Value(consumedItemId),
+       unitId = Value(unitId),
+       scope = Value(scope),
+       quantity = Value(quantity);
+  static Insertable<LocalCanonicalConsumptionRule> custom({
+    Expression<String>? id,
+    Expression<String>? restaurantId,
+    Expression<String>? sourceItemId,
+    Expression<String>? consumedItemId,
+    Expression<String>? unitId,
+    Expression<String>? scope,
+    Expression<String>? quantity,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (restaurantId != null) 'restaurant_id': restaurantId,
+      if (sourceItemId != null) 'source_item_id': sourceItemId,
+      if (consumedItemId != null) 'consumed_item_id': consumedItemId,
+      if (unitId != null) 'unit_id': unitId,
+      if (scope != null) 'scope': scope,
+      if (quantity != null) 'quantity': quantity,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LocalCanonicalConsumptionRulesCompanion copyWith({
+    Value<String>? id,
+    Value<String>? restaurantId,
+    Value<String?>? sourceItemId,
+    Value<String>? consumedItemId,
+    Value<String>? unitId,
+    Value<String>? scope,
+    Value<String>? quantity,
+    Value<int>? rowid,
+  }) {
+    return LocalCanonicalConsumptionRulesCompanion(
+      id: id ?? this.id,
+      restaurantId: restaurantId ?? this.restaurantId,
+      sourceItemId: sourceItemId ?? this.sourceItemId,
+      consumedItemId: consumedItemId ?? this.consumedItemId,
+      unitId: unitId ?? this.unitId,
+      scope: scope ?? this.scope,
+      quantity: quantity ?? this.quantity,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (restaurantId.present) {
+      map['restaurant_id'] = Variable<String>(restaurantId.value);
+    }
+    if (sourceItemId.present) {
+      map['source_item_id'] = Variable<String>(sourceItemId.value);
+    }
+    if (consumedItemId.present) {
+      map['consumed_item_id'] = Variable<String>(consumedItemId.value);
+    }
+    if (unitId.present) {
+      map['unit_id'] = Variable<String>(unitId.value);
+    }
+    if (scope.present) {
+      map['scope'] = Variable<String>(scope.value);
+    }
+    if (quantity.present) {
+      map['quantity'] = Variable<String>(quantity.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalCanonicalConsumptionRulesCompanion(')
+          ..write('id: $id, ')
+          ..write('restaurantId: $restaurantId, ')
+          ..write('sourceItemId: $sourceItemId, ')
+          ..write('consumedItemId: $consumedItemId, ')
+          ..write('unitId: $unitId, ')
+          ..write('scope: $scope, ')
+          ..write('quantity: $quantity, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $LocalProductCategoriesTable extends LocalProductCategories
     with TableInfo<$LocalProductCategoriesTable, LocalProductCategory> {
   @override
@@ -892,6 +3570,18 @@ class $LocalProductsTable extends LocalProducts
         requiredDuringInsert: false,
         defaultValue: const Constant('[]'),
       );
+  static const VerificationMeta _sourceKindMeta = const VerificationMeta(
+    'sourceKind',
+  );
+  @override
+  late final GeneratedColumn<String> sourceKind = GeneratedColumn<String>(
+    'source_kind',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('legacy_product'),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     remoteId,
@@ -911,6 +3601,7 @@ class $LocalProductsTable extends LocalProducts
     tracksInventory,
     optionGroupsJson,
     modifierGroupIdsJson,
+    sourceKind,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1056,6 +3747,12 @@ class $LocalProductsTable extends LocalProducts
         ),
       );
     }
+    if (data.containsKey('source_kind')) {
+      context.handle(
+        _sourceKindMeta,
+        sourceKind.isAcceptableOrUnknown(data['source_kind']!, _sourceKindMeta),
+      );
+    }
     return context;
   }
 
@@ -1133,6 +3830,10 @@ class $LocalProductsTable extends LocalProducts
         DriftSqlType.string,
         data['${effectivePrefix}modifier_group_ids_json'],
       )!,
+      sourceKind: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source_kind'],
+      )!,
     );
   }
 
@@ -1193,6 +3894,9 @@ class LocalProduct extends DataClass implements Insertable<LocalProduct> {
 
   /// JSON list of reusable modifier group ids assigned to this product.
   final String modifierGroupIdsJson;
+
+  /// Source of truth during the POS catalog cutover.
+  final String sourceKind;
   const LocalProduct({
     this.remoteId,
     required this.syncStatus,
@@ -1211,6 +3915,7 @@ class LocalProduct extends DataClass implements Insertable<LocalProduct> {
     required this.tracksInventory,
     required this.optionGroupsJson,
     required this.modifierGroupIdsJson,
+    required this.sourceKind,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1238,6 +3943,7 @@ class LocalProduct extends DataClass implements Insertable<LocalProduct> {
     map['tracks_inventory'] = Variable<bool>(tracksInventory);
     map['option_groups_json'] = Variable<String>(optionGroupsJson);
     map['modifier_group_ids_json'] = Variable<String>(modifierGroupIdsJson);
+    map['source_kind'] = Variable<String>(sourceKind);
     return map;
   }
 
@@ -1266,6 +3972,7 @@ class LocalProduct extends DataClass implements Insertable<LocalProduct> {
       tracksInventory: Value(tracksInventory),
       optionGroupsJson: Value(optionGroupsJson),
       modifierGroupIdsJson: Value(modifierGroupIdsJson),
+      sourceKind: Value(sourceKind),
     );
   }
 
@@ -1294,6 +4001,7 @@ class LocalProduct extends DataClass implements Insertable<LocalProduct> {
       modifierGroupIdsJson: serializer.fromJson<String>(
         json['modifierGroupIdsJson'],
       ),
+      sourceKind: serializer.fromJson<String>(json['sourceKind']),
     );
   }
   @override
@@ -1317,6 +4025,7 @@ class LocalProduct extends DataClass implements Insertable<LocalProduct> {
       'tracksInventory': serializer.toJson<bool>(tracksInventory),
       'optionGroupsJson': serializer.toJson<String>(optionGroupsJson),
       'modifierGroupIdsJson': serializer.toJson<String>(modifierGroupIdsJson),
+      'sourceKind': serializer.toJson<String>(sourceKind),
     };
   }
 
@@ -1338,6 +4047,7 @@ class LocalProduct extends DataClass implements Insertable<LocalProduct> {
     bool? tracksInventory,
     String? optionGroupsJson,
     String? modifierGroupIdsJson,
+    String? sourceKind,
   }) => LocalProduct(
     remoteId: remoteId.present ? remoteId.value : this.remoteId,
     syncStatus: syncStatus ?? this.syncStatus,
@@ -1356,6 +4066,7 @@ class LocalProduct extends DataClass implements Insertable<LocalProduct> {
     tracksInventory: tracksInventory ?? this.tracksInventory,
     optionGroupsJson: optionGroupsJson ?? this.optionGroupsJson,
     modifierGroupIdsJson: modifierGroupIdsJson ?? this.modifierGroupIdsJson,
+    sourceKind: sourceKind ?? this.sourceKind,
   );
   LocalProduct copyWithCompanion(LocalProductsCompanion data) {
     return LocalProduct(
@@ -1394,6 +4105,9 @@ class LocalProduct extends DataClass implements Insertable<LocalProduct> {
       modifierGroupIdsJson: data.modifierGroupIdsJson.present
           ? data.modifierGroupIdsJson.value
           : this.modifierGroupIdsJson,
+      sourceKind: data.sourceKind.present
+          ? data.sourceKind.value
+          : this.sourceKind,
     );
   }
 
@@ -1416,7 +4130,8 @@ class LocalProduct extends DataClass implements Insertable<LocalProduct> {
           ..write('isRawMaterial: $isRawMaterial, ')
           ..write('tracksInventory: $tracksInventory, ')
           ..write('optionGroupsJson: $optionGroupsJson, ')
-          ..write('modifierGroupIdsJson: $modifierGroupIdsJson')
+          ..write('modifierGroupIdsJson: $modifierGroupIdsJson, ')
+          ..write('sourceKind: $sourceKind')
           ..write(')'))
         .toString();
   }
@@ -1440,6 +4155,7 @@ class LocalProduct extends DataClass implements Insertable<LocalProduct> {
     tracksInventory,
     optionGroupsJson,
     modifierGroupIdsJson,
+    sourceKind,
   );
   @override
   bool operator ==(Object other) =>
@@ -1461,7 +4177,8 @@ class LocalProduct extends DataClass implements Insertable<LocalProduct> {
           other.isRawMaterial == this.isRawMaterial &&
           other.tracksInventory == this.tracksInventory &&
           other.optionGroupsJson == this.optionGroupsJson &&
-          other.modifierGroupIdsJson == this.modifierGroupIdsJson);
+          other.modifierGroupIdsJson == this.modifierGroupIdsJson &&
+          other.sourceKind == this.sourceKind);
 }
 
 class LocalProductsCompanion extends UpdateCompanion<LocalProduct> {
@@ -1482,6 +4199,7 @@ class LocalProductsCompanion extends UpdateCompanion<LocalProduct> {
   final Value<bool> tracksInventory;
   final Value<String> optionGroupsJson;
   final Value<String> modifierGroupIdsJson;
+  final Value<String> sourceKind;
   final Value<int> rowid;
   const LocalProductsCompanion({
     this.remoteId = const Value.absent(),
@@ -1501,6 +4219,7 @@ class LocalProductsCompanion extends UpdateCompanion<LocalProduct> {
     this.tracksInventory = const Value.absent(),
     this.optionGroupsJson = const Value.absent(),
     this.modifierGroupIdsJson = const Value.absent(),
+    this.sourceKind = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   LocalProductsCompanion.insert({
@@ -1521,6 +4240,7 @@ class LocalProductsCompanion extends UpdateCompanion<LocalProduct> {
     this.tracksInventory = const Value.absent(),
     this.optionGroupsJson = const Value.absent(),
     this.modifierGroupIdsJson = const Value.absent(),
+    this.sourceKind = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : createdAt = Value(createdAt),
        updatedAt = Value(updatedAt),
@@ -1546,6 +4266,7 @@ class LocalProductsCompanion extends UpdateCompanion<LocalProduct> {
     Expression<bool>? tracksInventory,
     Expression<String>? optionGroupsJson,
     Expression<String>? modifierGroupIdsJson,
+    Expression<String>? sourceKind,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -1567,6 +4288,7 @@ class LocalProductsCompanion extends UpdateCompanion<LocalProduct> {
       if (optionGroupsJson != null) 'option_groups_json': optionGroupsJson,
       if (modifierGroupIdsJson != null)
         'modifier_group_ids_json': modifierGroupIdsJson,
+      if (sourceKind != null) 'source_kind': sourceKind,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -1589,6 +4311,7 @@ class LocalProductsCompanion extends UpdateCompanion<LocalProduct> {
     Value<bool>? tracksInventory,
     Value<String>? optionGroupsJson,
     Value<String>? modifierGroupIdsJson,
+    Value<String>? sourceKind,
     Value<int>? rowid,
   }) {
     return LocalProductsCompanion(
@@ -1609,6 +4332,7 @@ class LocalProductsCompanion extends UpdateCompanion<LocalProduct> {
       tracksInventory: tracksInventory ?? this.tracksInventory,
       optionGroupsJson: optionGroupsJson ?? this.optionGroupsJson,
       modifierGroupIdsJson: modifierGroupIdsJson ?? this.modifierGroupIdsJson,
+      sourceKind: sourceKind ?? this.sourceKind,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -1669,6 +4393,9 @@ class LocalProductsCompanion extends UpdateCompanion<LocalProduct> {
         modifierGroupIdsJson.value,
       );
     }
+    if (sourceKind.present) {
+      map['source_kind'] = Variable<String>(sourceKind.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -1695,6 +4422,7 @@ class LocalProductsCompanion extends UpdateCompanion<LocalProduct> {
           ..write('tracksInventory: $tracksInventory, ')
           ..write('optionGroupsJson: $optionGroupsJson, ')
           ..write('modifierGroupIdsJson: $modifierGroupIdsJson, ')
+          ..write('sourceKind: $sourceKind, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -28920,6 +31648,20 @@ class LocalVacationRequestsCompanion
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
+  late final $LocalCanonicalCatalogSnapshotsTable
+  localCanonicalCatalogSnapshots = $LocalCanonicalCatalogSnapshotsTable(this);
+  late final $LocalCanonicalItemsTable localCanonicalItems =
+      $LocalCanonicalItemsTable(this);
+  late final $LocalCanonicalItemUnitsTable localCanonicalItemUnits =
+      $LocalCanonicalItemUnitsTable(this);
+  late final $LocalCanonicalClassificationsTable localCanonicalClassifications =
+      $LocalCanonicalClassificationsTable(this);
+  late final $LocalCanonicalClassificationLinksTable
+  localCanonicalClassificationLinks = $LocalCanonicalClassificationLinksTable(
+    this,
+  );
+  late final $LocalCanonicalConsumptionRulesTable
+  localCanonicalConsumptionRules = $LocalCanonicalConsumptionRulesTable(this);
   late final $LocalProductCategoriesTable localProductCategories =
       $LocalProductCategoriesTable(this);
   late final $LocalProductsTable localProducts = $LocalProductsTable(this);
@@ -28998,6 +31740,12 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [
+    localCanonicalCatalogSnapshots,
+    localCanonicalItems,
+    localCanonicalItemUnits,
+    localCanonicalClassifications,
+    localCanonicalClassificationLinks,
+    localCanonicalConsumptionRules,
     localProductCategories,
     localProducts,
     localSalesTypes,
@@ -29040,6 +31788,1465 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   ];
 }
 
+typedef $$LocalCanonicalCatalogSnapshotsTableCreateCompanionBuilder =
+    LocalCanonicalCatalogSnapshotsCompanion Function({
+      required String restaurantId,
+      required String snapshotId,
+      required int revision,
+      required DateTime appliedAt,
+      Value<int> rowid,
+    });
+typedef $$LocalCanonicalCatalogSnapshotsTableUpdateCompanionBuilder =
+    LocalCanonicalCatalogSnapshotsCompanion Function({
+      Value<String> restaurantId,
+      Value<String> snapshotId,
+      Value<int> revision,
+      Value<DateTime> appliedAt,
+      Value<int> rowid,
+    });
+
+class $$LocalCanonicalCatalogSnapshotsTableFilterComposer
+    extends Composer<_$AppDatabase, $LocalCanonicalCatalogSnapshotsTable> {
+  $$LocalCanonicalCatalogSnapshotsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get restaurantId => $composableBuilder(
+    column: $table.restaurantId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get snapshotId => $composableBuilder(
+    column: $table.snapshotId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get revision => $composableBuilder(
+    column: $table.revision,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get appliedAt => $composableBuilder(
+    column: $table.appliedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LocalCanonicalCatalogSnapshotsTableOrderingComposer
+    extends Composer<_$AppDatabase, $LocalCanonicalCatalogSnapshotsTable> {
+  $$LocalCanonicalCatalogSnapshotsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get restaurantId => $composableBuilder(
+    column: $table.restaurantId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get snapshotId => $composableBuilder(
+    column: $table.snapshotId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get revision => $composableBuilder(
+    column: $table.revision,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get appliedAt => $composableBuilder(
+    column: $table.appliedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LocalCanonicalCatalogSnapshotsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LocalCanonicalCatalogSnapshotsTable> {
+  $$LocalCanonicalCatalogSnapshotsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get restaurantId => $composableBuilder(
+    column: $table.restaurantId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get snapshotId => $composableBuilder(
+    column: $table.snapshotId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get revision =>
+      $composableBuilder(column: $table.revision, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get appliedAt =>
+      $composableBuilder(column: $table.appliedAt, builder: (column) => column);
+}
+
+class $$LocalCanonicalCatalogSnapshotsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LocalCanonicalCatalogSnapshotsTable,
+          LocalCanonicalCatalogSnapshot,
+          $$LocalCanonicalCatalogSnapshotsTableFilterComposer,
+          $$LocalCanonicalCatalogSnapshotsTableOrderingComposer,
+          $$LocalCanonicalCatalogSnapshotsTableAnnotationComposer,
+          $$LocalCanonicalCatalogSnapshotsTableCreateCompanionBuilder,
+          $$LocalCanonicalCatalogSnapshotsTableUpdateCompanionBuilder,
+          (
+            LocalCanonicalCatalogSnapshot,
+            BaseReferences<
+              _$AppDatabase,
+              $LocalCanonicalCatalogSnapshotsTable,
+              LocalCanonicalCatalogSnapshot
+            >,
+          ),
+          LocalCanonicalCatalogSnapshot,
+          PrefetchHooks Function()
+        > {
+  $$LocalCanonicalCatalogSnapshotsTableTableManager(
+    _$AppDatabase db,
+    $LocalCanonicalCatalogSnapshotsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LocalCanonicalCatalogSnapshotsTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$LocalCanonicalCatalogSnapshotsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$LocalCanonicalCatalogSnapshotsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> restaurantId = const Value.absent(),
+                Value<String> snapshotId = const Value.absent(),
+                Value<int> revision = const Value.absent(),
+                Value<DateTime> appliedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalCanonicalCatalogSnapshotsCompanion(
+                restaurantId: restaurantId,
+                snapshotId: snapshotId,
+                revision: revision,
+                appliedAt: appliedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String restaurantId,
+                required String snapshotId,
+                required int revision,
+                required DateTime appliedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => LocalCanonicalCatalogSnapshotsCompanion.insert(
+                restaurantId: restaurantId,
+                snapshotId: snapshotId,
+                revision: revision,
+                appliedAt: appliedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LocalCanonicalCatalogSnapshotsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LocalCanonicalCatalogSnapshotsTable,
+      LocalCanonicalCatalogSnapshot,
+      $$LocalCanonicalCatalogSnapshotsTableFilterComposer,
+      $$LocalCanonicalCatalogSnapshotsTableOrderingComposer,
+      $$LocalCanonicalCatalogSnapshotsTableAnnotationComposer,
+      $$LocalCanonicalCatalogSnapshotsTableCreateCompanionBuilder,
+      $$LocalCanonicalCatalogSnapshotsTableUpdateCompanionBuilder,
+      (
+        LocalCanonicalCatalogSnapshot,
+        BaseReferences<
+          _$AppDatabase,
+          $LocalCanonicalCatalogSnapshotsTable,
+          LocalCanonicalCatalogSnapshot
+        >,
+      ),
+      LocalCanonicalCatalogSnapshot,
+      PrefetchHooks Function()
+    >;
+typedef $$LocalCanonicalItemsTableCreateCompanionBuilder =
+    LocalCanonicalItemsCompanion Function({
+      required String id,
+      required String restaurantId,
+      required String code,
+      required String name,
+      required String itemType,
+      required String baseUnitId,
+      required bool canSell,
+      required bool visibleInPos,
+      required bool isActive,
+      Value<String?> categoryId,
+      Value<String?> commercialCode,
+      Value<int> priceInCents,
+      Value<int> costInCents,
+      Value<bool> tracksInventory,
+      Value<int> quantityOnHand,
+      Value<int> rowid,
+    });
+typedef $$LocalCanonicalItemsTableUpdateCompanionBuilder =
+    LocalCanonicalItemsCompanion Function({
+      Value<String> id,
+      Value<String> restaurantId,
+      Value<String> code,
+      Value<String> name,
+      Value<String> itemType,
+      Value<String> baseUnitId,
+      Value<bool> canSell,
+      Value<bool> visibleInPos,
+      Value<bool> isActive,
+      Value<String?> categoryId,
+      Value<String?> commercialCode,
+      Value<int> priceInCents,
+      Value<int> costInCents,
+      Value<bool> tracksInventory,
+      Value<int> quantityOnHand,
+      Value<int> rowid,
+    });
+
+class $$LocalCanonicalItemsTableFilterComposer
+    extends Composer<_$AppDatabase, $LocalCanonicalItemsTable> {
+  $$LocalCanonicalItemsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get restaurantId => $composableBuilder(
+    column: $table.restaurantId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get code => $composableBuilder(
+    column: $table.code,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get itemType => $composableBuilder(
+    column: $table.itemType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get baseUnitId => $composableBuilder(
+    column: $table.baseUnitId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get canSell => $composableBuilder(
+    column: $table.canSell,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get visibleInPos => $composableBuilder(
+    column: $table.visibleInPos,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isActive => $composableBuilder(
+    column: $table.isActive,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get categoryId => $composableBuilder(
+    column: $table.categoryId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get commercialCode => $composableBuilder(
+    column: $table.commercialCode,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get priceInCents => $composableBuilder(
+    column: $table.priceInCents,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get costInCents => $composableBuilder(
+    column: $table.costInCents,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get tracksInventory => $composableBuilder(
+    column: $table.tracksInventory,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get quantityOnHand => $composableBuilder(
+    column: $table.quantityOnHand,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LocalCanonicalItemsTableOrderingComposer
+    extends Composer<_$AppDatabase, $LocalCanonicalItemsTable> {
+  $$LocalCanonicalItemsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get restaurantId => $composableBuilder(
+    column: $table.restaurantId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get code => $composableBuilder(
+    column: $table.code,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get itemType => $composableBuilder(
+    column: $table.itemType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get baseUnitId => $composableBuilder(
+    column: $table.baseUnitId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get canSell => $composableBuilder(
+    column: $table.canSell,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get visibleInPos => $composableBuilder(
+    column: $table.visibleInPos,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isActive => $composableBuilder(
+    column: $table.isActive,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get categoryId => $composableBuilder(
+    column: $table.categoryId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get commercialCode => $composableBuilder(
+    column: $table.commercialCode,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get priceInCents => $composableBuilder(
+    column: $table.priceInCents,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get costInCents => $composableBuilder(
+    column: $table.costInCents,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get tracksInventory => $composableBuilder(
+    column: $table.tracksInventory,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get quantityOnHand => $composableBuilder(
+    column: $table.quantityOnHand,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LocalCanonicalItemsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LocalCanonicalItemsTable> {
+  $$LocalCanonicalItemsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get restaurantId => $composableBuilder(
+    column: $table.restaurantId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get code =>
+      $composableBuilder(column: $table.code, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get itemType =>
+      $composableBuilder(column: $table.itemType, builder: (column) => column);
+
+  GeneratedColumn<String> get baseUnitId => $composableBuilder(
+    column: $table.baseUnitId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get canSell =>
+      $composableBuilder(column: $table.canSell, builder: (column) => column);
+
+  GeneratedColumn<bool> get visibleInPos => $composableBuilder(
+    column: $table.visibleInPos,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get isActive =>
+      $composableBuilder(column: $table.isActive, builder: (column) => column);
+
+  GeneratedColumn<String> get categoryId => $composableBuilder(
+    column: $table.categoryId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get commercialCode => $composableBuilder(
+    column: $table.commercialCode,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get priceInCents => $composableBuilder(
+    column: $table.priceInCents,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get costInCents => $composableBuilder(
+    column: $table.costInCents,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get tracksInventory => $composableBuilder(
+    column: $table.tracksInventory,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get quantityOnHand => $composableBuilder(
+    column: $table.quantityOnHand,
+    builder: (column) => column,
+  );
+}
+
+class $$LocalCanonicalItemsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LocalCanonicalItemsTable,
+          LocalCanonicalItem,
+          $$LocalCanonicalItemsTableFilterComposer,
+          $$LocalCanonicalItemsTableOrderingComposer,
+          $$LocalCanonicalItemsTableAnnotationComposer,
+          $$LocalCanonicalItemsTableCreateCompanionBuilder,
+          $$LocalCanonicalItemsTableUpdateCompanionBuilder,
+          (
+            LocalCanonicalItem,
+            BaseReferences<
+              _$AppDatabase,
+              $LocalCanonicalItemsTable,
+              LocalCanonicalItem
+            >,
+          ),
+          LocalCanonicalItem,
+          PrefetchHooks Function()
+        > {
+  $$LocalCanonicalItemsTableTableManager(
+    _$AppDatabase db,
+    $LocalCanonicalItemsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LocalCanonicalItemsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LocalCanonicalItemsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$LocalCanonicalItemsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> restaurantId = const Value.absent(),
+                Value<String> code = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> itemType = const Value.absent(),
+                Value<String> baseUnitId = const Value.absent(),
+                Value<bool> canSell = const Value.absent(),
+                Value<bool> visibleInPos = const Value.absent(),
+                Value<bool> isActive = const Value.absent(),
+                Value<String?> categoryId = const Value.absent(),
+                Value<String?> commercialCode = const Value.absent(),
+                Value<int> priceInCents = const Value.absent(),
+                Value<int> costInCents = const Value.absent(),
+                Value<bool> tracksInventory = const Value.absent(),
+                Value<int> quantityOnHand = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalCanonicalItemsCompanion(
+                id: id,
+                restaurantId: restaurantId,
+                code: code,
+                name: name,
+                itemType: itemType,
+                baseUnitId: baseUnitId,
+                canSell: canSell,
+                visibleInPos: visibleInPos,
+                isActive: isActive,
+                categoryId: categoryId,
+                commercialCode: commercialCode,
+                priceInCents: priceInCents,
+                costInCents: costInCents,
+                tracksInventory: tracksInventory,
+                quantityOnHand: quantityOnHand,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String restaurantId,
+                required String code,
+                required String name,
+                required String itemType,
+                required String baseUnitId,
+                required bool canSell,
+                required bool visibleInPos,
+                required bool isActive,
+                Value<String?> categoryId = const Value.absent(),
+                Value<String?> commercialCode = const Value.absent(),
+                Value<int> priceInCents = const Value.absent(),
+                Value<int> costInCents = const Value.absent(),
+                Value<bool> tracksInventory = const Value.absent(),
+                Value<int> quantityOnHand = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalCanonicalItemsCompanion.insert(
+                id: id,
+                restaurantId: restaurantId,
+                code: code,
+                name: name,
+                itemType: itemType,
+                baseUnitId: baseUnitId,
+                canSell: canSell,
+                visibleInPos: visibleInPos,
+                isActive: isActive,
+                categoryId: categoryId,
+                commercialCode: commercialCode,
+                priceInCents: priceInCents,
+                costInCents: costInCents,
+                tracksInventory: tracksInventory,
+                quantityOnHand: quantityOnHand,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LocalCanonicalItemsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LocalCanonicalItemsTable,
+      LocalCanonicalItem,
+      $$LocalCanonicalItemsTableFilterComposer,
+      $$LocalCanonicalItemsTableOrderingComposer,
+      $$LocalCanonicalItemsTableAnnotationComposer,
+      $$LocalCanonicalItemsTableCreateCompanionBuilder,
+      $$LocalCanonicalItemsTableUpdateCompanionBuilder,
+      (
+        LocalCanonicalItem,
+        BaseReferences<
+          _$AppDatabase,
+          $LocalCanonicalItemsTable,
+          LocalCanonicalItem
+        >,
+      ),
+      LocalCanonicalItem,
+      PrefetchHooks Function()
+    >;
+typedef $$LocalCanonicalItemUnitsTableCreateCompanionBuilder =
+    LocalCanonicalItemUnitsCompanion Function({
+      required String itemId,
+      required String unitId,
+      required String quantityInBase,
+      Value<int> rowid,
+    });
+typedef $$LocalCanonicalItemUnitsTableUpdateCompanionBuilder =
+    LocalCanonicalItemUnitsCompanion Function({
+      Value<String> itemId,
+      Value<String> unitId,
+      Value<String> quantityInBase,
+      Value<int> rowid,
+    });
+
+class $$LocalCanonicalItemUnitsTableFilterComposer
+    extends Composer<_$AppDatabase, $LocalCanonicalItemUnitsTable> {
+  $$LocalCanonicalItemUnitsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get itemId => $composableBuilder(
+    column: $table.itemId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get unitId => $composableBuilder(
+    column: $table.unitId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get quantityInBase => $composableBuilder(
+    column: $table.quantityInBase,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LocalCanonicalItemUnitsTableOrderingComposer
+    extends Composer<_$AppDatabase, $LocalCanonicalItemUnitsTable> {
+  $$LocalCanonicalItemUnitsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get itemId => $composableBuilder(
+    column: $table.itemId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get unitId => $composableBuilder(
+    column: $table.unitId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get quantityInBase => $composableBuilder(
+    column: $table.quantityInBase,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LocalCanonicalItemUnitsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LocalCanonicalItemUnitsTable> {
+  $$LocalCanonicalItemUnitsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get itemId =>
+      $composableBuilder(column: $table.itemId, builder: (column) => column);
+
+  GeneratedColumn<String> get unitId =>
+      $composableBuilder(column: $table.unitId, builder: (column) => column);
+
+  GeneratedColumn<String> get quantityInBase => $composableBuilder(
+    column: $table.quantityInBase,
+    builder: (column) => column,
+  );
+}
+
+class $$LocalCanonicalItemUnitsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LocalCanonicalItemUnitsTable,
+          LocalCanonicalItemUnit,
+          $$LocalCanonicalItemUnitsTableFilterComposer,
+          $$LocalCanonicalItemUnitsTableOrderingComposer,
+          $$LocalCanonicalItemUnitsTableAnnotationComposer,
+          $$LocalCanonicalItemUnitsTableCreateCompanionBuilder,
+          $$LocalCanonicalItemUnitsTableUpdateCompanionBuilder,
+          (
+            LocalCanonicalItemUnit,
+            BaseReferences<
+              _$AppDatabase,
+              $LocalCanonicalItemUnitsTable,
+              LocalCanonicalItemUnit
+            >,
+          ),
+          LocalCanonicalItemUnit,
+          PrefetchHooks Function()
+        > {
+  $$LocalCanonicalItemUnitsTableTableManager(
+    _$AppDatabase db,
+    $LocalCanonicalItemUnitsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LocalCanonicalItemUnitsTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$LocalCanonicalItemUnitsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$LocalCanonicalItemUnitsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> itemId = const Value.absent(),
+                Value<String> unitId = const Value.absent(),
+                Value<String> quantityInBase = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalCanonicalItemUnitsCompanion(
+                itemId: itemId,
+                unitId: unitId,
+                quantityInBase: quantityInBase,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String itemId,
+                required String unitId,
+                required String quantityInBase,
+                Value<int> rowid = const Value.absent(),
+              }) => LocalCanonicalItemUnitsCompanion.insert(
+                itemId: itemId,
+                unitId: unitId,
+                quantityInBase: quantityInBase,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LocalCanonicalItemUnitsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LocalCanonicalItemUnitsTable,
+      LocalCanonicalItemUnit,
+      $$LocalCanonicalItemUnitsTableFilterComposer,
+      $$LocalCanonicalItemUnitsTableOrderingComposer,
+      $$LocalCanonicalItemUnitsTableAnnotationComposer,
+      $$LocalCanonicalItemUnitsTableCreateCompanionBuilder,
+      $$LocalCanonicalItemUnitsTableUpdateCompanionBuilder,
+      (
+        LocalCanonicalItemUnit,
+        BaseReferences<
+          _$AppDatabase,
+          $LocalCanonicalItemUnitsTable,
+          LocalCanonicalItemUnit
+        >,
+      ),
+      LocalCanonicalItemUnit,
+      PrefetchHooks Function()
+    >;
+typedef $$LocalCanonicalClassificationsTableCreateCompanionBuilder =
+    LocalCanonicalClassificationsCompanion Function({
+      required String id,
+      required String restaurantId,
+      required String code,
+      required String name,
+      required bool isActive,
+      Value<int> rowid,
+    });
+typedef $$LocalCanonicalClassificationsTableUpdateCompanionBuilder =
+    LocalCanonicalClassificationsCompanion Function({
+      Value<String> id,
+      Value<String> restaurantId,
+      Value<String> code,
+      Value<String> name,
+      Value<bool> isActive,
+      Value<int> rowid,
+    });
+
+class $$LocalCanonicalClassificationsTableFilterComposer
+    extends Composer<_$AppDatabase, $LocalCanonicalClassificationsTable> {
+  $$LocalCanonicalClassificationsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get restaurantId => $composableBuilder(
+    column: $table.restaurantId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get code => $composableBuilder(
+    column: $table.code,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isActive => $composableBuilder(
+    column: $table.isActive,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LocalCanonicalClassificationsTableOrderingComposer
+    extends Composer<_$AppDatabase, $LocalCanonicalClassificationsTable> {
+  $$LocalCanonicalClassificationsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get restaurantId => $composableBuilder(
+    column: $table.restaurantId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get code => $composableBuilder(
+    column: $table.code,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isActive => $composableBuilder(
+    column: $table.isActive,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LocalCanonicalClassificationsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LocalCanonicalClassificationsTable> {
+  $$LocalCanonicalClassificationsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get restaurantId => $composableBuilder(
+    column: $table.restaurantId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get code =>
+      $composableBuilder(column: $table.code, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<bool> get isActive =>
+      $composableBuilder(column: $table.isActive, builder: (column) => column);
+}
+
+class $$LocalCanonicalClassificationsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LocalCanonicalClassificationsTable,
+          LocalCanonicalClassification,
+          $$LocalCanonicalClassificationsTableFilterComposer,
+          $$LocalCanonicalClassificationsTableOrderingComposer,
+          $$LocalCanonicalClassificationsTableAnnotationComposer,
+          $$LocalCanonicalClassificationsTableCreateCompanionBuilder,
+          $$LocalCanonicalClassificationsTableUpdateCompanionBuilder,
+          (
+            LocalCanonicalClassification,
+            BaseReferences<
+              _$AppDatabase,
+              $LocalCanonicalClassificationsTable,
+              LocalCanonicalClassification
+            >,
+          ),
+          LocalCanonicalClassification,
+          PrefetchHooks Function()
+        > {
+  $$LocalCanonicalClassificationsTableTableManager(
+    _$AppDatabase db,
+    $LocalCanonicalClassificationsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LocalCanonicalClassificationsTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$LocalCanonicalClassificationsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$LocalCanonicalClassificationsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> restaurantId = const Value.absent(),
+                Value<String> code = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<bool> isActive = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalCanonicalClassificationsCompanion(
+                id: id,
+                restaurantId: restaurantId,
+                code: code,
+                name: name,
+                isActive: isActive,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String restaurantId,
+                required String code,
+                required String name,
+                required bool isActive,
+                Value<int> rowid = const Value.absent(),
+              }) => LocalCanonicalClassificationsCompanion.insert(
+                id: id,
+                restaurantId: restaurantId,
+                code: code,
+                name: name,
+                isActive: isActive,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LocalCanonicalClassificationsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LocalCanonicalClassificationsTable,
+      LocalCanonicalClassification,
+      $$LocalCanonicalClassificationsTableFilterComposer,
+      $$LocalCanonicalClassificationsTableOrderingComposer,
+      $$LocalCanonicalClassificationsTableAnnotationComposer,
+      $$LocalCanonicalClassificationsTableCreateCompanionBuilder,
+      $$LocalCanonicalClassificationsTableUpdateCompanionBuilder,
+      (
+        LocalCanonicalClassification,
+        BaseReferences<
+          _$AppDatabase,
+          $LocalCanonicalClassificationsTable,
+          LocalCanonicalClassification
+        >,
+      ),
+      LocalCanonicalClassification,
+      PrefetchHooks Function()
+    >;
+typedef $$LocalCanonicalClassificationLinksTableCreateCompanionBuilder =
+    LocalCanonicalClassificationLinksCompanion Function({
+      required String itemId,
+      required String classificationId,
+      Value<int> rowid,
+    });
+typedef $$LocalCanonicalClassificationLinksTableUpdateCompanionBuilder =
+    LocalCanonicalClassificationLinksCompanion Function({
+      Value<String> itemId,
+      Value<String> classificationId,
+      Value<int> rowid,
+    });
+
+class $$LocalCanonicalClassificationLinksTableFilterComposer
+    extends Composer<_$AppDatabase, $LocalCanonicalClassificationLinksTable> {
+  $$LocalCanonicalClassificationLinksTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get itemId => $composableBuilder(
+    column: $table.itemId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get classificationId => $composableBuilder(
+    column: $table.classificationId,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LocalCanonicalClassificationLinksTableOrderingComposer
+    extends Composer<_$AppDatabase, $LocalCanonicalClassificationLinksTable> {
+  $$LocalCanonicalClassificationLinksTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get itemId => $composableBuilder(
+    column: $table.itemId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get classificationId => $composableBuilder(
+    column: $table.classificationId,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LocalCanonicalClassificationLinksTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LocalCanonicalClassificationLinksTable> {
+  $$LocalCanonicalClassificationLinksTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get itemId =>
+      $composableBuilder(column: $table.itemId, builder: (column) => column);
+
+  GeneratedColumn<String> get classificationId => $composableBuilder(
+    column: $table.classificationId,
+    builder: (column) => column,
+  );
+}
+
+class $$LocalCanonicalClassificationLinksTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LocalCanonicalClassificationLinksTable,
+          LocalCanonicalClassificationLink,
+          $$LocalCanonicalClassificationLinksTableFilterComposer,
+          $$LocalCanonicalClassificationLinksTableOrderingComposer,
+          $$LocalCanonicalClassificationLinksTableAnnotationComposer,
+          $$LocalCanonicalClassificationLinksTableCreateCompanionBuilder,
+          $$LocalCanonicalClassificationLinksTableUpdateCompanionBuilder,
+          (
+            LocalCanonicalClassificationLink,
+            BaseReferences<
+              _$AppDatabase,
+              $LocalCanonicalClassificationLinksTable,
+              LocalCanonicalClassificationLink
+            >,
+          ),
+          LocalCanonicalClassificationLink,
+          PrefetchHooks Function()
+        > {
+  $$LocalCanonicalClassificationLinksTableTableManager(
+    _$AppDatabase db,
+    $LocalCanonicalClassificationLinksTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LocalCanonicalClassificationLinksTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$LocalCanonicalClassificationLinksTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$LocalCanonicalClassificationLinksTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> itemId = const Value.absent(),
+                Value<String> classificationId = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalCanonicalClassificationLinksCompanion(
+                itemId: itemId,
+                classificationId: classificationId,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String itemId,
+                required String classificationId,
+                Value<int> rowid = const Value.absent(),
+              }) => LocalCanonicalClassificationLinksCompanion.insert(
+                itemId: itemId,
+                classificationId: classificationId,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LocalCanonicalClassificationLinksTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LocalCanonicalClassificationLinksTable,
+      LocalCanonicalClassificationLink,
+      $$LocalCanonicalClassificationLinksTableFilterComposer,
+      $$LocalCanonicalClassificationLinksTableOrderingComposer,
+      $$LocalCanonicalClassificationLinksTableAnnotationComposer,
+      $$LocalCanonicalClassificationLinksTableCreateCompanionBuilder,
+      $$LocalCanonicalClassificationLinksTableUpdateCompanionBuilder,
+      (
+        LocalCanonicalClassificationLink,
+        BaseReferences<
+          _$AppDatabase,
+          $LocalCanonicalClassificationLinksTable,
+          LocalCanonicalClassificationLink
+        >,
+      ),
+      LocalCanonicalClassificationLink,
+      PrefetchHooks Function()
+    >;
+typedef $$LocalCanonicalConsumptionRulesTableCreateCompanionBuilder =
+    LocalCanonicalConsumptionRulesCompanion Function({
+      required String id,
+      required String restaurantId,
+      Value<String?> sourceItemId,
+      required String consumedItemId,
+      required String unitId,
+      required String scope,
+      required String quantity,
+      Value<int> rowid,
+    });
+typedef $$LocalCanonicalConsumptionRulesTableUpdateCompanionBuilder =
+    LocalCanonicalConsumptionRulesCompanion Function({
+      Value<String> id,
+      Value<String> restaurantId,
+      Value<String?> sourceItemId,
+      Value<String> consumedItemId,
+      Value<String> unitId,
+      Value<String> scope,
+      Value<String> quantity,
+      Value<int> rowid,
+    });
+
+class $$LocalCanonicalConsumptionRulesTableFilterComposer
+    extends Composer<_$AppDatabase, $LocalCanonicalConsumptionRulesTable> {
+  $$LocalCanonicalConsumptionRulesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get restaurantId => $composableBuilder(
+    column: $table.restaurantId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sourceItemId => $composableBuilder(
+    column: $table.sourceItemId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get consumedItemId => $composableBuilder(
+    column: $table.consumedItemId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get unitId => $composableBuilder(
+    column: $table.unitId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get scope => $composableBuilder(
+    column: $table.scope,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get quantity => $composableBuilder(
+    column: $table.quantity,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LocalCanonicalConsumptionRulesTableOrderingComposer
+    extends Composer<_$AppDatabase, $LocalCanonicalConsumptionRulesTable> {
+  $$LocalCanonicalConsumptionRulesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get restaurantId => $composableBuilder(
+    column: $table.restaurantId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sourceItemId => $composableBuilder(
+    column: $table.sourceItemId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get consumedItemId => $composableBuilder(
+    column: $table.consumedItemId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get unitId => $composableBuilder(
+    column: $table.unitId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get scope => $composableBuilder(
+    column: $table.scope,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get quantity => $composableBuilder(
+    column: $table.quantity,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LocalCanonicalConsumptionRulesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LocalCanonicalConsumptionRulesTable> {
+  $$LocalCanonicalConsumptionRulesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get restaurantId => $composableBuilder(
+    column: $table.restaurantId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get sourceItemId => $composableBuilder(
+    column: $table.sourceItemId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get consumedItemId => $composableBuilder(
+    column: $table.consumedItemId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get unitId =>
+      $composableBuilder(column: $table.unitId, builder: (column) => column);
+
+  GeneratedColumn<String> get scope =>
+      $composableBuilder(column: $table.scope, builder: (column) => column);
+
+  GeneratedColumn<String> get quantity =>
+      $composableBuilder(column: $table.quantity, builder: (column) => column);
+}
+
+class $$LocalCanonicalConsumptionRulesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LocalCanonicalConsumptionRulesTable,
+          LocalCanonicalConsumptionRule,
+          $$LocalCanonicalConsumptionRulesTableFilterComposer,
+          $$LocalCanonicalConsumptionRulesTableOrderingComposer,
+          $$LocalCanonicalConsumptionRulesTableAnnotationComposer,
+          $$LocalCanonicalConsumptionRulesTableCreateCompanionBuilder,
+          $$LocalCanonicalConsumptionRulesTableUpdateCompanionBuilder,
+          (
+            LocalCanonicalConsumptionRule,
+            BaseReferences<
+              _$AppDatabase,
+              $LocalCanonicalConsumptionRulesTable,
+              LocalCanonicalConsumptionRule
+            >,
+          ),
+          LocalCanonicalConsumptionRule,
+          PrefetchHooks Function()
+        > {
+  $$LocalCanonicalConsumptionRulesTableTableManager(
+    _$AppDatabase db,
+    $LocalCanonicalConsumptionRulesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LocalCanonicalConsumptionRulesTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$LocalCanonicalConsumptionRulesTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$LocalCanonicalConsumptionRulesTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> restaurantId = const Value.absent(),
+                Value<String?> sourceItemId = const Value.absent(),
+                Value<String> consumedItemId = const Value.absent(),
+                Value<String> unitId = const Value.absent(),
+                Value<String> scope = const Value.absent(),
+                Value<String> quantity = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalCanonicalConsumptionRulesCompanion(
+                id: id,
+                restaurantId: restaurantId,
+                sourceItemId: sourceItemId,
+                consumedItemId: consumedItemId,
+                unitId: unitId,
+                scope: scope,
+                quantity: quantity,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String restaurantId,
+                Value<String?> sourceItemId = const Value.absent(),
+                required String consumedItemId,
+                required String unitId,
+                required String scope,
+                required String quantity,
+                Value<int> rowid = const Value.absent(),
+              }) => LocalCanonicalConsumptionRulesCompanion.insert(
+                id: id,
+                restaurantId: restaurantId,
+                sourceItemId: sourceItemId,
+                consumedItemId: consumedItemId,
+                unitId: unitId,
+                scope: scope,
+                quantity: quantity,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LocalCanonicalConsumptionRulesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LocalCanonicalConsumptionRulesTable,
+      LocalCanonicalConsumptionRule,
+      $$LocalCanonicalConsumptionRulesTableFilterComposer,
+      $$LocalCanonicalConsumptionRulesTableOrderingComposer,
+      $$LocalCanonicalConsumptionRulesTableAnnotationComposer,
+      $$LocalCanonicalConsumptionRulesTableCreateCompanionBuilder,
+      $$LocalCanonicalConsumptionRulesTableUpdateCompanionBuilder,
+      (
+        LocalCanonicalConsumptionRule,
+        BaseReferences<
+          _$AppDatabase,
+          $LocalCanonicalConsumptionRulesTable,
+          LocalCanonicalConsumptionRule
+        >,
+      ),
+      LocalCanonicalConsumptionRule,
+      PrefetchHooks Function()
+    >;
 typedef $$LocalProductCategoriesTableCreateCompanionBuilder =
     LocalProductCategoriesCompanion Function({
       Value<String?> remoteId,
@@ -29394,6 +33601,7 @@ typedef $$LocalProductsTableCreateCompanionBuilder =
       Value<bool> tracksInventory,
       Value<String> optionGroupsJson,
       Value<String> modifierGroupIdsJson,
+      Value<String> sourceKind,
       Value<int> rowid,
     });
 typedef $$LocalProductsTableUpdateCompanionBuilder =
@@ -29415,6 +33623,7 @@ typedef $$LocalProductsTableUpdateCompanionBuilder =
       Value<bool> tracksInventory,
       Value<String> optionGroupsJson,
       Value<String> modifierGroupIdsJson,
+      Value<String> sourceKind,
       Value<int> rowid,
     });
 
@@ -29509,6 +33718,11 @@ class $$LocalProductsTableFilterComposer
 
   ColumnFilters<String> get modifierGroupIdsJson => $composableBuilder(
     column: $table.modifierGroupIdsJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sourceKind => $composableBuilder(
+    column: $table.sourceKind,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -29606,6 +33820,11 @@ class $$LocalProductsTableOrderingComposer
     column: $table.modifierGroupIdsJson,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get sourceKind => $composableBuilder(
+    column: $table.sourceKind,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$LocalProductsTableAnnotationComposer
@@ -29685,6 +33904,11 @@ class $$LocalProductsTableAnnotationComposer
     column: $table.modifierGroupIdsJson,
     builder: (column) => column,
   );
+
+  GeneratedColumn<String> get sourceKind => $composableBuilder(
+    column: $table.sourceKind,
+    builder: (column) => column,
+  );
 }
 
 class $$LocalProductsTableTableManager
@@ -29735,6 +33959,7 @@ class $$LocalProductsTableTableManager
                 Value<bool> tracksInventory = const Value.absent(),
                 Value<String> optionGroupsJson = const Value.absent(),
                 Value<String> modifierGroupIdsJson = const Value.absent(),
+                Value<String> sourceKind = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => LocalProductsCompanion(
                 remoteId: remoteId,
@@ -29754,6 +33979,7 @@ class $$LocalProductsTableTableManager
                 tracksInventory: tracksInventory,
                 optionGroupsJson: optionGroupsJson,
                 modifierGroupIdsJson: modifierGroupIdsJson,
+                sourceKind: sourceKind,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -29775,6 +34001,7 @@ class $$LocalProductsTableTableManager
                 Value<bool> tracksInventory = const Value.absent(),
                 Value<String> optionGroupsJson = const Value.absent(),
                 Value<String> modifierGroupIdsJson = const Value.absent(),
+                Value<String> sourceKind = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => LocalProductsCompanion.insert(
                 remoteId: remoteId,
@@ -29794,6 +34021,7 @@ class $$LocalProductsTableTableManager
                 tracksInventory: tracksInventory,
                 optionGroupsJson: optionGroupsJson,
                 modifierGroupIdsJson: modifierGroupIdsJson,
+                sourceKind: sourceKind,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -42724,6 +46952,37 @@ typedef $$LocalVacationRequestsTableProcessedTableManager =
 class $AppDatabaseManager {
   final _$AppDatabase _db;
   $AppDatabaseManager(this._db);
+  $$LocalCanonicalCatalogSnapshotsTableTableManager
+  get localCanonicalCatalogSnapshots =>
+      $$LocalCanonicalCatalogSnapshotsTableTableManager(
+        _db,
+        _db.localCanonicalCatalogSnapshots,
+      );
+  $$LocalCanonicalItemsTableTableManager get localCanonicalItems =>
+      $$LocalCanonicalItemsTableTableManager(_db, _db.localCanonicalItems);
+  $$LocalCanonicalItemUnitsTableTableManager get localCanonicalItemUnits =>
+      $$LocalCanonicalItemUnitsTableTableManager(
+        _db,
+        _db.localCanonicalItemUnits,
+      );
+  $$LocalCanonicalClassificationsTableTableManager
+  get localCanonicalClassifications =>
+      $$LocalCanonicalClassificationsTableTableManager(
+        _db,
+        _db.localCanonicalClassifications,
+      );
+  $$LocalCanonicalClassificationLinksTableTableManager
+  get localCanonicalClassificationLinks =>
+      $$LocalCanonicalClassificationLinksTableTableManager(
+        _db,
+        _db.localCanonicalClassificationLinks,
+      );
+  $$LocalCanonicalConsumptionRulesTableTableManager
+  get localCanonicalConsumptionRules =>
+      $$LocalCanonicalConsumptionRulesTableTableManager(
+        _db,
+        _db.localCanonicalConsumptionRules,
+      );
   $$LocalProductCategoriesTableTableManager get localProductCategories =>
       $$LocalProductCategoriesTableTableManager(
         _db,

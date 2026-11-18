@@ -33,6 +33,10 @@ extension _AppDatabaseMigrations on AppDatabase {
     await _upgradeSchemaFrom32(migrator, from);
     await _upgradeSchemaFrom33(migrator, from);
     await _upgradeSchemaFrom34(migrator, from);
+    await _upgradeSchemaFrom35(migrator, from);
+    await _upgradeSchemaFrom36(migrator, from);
+    await _upgradeSchemaFrom37(migrator, from);
+    await _upgradeSchemaFrom38(migrator, from);
   }
 
   Future<void> _upgradeSchemaFrom7To20(Migrator migrator, int from) async {
@@ -263,6 +267,65 @@ extension _AppDatabaseMigrations on AppDatabase {
       if (!await _tableExists(localVacationRequests.actualTableName)) {
         await migrator.createTable(localVacationRequests);
       }
+    }
+  }
+
+  Future<void> _upgradeSchemaFrom35(Migrator migrator, int from) async {
+    if (from < 35) {
+      await migrator.createTable(localCanonicalCatalogSnapshots);
+      await migrator.createTable(localCanonicalItems);
+      await migrator.createTable(localCanonicalItemUnits);
+      await migrator.createTable(localCanonicalClassifications);
+      await migrator.createTable(localCanonicalClassificationLinks);
+      await migrator.createTable(localCanonicalConsumptionRules);
+    }
+  }
+
+  Future<void> _upgradeSchemaFrom36(Migrator migrator, int from) async {
+    if (from < 36) {
+      await migrator.addColumn(
+        localCanonicalItems,
+        localCanonicalItems.categoryId,
+      );
+      await migrator.addColumn(
+        localCanonicalItems,
+        localCanonicalItems.commercialCode,
+      );
+      await migrator.addColumn(
+        localCanonicalItems,
+        localCanonicalItems.priceInCents,
+      );
+      await migrator.addColumn(
+        localCanonicalItems,
+        localCanonicalItems.costInCents,
+      );
+      await migrator.addColumn(
+        localCanonicalItems,
+        localCanonicalItems.tracksInventory,
+      );
+    }
+  }
+
+  Future<void> _upgradeSchemaFrom37(Migrator migrator, int from) async {
+    if (from < 37 &&
+        !await _columnExists(
+          localProducts.actualTableName,
+          localProducts.sourceKind.$name,
+        )) {
+      await migrator.addColumn(localProducts, localProducts.sourceKind);
+    }
+  }
+
+  Future<void> _upgradeSchemaFrom38(Migrator migrator, int from) async {
+    if (from < 38 &&
+        !await _columnExists(
+          localCanonicalItems.actualTableName,
+          localCanonicalItems.quantityOnHand.$name,
+        )) {
+      await migrator.addColumn(
+        localCanonicalItems,
+        localCanonicalItems.quantityOnHand,
+      );
     }
   }
 }

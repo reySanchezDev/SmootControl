@@ -33,13 +33,13 @@ final class SupabaseInventoryAdminReadService {
   /// Returns product stock from the remote central database.
   Future<AppResult<List<InventoryStockItem>>> getTrackedProductStock() async {
     try {
-      final products = await _getRows('products', {
+      final products = await _getRows('items', {
         'restaurant_id': 'eq.${_restaurantService.restaurantId}',
         'tracks_inventory': 'eq.true',
         'is_active': 'eq.true',
         'select':
-            'id,name,cost,category_id,purchase_unit_id,inventory_unit_id,'
-            'inventory_display_unit_id,purchase_to_inventory_factor',
+            'id,name,base_unit_cost,category_id,purchase_unit_id,base_unit_id,'
+            'purchase_to_base_factor',
       });
       final units = await _getRows('measurement_units', {
         'or':
@@ -53,10 +53,10 @@ final class SupabaseInventoryAdminReadService {
       });
       final stockRows = await _getRows('inventory_stock', {
         'restaurant_id': 'eq.${_restaurantService.restaurantId}',
-        'select': 'product_id,quantity_on_hand,updated_at',
+        'select': 'item_id,quantity_on_hand,updated_at',
       });
       final stockByProduct = {
-        for (final row in stockRows) _text(row['product_id']): row,
+        for (final row in stockRows) _text(row['item_id']): row,
       };
       final categoriesById = {
         for (final row in categories) _text(row['id']): row,
@@ -75,15 +75,15 @@ final class SupabaseInventoryAdminReadService {
             productName: _text(product['name'], fallback: 'Producto'),
             categoryName: categoryPath.isEmpty ? null : categoryPath.last,
             categoryPath: categoryPath.join(' / '),
-            costInCents: _moneyToCents(product['cost']),
+            costInCents: _moneyToCents(product['base_unit_cost']),
             purchaseUnitId: _nullableText(product['purchase_unit_id']),
             purchaseUnitName: _unitName(
               product['purchase_unit_id'],
               unitsById,
             ),
-            inventoryUnitId: _nullableText(product['inventory_unit_id']),
+            inventoryUnitId: _nullableText(product['base_unit_id']),
             inventoryUnitName: _unitName(
-              product['inventory_unit_id'],
+              product['base_unit_id'],
               unitsById,
             ),
             inventoryDisplayUnitId: _nullableText(
@@ -94,7 +94,7 @@ final class SupabaseInventoryAdminReadService {
               unitsById,
             ),
             purchaseToInventoryFactor: _double(
-              product['purchase_to_inventory_factor'],
+              product['purchase_to_base_factor'],
             ),
             quantityOnHand: _decimal(stock?['quantity_on_hand']),
             updatedAt: _date(stock?['updated_at']),

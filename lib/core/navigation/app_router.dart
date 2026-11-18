@@ -20,11 +20,12 @@ import 'package:smoo_control/features/expenses/presentation/pages/expenses_page.
 import 'package:smoo_control/features/inventory/presentation/pages/inventory_movements_page.dart';
 import 'package:smoo_control/features/inventory/presentation/pages/inventory_page.dart';
 import 'package:smoo_control/features/modifiers/presentation/pages/modifiers_page.dart';
+import 'package:smoo_control/features/packaging/presentation/pages/packaging_legacy_entry_page.dart';
 import 'package:smoo_control/features/packaging/presentation/pages/packaging_page.dart';
 import 'package:smoo_control/features/payment_methods/presentation/pages/payment_methods_page.dart';
 import 'package:smoo_control/features/pos/presentation/pages/pos_page.dart';
+import 'package:smoo_control/features/products/presentation/pages/articles_page.dart';
 import 'package:smoo_control/features/products/presentation/pages/measurement_units_page.dart';
-import 'package:smoo_control/features/products/presentation/pages/products_page.dart';
 import 'package:smoo_control/features/recipes/presentation/pages/recipes_page.dart';
 import 'package:smoo_control/features/reports/presentation/pages/inventory_value_report_page.dart';
 import 'package:smoo_control/features/reports/presentation/pages/monthly_operational_report_page.dart';
@@ -61,9 +62,7 @@ Route<void> onGenerateAppRoute(RouteSettings settings) {
 /// APIs must enforce authorization and tenant boundaries independently.
 Widget _experienceGuardedPage(String? routeName) {
   if (AppRouteExperience.forRoute(routeName) == null) {
-    return const Scaffold(
-      body: Center(child: Text('Página no encontrada')),
-    );
+    return const Scaffold(body: Center(child: Text('Página no encontrada')));
   }
   if (AppRunMode.isTimeClock) {
     return const Scaffold(
@@ -103,12 +102,19 @@ Widget _guardedPage(String? routeName) {
     AppRoutes.attendanceReport => const AttendanceAdminPage(readOnly: true),
     AppRoutes.vacationSummaryReport => const VacationSummaryReportPage(),
     AppRoutes.catalog => const CatalogPage(),
-    AppRoutes.products => const ProductsPage(),
+    AppRoutes.products => const ArticlesPage(),
     AppRoutes.recipes => const RecipesPage(),
     AppRoutes.measurementUnits => const MeasurementUnitsPage(),
     AppRoutes.inventory => const InventoryPage(),
     AppRoutes.inventoryMovements => const InventoryMovementsPage(),
-    AppRoutes.packaging => const PackagingPage(),
+    AppRoutes.packaging => const PackagingLegacyEntryPage(),
+    AppRoutes.salesTypes => const PackagingPage(
+      view: PackagingPageView.salesTypes,
+    ),
+    AppRoutes.packagingItems => const ArticlesPage(initialType: 'packaging'),
+    AppRoutes.packagingRules => const PackagingPage(
+      view: PackagingPageView.rules,
+    ),
     AppRoutes.modifiers => const ModifiersPage(),
     AppRoutes.paymentMethods => const PaymentMethodsPage(),
     AppRoutes.tables => const TablesPage(),
@@ -171,6 +177,9 @@ bool _requiresOnlineAdmin(String? routeName) {
     AppRoutes.inventory ||
     AppRoutes.inventoryMovements ||
     AppRoutes.packaging ||
+    AppRoutes.salesTypes ||
+    AppRoutes.packagingItems ||
+    AppRoutes.packagingRules ||
     AppRoutes.modifiers ||
     AppRoutes.paymentMethods ||
     AppRoutes.tables ||

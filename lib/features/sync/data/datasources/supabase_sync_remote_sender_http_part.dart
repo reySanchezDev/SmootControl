@@ -19,11 +19,12 @@ extension on SupabaseSyncRemoteSender {
   Future<void> _applyInventoryMovement(Map<String, Object?> payload) async {
     if (payload.isEmpty) return;
     final response = await _client.post(
-      _config.restUri('rpc/apply_inventory_movement'),
+      _config.restUri('rpc/apply_inventory_movement_v2'),
       headers: await _headers(),
       body: jsonEncode({
         'p_id': payload['id'],
         'p_restaurant_id': _restaurantId,
+        'p_item_id': payload['itemId'] ?? payload['productId'],
         'p_product_id': payload['productId'],
         'p_movement_type': payload['movementType'],
         'p_quantity_delta': _intValue(payload['quantityDelta']),
@@ -63,17 +64,6 @@ extension on SupabaseSyncRemoteSender {
   Future<void> _deleteById(String table, String id) async {
     final response = await _client.delete(
       _config.restUri(table, {'id': 'eq.$id'}),
-      headers: await _headers(prefer: 'return=minimal'),
-    );
-    _ensureSuccess(response, table);
-  }
-
-  Future<void> _deleteWhere(
-    String table,
-    Map<String, String> query,
-  ) async {
-    final response = await _client.delete(
-      _config.restUri(table, query),
       headers: await _headers(prefer: 'return=minimal'),
     );
     _ensureSuccess(response, table);

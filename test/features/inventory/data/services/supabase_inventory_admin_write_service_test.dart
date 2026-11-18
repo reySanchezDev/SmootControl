@@ -36,7 +36,7 @@ void main() {
       expect(result, isA<AppSuccess<void>>());
       expect(
         requests.single.url.path,
-        '/rest/v1/rpc/app_register_inventory_purchase_batch',
+        '/rest/v1/rpc/app_register_inventory_purchase_batch_v2',
       );
       expect(requests.single.headers['authorization'], 'Bearer token');
       final body = jsonDecode(requests.single.body) as Map<String, Object?>;
@@ -45,7 +45,7 @@ void main() {
       expect(items, hasLength(2));
       expect(
         items.first,
-        containsPair('product_id', '11111111-1111-1111-1111-111111111111'),
+        containsPair('item_id', '11111111-1111-1111-1111-111111111111'),
       );
       expect(items.first, containsPair('quantity', 3));
       expect(items.first, containsPair('unit_cost', 12.5));
@@ -110,7 +110,7 @@ void main() {
       expect(result, isA<AppSuccess<void>>());
       expect(
         requests.single.url.path,
-        '/rest/v1/rpc/app_register_inventory_adjustment_batch',
+        '/rest/v1/rpc/app_register_inventory_adjustment_batch_v2',
       );
       final body = jsonDecode(requests.single.body) as Map<String, Object?>;
       expect(body['p_note'], 'Conteo inicial');
@@ -118,7 +118,7 @@ void main() {
       expect(items.single, contains('movement_id'));
       expect(
         items.single,
-        containsPair('product_id', '44444444-4444-4444-4444-444444444444'),
+        containsPair('item_id', '44444444-4444-4444-4444-444444444444'),
       );
       expect(items.single, containsPair('expected_quantity', 5));
       expect(items.single, containsPair('counted_quantity', 8));

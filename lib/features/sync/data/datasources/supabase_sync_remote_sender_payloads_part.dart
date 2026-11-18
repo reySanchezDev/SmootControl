@@ -68,28 +68,23 @@ extension on SupabaseSyncRemoteSender {
     };
   }
 
-  Map<String, Object?> _productPayload(SyncQueueItem item) {
+  Map<String, Object?> _itemPayload(SyncQueueItem item) {
     final payload = item.payload;
     final isRawMaterial = payload['isRawMaterial'] == true;
     return {
       'id': payload['id'],
-      'restaurant_id': _restaurantId,
       'category_id': payload['categoryId'],
-      'code': payload['id'],
       'name': payload['name'],
-      'cost': _money(_intValue(payload['costInCents'])),
-      'price': _money(_intValue(payload['priceInCents'])),
+      'item_type': isRawMaterial ? 'raw_material' : 'product',
+      'base_unit_id': payload['inventoryUnitId'] ?? payload['purchaseUnitId'],
+      'base_unit_cost': _money(_intValue(payload['costInCents'])),
+      'base_unit_price': _money(_intValue(payload['priceInCents'])),
+      'can_sell': payload['isAvailableInPos'],
+      'can_purchase': isRawMaterial,
+      'visible_in_pos': payload['isAvailableInPos'],
+      'uses_recipe': payload['usesRecipe'] == true,
+      'send_to_kitchen': payload['sendToKitchen'] ?? false,
       'is_active': payload['isActive'],
-      'is_available_in_pos': payload['isAvailableInPos'],
-      'is_raw_material': isRawMaterial,
-      'product_kind': isRawMaterial ? 'raw_material' : 'finished',
-      'uses_recipe': !isRawMaterial && payload['usesRecipe'] == true,
-      'tracks_inventory': payload['tracksInventory'] ?? false,
-      'purchase_unit_id': payload['purchaseUnitId'],
-      'inventory_unit_id': payload['inventoryUnitId'],
-      'purchase_to_inventory_factor': payload['purchaseToInventoryFactor'],
-      'option_groups': payload['optionGroups'] ?? const <Object?>[],
-      'updated_at': DateTime.now().toIso8601String(),
     };
   }
 
@@ -120,17 +115,18 @@ extension on SupabaseSyncRemoteSender {
     };
   }
 
-  Map<String, Object?> _productPackagingRulePayload(SyncQueueItem item) {
+  Map<String, Object?> _itemConsumptionRulePayload(SyncQueueItem item) {
     final payload = item.payload;
     return {
       'id': payload['id'],
-      'restaurant_id': _restaurantId,
-      'product_id': payload['productId'],
+      'source_item_id': payload['productId'],
+      'consumed_item_id': payload['packagingItemId'],
       'sales_type_id': payload['salesTypeId'],
-      'packaging_item_id': payload['packagingItemId'],
-      'quantity_per_unit': payload['quantityPerUnit'],
+      'scope': 'per_sale_line',
+      'quantity': payload['quantityPerUnit'],
+      'unit_id': payload['unitId'],
+      'priority': 100,
       'is_active': payload['isActive'],
-      'updated_at': DateTime.now().toIso8601String(),
     };
   }
 

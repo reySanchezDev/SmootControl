@@ -129,3 +129,14 @@
 - [Acta FE-E0-2026-11-06](FasesEmpaques/FE-E0-2026-11-06.md): línea base del esquema versionado y matriz de 12 flujos; simulación sintética de seis escenarios acorde con condicional `to_go`, **no test real del POS**.
 - **G0-A pendiente:** falta consultar Supabase desplegado, clonar DB/Drift y ejecutar regresión con evidencias. No pasar a E1/E2 ni declarar integración certificada.
 - Norma central QuantixEngineeringStandar v0.1.6: **ENG-008/UX-041**, IDs internos autogenerados, invisibles en UI; preservar UUID físicos al reorganizar catálogos. Los códigos `dine_in`/`to_go` no son PKs.
+
+
+## Seguimiento de ejecución — 2026-11-08 (PR #17)
+
+**Estado:** la reorganización visual acordada está implementada en `feature/articles-packaging-final-ux`, pendiente de pruebas de Codex y aprobación visual del usuario. Esta nota complementa, sin reescribir, la auditoría histórica original.
+
+- Catálogos → **Productos** presenta una sola lista virtual de `products` (productos de venta, materias primas) y `packaging_items` (empaques); filtros por tipo, selección y CRUD en los repositorios originales, conservando IDs.
+- **Configuración** contiene Modalidades de servicio y Reglas de consumo. La ficha del producto ofrece acceso contextual a sus reglas sin cambiar tabla o identidad.
+- Las antiguas rutas siguen funcionando como acceso de compatibilidad; menú no duplica módulos de Empaques en Catálogos.
+- Las pruebas, permisos, revisión visual y build local exigidos están documentados en `Documentation/Auditorias/FasesEmpaques/FE-E9-2026-11-08-catalogo-unificado-final.md`.
+- No se ha fusionado a `main`, aplicado a producción ni certificado `flutter analyze`; no se debe presentar el cambio como comercialmente cerrado hasta recibir la aprobación del usuario.

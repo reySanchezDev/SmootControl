@@ -677,7 +677,7 @@ This also builds/copies Drift web assets:
 Operational server commands are documented in:
 
 ```text
-comandos.md
+Documentation/OPERATIONS_COMMANDS.md
 ```
 
 ### 14.13 Drift Database And Migrations

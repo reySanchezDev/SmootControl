@@ -82,6 +82,7 @@ extension on SupabaseSyncRemoteSender {
   ) {
     return {
       'id': payload['id'],
+      'item_id': payload['itemId'] ?? payload['productId'],
       'product_id': payload['productId'],
       'movement_type': payload['movementType'],
       'quantity_delta': _intValue(payload['quantityDelta']),

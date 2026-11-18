@@ -58,7 +58,7 @@ mixin _SupabaseAdminCatalogMixin on _SupabaseAdminRepositoryBase
           {'parent_id': 'eq.${category.id}'},
         );
         await _patchWhere(
-          'products',
+          'items',
           {'category_id': category.parentId, 'updated_at': now},
           {'category_id': 'eq.${category.id}'},
         );
@@ -74,24 +74,23 @@ mixin _SupabaseAdminCatalogMixin on _SupabaseAdminRepositoryBase
       'products_read_failed',
       'No se pudieron leer productos.',
       () async {
-        final products = await _getRows('products', {
+        final products = await _getRows('items', {
           'restaurant_id': 'eq.$_restaurantId',
           'select':
-              'id,category_id,name,cost,price,is_active,is_available_in_pos,'
-              'is_raw_material,uses_recipe,tracks_inventory,option_groups,'
-              'purchase_unit_id,inventory_unit_id,recipe_default_unit_id,'
-              'inventory_display_unit_id,purchase_to_inventory_factor',
+              'id,category_id,name,base_unit_cost,base_unit_price,is_active,'
+              'visible_in_pos,item_class,uses_recipe,tracks_inventory,'
+              'purchase_unit_id,base_unit_id,purchase_to_base_factor,item_type',
           'order': 'name.asc',
         });
-        final assignments = await _getRows('product_modifier_groups', {
+        final assignments = await _getRows('item_modifier_groups', {
           'restaurant_id': 'eq.$_restaurantId',
-          'select': 'product_id,modifier_group_id,display_order',
+          'select': 'item_id,modifier_group_id,display_order',
           'order': 'display_order.asc',
         });
         final groupsByProduct = <String, List<String>>{};
         for (final row in assignments) {
           groupsByProduct
-              .putIfAbsent(_text(row['product_id']), () => <String>[])
+              .putIfAbsent(_text(row['item_id']), () => <String>[])
               .add(_text(row['modifier_group_id']));
         }
         return products.map((row) {
@@ -100,31 +99,23 @@ mixin _SupabaseAdminCatalogMixin on _SupabaseAdminRepositoryBase
             id: id,
             categoryId: _text(row['category_id']),
             name: _text(row['name']),
-            costInCents: _moneyToCents(row['cost']),
-            priceInCents: _moneyToCents(row['price']),
-            isActive: _bool(row['is_active'], fallback: true),
+            costInCents: _moneyToCents(row['base_unit_cost']),
+            priceInCents: _moneyToCents(row['base_unit_price']),
+            isActive: _bool(row['is_active']),
             isAvailableInPos: _bool(
-              row['is_available_in_pos'],
+              row['visible_in_pos'],
               fallback: true,
             ),
-            isRawMaterial: _bool(row['is_raw_material']),
+            isRawMaterial: _text(row['item_class']) == 'raw_material',
             usesRecipe: _bool(row['uses_recipe']),
             tracksInventory: _bool(row['tracks_inventory']),
             purchaseUnitId: _nullableText(row['purchase_unit_id']),
-            inventoryUnitId: _nullableText(row['inventory_unit_id']),
-            recipeDefaultUnitId: _nullableText(
-              row['recipe_default_unit_id'],
-            ),
-            inventoryDisplayUnitId: _nullableText(
-              row['inventory_display_unit_id'],
-            ),
-            purchaseToInventoryFactor:
-                row['purchase_to_inventory_factor'] == null
+            inventoryUnitId: _nullableText(row['base_unit_id']),
+            recipeDefaultUnitId: _nullableText(row['base_unit_id']),
+            inventoryDisplayUnitId: _nullableText(row['base_unit_id']),
+            purchaseToInventoryFactor: row['purchase_to_base_factor'] == null
                 ? null
-                : _double(row['purchase_to_inventory_factor']),
-            optionGroups: ProductOptionGroupCodec.decode(
-              jsonEncode(row['option_groups'] ?? const []),
-            ),
+                : _double(row['purchase_to_base_factor']),
             modifierGroupIds: groupsByProduct[id] ?? const [],
           );
         }).toList();
@@ -138,53 +129,31 @@ mixin _SupabaseAdminCatalogMixin on _SupabaseAdminRepositoryBase
       'product_save_failed',
       'No se pudo guardar producto.',
       () async {
-        await _upsert('products', {
-          'id': product.id,
-          'restaurant_id': _restaurantId,
-          'category_id': product.categoryId,
-          'code': product.id,
-          'name': product.name,
-          'cost': _money(product.costInCents),
-          'price': _money(product.priceInCents),
-          'is_active': product.isActive,
-          'is_available_in_pos': product.isAvailableInPos,
-          'is_raw_material': product.isRawMaterial,
-          'product_kind': product.isRawMaterial ? 'raw_material' : 'finished',
-          'uses_recipe': product.usesRecipe,
-          'tracks_inventory': product.tracksInventory,
-          'purchase_unit_id': product.purchaseUnitId,
-          'inventory_unit_id': product.inventoryUnitId,
-          'recipe_default_unit_id': product.recipeDefaultUnitId,
-          'inventory_display_unit_id': product.inventoryDisplayUnitId,
-          'purchase_to_inventory_factor': product.purchaseToInventoryFactor,
-          'option_groups': product.optionGroups
-              .map(
-                (group) => {
-                  'name': group.name,
-                  'isRequired': group.isRequired,
-                  'options': group.options,
-                },
-              )
-              .toList(),
-          'updated_at': DateTime.now().toIso8601String(),
+        await _rpc('app_upsert_item_v2', {
+          'p_restaurant_id': _restaurantId,
+          'p_payload': {
+            'id': product.id,
+            'code': product.id,
+            'category_id': product.categoryId,
+            'name': product.name,
+            'base_unit_cost': _money(product.costInCents),
+            'base_unit_price': _money(product.priceInCents),
+            'is_active': product.isActive,
+            'visible_in_pos': product.isAvailableInPos,
+            'can_sell': !product.isRawMaterial,
+            'can_purchase': product.isRawMaterial,
+            'item_type': product.tracksInventory
+                ? 'inventory'
+                : 'non_inventory',
+            'uses_recipe': product.usesRecipe,
+            'send_to_kitchen': false,
+          },
         });
-        await _deleteWhere('product_modifier_groups', {
-          'product_id': 'eq.${product.id}',
+        await _rpc('app_set_item_modifier_groups_v2', {
+          'p_restaurant_id': _restaurantId,
+          'p_item_id': product.id,
+          'p_group_ids': product.modifierGroupIds,
         });
-        var order = 0;
-        for (final groupId in product.modifierGroupIds) {
-          await _upsert(
-            'product_modifier_groups',
-            {
-              'restaurant_id': _restaurantId,
-              'product_id': product.id,
-              'modifier_group_id': groupId,
-              'display_order': order,
-            },
-            conflictColumn: 'product_id,modifier_group_id',
-          );
-          order++;
-        }
         return product;
       },
     );

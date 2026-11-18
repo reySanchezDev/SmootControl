@@ -48,6 +48,7 @@ class BackofficeCollectionView<T> extends StatefulWidget {
     this.onCreate,
     this.createEnabled = true,
     this.globalActions = const [],
+    this.searchTrailing,
     this.rowKey,
     this.rowLabel,
     this.selectionActions,
@@ -89,6 +90,9 @@ class BackofficeCollectionView<T> extends StatefulWidget {
 
   /// Explicit page commands shown alongside selected-record commands.
   final List<Widget> globalActions;
+
+  /// Optional control rendered to the right of the shared search field.
+  final Widget? searchTrailing;
 
   /// Stable identity used only in selection-based catalog lists.
   final String Function(T item)? rowKey;
@@ -181,20 +185,30 @@ class _BackofficeCollectionViewState<T>
             if (widget.showSearch)
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-                child: AppSearchField(
-                  controller: _searchController,
-                  label: widget.searchLabel,
-                  onChanged: (value) => setState(() {
-                    _query = value;
-                    _page = 0;
-                    _selectedKey = null;
-                  }),
-                  onClear: () => setState(() {
-                    _searchController.clear();
-                    _query = '';
-                    _page = 0;
-                    _selectedKey = null;
-                  }),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: AppSearchField(
+                        controller: _searchController,
+                        label: widget.searchLabel,
+                        onChanged: (value) => setState(() {
+                          _query = value;
+                          _page = 0;
+                          _selectedKey = null;
+                        }),
+                        onClear: () => setState(() {
+                          _searchController.clear();
+                          _query = '';
+                          _page = 0;
+                          _selectedKey = null;
+                        }),
+                      ),
+                    ),
+                    if (widget.searchTrailing != null) ...[
+                      const SizedBox(width: 16),
+                      widget.searchTrailing!,
+                    ],
+                  ],
                 ),
               ),
             Expanded(

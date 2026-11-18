@@ -1,5 +1,7 @@
 param(
-  [string]$CredentialsPath = ""
+  [string]$CredentialsPath = "",
+  [switch]$CanonicalItemsQa,
+  [switch]$LocalSupabaseQa
 )
 
 $ErrorActionPreference = 'Stop'
@@ -59,13 +61,30 @@ if ($missing.Count -gt 0) {
   throw "No se genero el Web release: faltan las variables obligatorias $($missing -join ', '). No se imprimen valores."
 }
 
-if ($values['SMOO_SUPABASE_URL'] -notmatch '^https://[^/]+') {
+if ($LocalSupabaseQa -and -not $CanonicalItemsQa) {
+  throw 'LocalSupabaseQa requiere CanonicalItemsQa.'
+}
+if ($LocalSupabaseQa) {
+  # Local Docker is allowed only on loopback; never permit cleartext remote hosts.
+  if ($values['SMOO_SUPABASE_URL'] -notmatch '^http://(127[.]0[.]0[.]1|localhost):54321/?$') {
+    throw 'QA Docker requiere Supabase HTTP local en 127.0.0.1:54321 o localhost:54321.'
+  }
+} elseif ($values['SMOO_SUPABASE_URL'] -notmatch '^https://[^/]+') {
   throw 'No se genero el Web release: SMOO_SUPABASE_URL no es una URL https valida.'
 }
 
 $dartDefines = @($requiredKeys | ForEach-Object {
   "--dart-define=$_=$($values[$_])"
 })
+
+if ($CanonicalItemsQa) {
+  $dartDefines += '--dart-define=SMOO_ITEM_CORE_V2_QA=true'
+  $dartDefines += '--dart-define=SMOO_APP_MODE=backoffice'
+  Write-Host 'QA RELEASE: Backoffice autenticado (sin inicializacion POS).'
+  if ($LocalSupabaseQa) {
+    Write-Host 'QA RELEASE: Supabase del Docker local, sin tocar el remoto.'
+  }
+}
 
 Push-Location $repoRoot
 try {

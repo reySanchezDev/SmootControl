@@ -200,10 +200,15 @@ abstract class _SupabaseAdminRepositoryBase {
   ProductPackagingRule _packagingRuleFromRow(Map<String, Object?> row) {
     return ProductPackagingRule(
       id: _text(row['id']),
-      productId: _text(row['product_id']),
+      productId: _text(row['product_id'] ?? row['source_item_id']),
       salesTypeId: _text(row['sales_type_id']),
-      packagingItemId: _text(row['packaging_item_id']),
-      quantityPerUnit: _int(row['quantity_per_unit'], fallback: 1),
+      packagingItemId: _text(
+        row['packaging_item_id'] ?? row['consumed_item_id'],
+      ),
+      quantityPerUnit: _int(
+        row['quantity_per_unit'] ?? row['quantity'],
+        fallback: 1,
+      ),
       isActive: _bool(row['is_active'], fallback: true),
     );
   }

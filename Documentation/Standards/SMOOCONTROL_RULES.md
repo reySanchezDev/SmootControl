@@ -14,6 +14,16 @@
 | SMO-008 | Los cambios de interfaz del Backoffice se realizan **directamente sobre las pantallas operativas autenticadas y sus componentes reutilizables**. No introducir rutas de demostración, pantallas aisladas con registros ilustrativos ni prototipos alternativos salvo solicitud explícita del propietario. El QA debe distinguir datos reales de prueba de datos ficticios y mantener permisos y persistencia existentes. |
 | SMO-009 | En **catálogos administrativos del Backoffice**, seleccionar una fila para operar sobre ella mediante una **botonera superior fija**: «Nuevo» y todas las operaciones reales («Editar», «Inactivar», «Quitar nivel», etc.) con etiquetas visibles, sin columna repetitiva «Acciones» ni menús «Más». Acciones que dependen de selección deshabilitadas hasta elegir un registro y cuando el estado/permisos no las permiten. Resaltar selección, permitir teclado y pantalla compacta; limpiar selección al filtrar, paginar o cuando el registro deje de estar disponible. Preservar confirmaciones y operaciones originales. **No aplica a modo App/POS ni modo Tableta**; las listas transaccionales conservan acciones apropiadas al dominio hasta su revisión específica. |
 
+| SMO-010 | En maestros administrativos, distinguir catálogos vacíos de filtros sin coincidencias; ofrecer orientación breve y una acción concreta sin métricas inventadas ni títulos redundantes. Formularios extensos agrupados por funciones de negocio, con controles relacionados y ayuda contextual, respetando layout responsive; los diálogos quedan para confirmaciones y avisos, no para editar maestros (UX-048). |
+
+## Adopción del estándar UX-048
+
+En Productos y otros maestros administrativos, «Editar» solo se habilita al seleccionar un registro permitido. La ficha sustituye al listado **sin modal y sin pestaña nueva**, con un «Regresar» explícito, sin pérdida silenciosa de cambios ni del estado del listado. Usar la pantalla operativa y sus componentes existentes; no abrir vistas paralelas.
+
+## Maestro de artículos: numeración y disposición
+
+Los códigos de nuevos artículos canónicos se asignan automáticamente en PostgreSQL, no se solicitan en el formulario ni se regeneran al editar. Los UUID internos tampoco se muestran. La ficha usa secciones por negocio y grillas responsivas de dos columnas en escritorio y una en compacto, evitando formularios de una sola lista vertical extensa. Guardar debe preservar la autorización y la atomicidad del escritor canónico.
+
 ## Medición de SMO-001
 - Para archivos nuevos o modificados de código mantenido a mano, el límite provisional se mide por **líneas físicas completas**.
 - No dividir métodos o clases arbitrariamente sólo para alcanzar 300; aplicar responsabilidad única, módulos y cohesión.

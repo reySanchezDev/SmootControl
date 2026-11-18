@@ -96,7 +96,17 @@ extension on SupabaseCatalogPullService {
       throw StateError('Respuesta invalida descargando catalogo POS.');
     }
 
+    final canonical = decoded['item_catalog_v2'];
+    if (canonical is Map) {
+      _deviceItemCatalogSnapshot = canonical.map(
+        (key, value) => MapEntry(key.toString(), value),
+      );
+    }
+
     return decoded.map((key, value) {
+      if (key == 'item_catalog_v2') {
+        return MapEntry(key.toString(), <Map<String, Object?>>[]);
+      }
       final rows = value is List
           ? value.map(_mapRow).toList(growable: false)
           : <Map<String, Object?>>[];
@@ -135,6 +145,10 @@ extension on SupabaseCatalogPullService {
     if (expression.startsWith('eq.')) {
       final expected = expression.substring(3);
       return rows.where((row) => _optionalText(row[key]) == expected);
+    }
+    if (expression.startsWith('neq.')) {
+      final expected = expression.substring(4);
+      return rows.where((row) => _optionalText(row[key]) != expected);
     }
     if (expression == 'is.null') {
       return rows.where((row) => _optionalText(row[key]) == null);
@@ -203,7 +217,8 @@ extension on SupabaseCatalogPullService {
   ) {
     final grouped = <String, List<_ProductModifierLink>>{};
     for (final row in rows) {
-      final productId = _optionalText(row['product_id']);
+      final productId =
+          _optionalText(row['item_id']) ?? _optionalText(row['product_id']);
       final groupId = _optionalText(row['modifier_group_id']);
       if (productId == null || groupId == null) continue;
       grouped

@@ -34,7 +34,7 @@ extension _SupabaseReportSummaryQueries on SupabaseReportSummaryService {
 
     final rows = await _getRows('sale_items', {
       'select':
-          'id,sale_id,product_id,product_code,table_account_id,'
+          'id,sale_id,item_id,product_code,table_account_id,'
           'product_name,category_name,selected_options_label,quantity,'
           'unit_price,unit_cost,created_at',
       'sale_id': _inFilter(saleIds),
@@ -50,7 +50,7 @@ extension _SupabaseReportSummaryQueries on SupabaseReportSummaryService {
         saleId: _requiredText(row, 'sale_id'),
         tableAccountId: _optionalText(row['table_account_id']),
         productId:
-            _optionalText(row['product_id']) ??
+            _optionalText(row['item_id']) ??
             _optionalText(row['product_code']) ??
             _requiredText(row, 'id'),
         productName: _requiredText(row, 'product_name'),
