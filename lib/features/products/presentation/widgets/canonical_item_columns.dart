@@ -25,6 +25,12 @@ List<BackofficeListColumn<CanonicalItem>> canonicalItemColumns(
     cell: (_, item) => Text(_categoryName(item, categories)),
   ),
   BackofficeListColumn<CanonicalItem>(
+    label: 'Clase',
+    width: 170,
+    compare: (a, b) => a.itemClass.label.compareTo(b.itemClass.label),
+    cell: (_, item) => Text(item.itemClass.label),
+  ),
+  BackofficeListColumn<CanonicalItem>(
     label: 'Nombre',
     width: 280,
     compare: (a, b) => a.name.compareTo(b.name),

@@ -405,6 +405,18 @@ class $LocalCanonicalItemsTable extends LocalCanonicalItems
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _itemClassMeta = const VerificationMeta(
+    'itemClass',
+  );
+  @override
+  late final GeneratedColumn<String> itemClass = GeneratedColumn<String>(
+    'item_class',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('sale_product'),
+  );
   static const VerificationMeta _baseUnitIdMeta = const VerificationMeta(
     'baseUnitId',
   );
@@ -538,6 +550,7 @@ class $LocalCanonicalItemsTable extends LocalCanonicalItems
     code,
     name,
     itemType,
+    itemClass,
     baseUnitId,
     canSell,
     visibleInPos,
@@ -600,6 +613,12 @@ class $LocalCanonicalItemsTable extends LocalCanonicalItems
       );
     } else if (isInserting) {
       context.missing(_itemTypeMeta);
+    }
+    if (data.containsKey('item_class')) {
+      context.handle(
+        _itemClassMeta,
+        itemClass.isAcceptableOrUnknown(data['item_class']!, _itemClassMeta),
+      );
     }
     if (data.containsKey('base_unit_id')) {
       context.handle(
@@ -719,6 +738,10 @@ class $LocalCanonicalItemsTable extends LocalCanonicalItems
         DriftSqlType.string,
         data['${effectivePrefix}item_type'],
       )!,
+      itemClass: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}item_class'],
+      )!,
       baseUnitId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}base_unit_id'],
@@ -785,6 +808,9 @@ class LocalCanonicalItem extends DataClass
   /// inventory, non_inventory or service.
   final String itemType;
 
+  /// Business role of the article.
+  final String itemClass;
+
   /// Canonical base measurement-unit identifier.
   final String baseUnitId;
 
@@ -820,6 +846,7 @@ class LocalCanonicalItem extends DataClass
     required this.code,
     required this.name,
     required this.itemType,
+    required this.itemClass,
     required this.baseUnitId,
     required this.canSell,
     required this.visibleInPos,
@@ -839,6 +866,7 @@ class LocalCanonicalItem extends DataClass
     map['code'] = Variable<String>(code);
     map['name'] = Variable<String>(name);
     map['item_type'] = Variable<String>(itemType);
+    map['item_class'] = Variable<String>(itemClass);
     map['base_unit_id'] = Variable<String>(baseUnitId);
     map['can_sell'] = Variable<bool>(canSell);
     map['visible_in_pos'] = Variable<bool>(visibleInPos);
@@ -863,6 +891,7 @@ class LocalCanonicalItem extends DataClass
       code: Value(code),
       name: Value(name),
       itemType: Value(itemType),
+      itemClass: Value(itemClass),
       baseUnitId: Value(baseUnitId),
       canSell: Value(canSell),
       visibleInPos: Value(visibleInPos),
@@ -891,6 +920,7 @@ class LocalCanonicalItem extends DataClass
       code: serializer.fromJson<String>(json['code']),
       name: serializer.fromJson<String>(json['name']),
       itemType: serializer.fromJson<String>(json['itemType']),
+      itemClass: serializer.fromJson<String>(json['itemClass']),
       baseUnitId: serializer.fromJson<String>(json['baseUnitId']),
       canSell: serializer.fromJson<bool>(json['canSell']),
       visibleInPos: serializer.fromJson<bool>(json['visibleInPos']),
@@ -912,6 +942,7 @@ class LocalCanonicalItem extends DataClass
       'code': serializer.toJson<String>(code),
       'name': serializer.toJson<String>(name),
       'itemType': serializer.toJson<String>(itemType),
+      'itemClass': serializer.toJson<String>(itemClass),
       'baseUnitId': serializer.toJson<String>(baseUnitId),
       'canSell': serializer.toJson<bool>(canSell),
       'visibleInPos': serializer.toJson<bool>(visibleInPos),
@@ -931,6 +962,7 @@ class LocalCanonicalItem extends DataClass
     String? code,
     String? name,
     String? itemType,
+    String? itemClass,
     String? baseUnitId,
     bool? canSell,
     bool? visibleInPos,
@@ -947,6 +979,7 @@ class LocalCanonicalItem extends DataClass
     code: code ?? this.code,
     name: name ?? this.name,
     itemType: itemType ?? this.itemType,
+    itemClass: itemClass ?? this.itemClass,
     baseUnitId: baseUnitId ?? this.baseUnitId,
     canSell: canSell ?? this.canSell,
     visibleInPos: visibleInPos ?? this.visibleInPos,
@@ -969,6 +1002,7 @@ class LocalCanonicalItem extends DataClass
       code: data.code.present ? data.code.value : this.code,
       name: data.name.present ? data.name.value : this.name,
       itemType: data.itemType.present ? data.itemType.value : this.itemType,
+      itemClass: data.itemClass.present ? data.itemClass.value : this.itemClass,
       baseUnitId: data.baseUnitId.present
           ? data.baseUnitId.value
           : this.baseUnitId,
@@ -1006,6 +1040,7 @@ class LocalCanonicalItem extends DataClass
           ..write('code: $code, ')
           ..write('name: $name, ')
           ..write('itemType: $itemType, ')
+          ..write('itemClass: $itemClass, ')
           ..write('baseUnitId: $baseUnitId, ')
           ..write('canSell: $canSell, ')
           ..write('visibleInPos: $visibleInPos, ')
@@ -1027,6 +1062,7 @@ class LocalCanonicalItem extends DataClass
     code,
     name,
     itemType,
+    itemClass,
     baseUnitId,
     canSell,
     visibleInPos,
@@ -1047,6 +1083,7 @@ class LocalCanonicalItem extends DataClass
           other.code == this.code &&
           other.name == this.name &&
           other.itemType == this.itemType &&
+          other.itemClass == this.itemClass &&
           other.baseUnitId == this.baseUnitId &&
           other.canSell == this.canSell &&
           other.visibleInPos == this.visibleInPos &&
@@ -1065,6 +1102,7 @@ class LocalCanonicalItemsCompanion extends UpdateCompanion<LocalCanonicalItem> {
   final Value<String> code;
   final Value<String> name;
   final Value<String> itemType;
+  final Value<String> itemClass;
   final Value<String> baseUnitId;
   final Value<bool> canSell;
   final Value<bool> visibleInPos;
@@ -1082,6 +1120,7 @@ class LocalCanonicalItemsCompanion extends UpdateCompanion<LocalCanonicalItem> {
     this.code = const Value.absent(),
     this.name = const Value.absent(),
     this.itemType = const Value.absent(),
+    this.itemClass = const Value.absent(),
     this.baseUnitId = const Value.absent(),
     this.canSell = const Value.absent(),
     this.visibleInPos = const Value.absent(),
@@ -1100,6 +1139,7 @@ class LocalCanonicalItemsCompanion extends UpdateCompanion<LocalCanonicalItem> {
     required String code,
     required String name,
     required String itemType,
+    this.itemClass = const Value.absent(),
     required String baseUnitId,
     required bool canSell,
     required bool visibleInPos,
@@ -1126,6 +1166,7 @@ class LocalCanonicalItemsCompanion extends UpdateCompanion<LocalCanonicalItem> {
     Expression<String>? code,
     Expression<String>? name,
     Expression<String>? itemType,
+    Expression<String>? itemClass,
     Expression<String>? baseUnitId,
     Expression<bool>? canSell,
     Expression<bool>? visibleInPos,
@@ -1144,6 +1185,7 @@ class LocalCanonicalItemsCompanion extends UpdateCompanion<LocalCanonicalItem> {
       if (code != null) 'code': code,
       if (name != null) 'name': name,
       if (itemType != null) 'item_type': itemType,
+      if (itemClass != null) 'item_class': itemClass,
       if (baseUnitId != null) 'base_unit_id': baseUnitId,
       if (canSell != null) 'can_sell': canSell,
       if (visibleInPos != null) 'visible_in_pos': visibleInPos,
@@ -1164,6 +1206,7 @@ class LocalCanonicalItemsCompanion extends UpdateCompanion<LocalCanonicalItem> {
     Value<String>? code,
     Value<String>? name,
     Value<String>? itemType,
+    Value<String>? itemClass,
     Value<String>? baseUnitId,
     Value<bool>? canSell,
     Value<bool>? visibleInPos,
@@ -1182,6 +1225,7 @@ class LocalCanonicalItemsCompanion extends UpdateCompanion<LocalCanonicalItem> {
       code: code ?? this.code,
       name: name ?? this.name,
       itemType: itemType ?? this.itemType,
+      itemClass: itemClass ?? this.itemClass,
       baseUnitId: baseUnitId ?? this.baseUnitId,
       canSell: canSell ?? this.canSell,
       visibleInPos: visibleInPos ?? this.visibleInPos,
@@ -1213,6 +1257,9 @@ class LocalCanonicalItemsCompanion extends UpdateCompanion<LocalCanonicalItem> {
     }
     if (itemType.present) {
       map['item_type'] = Variable<String>(itemType.value);
+    }
+    if (itemClass.present) {
+      map['item_class'] = Variable<String>(itemClass.value);
     }
     if (baseUnitId.present) {
       map['base_unit_id'] = Variable<String>(baseUnitId.value);
@@ -1258,6 +1305,7 @@ class LocalCanonicalItemsCompanion extends UpdateCompanion<LocalCanonicalItem> {
           ..write('code: $code, ')
           ..write('name: $name, ')
           ..write('itemType: $itemType, ')
+          ..write('itemClass: $itemClass, ')
           ..write('baseUnitId: $baseUnitId, ')
           ..write('canSell: $canSell, ')
           ..write('visibleInPos: $visibleInPos, ')
@@ -31999,6 +32047,7 @@ typedef $$LocalCanonicalItemsTableCreateCompanionBuilder =
       required String code,
       required String name,
       required String itemType,
+      Value<String> itemClass,
       required String baseUnitId,
       required bool canSell,
       required bool visibleInPos,
@@ -32018,6 +32067,7 @@ typedef $$LocalCanonicalItemsTableUpdateCompanionBuilder =
       Value<String> code,
       Value<String> name,
       Value<String> itemType,
+      Value<String> itemClass,
       Value<String> baseUnitId,
       Value<bool> canSell,
       Value<bool> visibleInPos,
@@ -32062,6 +32112,11 @@ class $$LocalCanonicalItemsTableFilterComposer
 
   ColumnFilters<String> get itemType => $composableBuilder(
     column: $table.itemType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get itemClass => $composableBuilder(
+    column: $table.itemClass,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -32150,6 +32205,11 @@ class $$LocalCanonicalItemsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get itemClass => $composableBuilder(
+    column: $table.itemClass,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get baseUnitId => $composableBuilder(
     column: $table.baseUnitId,
     builder: (column) => ColumnOrderings(column),
@@ -32226,6 +32286,9 @@ class $$LocalCanonicalItemsTableAnnotationComposer
 
   GeneratedColumn<String> get itemType =>
       $composableBuilder(column: $table.itemType, builder: (column) => column);
+
+  GeneratedColumn<String> get itemClass =>
+      $composableBuilder(column: $table.itemClass, builder: (column) => column);
 
   GeneratedColumn<String> get baseUnitId => $composableBuilder(
     column: $table.baseUnitId,
@@ -32322,6 +32385,7 @@ class $$LocalCanonicalItemsTableTableManager
                 Value<String> code = const Value.absent(),
                 Value<String> name = const Value.absent(),
                 Value<String> itemType = const Value.absent(),
+                Value<String> itemClass = const Value.absent(),
                 Value<String> baseUnitId = const Value.absent(),
                 Value<bool> canSell = const Value.absent(),
                 Value<bool> visibleInPos = const Value.absent(),
@@ -32339,6 +32403,7 @@ class $$LocalCanonicalItemsTableTableManager
                 code: code,
                 name: name,
                 itemType: itemType,
+                itemClass: itemClass,
                 baseUnitId: baseUnitId,
                 canSell: canSell,
                 visibleInPos: visibleInPos,
@@ -32358,6 +32423,7 @@ class $$LocalCanonicalItemsTableTableManager
                 required String code,
                 required String name,
                 required String itemType,
+                Value<String> itemClass = const Value.absent(),
                 required String baseUnitId,
                 required bool canSell,
                 required bool visibleInPos,
@@ -32375,6 +32441,7 @@ class $$LocalCanonicalItemsTableTableManager
                 code: code,
                 name: name,
                 itemType: itemType,
+                itemClass: itemClass,
                 baseUnitId: baseUnitId,
                 canSell: canSell,
                 visibleInPos: visibleInPos,

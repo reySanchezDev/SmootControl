@@ -62,6 +62,39 @@ extension _CanonicalItemEditorFields on _CanonicalItemEditorState {
                 maxLength: 250,
                 validator: _required,
               ),
+              DropdownButtonFormField<CanonicalItemClass>(
+                initialValue: _itemClass,
+                isExpanded: true,
+                decoration: const InputDecoration(
+                  labelText: 'Clase de artículo *',
+                ),
+                items: CanonicalItemClass.values
+                    .map(
+                      (itemClass) => DropdownMenuItem(
+                        value: itemClass,
+                        child: Text(itemClass.label),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (itemClass) {
+                  if (itemClass == null) return;
+                  _update(() {
+                    _itemClass = itemClass;
+                    if (itemClass == CanonicalItemClass.service) {
+                      _type = CanonicalItemType.service;
+                      _usesRecipe = false;
+                    } else if (_type == CanonicalItemType.service) {
+                      _type = CanonicalItemType.nonInventory;
+                    }
+                    if (itemClass == CanonicalItemClass.packaging) {
+                      _canSell = false;
+                      _visibleInPos = false;
+                      _usesRecipe = false;
+                      _sendToKitchen = false;
+                    }
+                  });
+                },
+              ),
               DropdownButtonFormField<CanonicalItemType>(
                 initialValue: _type,
                 isExpanded: true,

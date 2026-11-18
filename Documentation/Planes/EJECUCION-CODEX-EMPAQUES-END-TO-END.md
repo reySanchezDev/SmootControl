@@ -1992,5 +1992,26 @@ operativas; y solo entonces retirar las dependencias heredadas.
   RELEASE QA y validación visual responsive. Publicar SHA, migración y
   evidencia de paridad.
 
+### Addendum de implementaciÃ³n local F1/F2 - 2026-11-18
+
+- [x] F1 local implementado en migraciones 120-124: `item_class` explÃ­cito,
+  escritura atÃ³mica, validaciÃ³n de combinaciones, `tracks_inventory` coherente
+  y proyecciÃ³n de stock en el snapshot POS.
+- [x] F2 local parcial implementado: el snapshot canÃ³nico transporta clase y
+  saldo; el POS proyecta empaques canÃ³nicos al lector local y `pos_sync_sale_v2`
+  incorpora un puente idempotente para movimientos de empaques sin fila legacy.
+- [x] Regla local real creada para Producto comercial `1` -> Empaque canÃ³nico;
+  quedÃ³ persistida con alcance `per_sale_line` y cantidad `1`.
+- [x] Prueba transaccional local del empaque: compra `+5`, venta `-2`, anulaciÃ³n
+  `+2`, saldo final `5`; intento `-6` rechazado sin alterar el saldo.
+- [x] `flutter analyze --no-pub`: sin issues. Suite dirigida POS, ventas,
+  sincronizaciÃ³n, empaques y proyecciÃ³n canÃ³nica: **79 pruebas aprobadas**.
+- [ ] F2 completo pendiente: ejecutar venta POS real con regla contra el RPC
+  local, comprobar anulaciÃ³n/reintento idempotente desde dispositivo y cerrar
+  la lectura legacy de Inventario > Empaques antes de retirar tablas.
+- [ ] F3/build RELEASE/QA visual y paridad estructural contra producciÃ³n siguen
+  pendientes. Las migraciones 120-124 estÃ¡n solo en Docker local; no se tocÃ³
+  Supabase remoto.
+
 **Estado actual:** F0/paridad de migraciones aprobada; F1, F2 y F3 pendientes.
 No se modificó código, esquema ni datos en este addendum.

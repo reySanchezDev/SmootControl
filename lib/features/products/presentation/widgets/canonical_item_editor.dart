@@ -60,6 +60,7 @@ class _CanonicalItemEditorState extends State<CanonicalItemEditor> {
   final _cost = TextEditingController(text: '0');
   final _price = TextEditingController(text: '0');
   late CanonicalItemType _type;
+  late CanonicalItemClass _itemClass;
   late bool _canSell;
   late bool _canPurchase;
   late bool _visibleInPos;
@@ -80,6 +81,7 @@ class _CanonicalItemEditorState extends State<CanonicalItemEditor> {
     _cost.text = item?.cost.toString() ?? '0';
     _price.text = item?.price.toString() ?? '0';
     _type = item?.type ?? CanonicalItemType.inventory;
+    _itemClass = item?.itemClass ?? CanonicalItemClass.saleProduct;
     _canSell = item?.canSell ?? false;
     _canPurchase = item?.canPurchase ?? true;
     _visibleInPos = item?.visibleInPos ?? false;
@@ -133,6 +135,7 @@ class _CanonicalItemEditorState extends State<CanonicalItemEditor> {
         code: widget.item?.code ?? '',
         name: _name.text.trim(),
         type: _type,
+        itemClass: _itemClass,
         baseUnitId: _baseUnit!,
         cost: double.parse(_cost.text.replaceAll(',', '.')),
         price: double.parse(_price.text.replaceAll(',', '.')),
@@ -160,6 +163,7 @@ class _CanonicalItemEditorState extends State<CanonicalItemEditor> {
         _baseUnit != previous?.baseUnitId ||
         _categoryId != previous?.categoryId ||
         _type != (previous?.type ?? CanonicalItemType.inventory) ||
+        _itemClass != (previous?.itemClass ?? CanonicalItemClass.saleProduct) ||
         _canSell != (previous?.canSell ?? false) ||
         _canPurchase != (previous?.canPurchase ?? true) ||
         _visibleInPos != (previous?.visibleInPos ?? false) ||

@@ -21,6 +21,7 @@ void main() {
       name: 'Bolsa para llevar',
       type: CanonicalItemType.inventory,
       baseUnitId: 'unit-id',
+      itemClass: CanonicalItemClass.packaging,
       cost: 2.5,
       canPurchase: true,
       classificationIds: ['packaging-id'],
@@ -28,6 +29,7 @@ void main() {
     final payload = item.toPayload();
     expect(payload.containsKey('id'), isFalse);
     expect(payload['item_type'], 'inventory');
+    expect(payload['item_class'], 'packaging');
     expect(payload['classification_ids'], ['packaging-id']);
     expect(payload['can_sell'], false);
     expect(payload['base_unit_cost'], 2.5);
@@ -39,6 +41,7 @@ void main() {
       'code': 'SERV-01',
       'name': 'Entrega',
       'item_type': 'service',
+      'item_class': 'service',
       'base_unit_id': 'unit-id',
       'base_unit_cost': '0',
       'base_unit_price': '50.50',
@@ -51,6 +54,7 @@ void main() {
     }, classificationIds: ['service-class']);
     expect(item.id, 'item-id');
     expect(item.type, CanonicalItemType.service);
+    expect(item.itemClass, CanonicalItemClass.service);
     expect(item.price, 50.5);
     expect(item.toPayload()['id'], 'item-id');
     expect(item.classificationIds, ['service-class']);
