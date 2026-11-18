@@ -103,14 +103,14 @@ final class SupabaseInventoryAdminWriteService {
     List<AdminInventoryPurchaseItem> items,
   ) {
     return _postBatch(
-      functionName: 'app_register_inventory_purchase_batch',
+      functionName: 'app_register_inventory_purchase_batch_v2',
       emptyCode: 'inventory_batch_empty',
       emptyMessage: 'Agrega al menos un producto con cantidad.',
       items: [
         for (final item in items)
           {
             'movement_id': _uuid.v4(),
-            'product_id': item.productId,
+            'item_id': item.productId,
             'quantity': item.quantity,
             'unit_cost': _money(item.unitCostInCents),
             'purchase_unit_id': item.purchaseUnitId,
@@ -145,7 +145,7 @@ final class SupabaseInventoryAdminWriteService {
     String? note,
   }) {
     return _postBatch(
-      functionName: 'app_register_inventory_adjustment_batch',
+      functionName: 'app_register_inventory_adjustment_batch_v2',
       emptyCode: 'inventory_adjustment_empty',
       emptyMessage: 'Agrega al menos un producto con cambio de inventario.',
       message: 'Supabase rechazo el ajuste de inventario.',
@@ -153,7 +153,7 @@ final class SupabaseInventoryAdminWriteService {
         for (final item in items)
           {
             'movement_id': _uuid.v4(),
-            'product_id': item.productId,
+            'item_id': item.productId,
             'expected_quantity': item.expectedQuantity,
             'counted_quantity': item.countedQuantity,
             'entered_count_quantity': item.enteredCountQuantity,

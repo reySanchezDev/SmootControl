@@ -8,6 +8,9 @@ import 'package:smoo_control/core/session/current_remote_session_service.dart';
 import 'package:smoo_control/core/session/current_restaurant_service.dart';
 import 'package:smoo_control/core/utils/business_date_formatter.dart';
 import 'package:smoo_control/features/products/data/models/string_list_codec.dart';
+import 'package:smoo_control/features/sync/data/repositories/canonical_item_pos_projector.dart';
+import 'package:smoo_control/features/sync/data/repositories/item_catalog_snapshot_applier.dart';
+import 'package:smoo_control/features/sync/domain/entities/item_catalog_snapshot_v2.dart';
 import 'package:smoo_control/features/sync/domain/services/catalog_pull_summary.dart';
 import 'package:smoo_control/features/sync/domain/services/i_catalog_pull_service.dart';
 
@@ -46,6 +49,7 @@ final class SupabaseCatalogPullService implements ICatalogPullService {
   DateTime? _expiresAt;
   bool _temporaryTokenOnly = false;
   Map<String, List<Map<String, Object?>>>? _deviceCatalogRows;
+  Map<String, Object?>? _deviceItemCatalogSnapshot;
 
   @override
   Future<CatalogPullSummary> pullOperationalCatalog() {
@@ -78,6 +82,7 @@ final class SupabaseCatalogPullService implements ICatalogPullService {
     if (scopes.isEmpty) return const CatalogPullSummary.empty();
 
     _deviceCatalogRows = null;
+    _deviceItemCatalogSnapshot = null;
     await _prepareDeviceCatalogIfNeeded();
 
     final effectiveScopes = {...scopes};
@@ -100,6 +105,7 @@ final class SupabaseCatalogPullService implements ICatalogPullService {
     final shouldRefreshProducts = effectiveScopes.contains(
       CatalogPullScope.products,
     );
+    final hasCanonicalItemSnapshot = _deviceItemCatalogSnapshot != null;
     final shouldRefreshModifiers = effectiveScopes.contains(
       CatalogPullScope.modifiers,
     );
@@ -159,20 +165,21 @@ final class SupabaseCatalogPullService implements ICatalogPullService {
     final modifierOptions = shouldRefreshModifiers
         ? await _getRows('modifier_options')
         : const <Map<String, Object?>>[];
-    final productModifierGroups = shouldRefreshProducts
+    final productModifierGroups =
+        shouldRefreshProducts && !hasCanonicalItemSnapshot
         ? await _getRows(
-            'product_modifier_groups',
-            select: 'product_id,modifier_group_id,display_order',
+            'item_modifier_groups',
+            select: 'item_id,modifier_group_id,display_order',
           )
         : const <Map<String, Object?>>[];
-    final products = shouldRefreshProducts
-        ? await _getRowsByQuery('products', {
+    final products = shouldRefreshProducts && !hasCanonicalItemSnapshot
+        ? await _getRowsByQuery('items', {
             'restaurant_id': 'eq.${_restaurantService.restaurantId}',
-            'or': '(is_raw_material.eq.false,is_raw_material.is.null)',
+            'item_class': 'neq.raw_material',
             'select': '*',
           })
         : const <Map<String, Object?>>[];
-    final inventoryStock = shouldRefreshProducts
+    final inventoryStock = shouldRefreshProducts && !hasCanonicalItemSnapshot
         ? _stockForProducts(await _getRows('inventory_stock'), products)
         : const <Map<String, Object?>>[];
     if (shouldRefreshPackaging && _deviceCatalogRows == null) {
@@ -185,7 +192,7 @@ final class SupabaseCatalogPullService implements ICatalogPullService {
         ? await _getRows('packaging_items')
         : const <Map<String, Object?>>[];
     final packagingRules = shouldRefreshPackaging
-        ? await _getRows('product_packaging_rules')
+        ? await _getRows('item_consumption_rules')
         : const <Map<String, Object?>>[];
     final packagingStock = shouldRefreshPackaging
         ? await _getRows('packaging_stock')
@@ -232,7 +239,7 @@ final class SupabaseCatalogPullService implements ICatalogPullService {
         await _applyModifierGroups(modifierGroups);
         await _applyModifierOptions(modifierOptions);
       }
-      if (shouldRefreshProducts) {
+      if (shouldRefreshProducts && !hasCanonicalItemSnapshot) {
         await _applyProducts(products, modifierIdsByProduct);
         await _applyInventoryStock(inventoryStock);
       }
@@ -263,6 +270,17 @@ final class SupabaseCatalogPullService implements ICatalogPullService {
       }
     });
 
+    if (shouldRefreshProducts && _deviceItemCatalogSnapshot != null) {
+      final snapshot = ItemCatalogSnapshotV2.fromJson(
+        _deviceItemCatalogSnapshot!,
+        expectedRestaurantId: _restaurantService.restaurantId,
+      );
+      await ItemCatalogSnapshotApplier(_database).apply(snapshot);
+      await CanonicalItemPosProjector(_database).project(
+        _restaurantService.restaurantId,
+      );
+    }
+
     return CatalogPullSummary(
       businessSettings: restaurantRows.isEmpty && invoiceSettings.isEmpty
           ? 0
@@ -289,5 +307,4 @@ final class SupabaseCatalogPullService implements ICatalogPullService {
       users: profiles.length,
     );
   }
-
 }

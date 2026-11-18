@@ -88,30 +88,30 @@ final class SupabaseNegativeInventoryReportService {
     final rows = await _getRows('inventory_stock', {
       'restaurant_id': 'eq.${_restaurantService.restaurantId}',
       'quantity_on_hand': 'lt.0',
-      'select': 'product_id,quantity_on_hand',
+      'select': 'item_id,quantity_on_hand',
     });
     return {
       for (final row in rows)
-        _requiredText(row, 'product_id'): _decimal(row['quantity_on_hand']),
+        _requiredText(row, 'item_id'): _decimal(row['quantity_on_hand']),
     };
   }
 
   Future<Map<String, _ProductRow>> _loadProducts(List<String> ids) async {
-    final rows = await _getRows('products', {
+    final rows = await _getRows('items', {
       'restaurant_id': 'eq.${_restaurantService.restaurantId}',
       'id': _inFilter(ids),
-      'product_kind': 'eq.raw_material',
+      'item_class': 'eq.raw_material',
       'tracks_inventory': 'eq.true',
-      'select': 'id,name,category_id,cost,purchase_to_inventory_factor',
+      'select': 'id,name,category_id,base_unit_cost,purchase_to_base_factor',
     });
     return {
       for (final row in rows)
         _requiredText(row, 'id'): _ProductRow(
           categoryId: _optionalText(row['category_id']) ?? '',
-          costInCents: _moneyToCents(row['cost']),
+          costInCents: _moneyToCents(row['base_unit_cost']),
           name: _requiredText(row, 'name'),
           purchaseToInventoryFactor: _decimal(
-            row['purchase_to_inventory_factor'],
+            row['purchase_to_base_factor'],
           ),
         ),
     };
@@ -136,15 +136,15 @@ final class SupabaseNegativeInventoryReportService {
   ) async {
     final rows = await _getRows('inventory_movements', {
       'restaurant_id': 'eq.${_restaurantService.restaurantId}',
-      'product_id': _inFilter(ids),
+      'item_id': _inFilter(ids),
       'movement_type': 'eq.recipe_consumption',
       'quantity_delta': 'lt.0',
-      'select': 'product_id,reference_id,created_at',
+      'select': 'item_id,reference_id,created_at',
       'order': 'created_at.desc',
     });
     final result = <String, _MovementRow>{};
     for (final row in rows) {
-      final productId = _requiredText(row, 'product_id');
+      final productId = _requiredText(row, 'item_id');
       result.putIfAbsent(
         productId,
         () => _MovementRow(

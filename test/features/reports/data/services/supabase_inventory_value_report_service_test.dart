@@ -21,7 +21,7 @@ void main() {
       final service = SupabaseInventoryValueReportService(
         client: _FakeClient((request) async {
           expect(request.headers['authorization'], 'Bearer remote-token');
-          if (request.url.path.endsWith('/products')) {
+          if (request.url.path.endsWith('/items')) {
             expect(request.url.queryParameters['tracks_inventory'], 'eq.true');
             return http.Response(
               jsonEncode([
@@ -29,17 +29,17 @@ void main() {
                   'id': 'product-1',
                   'name': 'Pepsi',
                   'category_id': 'subcategory-1',
-                  'cost': 10,
-                  'price': 25,
-                  'is_raw_material': false,
+                  'base_unit_cost': 10,
+                  'base_unit_price': 25,
+                  'item_class': 'sale_product',
                 },
                 {
                   'id': 'product-2',
                   'name': 'Azucar',
                   'category_id': 'subcategory-1',
-                  'cost': 8,
-                  'price': 0,
-                  'is_raw_material': true,
+                  'base_unit_cost': 8,
+                  'base_unit_price': 0,
+                  'item_class': 'raw_material',
                 },
               ]),
               200,
@@ -65,8 +65,8 @@ void main() {
           if (request.url.path.endsWith('/inventory_stock')) {
             return http.Response(
               jsonEncode([
-                {'product_id': 'product-1', 'quantity_on_hand': 10},
-                {'product_id': 'product-2', 'quantity_on_hand': 5},
+                {'item_id': 'product-1', 'quantity_on_hand': 10},
+                {'item_id': 'product-2', 'quantity_on_hand': 5},
               ]),
               200,
               headers: {'content-type': 'application/json'},

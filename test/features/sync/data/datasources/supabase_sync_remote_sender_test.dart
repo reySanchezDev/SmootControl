@@ -65,7 +65,7 @@ void main() {
       final categoryPatchBody =
           jsonDecode(dataRequests[0].body) as Map<String, Object?>;
       expect(categoryPatchBody['parent_id'], 'category-root');
-      expect(dataRequests[1].url.path, '/rest/v1/products');
+      expect(dataRequests[1].url.path, '/rest/v1/items');
       expect(
         dataRequests[1].url.queryParameters['category_id'],
         'eq.category-child',
@@ -121,7 +121,7 @@ void main() {
 
       final rpcRequest = requests.singleWhere(
         (request) =>
-            request.url.path == '/rest/v1/rpc/apply_inventory_movement',
+            request.url.path == '/rest/v1/rpc/apply_inventory_movement_v2',
       );
       final body = jsonDecode(rpcRequest.body) as Map<String, Object?>;
 
@@ -288,18 +288,12 @@ void main() {
           ),
         );
 
-        expect(requests.map((request) => request.method), [
-          'POST',
-          'DELETE',
-          'POST',
-        ]);
-        expect(requests[0].url.path, '/rest/v1/products');
-        expect(requests[1].url.path, '/rest/v1/product_modifier_groups');
+        expect(requests.map((request) => request.method), ['POST', 'POST']);
+        expect(requests[0].url.path, '/rest/v1/rpc/app_upsert_item_v2');
         expect(
-          requests[1].url.queryParameters['product_id'],
-          'eq.product-chicken',
+          requests[1].url.path,
+          '/rest/v1/rpc/app_set_item_modifier_groups_v2',
         );
-        expect(requests[2].url.path, '/rest/v1/product_modifier_groups');
       },
     );
 
@@ -348,12 +342,11 @@ void main() {
           ),
         );
 
-        expect(requests.map((request) => request.method), ['POST', 'DELETE']);
-        expect(requests[0].url.path, '/rest/v1/products');
-        expect(requests[1].url.path, '/rest/v1/product_modifier_groups');
+        expect(requests.map((request) => request.method), ['POST', 'POST']);
+        expect(requests[0].url.path, '/rest/v1/rpc/app_upsert_item_v2');
         expect(
-          requests[1].url.queryParameters['product_id'],
-          'eq.product-chicken',
+          requests[1].url.path,
+          '/rest/v1/rpc/app_set_item_modifier_groups_v2',
         );
       },
     );
@@ -653,7 +646,7 @@ void main() {
 
         expect(requests.map((request) => request.url.path), [
           '/rest/v1/rpc/pos_sync_cash_register_session',
-          '/rest/v1/rpc/pos_sync_sale',
+          '/rest/v1/rpc/pos_sync_sale_v2',
         ]);
         expect(
           requests.every((request) {

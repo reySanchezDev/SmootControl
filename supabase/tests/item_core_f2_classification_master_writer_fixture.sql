@@ -1,0 +1,1 @@
+-- Shared catalog fixture already declares the classification name column.

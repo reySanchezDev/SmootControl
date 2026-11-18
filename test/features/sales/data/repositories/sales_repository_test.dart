@@ -61,10 +61,7 @@ void main() {
         createdAt: createdAt,
       );
 
-      final saveResult = await repository.saveSale(
-        sale: sale,
-        items: [item],
-      );
+      final saveResult = await repository.saveSale(sale: sale, items: [item]);
       final salesResult = await repository.getSales(
         from: DateTime(2026, 6, 23),
         to: DateTime(2026, 6, 24),
@@ -109,10 +106,7 @@ void main() {
 
         await repository.saveSale(sale: sale, items: [item]);
         var salesResult = await repository.getSalesByCashRegisterSession('');
-        expect(
-          (salesResult as AppSuccess<List<Sale>>).value,
-          isEmpty,
-        );
+        expect((salesResult as AppSuccess<List<Sale>>).value, isEmpty);
 
         final syncResult = await syncQueueRepository.getPendingItems();
         final syncItem =
@@ -422,7 +416,70 @@ void main() {
       );
     });
 
-    test('does not decrement packaging stock for dine-in sales', () async {
+    test(
+      'decrements packaging stock for dine-in when rule is configured',
+      () async {
+        final packaging = LocalPackagingDataSource(database);
+        repository = SalesRepository(
+          LocalSalesDataSource(database, packagingDataSource: packaging),
+          syncQueueRepository: syncQueueRepository,
+          packagingDataSource: packaging,
+        );
+        await _insertProduct(database, tracksInventory: false);
+        await _insertPackagingSetup(database, packaging);
+        await _insertDineInPackagingRule(database);
+
+        final createdAt = DateTime(2026, 6, 23, 10);
+        final result = await repository.saveSale(
+          sale: Sale(
+            id: 'sale-packaging-dine-in',
+            invoiceNumber: 'F-203',
+            paymentMethodId: 'cash',
+            status: SaleStatus.completed,
+            subtotalInCents: 300,
+            totalInCents: 300,
+            salesTypeId: 'sales-type-dine-in',
+            salesTypeName: 'Comer aqui',
+            createdAt: createdAt,
+          ),
+          items: [
+            SaleItem(
+              id: 'item-packaging-dine-in',
+              saleId: 'sale-packaging-dine-in',
+              productId: 'product-1',
+              productName: 'Pollo',
+              categoryName: 'Comidas',
+              quantity: 3,
+              unitPriceInCents: 100,
+              unitCostInCents: 50,
+              createdAt: createdAt,
+            ),
+          ],
+        );
+
+        final stockRows = await database
+            .select(database.localPackagingStock)
+            .get();
+        final movements = await database
+            .select(database.localPackagingMovements)
+            .get();
+        final syncResult = await syncQueueRepository.getPendingItems();
+        final saleSync =
+            (syncResult as AppSuccess<List<SyncQueueItem>>).value.last;
+        final packagingPayload =
+            saleSync.payload['packagingMovements']! as List<Object?>;
+
+        expect(result, isA<AppSuccess<Sale>>());
+        expect(stockRows.single.quantityOnHand, 7);
+        expect(movements.map((movement) => movement.movementType), [
+          'packaging_purchase',
+          'packaging_sale',
+        ]);
+        expect(packagingPayload, hasLength(1));
+      },
+    );
+
+    test('does not consume packaging without a matching rule', () async {
       final packaging = LocalPackagingDataSource(database);
       repository = SalesRepository(
         LocalSalesDataSource(database, packagingDataSource: packaging),
@@ -431,54 +488,129 @@ void main() {
       );
       await _insertProduct(database, tracksInventory: false);
       await _insertPackagingSetup(database, packaging);
-      await _insertDineInPackagingRule(database);
-
-      final createdAt = DateTime(2026, 6, 23, 10);
+      final now = DateTime(2026, 6, 23, 10);
+      await database
+          .into(database.localSalesTypes)
+          .insert(
+            LocalSalesTypesCompanion.insert(
+              id: 'sales-type-delivery',
+              code: 'delivery',
+              name: 'Delivery',
+              createdAt: now,
+              updatedAt: now,
+            ),
+          );
       final result = await repository.saveSale(
         sale: Sale(
-          id: 'sale-packaging-dine-in',
-          invoiceNumber: 'F-203',
+          id: 'sale-no-rule',
+          invoiceNumber: 'F-204',
           paymentMethodId: 'cash',
           status: SaleStatus.completed,
-          subtotalInCents: 300,
-          totalInCents: 300,
-          salesTypeId: 'sales-type-dine-in',
-          salesTypeName: 'Comer aqui',
-          createdAt: createdAt,
+          subtotalInCents: 100,
+          totalInCents: 100,
+          salesTypeId: 'sales-type-delivery',
+          salesTypeName: 'Delivery',
+          createdAt: now,
         ),
         items: [
           SaleItem(
-            id: 'item-packaging-dine-in',
-            saleId: 'sale-packaging-dine-in',
+            id: 'item-no-rule',
+            saleId: 'sale-no-rule',
             productId: 'product-1',
             productName: 'Pollo',
             categoryName: 'Comidas',
-            quantity: 3,
+            quantity: 1,
             unitPriceInCents: 100,
             unitCostInCents: 50,
-            createdAt: createdAt,
+            createdAt: now,
           ),
         ],
       );
-
-      final stockRows = await database
-          .select(database.localPackagingStock)
-          .get();
+      expect(result, isA<AppSuccess<Sale>>());
+      final stock = await database.select(database.localPackagingStock).get();
+      expect(stock.single.quantityOnHand, 10);
       final movements = await database
           .select(database.localPackagingMovements)
           .get();
-      final syncResult = await syncQueueRepository.getPendingItems();
-      final saleSync =
-          (syncResult as AppSuccess<List<SyncQueueItem>>).value.last;
-      final packagingPayload =
-          saleSync.payload['packagingMovements']! as List<Object?>;
+      expect(
+        movements.where((row) => row.movementType == 'packaging_sale'),
+        isEmpty,
+      );
+    });
 
+    test('delivery consumes packaging when a matching rule exists', () async {
+      final packaging = LocalPackagingDataSource(database);
+      repository = SalesRepository(
+        LocalSalesDataSource(database, packagingDataSource: packaging),
+        syncQueueRepository: syncQueueRepository,
+        packagingDataSource: packaging,
+      );
+      await _insertProduct(database, tracksInventory: false);
+      await _insertPackagingSetup(database, packaging);
+      final now = DateTime(2026, 6, 23, 10);
+      await database
+          .into(database.localSalesTypes)
+          .insert(
+            LocalSalesTypesCompanion.insert(
+              id: 'sales-type-delivery',
+              code: 'delivery',
+              name: 'Delivery',
+              createdAt: now,
+              updatedAt: now,
+            ),
+          );
+      await database
+          .into(database.localProductPackagingRules)
+          .insert(
+            LocalProductPackagingRulesCompanion.insert(
+              id: 'rule-delivery',
+              productId: 'product-1',
+              salesTypeId: 'sales-type-delivery',
+              packagingItemId: 'packaging-1',
+              quantityPerUnit: const Value(1),
+              createdAt: now,
+              updatedAt: now,
+            ),
+          );
+      final result = await repository.saveSale(
+        sale: Sale(
+          id: 'sale-delivery',
+          invoiceNumber: 'F-205',
+          paymentMethodId: 'cash',
+          status: SaleStatus.completed,
+          subtotalInCents: 200,
+          totalInCents: 200,
+          salesTypeId: 'sales-type-delivery',
+          salesTypeName: 'Delivery',
+          createdAt: now,
+        ),
+        items: [
+          SaleItem(
+            id: 'item-delivery',
+            saleId: 'sale-delivery',
+            productId: 'product-1',
+            productName: 'Pollo',
+            categoryName: 'Comidas',
+            quantity: 2,
+            unitPriceInCents: 100,
+            unitCostInCents: 50,
+            createdAt: now,
+          ),
+        ],
+      );
       expect(result, isA<AppSuccess<Sale>>());
-      expect(stockRows.single.quantityOnHand, 10);
-      expect(movements.map((movement) => movement.movementType), [
-        'packaging_purchase',
-      ]);
-      expect(packagingPayload, isEmpty);
+      final stock = await database.select(database.localPackagingStock).get();
+      expect(stock.single.quantityOnHand, 8);
+      final movements = await database
+          .select(database.localPackagingMovements)
+          .get();
+      expect(
+        movements
+            .where((row) => row.movementType == 'packaging_sale')
+            .single
+            .quantityDelta,
+        -2,
+      );
     });
 
     test('blocks to-go sale when packaging stock is insufficient', () async {

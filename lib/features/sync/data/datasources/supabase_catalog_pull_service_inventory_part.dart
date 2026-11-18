@@ -5,7 +5,8 @@ extension on SupabaseCatalogPullService {
     final now = DateTime.now();
     final pendingDeltas = await _pendingInventoryDeltasByProduct();
     for (final row in rows) {
-      final productId = _optionalText(row['product_id']);
+      final productId =
+          _optionalText(row['item_id']) ?? _optionalText(row['product_id']);
       if (productId == null) continue;
       final remoteQuantity = _int(row['quantity_on_hand']);
       final localPendingDelta = pendingDeltas[productId] ?? 0;
@@ -99,10 +100,14 @@ extension on SupabaseCatalogPullService {
     final now = DateTime.now();
     final remoteIds = <String>{};
     for (final row in rows) {
-      final id = _requiredText(row['id'], table: 'product_packaging_rules');
-      final productId = _optionalText(row['product_id']);
+      final id = _requiredText(row['id'], table: 'item_consumption_rules');
+      final productId =
+          _optionalText(row['source_item_id']) ??
+          _optionalText(row['product_id']);
       final salesTypeId = _optionalText(row['sales_type_id']);
-      final packagingItemId = _optionalText(row['packaging_item_id']);
+      final packagingItemId =
+          _optionalText(row['consumed_item_id']) ??
+          _optionalText(row['packaging_item_id']);
       if (productId == null || salesTypeId == null || packagingItemId == null) {
         continue;
       }
@@ -116,7 +121,10 @@ extension on SupabaseCatalogPullService {
               salesTypeId: Value(salesTypeId),
               packagingItemId: Value(packagingItemId),
               quantityPerUnit: Value(
-                _int(row['quantity_per_unit'], defaultValue: 1),
+                _int(
+                  row['quantity'] ?? row['quantity_per_unit'],
+                  defaultValue: 1,
+                ),
               ),
               isActive: Value(_bool(row['is_active'], defaultValue: true)),
               remoteId: Value(id),

@@ -1,3 +1,4 @@
+import 'package:smoo_control/core/config/app_run_mode.dart';
 import 'package:smoo_control/core/navigation/app_routes.dart';
 import 'package:smoo_control/features/auth/domain/entities/auth_session.dart';
 
@@ -40,6 +41,9 @@ abstract final class AppRouteExperience {
     AppRoutes.inventory,
     AppRoutes.inventoryMovements,
     AppRoutes.packaging,
+    AppRoutes.salesTypes,
+    AppRoutes.packagingItems,
+    AppRoutes.packagingRules,
     AppRoutes.modifiers,
     AppRoutes.paymentMethods,
     AppRoutes.tables,
@@ -79,6 +83,9 @@ abstract final class AppRouteExperience {
   static bool allows(AuthSession session, String? route) {
     final target = forRoute(route);
     if (target == null) return false;
+    if (AppRunMode.isBackoffice) {
+      return !session.isPosUser && target == SmooExperience.backoffice;
+    }
     return session.isPosUser
         ? target == SmooExperience.pos
         : target == SmooExperience.backoffice;

@@ -89,10 +89,7 @@ final class SupabaseSyncRemoteSender implements ISyncRemoteSender {
       case 'packaging_movements':
         await _pushPackagingMovement(item);
       case 'product_packaging_rules':
-        await _upsert(
-          'product_packaging_rules',
-          _productPackagingRulePayload(item),
-        );
+        await _pushItemConsumptionRule(item);
       case 'product_categories':
         await _pushProductCategory(item);
       case 'products':

@@ -6,6 +6,9 @@ abstract final class AppRunMode {
     defaultValue: 'standard',
   );
 
+  /// Direct remote-admin Backoffice: no POS device provisioning.
+  static bool get isBackoffice => value == 'backoffice';
+
   /// Whether this build should open the attendance marker directly.
   static bool get isTimeClock => value == 'time_clock';
 }

@@ -66,6 +66,15 @@ abstract final class AppRoutes {
   /// Packaging and sales types route.
   static const packaging = '/packaging';
 
+  /// Service modalities administration.
+  static const salesTypes = '/settings/sales-types';
+
+  /// Packaging items administration.
+  static const packagingItems = '/catalog/packaging-items';
+
+  /// Cross-product packaging consumption rules.
+  static const packagingRules = '/catalog/packaging-rules';
+
   /// POS modifiers route.
   static const modifiers = '/modifiers';
 

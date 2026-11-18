@@ -38,7 +38,7 @@ mixin _LocalPackagingMovementsMixin on _LocalPackagingDataSourceBase {
     required String userId,
   }) async {
     if (salesTypeId == null || salesTypeId.isEmpty) return const [];
-    if (!await _salesTypeConsumesPackaging(salesTypeId)) return const [];
+    if (!await _isSalesTypeActive(salesTypeId)) return const [];
     final now = DateTime.now();
     final requiredByPackaging = await _requiredPackagingByItem(
       salesTypeId: salesTypeId,

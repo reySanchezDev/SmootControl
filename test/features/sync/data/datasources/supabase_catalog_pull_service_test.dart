@@ -246,18 +246,18 @@ void main() {
             ),
           );
       final rows = Map<String, List<Map<String, Object?>>>.from(_rowsByTable);
-      rows['products'] = [
-        ..._rowsByTable['products']!,
+      rows['items'] = [
+        ..._rowsByTable['items']!,
         {
           'id': 'product-flour',
           'restaurant_id': 'restaurant-1',
           'category_id': 'category-food',
           'name': 'Harina',
-          'price': 0,
-          'cost': 20,
+          'base_unit_price': 0,
+          'base_unit_cost': 20,
           'is_active': true,
-          'is_available_in_pos': false,
-          'is_raw_material': true,
+          'visible_in_pos': false,
+          'item_class': 'raw_material',
           'tracks_inventory': true,
           'option_groups': const [],
         },
@@ -266,7 +266,7 @@ void main() {
         ..._rowsByTable['inventory_stock']!,
         {
           'restaurant_id': 'restaurant-1',
-          'product_id': 'product-flour',
+          'item_id': 'product-flour',
           'quantity_on_hand': 25,
         },
       ];
@@ -282,8 +282,7 @@ void main() {
         ),
         remoteSessionService: CurrentRemoteSessionService(),
         client: MockClient((request) async {
-          if (request.url.path ==
-              '/rest/v1/rpc/pos_pull_operational_catalog') {
+          if (request.url.path == '/rest/v1/rpc/pos_pull_operational_catalog') {
             return _jsonResponse(rows);
           }
           return http.Response('unexpected REST request', 500);
@@ -364,7 +363,7 @@ void main() {
           client: _catalogMockClient(
             overrides: {
               'profiles': const <Map<String, Object?>>[],
-              'products': const <Map<String, Object?>>[],
+              'items': const <Map<String, Object?>>[],
               'payment_methods': const <Map<String, Object?>>[],
             },
           ),
@@ -835,23 +834,24 @@ final _rowsByTable = <String, List<Map<String, Object?>>>{
       'is_available_in_pos': true,
     },
   ],
-  'product_modifier_groups': [
+  'item_modifier_groups': [
     {
-      'product_id': 'product-chicken',
+      'item_id': 'product-chicken',
       'modifier_group_id': 'modifier-group-sides',
       'display_order': 1,
     },
   ],
-  'products': [
+  'items': [
     {
       'id': 'product-chicken',
       'restaurant_id': 'restaurant-1',
       'category_id': 'category-food',
       'name': 'Pollo',
-      'price': 180,
-      'cost': 95,
+      'base_unit_price': 180,
+      'base_unit_cost': 95,
       'is_active': true,
-      'is_available_in_pos': true,
+      'visible_in_pos': true,
+      'item_class': 'sale_product',
       'tracks_inventory': true,
       'option_groups': const [],
     },
@@ -859,7 +859,7 @@ final _rowsByTable = <String, List<Map<String, Object?>>>{
   'inventory_stock': [
     {
       'restaurant_id': 'restaurant-1',
-      'product_id': 'product-chicken',
+      'item_id': 'product-chicken',
       'quantity_on_hand': 10,
     },
   ],

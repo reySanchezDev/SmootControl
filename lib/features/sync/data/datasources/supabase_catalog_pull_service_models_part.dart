@@ -27,7 +27,8 @@ extension _CatalogPullModelHelpers on SupabaseCatalogPullService {
         .whereType<String>()
         .toSet();
     return rows.where((row) {
-      final productId = row['product_id']?.toString();
+      final productId =
+          row['item_id']?.toString() ?? row['product_id']?.toString();
       return productId != null && productIds.contains(productId);
     }).toList();
   }

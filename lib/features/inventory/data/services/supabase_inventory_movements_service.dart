@@ -147,13 +147,13 @@ final class SupabaseInventoryMovementsService {
   ) async {
     final rows = await _getRows('inventory_adjustment_lines', {
       'document_id': 'eq.$documentId',
-      'select': 'product_id,stock_before,counted_quantity,quantity_delta',
+      'select': 'item_id,stock_before,counted_quantity,quantity_delta',
       'order': 'created_at.asc',
     });
     return rows
         .map(
           (row) => InventoryMovementDocumentLine(
-            productName: products[_text(row['product_id'])] ?? 'Producto',
+            productName: products[_text(row['item_id'])] ?? 'Producto',
             quantityDelta: _decimal(row['quantity_delta']),
             stockBefore: _decimal(row['stock_before']),
             countedQuantity: _decimal(row['counted_quantity']),
@@ -168,14 +168,14 @@ final class SupabaseInventoryMovementsService {
   ) async {
     final rows = await _getRows('inventory_movements', {
       'restaurant_id': 'eq.${_restaurantService.restaurantId}',
-      'select': 'id,product_id,quantity_delta,unit_cost,reference_id',
+      'select': 'id,item_id,quantity_delta,unit_cost,reference_id',
       'order': 'created_at.asc',
     });
     return rows.where((row) => _genericDocumentId(row) == documentId).map((
       row,
     ) {
       return InventoryMovementDocumentLine(
-        productName: products[_text(row['product_id'])] ?? 'Producto',
+        productName: products[_text(row['item_id'])] ?? 'Producto',
         quantityDelta: _decimal(row['quantity_delta']),
         unitCostInCents: _moneyToCents(row['unit_cost']),
       );
@@ -191,7 +191,7 @@ final class SupabaseInventoryMovementsService {
       ..._rangeQuery(from, to),
       'restaurant_id': 'eq.${_restaurantService.restaurantId}',
       'select':
-          'id,product_id,movement_type,quantity_delta,unit_cost,reference_type,'
+          'id,item_id,movement_type,quantity_delta,unit_cost,reference_type,'
           'reference_id,notes,created_at',
       'order': 'created_at.desc',
     };
@@ -204,7 +204,7 @@ final class SupabaseInventoryMovementsService {
   }
 
   Future<Map<String, String>> _productNames() async {
-    final rows = await _getRows('products', {
+    final rows = await _getRows('items', {
       'restaurant_id': 'eq.${_restaurantService.restaurantId}',
       'select': 'id,name',
     });
