@@ -1910,3 +1910,18 @@ operativas; y solo entonces retirar las dependencias heredadas.
   inventario, ventas, empaques, recetas, sync y reportes: 124 pruebas aprobadas.
 - [ ] Build RELEASE/QA y aceptación visual del propietario permanecen como
   gate separado; no se declara cumplido sin ejecutarlo en esta rama.
+### Addendum detalle de movimientos de ventas — 2026-11-18
+
+- [x] Confirmado el contrato funcional: `Movimientos` muestra únicamente
+  ventas con consumo físico de inventario; las ventas de artículos no
+  inventariables permanecen en `Ventas` y no generan un movimiento.
+- [x] Corregida la lectura del detalle en
+  `SupabaseInventoryMovementsService`: las líneas ahora incluyen
+  `movement_type` y `reference_type`, necesarios para resolver la identidad
+  compuesta del documento.
+- [x] Agregada regresión Flutter que comprueba una venta de Maruchan con
+  delta `-4` y costo unitario persistido.
+- [x] Evidencia remota comprobada para `F-1322`: artículo comercial `10`,
+  movimiento `sale -4`, referencia de venta coincidente y stock resultante
+  `1`. Falta publicar el bundle Backoffice actualizado para que el detalle
+  corregido quede disponible en el dominio productivo.

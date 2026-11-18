@@ -168,7 +168,9 @@ final class SupabaseInventoryMovementsService {
   ) async {
     final rows = await _getRows('inventory_movements', {
       'restaurant_id': 'eq.${_restaurantService.restaurantId}',
-      'select': 'id,item_id,quantity_delta,unit_cost,reference_id',
+      'select':
+          'id,item_id,quantity_delta,unit_cost,movement_type,reference_type,'
+          'reference_id',
       'order': 'created_at.asc',
     });
     return rows.where((row) => _genericDocumentId(row) == documentId).map((
