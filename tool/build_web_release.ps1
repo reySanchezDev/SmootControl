@@ -1,5 +1,6 @@
 param(
   [string]$CredentialsPath = "",
+  [string]$RestaurantIdOverride = "",
   [switch]$CanonicalItemsQa,
   [switch]$LocalSupabaseQa
 )
@@ -51,6 +52,17 @@ foreach ($line in Get-Content -LiteralPath $credentialsFile) {
       $values[$key] = $line.TrimStart().Substring($key.Length + 1).Trim()
     }
   }
+}
+
+if (-not [string]::IsNullOrWhiteSpace($RestaurantIdOverride)) {
+  if (-not $LocalSupabaseQa) {
+    throw 'RestaurantIdOverride solo se permite en QA con Supabase Docker local.'
+  }
+  $normalizedRestaurantId = $RestaurantIdOverride.Trim()
+  if ($normalizedRestaurantId -notmatch '^[0-9a-fA-F]{8}-(?:[0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}$') {
+    throw 'RestaurantIdOverride debe ser un UUID valido.'
+  }
+  $values['SMOO_RESTAURANT_ID'] = $normalizedRestaurantId
 }
 
 $missing = @($requiredKeys | Where-Object {
