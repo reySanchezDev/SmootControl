@@ -1925,3 +1925,72 @@ operativas; y solo entonces retirar las dependencias heredadas.
   movimiento `sale -4`, referencia de venta coincidente y stock resultante
   `1`. Falta publicar el bundle Backoffice actualizado para que el detalle
   corregido quede disponible en el dominio productivo.
+
+### Addendum de paridad y cierre de huecos de empaques — 2026-11-18
+
+#### Gate de paridad de ambientes
+
+- [x] Docker Desktop iniciado de forma no destructiva para validar el
+  laboratorio QA; `supabase_db_smoo_control` quedó saludable.
+- [x] `supabase migration list --local` confirmó migraciones `001`–`119`.
+- [x] `supabase migration list --linked` confirmó migraciones `001`–`119` en
+  producción. La tabla Local/Remote no mostró divergencias.
+- [x] La comparación se realizó sobre la rama
+  `feature/item-core-end-to-end-implementation`, SHA local
+  `c4297c1e5da4ec724ee0b1291136b37fd6033a4c`.
+- [ ] Gate de estructura y conteo de datos relevantes local/producción:
+  repetir después de cada migración de esta fase y registrar el resultado
+  antes de promoverla. La paridad de historial no sustituye esta comparación.
+
+#### Hallazgos abiertos
+
+| ID | Hallazgo comprobado | Impacto | Criterio de cierre |
+| --- | --- | --- | --- |
+| EMP-INT-01 | Inventario > Empaques todavía lee y escribe `packaging_items`, `packaging_stock` y `packaging_movements`, mientras Inventario > Productos usa `items` e `inventory_stock`. | Dos rutas de autoridad para el mismo concepto y riesgo de divergencia entre backoffice, POS, compras y movimientos. | Ningún lector/escritor operativo nuevo usa las tablas legacy; compras, ajustes, ventas, POS pull/sync, reportes y movimientos usan el contrato canónico de `items`/ledger; auditoría de `pg_depend` sin dependencias activas antes de retirar tablas. |
+| EMP-UX-02 | El editor canónico solo ofrece el tipo técnico de inventario; no ofrece la clase comercial Empaque. `item_class`/`source_kind` existen en SQL, pero no están representados en `CanonicalItem` ni en la ficha. | El usuario no puede crear o convertir explícitamente un artículo en empaque desde Productos; “Sin categoría” no expresa esa clase. | La ficha muestra una clase comercial explícita y validada; crear/editar Empaque persiste `item_class` y sus reglas; el campo técnico de inventario permanece separado; pruebas de permisos, tenant, POS y persistencia aprobadas. |
+
+#### Plan medible de implementación
+
+**F1 — Contrato de clasificación (EMP-UX-02).**
+
+- [ ] Modelar `item_class`/clasificación comercial en dominio, lectura y payload
+  sin exponer `source_kind` como dato editable.
+- [ ] Incorporar en la ficha el selector explícito: Producto, Materia prima,
+  Empaque y Servicio; definir las combinaciones válidas con inventario,
+  compra, venta, receta y POS.
+- [ ] Validar la autoridad en `app_upsert_item_v2`, permisos y RLS; impedir
+  combinaciones inválidas y conservar enlaces de clasificación en una sola
+  transacción.
+- [ ] Pruebas mínimas: 4 clases × crear/editar, duplicidad, tenant cruzado,
+  rol sin permiso, F5/relectura y sincronización POS. Gate: 100% aprobadas.
+
+**F2 — Unificación operativa de inventario (EMP-INT-01).**
+
+- [ ] Inventariar y versionar todos los lectores/escritores de
+  `packaging_items`, `packaging_stock` y `packaging_movements`, incluyendo
+  RPC, pull/sync POS, compras, ventas, anulaciones, ajustes y reportes.
+- [ ] Definir un ledger canónico único por `item_id`, con cantidades decimales,
+  idempotencia, reversas por movimiento original y aislamiento por restaurante.
+- [ ] Migrar primero lectura y escritura detrás de contratos versionados;
+  conservar históricos mediante adaptación explícita, sin doble escritura ni
+  triggers de espejo permanentes.
+- [ ] Ejecutar auditoría `rg` + `pg_depend` + funciones/RPC + políticas RLS:
+  cero escritores legacy y cero referencias operativas antes del retiro.
+- [ ] Pruebas E2E: compra, ajuste, venta POS, consumo por regla, anulación,
+  sincronización offline/reintento, stock insuficiente y reportes. Gate:
+  saldo esperado idéntico en Backoffice, POS y ledger en 100% de escenarios.
+
+**F3 — Retiro controlado y liberación.**
+
+- [ ] Comparar esquema y conteos local/producción; aplicar migración solo tras
+  pasar F1/F2 y registrar acta de compatibilidad.
+- [ ] Retirar pestaña operativa separada de Empaques únicamente cuando el
+  reemplazo canónico cubra catálogo, stock, compras, reglas y auditoría.
+- [ ] Eliminar tablas legacy solo después de cero FKs, triggers, policies,
+  funciones, jobs y clientes activos; no usar `DROP ... CASCADE` como atajo.
+- [ ] Ejecutar `dart format`, `flutter analyze`, pruebas dirigidas, build
+  RELEASE QA y validación visual responsive. Publicar SHA, migración y
+  evidencia de paridad.
+
+**Estado actual:** F0/paridad de migraciones aprobada; F1, F2 y F3 pendientes.
+No se modificó código, esquema ni datos en este addendum.
