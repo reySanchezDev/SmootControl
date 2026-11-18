@@ -2040,3 +2040,39 @@ No se modificó código, esquema ni datos en el addendum anterior.
 
 **Estado actualizado:** corrección implementada y probada solo en Docker local;
 paridad remota/release pendiente.
+
+### Cierre de Inventario unificado por artículo — 2026-11-18
+
+**Objetivo:** que Inventario administre en una sola lista todos los artículos
+activos con control de existencias, incluidos productos, materias primas y
+empaques; sin una pestaña ni lecturas/escrituras paralelas para empaques.
+
+| Etapa medible | Criterio de aceptación | Estado |
+|---|---|---|
+| I1. Fuente única | La lista filtra `items.tracks_inventory=true` y lee saldos por `inventory_stock.item_id`; aparecen clases `packaging` y `raw_material` en la misma colección. | Completada en cliente y prueba de lectura |
+| I2. Operaciones únicas | Compras usan `app_register_inventory_purchase_batch_v2`; conteos/ajustes usan `app_register_inventory_adjustment_batch_v2`; ambos aceptan `item_id` y refrescan la misma lista. | Completada en cliente; RPC SQL local por validar |
+| I3. Retiro de pestaña/legacy del flujo | No existe TabBar de Productos/Empaques ni llamadas de Inventario a `packaging_items`, `packaging_stock` o `app_register_packaging_purchase_batch`. | Completada en código de Inventario |
+| I4. Regresión automatizada | Tests comprueban mezcla de clases y que una compra de empaque use el RPC canónico; suite de Inventario y analyzer limpios. | Completada: suite 8/8; analyzer sin errores |
+| I5. Prueba transaccional Docker | JWT de administrador sintético compra y ajusta un artículo `packaging` inventariable; stock/ledger concuerdan y todos los cambios terminan en `ROLLBACK`. | Completada: PASS en Docker local |
+| I6. QA responsive RELEASE | Build Web oficial local, confirmar una sola colección y controles de compra/ajuste utilizables en escritorio y viewport estrecho. | Build completado; inspección visual automatizada pendiente por falta de control del navegador |
+
+**Límite de compatibilidad:** este cierre elimina rutas antiguas de la pantalla
+admin Inventario; no borra aún `packaging_items`, `packaging_stock` ni RPCs del
+esquema ni el almacenamiento offline del POS. Las auditorías previas registran
+clientes POS/dispositivos que aún pueden depender de contratos históricos. El
+retiro físico de esos objetos requiere demostrar primero cero consumidores,
+sync/reintento/anulación compatibles y promoción coordinada; no se ejecuta como
+parte de este cambio de UI.
+
+**Evidencia de implementación:** `InventoryPage` muestra una colección, el
+lector consulta `items`/`inventory_stock`, y compras y ajustes envían `item_id`
+por RPC canónico. Prueba de lectura confirma que `packaging_items` y
+`packaging_stock` no son consultados. La migración 123 ya enruta movimientos
+canónicos de empaque al ledger común.
+
+**Pruebas ejecutadas:** `flutter analyze` focalizado sin errores; suite
+`test/features/inventory` aprobada (8 tests); prueba SQL autenticada de compra
+`+5` y ajuste `+2` para empaque rastreable aprobada y revertida con `ROLLBACK`.
+El build oficial RELEASE local usó el lanzador canónico con `-LocalSupabaseQa`
+y quedó servido en `http://127.0.0.1:8103/`. El build y endpoint no certifican
+por sí solos QA visual responsive ni inicio de sesión; queda revisión del dueño.

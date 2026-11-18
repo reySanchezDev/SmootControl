@@ -8,6 +8,7 @@ final class InventoryStockItem extends Equatable {
     required this.productName,
     required this.quantityOnHand,
     required this.updatedAt,
+    this.itemClass = 'sale_product',
     this.categoryName,
     this.categoryPath,
     this.costInCents = 0,
@@ -94,6 +95,9 @@ final class InventoryStockItem extends Equatable {
   /// Last stock update.
   final DateTime updatedAt;
 
+  /// Canonical business class (`sale_product`, `raw_material`, `packaging`).
+  final String itemClass;
+
   @override
   List<Object?> get props => [
     productId,
@@ -110,5 +114,6 @@ final class InventoryStockItem extends Equatable {
     inventoryDisplayUnitName,
     purchaseToInventoryFactor,
     updatedAt,
+    itemClass,
   ];
 }
