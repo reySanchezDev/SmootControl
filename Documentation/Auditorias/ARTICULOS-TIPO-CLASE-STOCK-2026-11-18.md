@@ -1,6 +1,7 @@
 # Auditoría: tipo, clase y control de existencias en Artículos
 
-**Fecha:** 2026-11-18  
+**Fecha:** 2026-11-18
+
 **Alcance:** diagnóstico de lectura en Docker local y revisión del modelo/formulario canónico. No se modificaron artículos, existencias, esquema ni lógica de negocio.
 
 ## Resumen ejecutivo
