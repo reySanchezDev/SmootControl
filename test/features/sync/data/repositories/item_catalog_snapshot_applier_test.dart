@@ -3,14 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:smoo_control/core/database/app_database.dart';
 import 'package:smoo_control/features/sync/data/repositories/item_catalog_snapshot_applier.dart';
 import 'package:smoo_control/features/sync/domain/entities/item_catalog_snapshot_v2.dart';
-
-const _restaurantId = '11111111-1111-4111-8111-111111111111';
-const _otherRestaurantId = '22222222-2222-4222-8222-222222222222';
-const _itemId = '33333333-3333-4333-8333-333333333333';
-const _unitId = '44444444-4444-4444-8444-444444444444';
-const _classificationId = '55555555-5555-4555-8555-555555555555';
-const _ruleId = '66666666-6666-4666-8666-666666666666';
-const _snapshotId = '77777777-7777-4777-8777-777777777777';
+import 'item_catalog_snapshot_applier_test_fixtures.dart' as fixture;
 
 void main() {
   late AppDatabase database;
@@ -42,7 +35,7 @@ void main() {
 
       final applied = await ItemCatalogSnapshotApplier(
         database,
-      ).apply(_snapshot(revision: 1));
+      ).apply(fixture.snapshot(revision: 1));
 
       expect(applied, isTrue);
       expect(
@@ -77,20 +70,19 @@ void main() {
       );
     },
   );
-
   test(
     'rejects stale and conflicting snapshots without changing local state',
     () async {
       final applier = ItemCatalogSnapshotApplier(database);
-      await applier.apply(_snapshot(revision: 2));
+      await applier.apply(fixture.snapshot(revision: 2));
 
       await expectLater(
-        applier.apply(_snapshot(revision: 1)),
+        applier.apply(fixture.snapshot(revision: 1)),
         throwsA(isA<FormatException>()),
       );
       await expectLater(
         applier.apply(
-          _snapshot(
+          fixture.snapshot(
             revision: 2,
             snapshotId: '88888888-8888-4888-8888-888888888888',
           ),
@@ -101,7 +93,7 @@ void main() {
         (await database.select(database.localCanonicalCatalogSnapshots).get())
             .single
             .snapshotId,
-        _snapshotId,
+        fixture.baseSnapshotId,
       );
     },
   );
@@ -109,21 +101,21 @@ void main() {
   test(
     'rejects partial and cross-restaurant snapshots before applying',
     () async {
-      final partial = _jsonSnapshot()..['snapshot_complete'] = false;
+      final partial = fixture.jsonSnapshot()..['snapshot_complete'] = false;
       expect(
         () => ItemCatalogSnapshotV2.fromJson(
           partial,
-          expectedRestaurantId: _restaurantId,
+          expectedRestaurantId: fixture.restaurantId,
         ),
         throwsA(isA<FormatException>()),
       );
 
-      final crossTenant = _jsonSnapshot()
-        ..['restaurant_id'] = _otherRestaurantId;
+      final crossTenant = fixture.jsonSnapshot()
+        ..['restaurant_id'] = fixture.otherRestaurantId;
       expect(
         () => ItemCatalogSnapshotV2.fromJson(
           crossTenant,
-          expectedRestaurantId: _restaurantId,
+          expectedRestaurantId: fixture.restaurantId,
         ),
         throwsA(isA<FormatException>()),
       );
@@ -136,10 +128,10 @@ void main() {
 
   test('preserves canonical catalogs belonging to other restaurants', () async {
     final applier = ItemCatalogSnapshotApplier(database);
-    await applier.apply(_snapshot(revision: 1));
-    await applier.apply(_otherTenantSnapshot(revision: 1));
+    await applier.apply(fixture.snapshot(revision: 1));
+    await applier.apply(fixture.otherTenantSnapshot(revision: 1));
     await applier.apply(
-      _snapshot(
+      fixture.snapshot(
         revision: 2,
         snapshotId: '88888888-8888-4888-8888-888888888888',
       ),
@@ -150,45 +142,57 @@ void main() {
         .get();
     expect(catalogs, hasLength(2));
     expect(
-      catalogs.singleWhere(
-        (row) => row.restaurantId == _otherRestaurantId,
-      ).revision,
+      catalogs
+          .singleWhere(
+            (row) => row.restaurantId == fixture.otherRestaurantId,
+          )
+          .revision,
       1,
     );
-    expect(await database.select(database.localCanonicalItems).get(),
-        hasLength(2));
-    expect(await database.select(database.localCanonicalItemUnits).get(),
-        hasLength(2));
-    expect(await database.select(database.localCanonicalClassifications).get(),
-        hasLength(2));
+    expect(
+      await database.select(database.localCanonicalItems).get(),
+      hasLength(2),
+    );
+    expect(
+      await database.select(database.localCanonicalItemUnits).get(),
+      hasLength(2),
+    );
+    expect(
+      await database.select(database.localCanonicalClassifications).get(),
+      hasLength(2),
+    );
     expect(
       await database.select(database.localCanonicalClassificationLinks).get(),
       hasLength(2),
     );
-    expect(await database.select(database.localCanonicalConsumptionRules).get(),
-        hasLength(2));
+    expect(
+      await database.select(database.localCanonicalConsumptionRules).get(),
+      hasLength(2),
+    );
   });
-
   test('serializes concurrent revisions and preserves the newest', () async {
     final applier = ItemCatalogSnapshotApplier(database);
-    final newer = _snapshot(
+    final newer = fixture.snapshot(
       revision: 3,
       snapshotId: '99999999-9999-4999-8999-999999999999',
     );
-    final older = _snapshot(
+    final older = fixture.snapshot(
       revision: 2,
       snapshotId: '88888888-8888-4888-8888-888888888888',
     );
     final outcomes = await Future.wait([
       applier.apply(newer),
-      applier.apply(older).then<Object>((value) => value)
+      applier
+          .apply(older)
+          .then<Object>((value) => value)
           .catchError((Object error) => error),
     ]);
     expect(outcomes.first, isTrue);
     expect(outcomes.last, isA<FormatException>());
     expect(
       (await database.select(database.localCanonicalCatalogSnapshots).get())
-          .single.revision,
+          .single
+          .revision,
       3,
     );
   });
@@ -199,8 +203,8 @@ void main() {
     try {
       final applierA = ItemCatalogSnapshotApplier(terminalA);
       final applierB = ItemCatalogSnapshotApplier(terminalB);
-      final first = _snapshot(revision: 1);
-      final second = _snapshot(
+      final first = fixture.snapshot(revision: 1);
+      final second = fixture.snapshot(
         revision: 2,
         snapshotId: '88888888-8888-4888-8888-888888888888',
       );
@@ -209,24 +213,29 @@ void main() {
         applierA.apply(first),
         applierB.apply(first),
       ]);
-      await terminalB.into(terminalB.localSyncQueue).insert(
-        LocalSyncQueueCompanion.insert(
-          id: 'offline-sale-terminal-b',
-          entityType: 'sale',
-          entityId: 'terminal-b-sale-1',
-          operation: 'create',
-          payloadJson: '{}',
-          createdAt: DateTime(2026),
-          updatedAt: DateTime(2026),
-        ),
-      );
+      await terminalB
+          .into(terminalB.localSyncQueue)
+          .insert(
+            LocalSyncQueueCompanion.insert(
+              id: 'offline-sale-terminal-b',
+              entityType: 'sale',
+              entityId: 'terminal-b-sale-1',
+              operation: 'create',
+              payloadJson: '{}',
+              createdAt: DateTime(2026),
+              updatedAt: DateTime(2026),
+            ),
+          );
 
-      // Terminal B remains offline while terminal A receives a new revision.
       expect(await applierA.apply(second), isTrue);
       expect(
-        (await terminalB.select(
-          terminalB.localCanonicalCatalogSnapshots,
-        ).get()).single.revision,
+        (await terminalB
+                .select(
+                  terminalB.localCanonicalCatalogSnapshots,
+                )
+                .get())
+            .single
+            .revision,
         1,
       );
       expect(
@@ -234,7 +243,6 @@ void main() {
         hasLength(1),
       );
 
-      // After reconnect, terminal B must accept the same canonical version.
       expect(await applierB.apply(second), isTrue);
       for (final terminal in [terminalA, terminalB]) {
         final metadata = await terminal
@@ -260,7 +268,7 @@ void main() {
 
   test('rolls back every canonical table when a commit step fails', () async {
     final applier = ItemCatalogSnapshotApplier(database);
-    await applier.apply(_snapshot(revision: 1));
+    await applier.apply(fixture.snapshot(revision: 1));
 
     final failingApplier = ItemCatalogSnapshotApplier(
       database,
@@ -270,7 +278,7 @@ void main() {
     );
     await expectLater(
       failingApplier.apply(
-        _snapshot(
+        fixture.snapshot(
           revision: 2,
           snapshotId: '88888888-8888-4888-8888-888888888888',
         ),
@@ -288,112 +296,4 @@ void main() {
       hasLength(1),
     );
   });
-}
-
-ItemCatalogSnapshotV2 _otherTenantSnapshot({required int revision}) {
-  final json = _jsonSnapshot();
-  json['restaurant_id'] = _otherRestaurantId;
-  json['revision'] = revision;
-  json['snapshot_id'] = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
-
-  final items = json['items']! as List<Map<String, Object?>>;
-  final units = json['item_units']! as List<Map<String, Object?>>;
-  final classes = json['item_classifications']! as List<Map<String, Object?>>;
-  final links =
-      json['item_classification_links']! as List<Map<String, Object?>>;
-  final rules = json['consumption_rules']! as List<Map<String, Object?>>;
-  const otherItemId = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
-  const otherClassId = 'cccccccc-cccc-4ccc-8ccc-cccccccccccc';
-  const otherRuleId = 'dddddddd-dddd-4ddd-8ddd-dddddddddddd';
-  items.single
-    ..['restaurant_id'] = _otherRestaurantId
-    ..['id'] = otherItemId;
-  units.single
-    ..['restaurant_id'] = _otherRestaurantId
-    ..['item_id'] = otherItemId;
-  classes.single
-    ..['restaurant_id'] = _otherRestaurantId
-    ..['id'] = otherClassId;
-  links.single
-    ..['restaurant_id'] = _otherRestaurantId
-    ..['item_id'] = otherItemId
-    ..['classification_id'] = otherClassId;
-  rules.single
-    ..['restaurant_id'] = _otherRestaurantId
-    ..['id'] = otherRuleId
-    ..['consumed_item_id'] = otherItemId;
-  return ItemCatalogSnapshotV2.fromJson(
-    json,
-    expectedRestaurantId: _otherRestaurantId,
-  );
-}
-
-ItemCatalogSnapshotV2 _snapshot({
-  required int revision,
-  String snapshotId = _snapshotId,
-}) {
-  return ItemCatalogSnapshotV2.fromJson(
-    _jsonSnapshot()
-      ..['revision'] = revision
-      ..['snapshot_id'] = snapshotId,
-    expectedRestaurantId: _restaurantId,
-  );
-}
-
-Map<String, Object?> _jsonSnapshot() {
-  return {
-    'restaurant_id': _restaurantId,
-    'contract_version': 2,
-    'snapshot_complete': true,
-    'snapshot_id': _snapshotId,
-    'revision': 1,
-    'items': [
-      {
-        'restaurant_id': _restaurantId,
-        'id': _itemId,
-        'code': 'RAW-1',
-        'name': 'Pulpa',
-        'item_type': 'inventory',
-        'base_unit_id': _unitId,
-        'can_sell': false,
-        'visible_in_pos': false,
-        'is_active': true,
-      },
-    ],
-    'item_units': [
-      {
-        'restaurant_id': _restaurantId,
-        'item_id': _itemId,
-        'unit_id': _unitId,
-        'quantity_in_base': '1',
-      },
-    ],
-    'item_classifications': [
-      {
-        'restaurant_id': _restaurantId,
-        'id': _classificationId,
-        'code': 'RAW',
-        'name': 'Materia prima',
-        'is_active': true,
-      },
-    ],
-    'item_classification_links': [
-      {
-        'restaurant_id': _restaurantId,
-        'item_id': _itemId,
-        'classification_id': _classificationId,
-      },
-    ],
-    'consumption_rules': [
-      {
-        'restaurant_id': _restaurantId,
-        'id': _ruleId,
-        'source_item_id': null,
-        'consumed_item_id': _itemId,
-        'unit_id': _unitId,
-        'scope': 'per_order',
-        'quantity': '1.5',
-      },
-    ],
-  };
 }
