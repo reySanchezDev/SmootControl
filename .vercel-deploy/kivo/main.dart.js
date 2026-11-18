@@ -176717,7 +176717,7 @@ var $async$Q5=A.d(function(c,d){if(c===1)return A.e(d,r)
 for(;;)switch(s){case 0:n=t.N
 m=J
 s=3
-return A.c(p.uY("inventory_movements",A.D(["restaurant_id","eq."+B.f.v(p.b.a),"select","id,item_id,quantity_delta,unit_cost,reference_id","order","created_at.asc"],n,n)),$async$Q5)
+return A.c(p.uY("inventory_movements",A.D(["restaurant_id","eq."+B.f.v(p.b.a),"select","id,item_id,quantity_delta,unit_cost,movement_type,reference_type,reference_id","order","created_at.asc"],n,n)),$async$Q5)
 case 3:n=m.cu(d,new A.bgg(p,a))
 o=n.$ti.j("e7<1,lr>")
 n=A.F(new A.e7(n,new A.bgh(p,b),o),o.j("w.E"))
