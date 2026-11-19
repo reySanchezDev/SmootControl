@@ -636,6 +636,9 @@ void main() {
               'items': [],
               'inventoryMovements': [],
               'packagingMovements': [],
+              'itemCatalogRevision': 12,
+              'itemCatalogSnapshotId': '88888888-8888-4888-8888-888888888888',
+              'itemCatalogContractVersion': 3,
             },
             status: SyncQueueStatus.pending,
             retryCount: 0,
@@ -657,6 +660,12 @@ void main() {
 
         final saleBody = jsonDecode(requests.last.body) as Map<String, Object?>;
         final payload = saleBody['p_payload']! as Map<String, Object?>;
+        expect(payload['item_catalog_revision'], 12);
+        expect(
+          payload['item_catalog_snapshot_id'],
+          '88888888-8888-4888-8888-888888888888',
+        );
+        expect(payload['item_catalog_contract_version'], 3);
         final sale = payload['sale']! as Map<String, Object?>;
         expect(
           sale['cash_register_session_id'],

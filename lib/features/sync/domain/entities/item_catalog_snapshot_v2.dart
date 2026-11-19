@@ -206,7 +206,7 @@ final class ItemCatalogSnapshotV2 {
     if (restaurantId != expectedRestaurantId.toLowerCase()) {
       throw const FormatException('catalog_tenant_mismatch');
     }
-    if (json['contract_version'] != 2) {
+    if (json['contract_version'] != 2 && json['contract_version'] != 3) {
       throw const FormatException('unsupported_item_catalog_version');
     }
     if (json['snapshot_complete'] != true) {

@@ -110,6 +110,15 @@ void main() {
       expect(snapshot.snapshotId, _snapshotId);
     });
 
+    test('accepts the acknowledged contract version 3', () {
+      final catalog = _catalog()..['contract_version'] = 3;
+      final snapshot = ItemCatalogSnapshotV2.fromJson(
+        catalog,
+        expectedRestaurantId: _restaurant,
+      );
+      expect(snapshot.revision, 7);
+    });
+
     test('rejects a stock flag that disagrees with item type', () {
       final catalog = _catalog();
       final items = catalog['items']! as List<Map<String, Object?>>;

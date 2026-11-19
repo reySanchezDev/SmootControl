@@ -279,6 +279,7 @@ final class SupabaseCatalogPullService implements ICatalogPullService {
       await CanonicalItemPosProjector(_database).project(
         _restaurantService.restaurantId,
       );
+      await _acknowledgeDeviceCatalog(snapshot);
     }
 
     return CatalogPullSummary(

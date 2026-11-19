@@ -14,6 +14,7 @@ DECLARE
   v_sale_id uuid := gen_random_uuid();
   v_line_id uuid := gen_random_uuid();
   v_device_id uuid := gen_random_uuid();
+  v_stale_device_id uuid := gen_random_uuid();
   v_device_secret text := 'qa-maruchan-device-secret-20261118';
   v_cash_session uuid;
   v_cashier uuid;
@@ -22,6 +23,10 @@ DECLARE
   v_before numeric;
   v_after numeric;
   v_reply jsonb;
+  v_revision bigint;
+  v_snapshot_id uuid;
+  v_catalog jsonb;
+  v_stale_rejected boolean := false;
 BEGIN
   SELECT * INTO v_item FROM public.items
   WHERE restaurant_id = v_restaurant AND commercial_code = 10
@@ -45,6 +50,43 @@ BEGIN
   PERFORM public.register_pos_device(
     v_restaurant, v_device_id, v_device_secret, 'QA MARUCHAN rollback'
   );
+  v_catalog := public.pos_pull_item_catalog_v2(
+    v_restaurant, v_device_id, v_device_secret
+  );
+  v_revision := (v_catalog ->> 'revision')::bigint;
+  v_snapshot_id := (v_catalog ->> 'snapshot_id')::uuid;
+  PERFORM public.pos_ack_item_catalog_v2(
+    v_restaurant, v_device_id, v_device_secret,
+    v_revision, v_snapshot_id, 3
+  );
+  IF NOT EXISTS (
+    SELECT 1 FROM public.pos_devices
+    WHERE id = v_device_id AND item_catalog_revision = v_revision
+      AND item_catalog_snapshot_id = v_snapshot_id
+      AND item_catalog_contract_version = 3
+  ) THEN
+    RAISE EXCEPTION 'local_pos_catalog_ack_not_persisted';
+  END IF;
+  PERFORM public.register_pos_device(
+    v_restaurant, v_stale_device_id,
+    'qa-stale-device-secret-long-20261118', 'QA stale catalog gate'
+  );
+
+  BEGIN
+    PERFORM public.pos_sync_sale_v2(
+      v_restaurant, v_device_id, v_device_secret,
+      jsonb_build_object(
+        'item_catalog_revision', v_revision - 1,
+        'item_catalog_snapshot_id', gen_random_uuid(),
+        'item_catalog_contract_version', 3
+      )
+    );
+  EXCEPTION WHEN SQLSTATE '40001' THEN
+    v_stale_rejected := SQLERRM = 'pos_catalog_revision_stale_refresh_required';
+  END;
+  IF NOT v_stale_rejected THEN
+    RAISE EXCEPTION 'stale_catalog_sale_was_not_rejected';
+  END IF;
   SELECT COALESCE(quantity_on_hand, 0) INTO v_before
   FROM public.inventory_stock
   WHERE restaurant_id = v_restaurant AND item_id = v_item.id;
@@ -78,7 +120,10 @@ BEGIN
         'quantity_delta', -1, 'unit_cost', v_item.base_unit_cost,
         'reference_type', 'sale', 'reference_id', v_sale_id::text,
         'created_at', now()
-      ))
+      )),
+      'item_catalog_revision', v_revision,
+      'item_catalog_snapshot_id', v_snapshot_id,
+      'item_catalog_contract_version', 3
     )
   );
   IF (v_reply ->> 'remote_id')::uuid <> v_sale_id THEN
@@ -101,9 +146,34 @@ BEGIN
   ) THEN
     RAISE EXCEPTION 'local_item_10_sale_detail_or_ledger_missing';
   END IF;
-  RAISE NOTICE 'PASS: item 10 POS sale, sale detail, movement, stock % -> %',
+  IF NOT EXISTS (
+    SELECT 1 FROM public.sales
+    WHERE id = v_sale_id AND item_catalog_revision = v_revision
+      AND item_catalog_snapshot_id = v_snapshot_id
+      AND item_catalog_contract_version = 3
+  ) THEN
+    RAISE EXCEPTION 'local_sale_catalog_identity_not_persisted';
+  END IF;
+  RAISE NOTICE 'PASS: catalog ack, stale sale rejection, item 10 sale/detail/ledger; stock % -> %',
     v_before, v_after;
 END;
 $test$;
+
+RESET ROLE;
+DO $gate_test$
+BEGIN
+  BEGIN
+    PERFORM item_core_internal.assert_pos_catalog_ack_current(
+      '0f4e9ea0-948e-4d07-b2e0-55a96b3a462f'
+    );
+    RAISE EXCEPTION 'item_class_gate_did_not_reject_stale_device';
+  EXCEPTION WHEN SQLSTATE '55000' THEN
+    IF SQLERRM <> 'item_class_change_requires_current_pos_catalog_ack' THEN
+      RAISE;
+    END IF;
+  END;
+END;
+$gate_test$;
+SET LOCAL ROLE authenticated;
 
 ROLLBACK;

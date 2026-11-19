@@ -1,6 +1,32 @@
 part of 'supabase_catalog_pull_service.dart';
 
 extension on SupabaseCatalogPullService {
+  Future<void> _acknowledgeDeviceCatalog(ItemCatalogSnapshotV2 snapshot) async {
+    final credentials = await _deviceCredentials();
+    final response = await _client.post(
+      _config.rpcUri('pos_ack_item_catalog_v2'),
+      headers: {
+        'apikey': _config.publishableKey,
+        'content-type': 'application/json',
+        'accept': 'application/json',
+      },
+      body: jsonEncode({
+        'p_restaurant_id': snapshot.restaurantId,
+        'p_device_id': credentials.deviceId,
+        'p_device_secret': credentials.deviceSecret,
+        'p_revision': snapshot.revision,
+        'p_snapshot_id': snapshot.snapshotId,
+        'p_contract_version': 3,
+      }),
+    );
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw StateError(
+        'Supabase rechazo la confirmacion del catalogo POS '
+        '(${response.statusCode}).',
+      );
+    }
+  }
+
   Future<List<Map<String, Object?>>> _getRows(
     String table, {
     String select = '*',

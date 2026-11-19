@@ -21,6 +21,28 @@ final class LocalSalesDataSource {
   final LocalInventoryDataSource? _inventoryDataSource;
   final LocalPackagingDataSource? _packagingDataSource;
 
+  /// Returns the canonical catalog identity used by the offline POS.
+  Future<Map<String, Object?>?> currentItemCatalogContract(
+    String? itemId,
+  ) async {
+    if (itemId == null) return null;
+    final item = await (_database.select(
+      _database.localCanonicalItems,
+    )..where((row) => row.id.equals(itemId))).getSingleOrNull();
+    if (item == null) return null;
+    final snapshot =
+        await (_database.select(
+              _database.localCanonicalCatalogSnapshots,
+            )..where((row) => row.restaurantId.equals(item.restaurantId)))
+            .getSingleOrNull();
+    if (snapshot == null) return null;
+    return {
+      'itemCatalogRevision': snapshot.revision,
+      'itemCatalogSnapshotId': snapshot.snapshotId,
+      'itemCatalogContractVersion': 3,
+    };
+  }
+
   /// Returns local sales created between two dates.
   Future<List<SaleModel>> getSales({
     required DateTime from,
