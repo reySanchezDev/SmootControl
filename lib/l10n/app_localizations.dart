@@ -971,7 +971,7 @@ abstract class AppLocalizations {
   /// No description provided for @okAction.
   ///
   /// In es, this message translates to:
-  /// **'OK'**
+  /// **'Aceptar'**
   String get okAction;
 
   /// No description provided for @saveAction.
@@ -1789,6 +1789,78 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Producto'**
   String get inventoryProductColumn;
+
+  /// No description provided for @inventoryItemsSearchLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Buscar artículo, categoría o inventario'**
+  String get inventoryItemsSearchLabel;
+
+  /// No description provided for @inventoryItemColumn.
+  ///
+  /// In es, this message translates to:
+  /// **'Artículo'**
+  String get inventoryItemColumn;
+
+  /// No description provided for @inventoryItemClassColumn.
+  ///
+  /// In es, this message translates to:
+  /// **'Clase'**
+  String get inventoryItemClassColumn;
+
+  /// No description provided for @inventoryItemClassSaleProduct.
+  ///
+  /// In es, this message translates to:
+  /// **'Producto vendible'**
+  String get inventoryItemClassSaleProduct;
+
+  /// No description provided for @inventoryItemClassRawMaterial.
+  ///
+  /// In es, this message translates to:
+  /// **'Materia prima'**
+  String get inventoryItemClassRawMaterial;
+
+  /// No description provided for @inventoryItemClassPackaging.
+  ///
+  /// In es, this message translates to:
+  /// **'Empaque'**
+  String get inventoryItemClassPackaging;
+
+  /// No description provided for @inventoryItemClassService.
+  ///
+  /// In es, this message translates to:
+  /// **'Servicio'**
+  String get inventoryItemClassService;
+
+  /// No description provided for @inventoryNoTrackedItemsTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin artículos con inventario'**
+  String get inventoryNoTrackedItemsTitle;
+
+  /// No description provided for @inventoryNoTrackedItemsMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Activa «Controla inventario» para gestionar existencias.'**
+  String get inventoryNoTrackedItemsMessage;
+
+  /// No description provided for @inventoryPurchaseFilterLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Filtrar por artículo, categoría o subcategoría'**
+  String get inventoryPurchaseFilterLabel;
+
+  /// No description provided for @inventoryPurchaseFilterEmpty.
+  ///
+  /// In es, this message translates to:
+  /// **'Ajusta el filtro para ver artículos.'**
+  String get inventoryPurchaseFilterEmpty;
+
+  /// No description provided for @inventoryNoTrackedItems.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay artículos que controlen inventario.'**
+  String get inventoryNoTrackedItems;
 
   /// No description provided for @inventoryCategoryColumn.
   ///
@@ -3050,41 +3122,107 @@ abstract class AppLocalizations {
   /// **'Receta guardada correctamente.'**
   String get recipeSavedMessage;
 
-  /// Localized unsavedChangesTitle message.
+  /// No description provided for @unsavedChangesTitle.
   ///
-  /// In en, this message translates to:
-  /// **'Unsaved changes'**
+  /// In es, this message translates to:
+  /// **'Cambios sin guardar'**
   String get unsavedChangesTitle;
 
-  /// Localized unsavedChangesMessage message.
+  /// No description provided for @unsavedChangesMessage.
   ///
-  /// In en, this message translates to:
-  /// **'You have unsaved changes. Do you want to discard them?'**
+  /// In es, this message translates to:
+  /// **'Realizaste cambios que todavía no se han guardado. ¿Deseás descartarlos?'**
   String get unsavedChangesMessage;
 
-  /// Localized discardChangesAction message.
+  /// No description provided for @discardChangesAction.
   ///
-  /// In en, this message translates to:
-  /// **'Discard changes'**
+  /// In es, this message translates to:
+  /// **'Descartar cambios'**
   String get discardChangesAction;
 
-  /// Localized continueEditingAction message.
+  /// No description provided for @continueEditingAction.
   ///
-  /// In en, this message translates to:
-  /// **'Keep editing'**
+  /// In es, this message translates to:
+  /// **'Seguir editando'**
   String get continueEditingAction;
 
-  /// Localized confirmChangesTitle message.
+  /// No description provided for @confirmChangesTitle.
   ///
-  /// In en, this message translates to:
-  /// **'Confirm changes'**
+  /// In es, this message translates to:
+  /// **'Confirmar cambios'**
   String get confirmChangesTitle;
 
-  /// Localized confirmChangesMessage message.
+  /// No description provided for @confirmChangesMessage.
   ///
-  /// In en, this message translates to:
-  /// **'Do you want to save your changes?'**
+  /// In es, this message translates to:
+  /// **'¿Deseás guardar los cambios realizados?'**
   String get confirmChangesMessage;
+
+  /// No description provided for @canonicalItemCodeField.
+  ///
+  /// In es, this message translates to:
+  /// **'Código comercial'**
+  String get canonicalItemCodeField;
+
+  /// No description provided for @canonicalItemCodeAutoAssigned.
+  ///
+  /// In es, this message translates to:
+  /// **'Se asigna automáticamente al guardar.'**
+  String get canonicalItemCodeAutoAssigned;
+
+  /// No description provided for @canonicalItemTypeField.
+  ///
+  /// In es, this message translates to:
+  /// **'Tipo de artículo'**
+  String get canonicalItemTypeField;
+
+  /// No description provided for @canonicalItemTypeInventory.
+  ///
+  /// In es, this message translates to:
+  /// **'Inventariable'**
+  String get canonicalItemTypeInventory;
+
+  /// No description provided for @canonicalItemTypeNonInventory.
+  ///
+  /// In es, this message translates to:
+  /// **'No inventariable'**
+  String get canonicalItemTypeNonInventory;
+
+  /// No description provided for @canonicalItemTypeService.
+  ///
+  /// In es, this message translates to:
+  /// **'Servicio'**
+  String get canonicalItemTypeService;
+
+  /// No description provided for @canonicalItemRoleField.
+  ///
+  /// In es, this message translates to:
+  /// **'Función operativa'**
+  String get canonicalItemRoleField;
+
+  /// No description provided for @canonicalItemRoleSaleProduct.
+  ///
+  /// In es, this message translates to:
+  /// **'Producto de venta'**
+  String get canonicalItemRoleSaleProduct;
+
+  /// No description provided for @canonicalItemRoleRawMaterial.
+  ///
+  /// In es, this message translates to:
+  /// **'Materia prima'**
+  String get canonicalItemRoleRawMaterial;
+
+  /// No description provided for @canonicalItemRolePackaging.
+  ///
+  /// In es, this message translates to:
+  /// **'Empaque'**
+  String get canonicalItemRolePackaging;
+
+  /// No description provided for @canonicalItemRoleImmutableHelp.
+  ///
+  /// In es, this message translates to:
+  /// **'Se define al crear para conservar la trazabilidad del artículo.'**
+  String get canonicalItemRoleImmutableHelp;
 }
 
 class _AppLocalizationsDelegate

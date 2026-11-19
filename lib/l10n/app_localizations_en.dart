@@ -909,6 +909,44 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryProductColumn => 'Product';
 
   @override
+  String get inventoryItemsSearchLabel => 'Search item, category, or inventory';
+
+  @override
+  String get inventoryItemColumn => 'Item';
+
+  @override
+  String get inventoryItemClassColumn => 'Class';
+
+  @override
+  String get inventoryItemClassSaleProduct => 'Sale product';
+
+  @override
+  String get inventoryItemClassRawMaterial => 'Raw material';
+
+  @override
+  String get inventoryItemClassPackaging => 'Packaging';
+
+  @override
+  String get inventoryItemClassService => 'Service';
+
+  @override
+  String get inventoryNoTrackedItemsTitle => 'No items with inventory tracking';
+
+  @override
+  String get inventoryNoTrackedItemsMessage =>
+      'Enable inventory tracking to manage stock.';
+
+  @override
+  String get inventoryPurchaseFilterLabel =>
+      'Filter by item, category, or subcategory';
+
+  @override
+  String get inventoryPurchaseFilterEmpty => 'Adjust the filter to see items.';
+
+  @override
+  String get inventoryNoTrackedItems => 'No items are tracking inventory.';
+
+  @override
   String get inventoryCategoryColumn => 'Category';
 
   @override
@@ -1580,11 +1618,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get recipeSavedMessage => 'Recipe saved successfully.';
+
   @override
   String get unsavedChangesTitle => 'Unsaved changes';
 
   @override
-  String get unsavedChangesMessage => 'You have unsaved changes. Do you want to discard them?';
+  String get unsavedChangesMessage =>
+      'You have unsaved changes. Do you want to discard them?';
 
   @override
   String get discardChangesAction => 'Discard changes';
@@ -1597,4 +1637,39 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get confirmChangesMessage => 'Do you want to save your changes?';
+
+  @override
+  String get canonicalItemCodeField => 'Commercial code';
+
+  @override
+  String get canonicalItemCodeAutoAssigned =>
+      'Assigned automatically when saved.';
+
+  @override
+  String get canonicalItemTypeField => 'Item type';
+
+  @override
+  String get canonicalItemTypeInventory => 'Inventory';
+
+  @override
+  String get canonicalItemTypeNonInventory => 'Non-inventory';
+
+  @override
+  String get canonicalItemTypeService => 'Service';
+
+  @override
+  String get canonicalItemRoleField => 'Operational role';
+
+  @override
+  String get canonicalItemRoleSaleProduct => 'Sale product';
+
+  @override
+  String get canonicalItemRoleRawMaterial => 'Raw material';
+
+  @override
+  String get canonicalItemRolePackaging => 'Packaging';
+
+  @override
+  String get canonicalItemRoleImmutableHelp =>
+      'Set when created to preserve the article\'s traceability.';
 }

@@ -8,7 +8,12 @@ extension on SupabaseSyncRemoteSender {
       return;
     }
 
-    if (await _hasDeviceCredentials()) {
+    final hasDeviceCredentials = await _hasDeviceCredentials();
+    if (item.payload['itemCatalogContractVersion'] != null &&
+        !hasDeviceCredentials) {
+      throw StateError('pos_versioned_sale_requires_device_sync');
+    }
+    if (hasDeviceCredentials) {
       await _pushSaleWithDevice(item);
       return;
     }

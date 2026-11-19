@@ -31,25 +31,6 @@ final class AdminInventoryPurchaseItem {
   final String? purchaseUnitId;
 }
 
-/// Packaging purchase row submitted by the administrative inventory screen.
-final class AdminPackagingPurchaseItem {
-  /// Creates a packaging purchase row.
-  const AdminPackagingPurchaseItem({
-    required this.packagingItemId,
-    required this.quantity,
-    required this.unitCostInCents,
-  });
-
-  /// Remote packaging item id.
-  final String packagingItemId;
-
-  /// Purchased units.
-  final int quantity;
-
-  /// Unit cost in minor currency units.
-  final int unitCostInCents;
-}
-
 /// Product count row submitted by the administrative adjustment screen.
 final class AdminInventoryAdjustmentItem {
   /// Creates a product count row.
@@ -105,7 +86,7 @@ final class SupabaseInventoryAdminWriteService {
     return _postBatch(
       functionName: 'app_register_inventory_purchase_batch_v2',
       emptyCode: 'inventory_batch_empty',
-      emptyMessage: 'Agrega al menos un producto con cantidad.',
+      emptyMessage: 'Agrega al menos un artículo con cantidad.',
       items: [
         for (final item in items)
           {
@@ -119,26 +100,6 @@ final class SupabaseInventoryAdminWriteService {
     );
   }
 
-  /// Registers packaging purchases as one remote transaction.
-  Future<AppResult<void>> registerPackagingPurchaseBatch(
-    List<AdminPackagingPurchaseItem> items,
-  ) {
-    return _postBatch(
-      functionName: 'app_register_packaging_purchase_batch',
-      emptyCode: 'packaging_batch_empty',
-      emptyMessage: 'Agrega al menos un empaque con cantidad.',
-      items: [
-        for (final item in items)
-          {
-            'movement_id': _uuid.v4(),
-            'packaging_item_id': item.packagingItemId,
-            'quantity': item.quantity,
-            'unit_cost': _money(item.unitCostInCents),
-          },
-      ],
-    );
-  }
-
   /// Registers one remote inventory adjustment document.
   Future<AppResult<void>> registerInventoryAdjustmentBatch(
     List<AdminInventoryAdjustmentItem> items, {
@@ -147,7 +108,7 @@ final class SupabaseInventoryAdminWriteService {
     return _postBatch(
       functionName: 'app_register_inventory_adjustment_batch_v2',
       emptyCode: 'inventory_adjustment_empty',
-      emptyMessage: 'Agrega al menos un producto con cambio de inventario.',
+      emptyMessage: 'Agrega al menos un artículo con cambio de inventario.',
       message: 'Supabase rechazo el ajuste de inventario.',
       items: [
         for (final item in items)

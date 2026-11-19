@@ -52,40 +52,40 @@ void main() {
       expect(items.first, contains('movement_id'));
     });
 
-    test('registers packaging purchases through the batch RPC', () async {
-      final requests = <http.Request>[];
-      final service = _service(
-        client: MockClient((request) async {
-          requests.add(request);
-          return http.Response(jsonEncode({'item_count': 1}), 200);
-        }),
-      );
+    test(
+      'registers packaging items through the canonical item purchase RPC',
+      () async {
+        final requests = <http.Request>[];
+        final service = _service(
+          client: MockClient((request) async {
+            requests.add(request);
+            return http.Response(jsonEncode({'item_count': 1}), 200);
+          }),
+        );
 
-      final result = await service.registerPackagingPurchaseBatch([
-        const AdminPackagingPurchaseItem(
-          packagingItemId: '33333333-3333-3333-3333-333333333333',
-          quantity: 20,
-          unitCostInCents: 150,
-        ),
-      ]);
+        final result = await service.registerProductPurchaseBatch([
+          const AdminInventoryPurchaseItem(
+            productId: '33333333-3333-3333-3333-333333333333',
+            quantity: 20,
+            unitCostInCents: 150,
+          ),
+        ]);
 
-      expect(result, isA<AppSuccess<void>>());
-      expect(
-        requests.single.url.path,
-        '/rest/v1/rpc/app_register_packaging_purchase_batch',
-      );
-      final body = jsonDecode(requests.single.body) as Map<String, Object?>;
-      final items = body['p_items']! as List<Object?>;
-      expect(
-        items.single,
-        containsPair(
-          'packaging_item_id',
-          '33333333-3333-3333-3333-333333333333',
-        ),
-      );
-      expect(items.single, containsPair('quantity', 20));
-      expect(items.single, containsPair('unit_cost', 1.5));
-    });
+        expect(result, isA<AppSuccess<void>>());
+        expect(
+          requests.single.url.path,
+          '/rest/v1/rpc/app_register_inventory_purchase_batch_v2',
+        );
+        final body = jsonDecode(requests.single.body) as Map<String, Object?>;
+        final items = body['p_items']! as List<Object?>;
+        expect(
+          items.single,
+          containsPair('item_id', '33333333-3333-3333-3333-333333333333'),
+        );
+        expect(items.single, containsPair('quantity', 20));
+        expect(items.single, containsPair('unit_cost', 1.5));
+      },
+    );
 
     test('registers inventory adjustments through the batch RPC', () async {
       final requests = <http.Request>[];

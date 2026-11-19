@@ -100,6 +100,12 @@ extension on SupabaseSyncRemoteSender {
         'packaging_movements': _listPayload(
           item.payload['packagingMovements'],
         ).map(_devicePackagingMovementPayload).toList(),
+        if (item.payload['itemCatalogContractVersion'] != null) ...{
+          'item_catalog_revision': item.payload['itemCatalogRevision'],
+          'item_catalog_snapshot_id': item.payload['itemCatalogSnapshotId'],
+          'item_catalog_contract_version':
+              item.payload['itemCatalogContractVersion'],
+        },
         'void': _mapPayload(item.payload['void']),
       },
     });

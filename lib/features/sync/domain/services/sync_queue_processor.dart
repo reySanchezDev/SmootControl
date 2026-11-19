@@ -3,6 +3,7 @@ import 'package:smoo_control/features/sync/domain/entities/sync_process_summary.
 import 'package:smoo_control/features/sync/domain/entities/sync_queue_item.dart';
 import 'package:smoo_control/features/sync/domain/repositories/i_sync_queue_repository.dart';
 import 'package:smoo_control/features/sync/domain/services/i_sync_remote_sender.dart';
+import 'package:smoo_control/features/sync/domain/services/stale_item_catalog_sale_exception.dart';
 import 'package:smoo_control/features/sync/domain/services/sync_error_message.dart';
 
 /// Processes pending sync queue items in FIFO order.
@@ -44,7 +45,22 @@ final class SyncQueueProcessor {
             );
           }
 
-          final summary = await _processItems(value);
+          final eligible = value
+              .where(
+                (item) => item.status != SyncQueueStatus.requiresResolution,
+              )
+              .toList(growable: false);
+          if (eligible.isEmpty) {
+            return AppSuccess(
+              SyncProcessSummary(
+                processed: processed,
+                succeeded: succeeded,
+                failed: failed,
+              ),
+            );
+          }
+
+          final summary = await _processItems(eligible);
           processed += summary.processed;
           succeeded += summary.succeeded;
           failed += summary.failed;
@@ -83,10 +99,17 @@ final class SyncQueueProcessor {
         }
       } on Object catch (error) {
         failed++;
-        await _repository.markError(
-          itemId: item.id,
-          error: syncErrorMessage(error),
-        );
+        if (error is StaleItemCatalogSaleException) {
+          await _repository.markRequiresResolution(
+            itemId: item.id,
+            reason: syncErrorMessage(error),
+          );
+        } else {
+          await _repository.markError(
+            itemId: item.id,
+            error: syncErrorMessage(error),
+          );
+        }
       }
     }
 

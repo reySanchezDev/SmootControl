@@ -175,6 +175,9 @@ extension on SupabaseSyncRemoteSender {
         ...body,
       }),
     );
+    if (response.body.contains('pos_catalog_revision_stale_refresh_required')) {
+      throw const StaleItemCatalogSaleException();
+    }
     _ensureSuccess(response, functionName);
     if (response.body.trim().isEmpty) return const {};
     final decoded = jsonDecode(response.body);
@@ -204,6 +207,9 @@ extension on SupabaseSyncRemoteSender {
         ...body,
       }),
     );
+    if (response.body.contains('pos_catalog_revision_stale_refresh_required')) {
+      throw const StaleItemCatalogSaleException();
+    }
     _ensureSuccess(response, functionName);
     if (response.body.trim().isEmpty) return const {};
     final decoded = jsonDecode(response.body);

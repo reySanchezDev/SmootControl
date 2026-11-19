@@ -8,6 +8,7 @@ import 'package:smoo_control/core/session/current_remote_session_service.dart';
 import 'package:smoo_control/core/session/current_restaurant_service.dart';
 import 'package:smoo_control/features/sync/domain/entities/sync_queue_item.dart';
 import 'package:smoo_control/features/sync/domain/services/i_sync_remote_sender.dart';
+import 'package:smoo_control/features/sync/domain/services/stale_item_catalog_sale_exception.dart';
 import 'package:uuid/uuid.dart';
 
 part 'supabase_sync_remote_sender_admin_part.dart';

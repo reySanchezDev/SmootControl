@@ -16,8 +16,10 @@ import 'package:smoo_control/features/products/domain/entities/measurement_unit.
 import 'package:smoo_control/features/products/presentation/widgets/canonical_catalog_access.dart';
 import 'package:smoo_control/features/products/presentation/widgets/canonical_item_columns.dart';
 import 'package:smoo_control/features/products/presentation/widgets/canonical_item_editor.dart';
+import 'package:smoo_control/features/products/presentation/widgets/canonical_item_labels.dart';
 import 'package:smoo_control/features/recipes/domain/entities/canonical_recipe.dart';
 import 'package:smoo_control/features/recipes/presentation/pages/canonical_recipe_dialog.dart';
+import 'package:smoo_control/l10n/app_localizations.dart';
 
 part 'canonical_items_content_actions_part.dart';
 
@@ -43,7 +45,6 @@ class _CanonicalItemsContentState extends State<CanonicalItemsContent> {
     List<MeasurementUnit> units,
     List<ProductCategory> categories,
     List<CanonicalClassification> classifications,
-    int? initialCommercialCode,
   })?
   _editor;
   CanonicalItemType? _filter;
@@ -67,15 +68,6 @@ class _CanonicalItemsContentState extends State<CanonicalItemsContent> {
         : const [];
   }
 
-  int _nextCommercialCode(List<CanonicalItem> items) {
-    var maximum = 0;
-    for (final item in items) {
-      final code = item.commercialCode ?? 0;
-      if (code > maximum) maximum = code;
-    }
-    return maximum + 1;
-  }
-
   Future<void> _edit(CanonicalItem? current) async {
     if (_busy) return;
     setState(() => _busy = true);
@@ -84,7 +76,6 @@ class _CanonicalItemsContentState extends State<CanonicalItemsContent> {
       final classificationsResult = await _repository
           .getCanonicalClassifications();
       final categoriesResult = await _repository.getCategories();
-      final itemsResult = await _items;
       if (!mounted) return;
       if (unitsResult case AppFailureResult(:final error)) {
         _error(error.message);
@@ -98,11 +89,6 @@ class _CanonicalItemsContentState extends State<CanonicalItemsContent> {
         _error(error.message);
         return;
       }
-      final nextCommercialCode =
-          current?.commercialCode ??
-          (itemsResult is AppSuccess<List<CanonicalItem>>
-              ? _nextCommercialCode(itemsResult.value)
-              : null);
       setState(
         () => _editor = (
           item: current,
@@ -115,7 +101,6 @@ class _CanonicalItemsContentState extends State<CanonicalItemsContent> {
               (classificationsResult
                       as AppSuccess<List<CanonicalClassification>>)
                   .value,
-          initialCommercialCode: nextCommercialCode,
         ),
       );
     } finally {
@@ -198,6 +183,7 @@ class _CanonicalItemsContentState extends State<CanonicalItemsContent> {
     ({bool products, bool packaging}) access,
     List<ProductCategory> categories,
   ) {
+    final l10n = AppLocalizations.of(context);
     final visible = items
         .where((item) => _filter == null || item.type == _filter)
         .toList();
@@ -256,10 +242,11 @@ class _CanonicalItemsContentState extends State<CanonicalItemsContent> {
             compactBuilder: (context, item) => ListTile(
               title: Text(item.name),
               subtitle: Text(
-                '${item.commercialCode ?? '—'} · ${item.type.label}',
+                '${item.commercialCode ?? '—'} · '
+                '${canonicalItemTypeLabel(l10n, item.type)}',
               ),
             ),
-            columns: canonicalItemColumns(categories),
+            columns: canonicalItemColumns(categories, l10n),
           ),
         ),
       ],
@@ -269,7 +256,7 @@ class _CanonicalItemsContentState extends State<CanonicalItemsContent> {
   Widget _typeFilter() => Row(
     mainAxisSize: MainAxisSize.min,
     children: [
-      const Text('Tipo'),
+      Text(AppLocalizations.of(context).canonicalItemTypeField),
       const SizedBox(width: 12),
       DropdownButton<CanonicalItemType?>(
         value: _filter,
@@ -279,7 +266,9 @@ class _CanonicalItemsContentState extends State<CanonicalItemsContent> {
           ...CanonicalItemType.values.map(
             (type) => DropdownMenuItem<CanonicalItemType?>(
               value: type,
-              child: Text(type.label),
+              child: Text(
+                canonicalItemTypeLabel(AppLocalizations.of(context), type),
+              ),
             ),
           ),
         ],

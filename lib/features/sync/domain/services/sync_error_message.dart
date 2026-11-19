@@ -15,6 +15,12 @@ String syncErrorText(String raw) {
     return 'La conexion con Supabase tardo demasiado. Revisa la red y toca '
         'Reintentar. La venta sigue guardada localmente.';
   }
+  if (text.contains('pos_catalog_revision_stale_refresh_required')) {
+    return 'Venta retenida: se registró con una versión anterior del catálogo. '
+        'No se reintentará automáticamente para evitar aplicar reglas nuevas. '
+        'Requiere conciliación autorizada; los datos originales siguen en el '
+        'dispositivo.';
+  }
   return text;
 }
 

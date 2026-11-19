@@ -7,7 +7,6 @@ import 'package:smoo_control/core/result/app_result.dart';
 import 'package:smoo_control/core/session/current_remote_session_service.dart';
 import 'package:smoo_control/core/session/current_restaurant_service.dart';
 import 'package:smoo_control/features/inventory/domain/entities/inventory_stock_item.dart';
-import 'package:smoo_control/features/packaging/domain/entities/packaging_stock_item.dart';
 
 /// Reads inventory stock directly from Supabase for administrative screens.
 ///
@@ -38,7 +37,8 @@ final class SupabaseInventoryAdminReadService {
         'tracks_inventory': 'eq.true',
         'is_active': 'eq.true',
         'select':
-            'id,name,base_unit_cost,category_id,purchase_unit_id,base_unit_id,'
+            'id,name,item_class,base_unit_cost,category_id,purchase_unit_id,'
+            'base_unit_id,'
             'purchase_to_base_factor',
       });
       final units = await _getRows('measurement_units', {
@@ -73,6 +73,7 @@ final class SupabaseInventoryAdminReadService {
           InventoryStockItem(
             productId: productId,
             productName: _text(product['name'], fallback: 'Producto'),
+            itemClass: _text(product['item_class'], fallback: 'sale_product'),
             categoryName: categoryPath.isEmpty ? null : categoryPath.last,
             categoryPath: categoryPath.join(' / '),
             costInCents: _moneyToCents(product['base_unit_cost']),
@@ -110,52 +111,6 @@ final class SupabaseInventoryAdminReadService {
           message:
               'No se pudo leer el inventario remoto. Verifica conexion y '
               'sesion administrativa.',
-          cause: error,
-        ),
-      );
-    }
-  }
-
-  /// Returns packaging stock from the remote central database.
-  Future<AppResult<List<PackagingStockItem>>> getPackagingStock() async {
-    try {
-      final packagingItems = await _getRows('packaging_items', {
-        'restaurant_id': 'eq.${_restaurantService.restaurantId}',
-        'tracks_stock': 'eq.true',
-        'is_active': 'eq.true',
-        'select': 'id,name,cost',
-      });
-      final stockRows = await _getRows('packaging_stock', {
-        'restaurant_id': 'eq.${_restaurantService.restaurantId}',
-        'select': 'packaging_item_id,quantity_on_hand,updated_at',
-      });
-      final stockByPackaging = {
-        for (final row in stockRows) _text(row['packaging_item_id']): row,
-      };
-
-      final items = <PackagingStockItem>[];
-      for (final packaging in packagingItems) {
-        final packagingItemId = _text(packaging['id']);
-        final stock = stockByPackaging[packagingItemId];
-        items.add(
-          PackagingStockItem(
-            packagingItemId: packagingItemId,
-            packagingName: _text(packaging['name'], fallback: 'Empaque'),
-            costInCents: _moneyToCents(packaging['cost']),
-            quantityOnHand: _int(stock?['quantity_on_hand']),
-            updatedAt: _date(stock?['updated_at']),
-          ),
-        );
-      }
-      items.sort((a, b) => a.packagingName.compareTo(b.packagingName));
-      return AppSuccess(items);
-    } on Object catch (error) {
-      return AppFailureResult(
-        AppFailure(
-          code: 'remote_packaging_stock_read_failed',
-          message:
-              'No se pudo leer el stock remoto de empaques. Verifica conexion '
-              'y sesion administrativa.',
           cause: error,
         ),
       );
@@ -228,12 +183,6 @@ final class SupabaseInventoryAdminReadService {
   double _decimal(Object? value) {
     if (value is num) return value.toDouble();
     return double.tryParse(value?.toString() ?? '') ?? 0;
-  }
-
-  int _int(Object? value) {
-    if (value is int) return value;
-    if (value is num) return value.round();
-    return int.tryParse(value?.toString() ?? '') ?? 0;
   }
 
   int _moneyToCents(Object? value) {

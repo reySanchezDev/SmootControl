@@ -8,6 +8,7 @@ import 'package:smoo_control/core/design_system/app_searchable_list_section.dart
 import 'package:smoo_control/core/design_system/app_text.dart';
 import 'package:smoo_control/core/design_system/backoffice_action_feedback.dart';
 import 'package:smoo_control/core/di/service_locator.dart';
+import 'package:smoo_control/features/sync/domain/entities/sync_queue_item.dart';
 import 'package:smoo_control/features/sync/domain/entities/sync_settings.dart';
 import 'package:smoo_control/features/sync/presentation/bloc/sync_bloc.dart';
 import 'package:smoo_control/features/sync/presentation/bloc/sync_event.dart';
@@ -84,7 +85,11 @@ class _SyncContent extends StatelessWidget {
               AppButton(
                 icon: Icons.sync,
                 label: l10n.syncNowAction,
-                onPressed: state.items.isEmpty
+                onPressed:
+                    !state.items.any(
+                      (item) =>
+                          item.status != SyncQueueStatus.requiresResolution,
+                    )
                     ? null
                     : () => context.read<SyncBloc>().add(
                         const SyncProcessRequested(),
@@ -94,6 +99,15 @@ class _SyncContent extends StatelessWidget {
                 'Pendientes: ${state.items.length}',
                 variant: AppTextVariant.label,
               ),
+              if (state.items.any(
+                (item) => item.status == SyncQueueStatus.requiresResolution,
+              ))
+                const AppText(
+                  'Hay ventas retenidas que requieren conciliación; no se '
+                  'reintentan automáticamente.',
+                  maxLines: 2,
+                  variant: AppTextVariant.label,
+                ),
               const AppText(
                 'Los enviados correctamente no quedan listados como '
                 'pendientes.',

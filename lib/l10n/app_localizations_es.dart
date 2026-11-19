@@ -910,6 +910,47 @@ class AppLocalizationsEs extends AppLocalizations {
   String get inventoryProductColumn => 'Producto';
 
   @override
+  String get inventoryItemsSearchLabel =>
+      'Buscar artículo, categoría o inventario';
+
+  @override
+  String get inventoryItemColumn => 'Artículo';
+
+  @override
+  String get inventoryItemClassColumn => 'Clase';
+
+  @override
+  String get inventoryItemClassSaleProduct => 'Producto vendible';
+
+  @override
+  String get inventoryItemClassRawMaterial => 'Materia prima';
+
+  @override
+  String get inventoryItemClassPackaging => 'Empaque';
+
+  @override
+  String get inventoryItemClassService => 'Servicio';
+
+  @override
+  String get inventoryNoTrackedItemsTitle => 'Sin artículos con inventario';
+
+  @override
+  String get inventoryNoTrackedItemsMessage =>
+      'Activa «Controla inventario» para gestionar existencias.';
+
+  @override
+  String get inventoryPurchaseFilterLabel =>
+      'Filtrar por artículo, categoría o subcategoría';
+
+  @override
+  String get inventoryPurchaseFilterEmpty =>
+      'Ajusta el filtro para ver artículos.';
+
+  @override
+  String get inventoryNoTrackedItems =>
+      'No hay artículos que controlen inventario.';
+
+  @override
   String get inventoryCategoryColumn => 'Categoría';
 
   @override
@@ -1586,11 +1627,13 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get recipeSavedMessage => 'Receta guardada correctamente.';
+
   @override
   String get unsavedChangesTitle => 'Cambios sin guardar';
 
   @override
-  String get unsavedChangesMessage => 'Realizaste cambios que todavía no se han guardado. ¿Deseás descartarlos?';
+  String get unsavedChangesMessage =>
+      'Realizaste cambios que todavía no se han guardado. ¿Deseás descartarlos?';
 
   @override
   String get discardChangesAction => 'Descartar cambios';
@@ -1603,4 +1646,39 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get confirmChangesMessage => '¿Deseás guardar los cambios realizados?';
+
+  @override
+  String get canonicalItemCodeField => 'Código comercial';
+
+  @override
+  String get canonicalItemCodeAutoAssigned =>
+      'Se asigna automáticamente al guardar.';
+
+  @override
+  String get canonicalItemTypeField => 'Tipo de artículo';
+
+  @override
+  String get canonicalItemTypeInventory => 'Inventariable';
+
+  @override
+  String get canonicalItemTypeNonInventory => 'No inventariable';
+
+  @override
+  String get canonicalItemTypeService => 'Servicio';
+
+  @override
+  String get canonicalItemRoleField => 'Función operativa';
+
+  @override
+  String get canonicalItemRoleSaleProduct => 'Producto de venta';
+
+  @override
+  String get canonicalItemRoleRawMaterial => 'Materia prima';
+
+  @override
+  String get canonicalItemRolePackaging => 'Empaque';
+
+  @override
+  String get canonicalItemRoleImmutableHelp =>
+      'Se define al crear para conservar la trazabilidad del artículo.';
 }

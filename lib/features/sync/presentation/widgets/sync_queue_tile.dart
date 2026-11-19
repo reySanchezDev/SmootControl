@@ -42,6 +42,7 @@ class SyncQueueTile extends StatelessWidget {
       SyncQueueStatus.syncing => Icons.sync,
       SyncQueueStatus.synced => Icons.cloud_done_outlined,
       SyncQueueStatus.error => Icons.sync_problem_outlined,
+      SyncQueueStatus.requiresResolution => Icons.gpp_maybe_outlined,
     };
   }
 
@@ -59,6 +60,7 @@ class SyncQueueTile extends StatelessWidget {
       SyncQueueStatus.syncing => l10n.syncStatusSyncing,
       SyncQueueStatus.synced => l10n.syncStatusSynced,
       SyncQueueStatus.error => l10n.syncStatusError,
+      SyncQueueStatus.requiresResolution => 'Requiere conciliación',
     };
   }
 

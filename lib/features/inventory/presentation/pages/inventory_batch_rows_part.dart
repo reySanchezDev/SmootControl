@@ -24,27 +24,6 @@ class _BatchProductRow {
   }
 }
 
-class _BatchPackagingRow {
-  _BatchPackagingRow(this.item)
-    : quantityController = TextEditingController(),
-      costController = TextEditingController(
-        text: _formatMoney(item.costInCents),
-      );
-
-  final PackagingStockItem item;
-  final TextEditingController quantityController;
-  final TextEditingController costController;
-
-  bool matches(String filter) {
-    return _normalize(item.packagingName).contains(filter);
-  }
-
-  void dispose() {
-    quantityController.dispose();
-    costController.dispose();
-  }
-}
-
 String _normalize(String value) {
   return value.trim().toLowerCase();
 }

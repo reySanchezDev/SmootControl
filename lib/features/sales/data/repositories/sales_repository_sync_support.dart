@@ -2,6 +2,9 @@ part of 'sales_repository.dart';
 
 extension _SalesRepositorySyncSupport on SalesRepository {
   Future<void> _enqueueSale(Sale sale, List<SaleItem> items) async {
+    final catalogContract = await _localDataSource.currentItemCatalogContract(
+      items.isEmpty ? null : items.first.productId,
+    );
     final inventoryMovements = await _inventoryMovementsPayload(
       referenceType: 'sale',
       referenceId: sale.id,
@@ -19,6 +22,7 @@ extension _SalesRepositorySyncSupport on SalesRepository {
         'items': items.map(_saleItemPayload).toList(),
         'inventoryMovements': inventoryMovements,
         'packagingMovements': packagingMovements,
+        if (catalogContract != null) ...catalogContract,
       },
     );
   }

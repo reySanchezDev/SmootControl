@@ -1910,3 +1910,169 @@ operativas; y solo entonces retirar las dependencias heredadas.
   inventario, ventas, empaques, recetas, sync y reportes: 124 pruebas aprobadas.
 - [ ] Build RELEASE/QA y aceptación visual del propietario permanecen como
   gate separado; no se declara cumplido sin ejecutarlo en esta rama.
+### Addendum detalle de movimientos de ventas — 2026-11-18
+
+- [x] Confirmado el contrato funcional: `Movimientos` muestra únicamente
+  ventas con consumo físico de inventario; las ventas de artículos no
+  inventariables permanecen en `Ventas` y no generan un movimiento.
+- [x] Corregida la lectura del detalle en
+  `SupabaseInventoryMovementsService`: las líneas ahora incluyen
+  `movement_type` y `reference_type`, necesarios para resolver la identidad
+  compuesta del documento.
+- [x] Agregada regresión Flutter que comprueba una venta de Maruchan con
+  delta `-4` y costo unitario persistido.
+- [x] Evidencia remota comprobada para `F-1322`: artículo comercial `10`,
+  movimiento `sale -4`, referencia de venta coincidente y stock resultante
+  `1`. Falta publicar el bundle Backoffice actualizado para que el detalle
+  corregido quede disponible en el dominio productivo.
+
+### Addendum de paridad y cierre de huecos de empaques — 2026-11-18
+
+#### Gate de paridad de ambientes
+
+- [x] Docker Desktop iniciado de forma no destructiva para validar el
+  laboratorio QA; `supabase_db_smoo_control` quedó saludable.
+- [x] `supabase migration list --local` confirmó migraciones `001`–`119`.
+- [x] `supabase migration list --linked` confirmó migraciones `001`–`119` en
+  producción. La tabla Local/Remote no mostró divergencias.
+- [x] La comparación se realizó sobre la rama
+  `feature/item-core-end-to-end-implementation`, SHA local
+  `c4297c1e5da4ec724ee0b1291136b37fd6033a4c`.
+- [ ] Gate de estructura y conteo de datos relevantes local/producción:
+  repetir después de cada migración de esta fase y registrar el resultado
+  antes de promoverla. La paridad de historial no sustituye esta comparación.
+
+#### Hallazgos abiertos
+
+| ID | Hallazgo comprobado | Impacto | Criterio de cierre |
+| --- | --- | --- | --- |
+| EMP-INT-01 | Inventario > Empaques todavía lee y escribe `packaging_items`, `packaging_stock` y `packaging_movements`, mientras Inventario > Productos usa `items` e `inventory_stock`. | Dos rutas de autoridad para el mismo concepto y riesgo de divergencia entre backoffice, POS, compras y movimientos. | Ningún lector/escritor operativo nuevo usa las tablas legacy; compras, ajustes, ventas, POS pull/sync, reportes y movimientos usan el contrato canónico de `items`/ledger; auditoría de `pg_depend` sin dependencias activas antes de retirar tablas. |
+| EMP-UX-02 | El editor canónico solo ofrece el tipo técnico de inventario; no ofrece la clase comercial Empaque. `item_class`/`source_kind` existen en SQL, pero no están representados en `CanonicalItem` ni en la ficha. | El usuario no puede crear o convertir explícitamente un artículo en empaque desde Productos; “Sin categoría” no expresa esa clase. | La ficha muestra una clase comercial explícita y validada; crear/editar Empaque persiste `item_class` y sus reglas; el campo técnico de inventario permanece separado; pruebas de permisos, tenant, POS y persistencia aprobadas. |
+
+#### Plan medible de implementación
+
+**F1 — Contrato de clasificación (EMP-UX-02).**
+
+- [ ] Modelar `item_class`/clasificación comercial en dominio, lectura y payload
+  sin exponer `source_kind` como dato editable.
+- [ ] Incorporar en la ficha el selector explícito: Producto, Materia prima,
+  Empaque y Servicio; definir las combinaciones válidas con inventario,
+  compra, venta, receta y POS.
+- [ ] Validar la autoridad en `app_upsert_item_v2`, permisos y RLS; impedir
+  combinaciones inválidas y conservar enlaces de clasificación en una sola
+  transacción.
+- [ ] Pruebas mínimas: 4 clases × crear/editar, duplicidad, tenant cruzado,
+  rol sin permiso, F5/relectura y sincronización POS. Gate: 100% aprobadas.
+
+**F2 — Unificación operativa de inventario (EMP-INT-01).**
+
+- [ ] Inventariar y versionar todos los lectores/escritores de
+  `packaging_items`, `packaging_stock` y `packaging_movements`, incluyendo
+  RPC, pull/sync POS, compras, ventas, anulaciones, ajustes y reportes.
+- [ ] Definir un ledger canónico único por `item_id`, con cantidades decimales,
+  idempotencia, reversas por movimiento original y aislamiento por restaurante.
+- [ ] Migrar primero lectura y escritura detrás de contratos versionados;
+  conservar históricos mediante adaptación explícita, sin doble escritura ni
+  triggers de espejo permanentes.
+- [ ] Ejecutar auditoría `rg` + `pg_depend` + funciones/RPC + políticas RLS:
+  cero escritores legacy y cero referencias operativas antes del retiro.
+- [ ] Pruebas E2E: compra, ajuste, venta POS, consumo por regla, anulación,
+  sincronización offline/reintento, stock insuficiente y reportes. Gate:
+  saldo esperado idéntico en Backoffice, POS y ledger en 100% de escenarios.
+
+**F3 — Retiro controlado y liberación.**
+
+- [ ] Comparar esquema y conteos local/producción; aplicar migración solo tras
+  pasar F1/F2 y registrar acta de compatibilidad.
+- [ ] Retirar pestaña operativa separada de Empaques únicamente cuando el
+  reemplazo canónico cubra catálogo, stock, compras, reglas y auditoría.
+- [ ] Eliminar tablas legacy solo después de cero FKs, triggers, policies,
+  funciones, jobs y clientes activos; no usar `DROP ... CASCADE` como atajo.
+- [ ] Ejecutar `dart format`, `flutter analyze`, pruebas dirigidas, build
+  RELEASE QA y validación visual responsive. Publicar SHA, migración y
+  evidencia de paridad.
+
+### Addendum de implementaciÃ³n local F1/F2 - 2026-11-18
+
+- [x] F1 local implementado en migraciones 120-124: `item_class` explÃ­cito,
+  escritura atÃ³mica, validaciÃ³n de combinaciones, `tracks_inventory` coherente
+  y proyecciÃ³n de stock en el snapshot POS.
+- [x] F2 local parcial implementado: el snapshot canÃ³nico transporta clase y
+  saldo; el POS proyecta empaques canÃ³nicos al lector local y `pos_sync_sale_v2`
+  incorpora un puente idempotente para movimientos de empaques sin fila legacy.
+- [x] Regla local real creada para Producto comercial `1` -> Empaque canÃ³nico;
+  quedÃ³ persistida con alcance `per_sale_line` y cantidad `1`.
+- [x] Prueba transaccional local del empaque: compra `+5`, venta `-2`, anulaciÃ³n
+  `+2`, saldo final `5`; intento `-6` rechazado sin alterar el saldo.
+- [x] `flutter analyze --no-pub`: sin issues. Suite dirigida POS, ventas,
+  sincronizaciÃ³n, empaques y proyecciÃ³n canÃ³nica: **79 pruebas aprobadas**.
+- [ ] F2 completo pendiente: ejecutar venta POS real con regla contra el RPC
+  local, comprobar anulaciÃ³n/reintento idempotente desde dispositivo y cerrar
+  la lectura legacy de Inventario > Empaques antes de retirar tablas.
+- [ ] F3/build RELEASE/QA visual y paridad estructural contra producciÃ³n siguen
+  pendientes. Las migraciones 120-124 estÃ¡n solo en Docker local; no se tocÃ³
+  Supabase remoto.
+
+**Estado actual:** F0/paridad de migraciones aprobada; F1, F2 y F3 pendientes.
+No se modificó código, esquema ni datos en el addendum anterior.
+
+### Corrección de stock negativo por receta — 2026-11-18
+
+- [x] Migración 125 aplicada en Docker local: el movimiento canónico permite
+  quedar bajo cero solo para `recipe_consumption` de `raw_material` cuando la
+  regla del restaurante está activa.
+- [x] Migración 126 aplicada en Docker local: la anulación revierte el
+  movimiento de receta original aunque el saldo permanezca negativo y la regla
+  ya se haya apagado.
+- [x] Helpers internos de movimiento y receta dejaron de aceptar ejecución
+  directa por `authenticated`; el flujo POS conserva acceso mediante RPC
+  SECURITY DEFINER.
+- [x] Migración 127 conectó el consumo y reverso de recetas al RPC canónico
+  `pos_sync_sale_v2`; la prueba comprueba que ambos hooks están presentes en la
+  función activa. Antes de esta conexión, la ruta de sincronización vigente no
+  invocaba la explosión de receta.
+- [x] `supabase/tests/canonical_recipe_negative_stock_rule.sql` pasó en Docker
+  local y terminó en `ROLLBACK`: regla ON, regla OFF con rechazo atómico,
+  reintento idempotente, anulación con saldo aún negativo, producto vendible y
+  empaque estrictos, y permisos del helper.
+- [ ] Migraciones 125-127 no están aplicadas a Supabase remoto. Promoción
+  pendiente del proceso de release.
+
+**Estado actualizado:** corrección implementada y probada solo en Docker local;
+paridad remota/release pendiente.
+
+### Cierre de Inventario unificado por artículo — 2026-11-18
+
+**Objetivo:** que Inventario administre en una sola lista todos los artículos
+activos con control de existencias, incluidos productos, materias primas y
+empaques; sin una pestaña ni lecturas/escrituras paralelas para empaques.
+
+| Etapa medible | Criterio de aceptación | Estado |
+|---|---|---|
+| I1. Fuente única | La lista filtra `items.tracks_inventory=true` y lee saldos por `inventory_stock.item_id`; aparecen clases `packaging` y `raw_material` en la misma colección. | Completada en cliente y prueba de lectura |
+| I2. Operaciones únicas | Compras usan `app_register_inventory_purchase_batch_v2`; conteos/ajustes usan `app_register_inventory_adjustment_batch_v2`; ambos aceptan `item_id` y refrescan la misma lista. | Completada en cliente; RPC SQL local por validar |
+| I3. Retiro de pestaña/legacy del flujo | No existe TabBar de Productos/Empaques ni llamadas de Inventario a `packaging_items`, `packaging_stock` o `app_register_packaging_purchase_batch`. | Completada en código de Inventario |
+| I4. Regresión automatizada | Tests comprueban mezcla de clases y que una compra de empaque use el RPC canónico; suite de Inventario y analyzer limpios. | Completada: suite 8/8; analyzer sin errores |
+| I5. Prueba transaccional Docker | JWT de administrador sintético compra y ajusta un artículo `packaging` inventariable; stock/ledger concuerdan y todos los cambios terminan en `ROLLBACK`. | Completada: PASS en Docker local |
+| I6. QA responsive RELEASE | Build Web oficial local, confirmar una sola colección y controles de compra/ajuste utilizables en escritorio y viewport estrecho. | Build completado; inspección visual automatizada pendiente por falta de control del navegador |
+
+**Límite de compatibilidad:** este cierre elimina rutas antiguas de la pantalla
+admin Inventario; no borra aún `packaging_items`, `packaging_stock` ni RPCs del
+esquema ni el almacenamiento offline del POS. Las auditorías previas registran
+clientes POS/dispositivos que aún pueden depender de contratos históricos. El
+retiro físico de esos objetos requiere demostrar primero cero consumidores,
+sync/reintento/anulación compatibles y promoción coordinada; no se ejecuta como
+parte de este cambio de UI.
+
+**Evidencia de implementación:** `InventoryPage` muestra una colección, el
+lector consulta `items`/`inventory_stock`, y compras y ajustes envían `item_id`
+por RPC canónico. Prueba de lectura confirma que `packaging_items` y
+`packaging_stock` no son consultados. La migración 123 ya enruta movimientos
+canónicos de empaque al ledger común.
+
+**Pruebas ejecutadas:** `flutter analyze` focalizado sin errores; suite
+`test/features/inventory` aprobada (8 tests); prueba SQL autenticada de compra
+`+5` y ajuste `+2` para empaque rastreable aprobada y revertida con `ROLLBACK`.
+El build oficial RELEASE local usó el lanzador canónico con `-LocalSupabaseQa`
+y quedó servido en `http://127.0.0.1:8103/`. El build y endpoint no certifican
+por sí solos QA visual responsive ni inicio de sesión; queda revisión del dueño.

@@ -37,4 +37,34 @@ void main() {
     expect(find.text('sales'), findsNothing);
     expect(find.text('pending'), findsNothing);
   });
+
+  testWidgets('labels stale catalog operations as requiring resolution', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: SyncQueueTile(
+            item: SyncQueueItem(
+              id: 'queue-stale',
+              entityType: 'sales',
+              entityId: 'sale-1',
+              operation: SyncOperation.create,
+              payload: const {},
+              status: SyncQueueStatus.requiresResolution,
+              retryCount: 1,
+              lastError: 'Venta retenida por versión obsoleta.',
+              createdAt: DateTime(2026, 11, 18),
+              updatedAt: DateTime(2026, 11, 18),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    expect(find.textContaining('Requiere conciliación'), findsOneWidget);
+    expect(find.textContaining('versión obsoleta'), findsOneWidget);
+  });
 }

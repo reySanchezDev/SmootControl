@@ -26,4 +26,10 @@ abstract interface class ISyncQueueRepository {
     required String itemId,
     required String error,
   });
+
+  /// Quarantines a conflict that cannot be safely retried automatically.
+  Future<AppResult<void>> markRequiresResolution({
+    required String itemId,
+    required String reason,
+  });
 }
