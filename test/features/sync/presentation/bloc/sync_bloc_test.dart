@@ -216,6 +216,12 @@ final class _SyncQueueRepositoryFake implements ISyncQueueRepository {
   }
 
   @override
+  Future<AppResult<void>> markRequiresResolution({
+    required String itemId,
+    required String reason,
+  }) async => const AppSuccess<void>(null);
+
+  @override
   Future<AppResult<void>> markSynced(String itemId) async {
     _replaceStatus(itemId, SyncQueueStatus.synced);
 

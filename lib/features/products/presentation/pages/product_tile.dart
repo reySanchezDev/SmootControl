@@ -38,21 +38,21 @@ class _ProductTile extends StatelessWidget {
                 if (!selectionMode)
                   AppTileActions(
                     compact: true,
-                  actions: [
-                    AppTileAction(
-                      icon: Icons.edit_outlined,
-                      label: l10n.editAction,
-                      onPressed: onEdit,
-                    ),
-                    if (product.isActive)
+                    actions: [
                       AppTileAction(
-                        color: Theme.of(context).colorScheme.error,
-                        icon: Icons.toggle_off_outlined,
-                        label: l10n.deactivateAction,
-                        onPressed: onDeactivate,
+                        icon: Icons.edit_outlined,
+                        label: l10n.editAction,
+                        onPressed: onEdit,
                       ),
-                  ],
-                ),
+                      if (product.isActive)
+                        AppTileAction(
+                          color: Theme.of(context).colorScheme.error,
+                          icon: Icons.toggle_off_outlined,
+                          label: l10n.deactivateAction,
+                          onPressed: onDeactivate,
+                        ),
+                    ],
+                  ),
               ],
             ),
             const Divider(height: 18),

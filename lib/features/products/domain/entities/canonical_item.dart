@@ -31,6 +31,45 @@ enum CanonicalItemType {
   };
 }
 
+/// Business role of an article, independent from stock behavior.
+enum CanonicalItemClass {
+  /// Sellable finished product.
+  saleProduct('Producto', 'sale_product'),
+
+  /// Ingredient or raw material.
+  rawMaterial('Materia prima', 'raw_material'),
+
+  /// Packaging consumed by an operation or sale.
+  packaging('Empaque', 'packaging'),
+
+  /// Non-stock service.
+  service('Servicio', 'service')
+  ;
+
+  const CanonicalItemClass(this.label, this.databaseValue);
+
+  /// Roles users may assign while creating an article.
+  static List<CanonicalItemClass> get selectableValues => values
+      .where((itemClass) => itemClass != CanonicalItemClass.service)
+      .toList(growable: false);
+
+  /// Human-facing label.
+  final String label;
+
+  /// Database identifier.
+  final String databaseValue;
+
+  /// Parses a database identifier.
+  static CanonicalItemClass parse(Object? value) {
+    if (value == null) return CanonicalItemClass.saleProduct;
+    return values.firstWhere(
+      (item) => item.databaseValue == value,
+      orElse: () =>
+          throw FormatException('Clase de artículo desconocida: $value'),
+    );
+  }
+}
+
 /// Classification that can be assigned to multiple canonical articles.
 final class CanonicalClassification {
   /// Creates a classification.
@@ -58,6 +97,7 @@ final class CanonicalItem {
     required this.name,
     required this.type,
     required this.baseUnitId,
+    this.itemClass = CanonicalItemClass.saleProduct,
     this.id,
     this.commercialCode,
     this.categoryId,
@@ -84,6 +124,7 @@ final class CanonicalItem {
       code: row['code']?.toString() ?? '',
       name: row['name']?.toString() ?? '',
       type: CanonicalItemType.parse(row['item_type']),
+      itemClass: CanonicalItemClass.parse(row['item_class']),
       baseUnitId: row['base_unit_id']?.toString() ?? '',
       cost: double.tryParse(row['base_unit_cost'].toString()) ?? 0,
       price: double.tryParse(row['base_unit_price'].toString()) ?? 0,
@@ -115,6 +156,9 @@ final class CanonicalItem {
   /// Technical movement classification.
   final CanonicalItemType type;
 
+  /// Business role shown and edited by the owner.
+  final CanonicalItemClass itemClass;
+
   /// Existing measurement unit UUID.
   final String baseUnitId;
 
@@ -145,14 +189,17 @@ final class CanonicalItem {
   /// Independent functional classification IDs.
   final List<String> classificationIds;
 
+  /// Inventory tracking is a projection of [type], never an independent flag.
+  bool get tracksInventory => type == CanonicalItemType.inventory;
+
   /// The trusted RPC, not direct table DML, performs every update.
   Map<String, Object?> toPayload() => {
     if (id != null) 'id': id,
-    if (commercialCode != null) 'commercial_code': commercialCode,
     'category_id': categoryId,
     'code': code.trim(),
     'name': name.trim(),
     'item_type': type.databaseValue,
+    'item_class': itemClass.databaseValue,
     'base_unit_id': baseUnitId,
     'base_unit_cost': cost,
     'base_unit_price': price,

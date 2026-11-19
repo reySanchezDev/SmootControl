@@ -77,6 +77,7 @@ final class ItemCatalogSnapshotApplier {
                 code: item.code,
                 name: item.name,
                 itemType: _itemType(item.type),
+                itemClass: Value(item.itemClass),
                 baseUnitId: item.baseUnitId,
                 canSell: item.canSell,
                 visibleInPos: item.visibleInPos,

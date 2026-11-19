@@ -57,27 +57,6 @@ class _ProductBatchPurchaseTile extends StatelessWidget {
   }
 }
 
-class _PackagingBatchPurchaseTile extends StatelessWidget {
-  const _PackagingBatchPurchaseTile({
-    required this.row,
-    required this.compact,
-  });
-
-  final _BatchPackagingRow row;
-  final bool compact;
-
-  @override
-  Widget build(BuildContext context) {
-    return _BatchPurchaseTile(
-      title: row.item.packagingName,
-      quantityLabel: 'Cantidad',
-      quantityController: row.quantityController,
-      costController: row.costController,
-      compact: compact,
-    );
-  }
-}
-
 class _BatchPurchaseTile extends StatelessWidget {
   const _BatchPurchaseTile({
     required this.title,

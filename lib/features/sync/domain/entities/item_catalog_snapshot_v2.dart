@@ -37,6 +37,7 @@ final class ItemCatalogEntryV2 {
     required this.canSell,
     required this.visibleInPos,
     required this.isActive,
+    this.itemClass = 'sale_product',
     this.categoryId,
     this.commercialCode,
     this.priceInCents = 0,
@@ -56,6 +57,9 @@ final class ItemCatalogEntryV2 {
 
   /// Inventory or commercial type.
   final ItemCatalogTypeV2 type;
+
+  /// Business role: sale_product, raw_material, packaging or service.
+  final String itemClass;
 
   /// Canonical base measurement unit UUID.
   final String baseUnitId;
@@ -202,7 +206,7 @@ final class ItemCatalogSnapshotV2 {
     if (restaurantId != expectedRestaurantId.toLowerCase()) {
       throw const FormatException('catalog_tenant_mismatch');
     }
-    if (json['contract_version'] != 2) {
+    if (json['contract_version'] != 2 && json['contract_version'] != 3) {
       throw const FormatException('unsupported_item_catalog_version');
     }
     if (json['snapshot_complete'] != true) {
@@ -239,6 +243,15 @@ final class ItemCatalogSnapshotV2 {
         'service' => ItemCatalogTypeV2.service,
         _ => throw const FormatException('unsupported_item_type'),
       };
+      final itemClass = row['item_class']?.toString() ?? 'sale_product';
+      if (!const {
+        'sale_product',
+        'raw_material',
+        'packaging',
+        'service',
+      }.contains(itemClass)) {
+        throw const FormatException('unsupported_item_class');
+      }
       final canSell = _boolean(row['can_sell'], 'can_sell');
       final visibleInPos = _boolean(row['visible_in_pos'], 'visible_in_pos');
       final isActive = _boolean(row['is_active'], 'is_active');
@@ -248,7 +261,14 @@ final class ItemCatalogSnapshotV2 {
       final commercialCode = row['commercial_code']?.toString();
       final priceInCents = _moneyCents(row['base_unit_price']);
       final costInCents = _moneyCents(row['base_unit_cost']);
-      final tracksInventory = row['tracks_inventory'] == true;
+      final reportedTracksInventory = _boolean(
+        row['tracks_inventory'],
+        'tracks_inventory',
+      );
+      final tracksInventory = type == ItemCatalogTypeV2.inventory;
+      if (reportedTracksInventory != tracksInventory) {
+        throw const FormatException('item_inventory_tracking_mismatch');
+      }
       final quantityOnHand = _integer(row['quantity_on_hand']);
       if (!itemIds.add(id) || !codes.add(code.toLowerCase())) {
         throw const FormatException('duplicate_catalog_item_or_code');
@@ -262,6 +282,7 @@ final class ItemCatalogSnapshotV2 {
           code: code,
           name: name,
           type: type,
+          itemClass: itemClass,
           baseUnitId: _uuid(row['base_unit_id'], 'base_unit_id'),
           canSell: canSell,
           visibleInPos: visibleInPos,

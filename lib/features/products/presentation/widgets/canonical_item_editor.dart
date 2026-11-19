@@ -4,6 +4,8 @@ import 'package:smoo_control/core/design_system/backoffice_action_feedback.dart'
 import 'package:smoo_control/features/catalog/domain/entities/product_category.dart';
 import 'package:smoo_control/features/products/domain/entities/canonical_item.dart';
 import 'package:smoo_control/features/products/domain/entities/measurement_unit.dart';
+import 'package:smoo_control/features/products/presentation/widgets/canonical_item_labels.dart';
+import 'package:smoo_control/l10n/app_localizations.dart';
 
 part 'canonical_item_editor_fields_part.dart';
 
@@ -16,7 +18,6 @@ class CanonicalItemEditor extends StatefulWidget {
     required this.onSave,
     required this.onBack,
     this.categories = const [],
-    this.initialCommercialCode,
     this.saving = false,
     this.item,
     super.key,
@@ -43,8 +44,6 @@ class CanonicalItemEditor extends StatefulWidget {
   /// Active product categories available to the tenant.
   final List<ProductCategory> categories;
 
-  /// Suggested next code for a new article.
-  final int? initialCommercialCode;
   @override
   State<CanonicalItemEditor> createState() => _CanonicalItemEditorState();
 }
@@ -55,11 +54,12 @@ class _CanonicalItemEditorState extends State<CanonicalItemEditor> {
   }
 
   final _form = GlobalKey<FormState>();
-  final _commercialCode = TextEditingController();
   final _name = TextEditingController();
   final _cost = TextEditingController(text: '0');
   final _price = TextEditingController(text: '0');
   late CanonicalItemType _type;
+  late CanonicalItemClass _itemClass;
+  late CanonicalItemClass _lastNonServiceClass;
   late bool _canSell;
   late bool _canPurchase;
   late bool _visibleInPos;
@@ -73,13 +73,14 @@ class _CanonicalItemEditorState extends State<CanonicalItemEditor> {
   void initState() {
     super.initState();
     final item = widget.item;
-    _commercialCode.text =
-        (item?.commercialCode ?? widget.initialCommercialCode)?.toString() ??
-        '';
     _name.text = item?.name ?? '';
     _cost.text = item?.cost.toString() ?? '0';
     _price.text = item?.price.toString() ?? '0';
     _type = item?.type ?? CanonicalItemType.inventory;
+    _itemClass = item?.itemClass ?? CanonicalItemClass.saleProduct;
+    _lastNonServiceClass = _itemClass == CanonicalItemClass.service
+        ? CanonicalItemClass.saleProduct
+        : _itemClass;
     _canSell = item?.canSell ?? false;
     _canPurchase = item?.canPurchase ?? true;
     _visibleInPos = item?.visibleInPos ?? false;
@@ -93,7 +94,6 @@ class _CanonicalItemEditorState extends State<CanonicalItemEditor> {
 
   @override
   void dispose() {
-    _commercialCode.dispose();
     _name.dispose();
     _cost.dispose();
     _price.dispose();
@@ -128,11 +128,12 @@ class _CanonicalItemEditorState extends State<CanonicalItemEditor> {
     widget.onSave(
       CanonicalItem(
         id: widget.item?.id,
-        commercialCode: int.tryParse(_commercialCode.text.trim()),
+        commercialCode: widget.item?.commercialCode,
         categoryId: _categoryId,
         code: widget.item?.code ?? '',
         name: _name.text.trim(),
         type: _type,
+        itemClass: _itemClass,
         baseUnitId: _baseUnit!,
         cost: double.parse(_cost.text.replaceAll(',', '.')),
         price: double.parse(_price.text.replaceAll(',', '.')),
@@ -149,17 +150,13 @@ class _CanonicalItemEditorState extends State<CanonicalItemEditor> {
 
   bool get _hasChanges {
     final previous = widget.item;
-    final previousCommercialCode =
-        previous?.commercialCode?.toString() ??
-        widget.initialCommercialCode?.toString() ??
-        '';
     return _name.text != (previous?.name ?? '') ||
-        _commercialCode.text != previousCommercialCode ||
         _cost.text != (previous?.cost.toString() ?? '0') ||
         _price.text != (previous?.price.toString() ?? '0') ||
         _baseUnit != previous?.baseUnitId ||
         _categoryId != previous?.categoryId ||
         _type != (previous?.type ?? CanonicalItemType.inventory) ||
+        _itemClass != (previous?.itemClass ?? CanonicalItemClass.saleProduct) ||
         _canSell != (previous?.canSell ?? false) ||
         _canPurchase != (previous?.canPurchase ?? true) ||
         _visibleInPos != (previous?.visibleInPos ?? false) ||

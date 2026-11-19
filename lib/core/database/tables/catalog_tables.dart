@@ -36,6 +36,10 @@ class LocalCanonicalItems extends Table {
   /// inventory, non_inventory or service.
   TextColumn get itemType => text()();
 
+  /// Business role of the article.
+  TextColumn get itemClass =>
+      text().withDefault(const Constant('sale_product'))();
+
   /// Canonical base measurement-unit identifier.
   TextColumn get baseUnitId => text()();
 

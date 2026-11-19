@@ -40,6 +40,7 @@ class _BatchProductPurchaseDialogState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final mediaSize = MediaQuery.sizeOf(context);
     final isCompact = mediaSize.width < 560;
     final filter = _normalize(_filterController.text);
@@ -65,21 +66,23 @@ class _BatchProductPurchaseDialogState
         child: Column(
           children: [
             AppInput(
-              label: 'Filtrar por producto, categoria o subcategoria',
+              label: l10n.inventoryPurchaseFilterLabel,
               controller: _filterController,
               onChanged: (_) => setState(() {}),
             ),
             const SizedBox(height: BackofficeFormStandards.sectionGap),
             if (!isCompact) ...[
-              const _BatchPurchaseHeader(productLabel: 'PRODUCTO'),
+              _BatchPurchaseHeader(
+                productLabel: l10n.inventoryItemColumn.toUpperCase(),
+              ),
               const Divider(height: 1),
             ],
             Expanded(
               child: visibleRows.isEmpty
-                  ? const AppEmptyState(
+                  ? AppEmptyState(
                       icon: Icons.search_off,
-                      title: 'Sin resultados',
-                      message: 'Ajusta el filtro para ver productos.',
+                      title: l10n.emptySearchTitle,
+                      message: l10n.inventoryPurchaseFilterEmpty,
                     )
                   : ListView.separated(
                       itemCount: visibleRows.length,

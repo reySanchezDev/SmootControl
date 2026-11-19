@@ -24,9 +24,9 @@ void main() {
             canSell: true,
             visibleInPos: true,
             isActive: true,
-        commercialCode: const Value('45'),
-        priceInCents: const Value(12500),
-        costInCents: const Value(7000),
+            commercialCode: const Value('45'),
+            priceInCents: const Value(12500),
+            costInCents: const Value(7000),
           ),
         );
 
@@ -55,4 +55,39 @@ void main() {
     expect(products.single.sourceKind, 'canonical_item');
     expect(products.single.categoryId, '__canonical_uncategorized__');
   });
+
+  test(
+    'projects canonical packaging into the local packaging read model',
+    () async {
+      await database
+          .into(database.localCanonicalItems)
+          .insert(
+            LocalCanonicalItemsCompanion.insert(
+              id: 'packaging-1',
+              restaurantId: 'restaurant-1',
+              code: 'ART-3',
+              name: 'Empaque canónico',
+              itemType: 'inventory',
+              baseUnitId: 'unit-1',
+              canSell: false,
+              visibleInPos: false,
+              isActive: true,
+              itemClass: const Value('packaging'),
+              tracksInventory: const Value(true),
+              quantityOnHand: const Value(7),
+            ),
+          );
+
+      await CanonicalItemPosProjector(database).project('restaurant-1');
+
+      final packaging = await database
+          .select(database.localPackagingItems)
+          .get();
+      final stock = await database.select(database.localPackagingStock).get();
+      expect(packaging.single.id, 'packaging-1');
+      expect(packaging.single.tracksStock, isTrue);
+      expect(stock.single.quantityOnHand, 7);
+      expect(await database.select(database.localProducts).get(), isEmpty);
+    },
+  );
 }

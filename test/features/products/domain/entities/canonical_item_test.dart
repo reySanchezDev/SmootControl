@@ -21,39 +21,56 @@ void main() {
       name: 'Bolsa para llevar',
       type: CanonicalItemType.inventory,
       baseUnitId: 'unit-id',
+      itemClass: CanonicalItemClass.packaging,
       cost: 2.5,
       canPurchase: true,
       classificationIds: ['packaging-id'],
     );
     final payload = item.toPayload();
     expect(payload.containsKey('id'), isFalse);
+    expect(payload.containsKey('commercial_code'), isFalse);
     expect(payload['item_type'], 'inventory');
+    expect(payload['item_class'], 'packaging');
     expect(payload['classification_ids'], ['packaging-id']);
     expect(payload['can_sell'], false);
     expect(payload['base_unit_cost'], 2.5);
+    expect(item.tracksInventory, isTrue);
   });
 
   test('parse keeps UUID and commercial settings from server', () {
-    final item = CanonicalItem.fromRow({
-      'id': 'item-id',
-      'code': 'SERV-01',
-      'name': 'Entrega',
-      'item_type': 'service',
-      'base_unit_id': 'unit-id',
-      'base_unit_cost': '0',
-      'base_unit_price': '50.50',
-      'can_sell': true,
-      'can_purchase': false,
-      'visible_in_pos': true,
-      'uses_recipe': false,
-      'send_to_kitchen': false,
-      'is_active': true,
-    }, classificationIds: ['service-class']);
+    final item = CanonicalItem.fromRow(
+      {
+        'id': 'item-id',
+        'code': 'SERV-01',
+        'name': 'Entrega',
+        'item_type': 'service',
+        'item_class': 'service',
+        'base_unit_id': 'unit-id',
+        'base_unit_cost': '0',
+        'base_unit_price': '50.50',
+        'can_sell': true,
+        'can_purchase': false,
+        'visible_in_pos': true,
+        'uses_recipe': false,
+        'send_to_kitchen': false,
+        'is_active': true,
+      },
+      classificationIds: ['service-class'],
+    );
     expect(item.id, 'item-id');
     expect(item.type, CanonicalItemType.service);
+    expect(item.itemClass, CanonicalItemClass.service);
     expect(item.price, 50.5);
     expect(item.toPayload()['id'], 'item-id');
     expect(item.classificationIds, ['service-class']);
+    expect(item.tracksInventory, isFalse);
+  });
+
+  test('service is not an assignable operational role', () {
+    expect(
+      CanonicalItemClass.selectableValues,
+      isNot(contains(CanonicalItemClass.service)),
+    );
   });
 
   test('invalid server item type is rejected instead of guessed', () {

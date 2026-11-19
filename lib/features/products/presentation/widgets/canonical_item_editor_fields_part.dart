@@ -21,6 +21,7 @@ extension _CanonicalItemEditorFields on _CanonicalItemEditorState {
     List<ProductCategory> categories,
   ) => LayoutBuilder(
     builder: (context, constraints) {
+      final l10n = AppLocalizations.of(context);
       const gap = 18.0;
       final wide = constraints.maxWidth >= 680;
       final fieldWidth = wide
@@ -40,21 +41,14 @@ extension _CanonicalItemEditorFields on _CanonicalItemEditorState {
             context,
             'Información general',
             grid([
-              TextFormField(
-                controller: _commercialCode,
-                decoration: const InputDecoration(
-                  labelText: 'Código comercial',
-                  helperText: 'Dejá vacío para asignarlo automáticamente',
+              InputDecorator(
+                decoration: InputDecoration(
+                  labelText: l10n.canonicalItemCodeField,
                 ),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  final code = int.tryParse((value ?? '').trim());
-                  return value != null &&
-                          value.trim().isNotEmpty &&
-                          (code == null || code <= 0)
-                      ? 'Ingresá un número válido'
-                      : null;
-                },
+                child: Text(
+                  widget.item?.commercialCode?.toString() ??
+                      l10n.canonicalItemCodeAutoAssigned,
+                ),
               ),
               TextFormField(
                 controller: _name,
@@ -62,27 +56,81 @@ extension _CanonicalItemEditorFields on _CanonicalItemEditorState {
                 maxLength: 250,
                 validator: _required,
               ),
+              if (_type != CanonicalItemType.service)
+                DropdownButtonFormField<CanonicalItemClass>(
+                  initialValue: _itemClass,
+                  isExpanded: true,
+                  decoration: InputDecoration(
+                    labelText: l10n.canonicalItemRoleField,
+                    helperText: widget.item == null
+                        ? null
+                        : l10n.canonicalItemRoleImmutableHelp,
+                  ),
+                  items: CanonicalItemClass.selectableValues
+                      .map(
+                        (itemClass) => DropdownMenuItem(
+                          value: itemClass,
+                          child: Text(canonicalItemRoleLabel(l10n, itemClass)),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: widget.item != null
+                      ? null
+                      : (itemClass) {
+                          if (itemClass == null) return;
+                          _update(() {
+                            _itemClass = itemClass;
+                            _lastNonServiceClass = itemClass;
+                            if (itemClass != CanonicalItemClass.saleProduct) {
+                              _canSell = false;
+                              _visibleInPos = false;
+                              _sendToKitchen = false;
+                            }
+                            if (itemClass == CanonicalItemClass.packaging) {
+                              _usesRecipe = false;
+                            }
+                          });
+                        },
+                ),
               DropdownButtonFormField<CanonicalItemType>(
                 initialValue: _type,
                 isExpanded: true,
-                decoration: const InputDecoration(labelText: 'Tipo *'),
-                items: CanonicalItemType.values
-                    .map(
-                      (type) => DropdownMenuItem(
-                        value: type,
-                        child: Text(type.label),
-                      ),
-                    )
-                    .toList(),
-                onChanged: (type) {
-                  if (type == null) return;
-                  _update(() {
-                    _type = type;
-                    if (type == CanonicalItemType.service) {
-                      _usesRecipe = false;
-                    }
-                  });
-                },
+                decoration: InputDecoration(
+                  labelText: l10n.canonicalItemTypeField,
+                ),
+                items:
+                    (widget.item?.type == CanonicalItemType.service
+                            ? const [CanonicalItemType.service]
+                            : widget.item == null
+                            ? CanonicalItemType.values
+                            : const [
+                                CanonicalItemType.inventory,
+                                CanonicalItemType.nonInventory,
+                              ])
+                        .map(
+                          (type) => DropdownMenuItem(
+                            value: type,
+                            child: Text(canonicalItemTypeLabel(l10n, type)),
+                          ),
+                        )
+                        .toList(),
+                onChanged: widget.item?.type == CanonicalItemType.service
+                    ? null
+                    : (type) {
+                        if (type == null) return;
+                        _update(() {
+                          _type = type;
+                          if (type == CanonicalItemType.service) {
+                            _lastNonServiceClass = _itemClass;
+                            _itemClass = CanonicalItemClass.service;
+                            _usesRecipe = false;
+                            _visibleInPos = false;
+                            _sendToKitchen = false;
+                          } else if (_itemClass == CanonicalItemClass.service) {
+                            _itemClass = _lastNonServiceClass;
+                          }
+                        });
+                      },
               ),
               DropdownButtonFormField<String>(
                 initialValue: units.any((unit) => unit.id == _baseUnit)

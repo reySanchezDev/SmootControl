@@ -43,6 +43,43 @@ final class CanonicalItemPosProjector {
       }
 
       for (final item in items) {
+        if (item.itemClass == 'packaging') {
+          await _database
+              .into(_database.localPackagingItems)
+              .insert(
+                LocalPackagingItemsCompanion(
+                  id: Value(item.id),
+                  name: Value(item.name),
+                  costInCents: Value(item.costInCents),
+                  tracksStock: Value(item.tracksInventory),
+                  isActive: Value(item.isActive),
+                  remoteId: Value(item.id),
+                  syncStatus: const Value('synced'),
+                  syncError: const Value(null),
+                  createdAt: Value(now),
+                  updatedAt: Value(now),
+                  syncedAt: Value(now),
+                ),
+                mode: InsertMode.insertOrReplace,
+              );
+          if (item.tracksInventory) {
+            await _database
+                .into(_database.localPackagingStock)
+                .insert(
+                  LocalPackagingStockCompanion(
+                    packagingItemId: Value(item.id),
+                    quantityOnHand: Value(item.quantityOnHand),
+                    remoteId: Value(item.id),
+                    syncStatus: const Value('synced'),
+                    syncError: const Value(null),
+                    createdAt: Value(now),
+                    updatedAt: Value(now),
+                    syncedAt: Value(now),
+                  ),
+                  mode: InsertMode.insertOrReplace,
+                );
+          }
+        }
         if (!item.canSell || !item.visibleInPos || !item.isActive) continue;
         visibleIds.add(item.id);
         await _database

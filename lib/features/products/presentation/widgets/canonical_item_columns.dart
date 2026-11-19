@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:smoo_control/core/design_system/backoffice_collection_view.dart';
 import 'package:smoo_control/features/catalog/domain/entities/product_category.dart';
 import 'package:smoo_control/features/products/domain/entities/canonical_item.dart';
+import 'package:smoo_control/features/products/presentation/widgets/canonical_item_labels.dart';
+import 'package:smoo_control/l10n/app_localizations.dart';
 
 /// Shared columns for the canonical catalog; generated code stays internal.
 List<BackofficeListColumn<CanonicalItem>> canonicalItemColumns(
   List<ProductCategory> categories,
+  AppLocalizations l10n,
 ) => [
   BackofficeListColumn<CanonicalItem>(
     label: 'Código comercial',
@@ -25,16 +28,26 @@ List<BackofficeListColumn<CanonicalItem>> canonicalItemColumns(
     cell: (_, item) => Text(_categoryName(item, categories)),
   ),
   BackofficeListColumn<CanonicalItem>(
+    label: l10n.canonicalItemRoleField,
+    width: 170,
+    compare: (a, b) => canonicalItemRoleLabel(l10n, a.itemClass).compareTo(
+      canonicalItemRoleLabel(l10n, b.itemClass),
+    ),
+    cell: (_, item) => Text(canonicalItemRoleLabel(l10n, item.itemClass)),
+  ),
+  BackofficeListColumn<CanonicalItem>(
     label: 'Nombre',
     width: 280,
     compare: (a, b) => a.name.compareTo(b.name),
     cell: (_, item) => Text(item.name),
   ),
   BackofficeListColumn<CanonicalItem>(
-    label: 'Tipo',
+    label: l10n.canonicalItemTypeField,
     width: 170,
-    compare: (a, b) => a.type.label.compareTo(b.type.label),
-    cell: (_, item) => Text(item.type.label),
+    compare: (a, b) => canonicalItemTypeLabel(l10n, a.type).compareTo(
+      canonicalItemTypeLabel(l10n, b.type),
+    ),
+    cell: (_, item) => Text(canonicalItemTypeLabel(l10n, item.type)),
   ),
   BackofficeListColumn<CanonicalItem>(
     label: 'Costo',
