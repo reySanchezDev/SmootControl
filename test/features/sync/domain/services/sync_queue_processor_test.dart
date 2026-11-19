@@ -9,6 +9,7 @@ import 'package:smoo_control/features/sync/data/repositories/sync_queue_reposito
 import 'package:smoo_control/features/sync/domain/entities/sync_process_summary.dart';
 import 'package:smoo_control/features/sync/domain/entities/sync_queue_item.dart';
 import 'package:smoo_control/features/sync/domain/services/i_sync_remote_sender.dart';
+import 'package:smoo_control/features/sync/domain/services/stale_item_catalog_sale_exception.dart';
 import 'package:smoo_control/features/sync/domain/services/sync_queue_processor.dart';
 
 void main() {
@@ -113,6 +114,30 @@ void main() {
       expect(rows.single.status, SyncQueueStatus.error.name);
       expect(rows.single.retryCount, 1);
     });
+
+    test('quarantines stale-catalog sales from automatic retries', () async {
+      await _enqueueSale(repository, 'sale-stale');
+      final processor = SyncQueueProcessor(
+        repository: repository,
+        remoteSender: const _StaleCatalogSender(),
+      );
+
+      final result = await processor.processPending();
+
+      expect(
+        (result as AppSuccess<SyncProcessSummary>).value,
+        const SyncProcessSummary(processed: 1, succeeded: 0, failed: 1),
+      );
+      final queue = await database.select(database.localSyncQueue).get();
+      expect(queue.single.status, SyncQueueStatus.requiresResolution.name);
+
+      final retry = await processor.processPending();
+      expect(
+        (retry as AppSuccess<SyncProcessSummary>).value,
+        const SyncProcessSummary(processed: 0, succeeded: 0, failed: 0),
+      );
+      expect(queue.single.payloadJson, contains('sale-stale'));
+    });
   });
 }
 
@@ -156,5 +181,14 @@ final class _BlockingSender implements ISyncRemoteSender {
     if (!_release.isCompleted) {
       _release.complete();
     }
+  }
+}
+
+final class _StaleCatalogSender implements ISyncRemoteSender {
+  const _StaleCatalogSender();
+
+  @override
+  Future<void> push(SyncQueueItem item) {
+    throw const StaleItemCatalogSaleException();
   }
 }

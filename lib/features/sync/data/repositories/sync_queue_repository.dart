@@ -100,6 +100,17 @@ final class SyncQueueRepository implements ISyncQueueRepository {
   }
 
   @override
+  Future<AppResult<void>> markRequiresResolution({
+    required String itemId,
+    required String reason,
+  }) => _runStatusUpdate(
+    () => _localDataSource.markRequiresResolution(
+      itemId: itemId,
+      reason: reason,
+    ),
+  );
+
+  @override
   Future<AppResult<void>> markSynced(String itemId) {
     return _runStatusUpdate(() => _localDataSource.markSynced(itemId));
   }

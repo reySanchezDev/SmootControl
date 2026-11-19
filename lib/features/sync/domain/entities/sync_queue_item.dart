@@ -25,6 +25,9 @@ enum SyncQueueStatus {
 
   /// Failed and waiting for retry.
   error,
+
+  /// A human decision is required; automatic retries are unsafe.
+  requiresResolution,
 }
 
 /// Local queue item representing a pending remote operation.

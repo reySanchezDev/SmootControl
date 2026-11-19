@@ -41,6 +41,7 @@ final class LocalSyncQueueDataSource {
       ..where((item) {
         return item.status.equals(SyncQueueStatus.pending.name) |
             item.status.equals(SyncQueueStatus.error.name) |
+            item.status.equals(SyncQueueStatus.requiresResolution.name) |
             (item.status.equals(SyncQueueStatus.syncing.name) &
                 item.updatedAt.isSmallerThanValue(staleSyncingCutoff));
       })
@@ -91,10 +92,22 @@ final class LocalSyncQueueDataSource {
     );
   }
 
+  /// Keeps an unsafe operation visible but out of automatic retry batches.
+  Future<void> markRequiresResolution({
+    required String itemId,
+    required String reason,
+  }) => _updateStatus(
+    itemId: itemId,
+    status: SyncQueueStatus.requiresResolution,
+    clearError: false,
+    error: reason,
+  );
+
   Future<void> _updateStatus({
     required String itemId,
     required SyncQueueStatus status,
     required bool clearError,
+    String? error,
   }) async {
     await (_database.update(
       _database.localSyncQueue,
@@ -103,7 +116,9 @@ final class LocalSyncQueueDataSource {
         status: Value(status.name),
         lastError: clearError
             ? const Value<String?>(null)
-            : const Value.absent(),
+            : error == null
+            ? const Value.absent()
+            : Value(error),
         updatedAt: Value(DateTime.now()),
       ),
     );

@@ -26,6 +26,7 @@ DECLARE
   v_revision bigint;
   v_snapshot_id uuid;
   v_catalog jsonb;
+  v_payload jsonb;
   v_stale_rejected boolean := false;
 BEGIN
   SELECT * INTO v_item FROM public.items
@@ -94,9 +95,7 @@ BEGIN
     RAISE EXCEPTION 'local_item_10_maruchan_stock_below_one';
   END IF;
 
-  v_reply := public.pos_sync_sale_v2(
-    v_restaurant, v_device_id, v_device_secret,
-    jsonb_build_object(
+  v_payload := jsonb_build_object(
       'sale', jsonb_build_object(
         'id', v_sale_id, 'local_id', v_sale_id::text,
         'invoice_number', 'QA-MARUCHAN-' || substr(v_sale_id::text, 1, 8),
@@ -124,7 +123,9 @@ BEGIN
       'item_catalog_revision', v_revision,
       'item_catalog_snapshot_id', v_snapshot_id,
       'item_catalog_contract_version', 3
-    )
+    );
+  v_reply := public.pos_sync_sale_v2(
+    v_restaurant, v_device_id, v_device_secret, v_payload
   );
   IF (v_reply ->> 'remote_id')::uuid <> v_sale_id THEN
     RAISE EXCEPTION 'local_item_10_sale_not_acknowledged';
@@ -154,7 +155,19 @@ BEGIN
   ) THEN
     RAISE EXCEPTION 'local_sale_catalog_identity_not_persisted';
   END IF;
-  RAISE NOTICE 'PASS: catalog ack, stale sale rejection, item 10 sale/detail/ledger; stock % -> %',
+  -- Retrying the identical queue payload after a lost response is idempotent.
+  v_reply := public.pos_sync_sale_v2(
+    v_restaurant, v_device_id, v_device_secret, v_payload
+  );
+  SELECT quantity_on_hand INTO v_after FROM public.inventory_stock
+  WHERE restaurant_id = v_restaurant AND item_id = v_item.id;
+  IF v_after <> v_before - 1 OR
+     (SELECT count(*) FROM public.sales WHERE id = v_sale_id) <> 1 OR
+     (SELECT count(*) FROM public.inventory_movements
+      WHERE id = 'qa-maruchan-sale-' || v_sale_id::text) <> 1 THEN
+    RAISE EXCEPTION 'idempotent_sale_retry_duplicated_sale_or_movement';
+  END IF;
+  RAISE NOTICE 'PASS: ack, stale rejection, current sale retry idempotency; stock % -> %',
     v_before, v_after;
 END;
 $test$;

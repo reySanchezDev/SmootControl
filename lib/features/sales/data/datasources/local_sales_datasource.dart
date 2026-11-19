@@ -253,7 +253,9 @@ final class LocalSalesDataSource {
     if (row == null) return _SaleSyncSnapshot(status: fallback);
 
     final status = SaleSyncStatus.values.firstWhere(
-      (status) => status.name == row.status,
+      (status) =>
+          status.name ==
+          (row.status == 'requiresResolution' ? 'error' : row.status),
       orElse: () => SaleSyncStatus.pending,
     );
     return _SaleSyncSnapshot(status: status, error: row.lastError);
