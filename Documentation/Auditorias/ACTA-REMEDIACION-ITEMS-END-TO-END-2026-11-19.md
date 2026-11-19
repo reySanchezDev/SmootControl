@@ -43,8 +43,9 @@
 - `flutter analyze`: repetido tras refactor/formato; **sin errores**.
 - Suite dirigida final: **24 pruebas aprobadas** en siete archivos, incluidos workspace, permisos/editor, snapshot/aplicador/rollback, proyector, sender y ruta de Productos.
 - SQL local: ACL de función legacy y restricción de movimiento no rastreable aprobadas.
-- El intento de RELEASE oficial fue rechazado correctamente por el script antes de compilar: la credencial privada disponible no tiene URL Supabase Docker `http://127.0.0.1:54321`. No se usaron defines remotos ni se expusieron secretos.
+- RELEASE oficial completado con `tool/build_web_release.ps1 -CanonicalItemsQa -LocalSupabaseQa` y credencial privada de QA local fuera del repositorio. El script validó la URL Docker y clave publicable; Auth local respondió HTTP 200. El bundle contiene la URL local; el modo `backoffice` se fijó por el script oficial.
+- Artefacto servido en `http://127.0.0.1:8105/`; comprobación HTTP devuelve 200. No se hizo inspección visual/responsive: el conector de navegador no está disponible en esta sesión. QA visual de propietario sigue pendiente.
 - Fuentes y pruebas nuevas/modificadas comprobadas <=300 líneas; `git diff --check` sin errores. Existen otros archivos heredados mayores a 300 no tocados por esta remediación.
-- Pendiente antes de release: credencial privada específica del Docker local, build Web RELEASE, QA visual y prueba E2E de venta POS/dispositivo.
+- Pendiente: QA visual del propietario, prueba E2E de venta POS/dispositivo y los riesgos históricos descritos en la matriz. No promover a producción con estos gates abiertos.
 
 **Resultado:** remediación parcial verificada localmente; no certifica producción ni cierra los riesgos A05–A08, H01/H02, E02/E03 ni pruebas E2E de dispositivo.
