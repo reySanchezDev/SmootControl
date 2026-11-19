@@ -15,6 +15,8 @@ class CanonicalItemEditor extends StatefulWidget {
   const CanonicalItemEditor({
     required this.units,
     required this.classifications,
+    required this.allowedClasses,
+    required this.initialClass,
     required this.onSave,
     required this.onBack,
     this.categories = const [],
@@ -41,14 +43,23 @@ class CanonicalItemEditor extends StatefulWidget {
   /// Independent functional classifications.
   final List<CanonicalClassification> classifications;
 
+  /// Business classes the authenticated role may create in this form.
+  final Set<CanonicalItemClass> allowedClasses;
+
+  /// Initial role for a new item, respecting the route and role permissions.
+  final CanonicalItemClass initialClass;
+
   /// Active product categories available to the tenant.
   final List<ProductCategory> categories;
 
   @override
-  State<CanonicalItemEditor> createState() => _CanonicalItemEditorState();
+  State<CanonicalItemEditor> createState() => CanonicalItemEditorState();
 }
 
-class _CanonicalItemEditorState extends State<CanonicalItemEditor> {
+/// State API used by workspace close guards to protect unsaved edits.
+class CanonicalItemEditorState extends State<CanonicalItemEditor> {
+  bool _closeConfirmed = false;
+
   void _update(VoidCallback action) {
     if (mounted) setState(action);
   }
@@ -77,7 +88,7 @@ class _CanonicalItemEditorState extends State<CanonicalItemEditor> {
     _cost.text = item?.cost.toString() ?? '0';
     _price.text = item?.price.toString() ?? '0';
     _type = item?.type ?? CanonicalItemType.inventory;
-    _itemClass = item?.itemClass ?? CanonicalItemClass.saleProduct;
+    _itemClass = item?.itemClass ?? widget.initialClass;
     _lastNonServiceClass = _itemClass == CanonicalItemClass.service
         ? CanonicalItemClass.saleProduct
         : _itemClass;
@@ -169,7 +180,15 @@ class _CanonicalItemEditorState extends State<CanonicalItemEditor> {
         _classifications.length != (previous?.classificationIds.length ?? 0);
   }
 
+  /// Confirms whether the workspace may dispose this editor tab.
+  Future<bool> confirmClose() async {
+    _closeConfirmed = false;
+    await _back();
+    return _closeConfirmed;
+  }
+
   Future<void> _back() async {
+    _closeConfirmed = false;
     if (widget.saving) return;
     if (_hasChanges) {
       final discard = await showAppConfirmationDialog(
@@ -182,6 +201,7 @@ class _CanonicalItemEditorState extends State<CanonicalItemEditor> {
       );
       if (!discard || !mounted) return;
     }
+    _closeConfirmed = true;
     widget.onBack();
   }
 

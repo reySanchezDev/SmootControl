@@ -11,6 +11,7 @@ import 'package:smoo_control/core/session/current_restaurant_service.dart';
 import 'package:smoo_control/features/admin_remote/data/repositories/supabase_admin_repository.dart';
 import 'package:smoo_control/features/auth/domain/entities/auth_session.dart';
 import 'package:smoo_control/features/products/presentation/pages/articles_page.dart';
+import 'package:smoo_control/l10n/app_localizations.dart';
 
 void main() {
   setUp(() async {
@@ -22,44 +23,52 @@ void main() {
     await serviceLocator.reset();
   });
 
-  testWidgets('one articles catalog includes product and packaging', (
+  testWidgets('Products reads only canonical items including packaging', (
     tester,
   ) async {
-    _setUp(roleId: 'role-admin');
-    await tester.pumpWidget(const MaterialApp(home: ArticlesPage()));
+    final client = _setUp(roleId: 'role-admin');
+    await tester.pumpWidget(_app(const ArticlesPage()));
     await tester.pumpAndSettle();
 
     expect(find.text('Fruta laboratorio'), findsWidgets);
     expect(find.text('Bolsa laboratorio'), findsWidgets);
-    expect(find.text('Producto de venta'), findsWidgets);
     expect(find.text('Empaque'), findsWidgets);
-
-    await tester.tap(find.text('Todos').first);
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Empaques').last);
-    await tester.pumpAndSettle();
-
-    expect(find.text('Bolsa laboratorio'), findsWidgets);
-    expect(find.text('Fruta laboratorio'), findsNothing);
+    expect(client.requestedTables, contains('items'));
+    expect(client.requestedTables, isNot(contains('products')));
+    expect(client.requestedTables, isNot(contains('packaging_items')));
   });
 
-  testWidgets('packaging-only actor sees no product and cannot create it', (
+  testWidgets('packaging-only actor sees and creates only packaging items', (
     tester,
   ) async {
-    _setUp(roleId: 'role-packaging');
-    await tester.pumpWidget(const MaterialApp(home: ArticlesPage()));
+    final client = _setUp(roleId: 'role-packaging');
+    await tester.pumpWidget(_app(const ArticlesPage()));
     await tester.pumpAndSettle();
     expect(find.text('Bolsa laboratorio'), findsWidgets);
     expect(find.text('Fruta laboratorio'), findsNothing);
-    expect(find.text('Nuevo empaque'), findsOneWidget);
-    expect(find.text('Nuevo producto'), findsNothing);
+    expect(find.text('Nuevo'), findsOneWidget);
+
+    await tester.tap(find.text('Nuevo'));
+    await tester.pumpAndSettle();
+    expect(find.text('Nuevo art\u00edculo'), findsOneWidget);
+    expect(find.text('Producto'), findsNothing);
+    expect(client.requestedTables, isNot(contains('products')));
+    expect(client.requestedTables, isNot(contains('packaging_items')));
   });
 }
 
-void _setUp({required String roleId}) {
+MaterialApp _app(Widget home) => MaterialApp(
+  home: home,
+  locale: const Locale('es'),
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  supportedLocales: AppLocalizations.supportedLocales,
+);
+
+_CatalogClient _setUp({required String roleId}) {
   final token = CurrentRemoteSessionService()
     ..set(accessToken: 'synthetic-jwt', userId: 'actor');
   const restaurant = CurrentRestaurantService(restaurantId: 'synthetic-tenant');
+  final client = _CatalogClient();
   serviceLocator
     ..registerSingleton(const CurrentOperatorService())
     ..registerSingleton(token)
@@ -72,7 +81,7 @@ void _setUp({required String roleId}) {
         ),
         restaurantService: restaurant,
         remoteSessionService: token,
-        client: _CatalogClient(),
+        client: client,
       ),
     );
   CurrentOperatorService.currentSession = AuthSession(
@@ -81,12 +90,16 @@ void _setUp({required String roleId}) {
     roleId: roleId,
     isPosUser: false,
   );
+  return client;
 }
 
 class _CatalogClient extends http.BaseClient {
+  final requestedTables = <String>[];
+
   @override
   Future<http.StreamedResponse> send(http.BaseRequest request) async {
     final table = request.url.pathSegments.last;
+    requestedTables.add(table);
     final rows = switch (table) {
       'products' => [
         {

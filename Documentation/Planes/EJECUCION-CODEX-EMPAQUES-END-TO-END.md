@@ -1,5 +1,7 @@
 # PLAN RECTOR VIVO — Core de artículos de Kivo
 
+> **Estado vigente al 2026-11-19:** la remediación de auditoría está aislada en `fix/audit-items-end-to-end-2026-11-19`, basada en `main` `4181999ee58ba9eb65ec96d13b48de95ee2669cb`; no integrada ni publicada. Migraciones 132–134 aplicadas solo en Docker local. Sin cambios en `main`, producción, Supabase remoto ni migración 088. Ver gates y evidencia en [acta de remediación](../Auditorias/ACTA-REMEDIACION-ITEMS-END-TO-END-2026-11-19.md). El cierre integral sigue pendiente de RELEASE/E2E visual, compatibilidad histórica y repetición final de validaciones.
+
 **Identificador:** KIVO-ITEM-CORE  
 **Última actualización:** 2026-11-11  
 **Estado E2E (11/11/2026):** F0 auditado; F1/F2 probados parcialmente en laboratorio; **migración aditiva 089 ensayada en Docker local, NO aplicada remotamente**; F3 Artículos/Recetas/Empaques canónicos parcialmente implementados bajo flag QA y compilados Web RELEASE en CI, **sin QA funcional aprobada**; G1/G2 remoto y G3/G4 abiertos; `main` y sitio público sin despliegue. Migración 088 congelada.  

@@ -56,25 +56,6 @@ final class SupabaseCatalogPullService implements ICatalogPullService {
     return pullScopes(CatalogPullScope.values.toSet());
   }
 
-  /// Downloads the full operational catalog using a temporary admin token.
-  Future<CatalogPullSummary> pullOperationalCatalogWithAccessToken(
-    String accessToken,
-  ) async {
-    final previousToken = _accessToken;
-    final previousExpiration = _expiresAt;
-    final previousTemporaryTokenOnly = _temporaryTokenOnly;
-    _accessToken = accessToken;
-    _expiresAt = DateTime.now().add(const Duration(minutes: 55));
-    _temporaryTokenOnly = true;
-    try {
-      return await pullOperationalCatalog();
-    } finally {
-      _accessToken = previousToken;
-      _expiresAt = previousExpiration;
-      _temporaryTokenOnly = previousTemporaryTokenOnly;
-    }
-  }
-
   @override
   Future<CatalogPullSummary> pullScopes(Set<CatalogPullScope> scopes) async {
     await _ensureCanPull();
@@ -84,7 +65,6 @@ final class SupabaseCatalogPullService implements ICatalogPullService {
     _deviceCatalogRows = null;
     _deviceItemCatalogSnapshot = null;
     await _prepareDeviceCatalogIfNeeded();
-
     final effectiveScopes = {...scopes};
     if (effectiveScopes.contains(CatalogPullScope.products)) {
       effectiveScopes
@@ -128,7 +108,6 @@ final class SupabaseCatalogPullService implements ICatalogPullService {
       CatalogPullScope.cashRegisterSessions,
     );
     final shouldRefreshStaff = effectiveScopes.contains(CatalogPullScope.staff);
-
     final restaurantRows = shouldRefreshBusinessSettings
         ? await _getRowsByQuery('restaurants', {
             'id': 'eq.${_restaurantService.restaurantId}',
@@ -165,12 +144,17 @@ final class SupabaseCatalogPullService implements ICatalogPullService {
     final modifierOptions = shouldRefreshModifiers
         ? await _getRows('modifier_options')
         : const <Map<String, Object?>>[];
-    final productModifierGroups =
-        shouldRefreshProducts && !hasCanonicalItemSnapshot
-        ? await _getRows(
-            'item_modifier_groups',
-            select: 'item_id,modifier_group_id,display_order',
-          )
+    final canonicalModifierRows = hasCanonicalItemSnapshot
+        ? _canonicalModifierRows()
+        : null;
+    final productModifierGroups = shouldRefreshProducts
+        ? canonicalModifierRows ??
+              (hasCanonicalItemSnapshot
+                  ? const <Map<String, Object?>>[]
+                  : await _getRows(
+                      'item_modifier_groups',
+                      select: 'item_id,modifier_group_id,display_order',
+                    ))
         : const <Map<String, Object?>>[];
     final products = shouldRefreshProducts && !hasCanonicalItemSnapshot
         ? await _getRowsByQuery('items', {
@@ -221,7 +205,6 @@ final class SupabaseCatalogPullService implements ICatalogPullService {
     final modifierIdsByProduct = shouldRefreshProducts
         ? _modifierIdsByProduct(productModifierGroups)
         : const <String, List<String>>{};
-
     await _database.transaction(() async {
       if (shouldRefreshBusinessSettings) {
         await _applyBusinessSettings(restaurantRows, invoiceSettings);
@@ -269,19 +252,23 @@ final class SupabaseCatalogPullService implements ICatalogPullService {
         await _applyBusinessRules(businessRules);
       }
     });
-
     if (shouldRefreshProducts && _deviceItemCatalogSnapshot != null) {
       final snapshot = ItemCatalogSnapshotV2.fromJson(
         _deviceItemCatalogSnapshot!,
         expectedRestaurantId: _restaurantService.restaurantId,
       );
-      await ItemCatalogSnapshotApplier(_database).apply(snapshot);
-      await CanonicalItemPosProjector(_database).project(
-        _restaurantService.restaurantId,
+      await ItemCatalogSnapshotApplier(_database).apply(
+        snapshot,
+        beforeCommit: () => CanonicalItemPosProjector(_database)
+            .projectWithinCurrentTransaction(
+              _restaurantService.restaurantId,
+              modifierIdsByItem: canonicalModifierRows == null
+                  ? null
+                  : modifierIdsByProduct,
+            ),
       );
       await _acknowledgeDeviceCatalog(snapshot);
     }
-
     return CatalogPullSummary(
       businessSettings: restaurantRows.isEmpty && invoiceSettings.isEmpty
           ? 0

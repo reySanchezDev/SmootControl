@@ -1,6 +1,22 @@
 part of 'canonical_items_content.dart';
 
 extension _CanonicalItemsContentActions on _CanonicalItemsContentState {
+  Future<List<ProductCategory>> _loadCategories() async {
+    final result = await _repository.getCategories();
+    return result is AppSuccess<List<ProductCategory>>
+        ? result.value
+        : const [];
+  }
+
+  Future<bool> _confirmEditorClose() async =>
+      await _editorKey?.currentState?.confirmClose() ?? true;
+
+  void _registerEditorCloseGuard() =>
+      BackofficeWorkspaceScope.registerCloseGuard(
+        context,
+        _confirmEditorClose,
+      );
+
   Future<void> _recipe(CanonicalItem selected) async {
     if (_busy ||
         selected.id == null ||

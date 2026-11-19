@@ -1,20 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:smoo_control/core/design_system/navigation/backoffice_sidebar.dart';
 import 'package:smoo_control/core/design_system/navigation/backoffice_workspace_drawer.dart';
+import 'package:smoo_control/core/design_system/navigation/backoffice_workspace_scope.dart';
 
-/// Marks pages hosted inside a tabbed Backoffice workspace.
-class BackofficeWorkspaceScope extends InheritedWidget {
-  /// Creates a stable marker for nested pages.
-  const BackofficeWorkspaceScope({required super.child, super.key});
-
-  /// Whether this context is hosted inside the Backoffice.
-  static bool contains(BuildContext context) =>
-      context.dependOnInheritedWidgetOfExactType<BackofficeWorkspaceScope>() !=
-      null;
-
-  @override
-  bool updateShouldNotify(BackofficeWorkspaceScope oldWidget) => false;
-}
+export 'package:smoo_control/core/design_system/navigation/backoffice_workspace_scope.dart';
 
 /// Identifies a work tab without conflating separate records of one module.
 @immutable
@@ -92,7 +81,16 @@ class BackofficeWorkspace extends StatefulWidget {
 class _BackofficeWorkspaceState extends State<BackofficeWorkspace> {
   bool _collapsed = false;
   final List<String> _openIds = <String>[];
+  final Map<String, BackofficeWorkspaceCloseGuard> _closeGuards = {};
   String? _activeId;
+
+  void _setCloseGuard(String id, BackofficeWorkspaceCloseGuard? guard) {
+    if (guard == null) {
+      _closeGuards.remove(id);
+    } else {
+      _closeGuards[id] = guard;
+    }
+  }
 
   @override
   void initState() {
@@ -134,10 +132,13 @@ class _BackofficeWorkspaceState extends State<BackofficeWorkspace> {
         .where((candidate) => candidate.id == id)
         .firstOrNull;
     if (item == null || !item.closable) return;
+    final allowedByPage = await _closeGuards[id]?.call() ?? true;
+    if (!allowedByPage) return;
     final allowed = await widget.onCloseRequested?.call(item) ?? true;
     if (!allowed || !mounted) return;
     setState(() {
       final oldIndex = _openIds.indexOf(id);
+      _closeGuards.remove(id);
       _openIds.remove(id);
       if (_activeId == id) {
         if (_openIds.isEmpty) {
@@ -176,21 +177,23 @@ class _BackofficeWorkspaceState extends State<BackofficeWorkspace> {
       body: SafeArea(
         child: Row(
           children: [
-            if (!compact) BackofficeSidebar(
-              items: [
-                for (final item in widget.items)
-                  BackofficeNavItem(
-                    id: item.id,
-                    label: item.label,
-                    icon: item.icon,
-                    group: item.group,
-                  ),
-              ],
-              activeId: _activeId ?? '',
-              collapsed: _collapsed,
-              onCollapsedChanged: (value) => setState(() => _collapsed = value),
-              onSelected: _open,
-            ),
+            if (!compact)
+              BackofficeSidebar(
+                items: [
+                  for (final item in widget.items)
+                    BackofficeNavItem(
+                      id: item.id,
+                      label: item.label,
+                      icon: item.icon,
+                      group: item.group,
+                    ),
+                ],
+                activeId: _activeId ?? '',
+                collapsed: _collapsed,
+                onCollapsedChanged: (value) =>
+                    setState(() => _collapsed = value),
+                onSelected: _open,
+              ),
             Expanded(
               child: Column(
                 children: [
@@ -211,36 +214,36 @@ class _BackofficeWorkspaceState extends State<BackofficeWorkspace> {
                           child: ListView(
                             scrollDirection: Axis.horizontal,
                             children: [
-                        for (final item in visible)
-                          Semantics(
-                            selected: item.id == _activeId,
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                TextButton.icon(
-                                  onPressed: () => _open(item.id),
-                                  icon: Icon(item.icon, size: 16),
-                                  label: Text(item.label),
-                                  style: TextButton.styleFrom(
-                                    backgroundColor: item.id == _activeId
-                                        ? scheme.primaryContainer
-                                        : Colors.transparent,
-                                    foregroundColor: scheme.onSurface,
+                              for (final item in visible)
+                                Semantics(
+                                  selected: item.id == _activeId,
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      TextButton.icon(
+                                        onPressed: () => _open(item.id),
+                                        icon: Icon(item.icon, size: 16),
+                                        label: Text(item.label),
+                                        style: TextButton.styleFrom(
+                                          backgroundColor: item.id == _activeId
+                                              ? scheme.primaryContainer
+                                              : Colors.transparent,
+                                          foregroundColor: scheme.onSurface,
+                                        ),
+                                      ),
+                                      if (item.closable)
+                                        IconButton(
+                                          onPressed: () => _close(item.id),
+                                          tooltip: 'Cerrar ${item.label}',
+                                          icon: const Icon(
+                                            Icons.close_rounded,
+                                            size: 16,
+                                          ),
+                                        ),
+                                      const SizedBox(width: 8),
+                                    ],
                                   ),
                                 ),
-                                if (item.closable)
-                                  IconButton(
-                                    onPressed: () => _close(item.id),
-                                    tooltip: 'Cerrar ${item.label}',
-                                    icon: const Icon(
-                                      Icons.close_rounded,
-                                      size: 16,
-                                    ),
-                                  ),
-                                const SizedBox(width: 8),
-                              ],
-                            ),
-                          ),
                             ],
                           ),
                         ),
@@ -268,6 +271,8 @@ class _BackofficeWorkspaceState extends State<BackofficeWorkspace> {
                             children: [
                               for (final item in visible)
                                 BackofficeWorkspaceScope(
+                                  itemId: item.id,
+                                  onCloseGuardChanged: _setCloseGuard,
                                   child: KeyedSubtree(
                                     key: ValueKey(item.id),
                                     child: widget.pageBuilder(context, item),

@@ -1,7 +1,7 @@
 part of 'canonical_item_editor.dart';
 
 /// Compact business sections arranged as a responsive form, not a list of rows.
-extension _CanonicalItemEditorFields on _CanonicalItemEditorState {
+extension _CanonicalItemEditorFields on CanonicalItemEditorState {
   Widget _section(BuildContext context, String title, Widget content) =>
       Padding(
         padding: const EdgeInsets.only(bottom: 20),
@@ -27,6 +27,14 @@ extension _CanonicalItemEditorFields on _CanonicalItemEditorState {
       final fieldWidth = wide
           ? (constraints.maxWidth - gap) / 2
           : constraints.maxWidth;
+      final canManageProducts = widget.allowedClasses.any(
+        (itemClass) =>
+            itemClass == CanonicalItemClass.saleProduct ||
+            itemClass == CanonicalItemClass.rawMaterial,
+      );
+      final availableTypes = canManageProducts
+          ? CanonicalItemType.values
+          : const [CanonicalItemType.inventory, CanonicalItemType.nonInventory];
       Widget grid(List<Widget> fields) => Wrap(
         spacing: gap,
         runSpacing: 14,
@@ -67,6 +75,7 @@ extension _CanonicalItemEditorFields on _CanonicalItemEditorState {
                         : l10n.canonicalItemRoleImmutableHelp,
                   ),
                   items: CanonicalItemClass.selectableValues
+                      .where(widget.allowedClasses.contains)
                       .map(
                         (itemClass) => DropdownMenuItem(
                           value: itemClass,
@@ -102,7 +111,7 @@ extension _CanonicalItemEditorFields on _CanonicalItemEditorState {
                     (widget.item?.type == CanonicalItemType.service
                             ? const [CanonicalItemType.service]
                             : widget.item == null
-                            ? CanonicalItemType.values
+                            ? availableTypes
                             : const [
                                 CanonicalItemType.inventory,
                                 CanonicalItemType.nonInventory,
@@ -151,17 +160,13 @@ extension _CanonicalItemEditorFields on _CanonicalItemEditorState {
               ),
               DropdownButtonFormField<String?>(
                 initialValue:
-                    categories.any(
-                      (category) => category.id == _categoryId,
-                    )
+                    categories.any((category) => category.id == _categoryId)
                     ? _categoryId
                     : null,
                 isExpanded: true,
                 decoration: const InputDecoration(labelText: 'Categoría'),
                 items: [
-                  const DropdownMenuItem<String?>(
-                    child: Text('Sin categoría'),
-                  ),
+                  const DropdownMenuItem<String?>(child: Text('Sin categoría')),
                   ...categories.map(
                     (category) => DropdownMenuItem<String?>(
                       value: category.id,

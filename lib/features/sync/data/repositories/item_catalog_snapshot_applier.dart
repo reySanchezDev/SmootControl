@@ -19,7 +19,10 @@ final class ItemCatalogSnapshotApplier {
   ///
   /// Drift rolls back every canonical table change if any insert fails. The
   /// legacy catalog, sales and synchronization queue are never modified.
-  Future<bool> apply(ItemCatalogSnapshotV2 snapshot) async {
+  Future<bool> apply(
+    ItemCatalogSnapshotV2 snapshot, {
+    Future<void> Function()? beforeCommit,
+  }) async {
     final now = DateTime.now();
     var applied = false;
     await _database.transaction(() async {
@@ -36,7 +39,10 @@ final class ItemCatalogSnapshotApplier {
         storedRevision: stored?.revision,
         storedSnapshotId: stored?.snapshotId,
       );
-      if (decision == ItemCatalogUpdateDecisionV2.noChange) return;
+      if (decision == ItemCatalogUpdateDecisionV2.noChange) {
+        await beforeCommit?.call();
+        return;
+      }
 
       // Canonical data is tenant-owned. Never erase a second restaurant's
       // catalog when the current restaurant receives a newer snapshot.
@@ -141,6 +147,7 @@ final class ItemCatalogSnapshotApplier {
             );
       }
       await beforeSnapshotMetadataWrite?.call();
+      await beforeCommit?.call();
       await _database
           .into(_database.localCanonicalCatalogSnapshots)
           .insertOnConflictUpdate(

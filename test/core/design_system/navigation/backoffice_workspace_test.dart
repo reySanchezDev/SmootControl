@@ -102,6 +102,29 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('page guard vetoes closing its dirty tab', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: BackofficeWorkspace(
+          items: destinations,
+          initialItemId: 'products',
+          pageBuilder: (context, item) => Builder(
+            builder: (context) {
+              BackofficeWorkspaceScope.registerCloseGuard(
+                context,
+                () async => false,
+              );
+              return Text('Page ${item.id}');
+            },
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.byTooltip('Cerrar Productos'));
+    await tester.pumpAndSettle();
+    expect(find.text('Page products'), findsOneWidget);
+  });
+
   testWidgets('veto preserves a tab when there are unsaved changes', (
     tester,
   ) async {

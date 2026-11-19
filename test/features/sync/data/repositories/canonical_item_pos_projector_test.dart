@@ -46,7 +46,12 @@ void main() {
           ),
         );
 
-    await CanonicalItemPosProjector(database).project('restaurant-1');
+    await CanonicalItemPosProjector(database).project(
+      'restaurant-1',
+      modifierIdsByItem: const {
+        'item-1': ['group-1', 'group-2'],
+      },
+    );
 
     final products = await database.select(database.localProducts).get();
     expect(products, hasLength(1));
@@ -54,6 +59,7 @@ void main() {
     expect(products.single.priceInCents, 12500);
     expect(products.single.sourceKind, 'canonical_item');
     expect(products.single.categoryId, '__canonical_uncategorized__');
+    expect(products.single.modifierGroupIdsJson, '["group-1","group-2"]');
   });
 
   test(
@@ -88,6 +94,49 @@ void main() {
       expect(packaging.single.tracksStock, isTrue);
       expect(stock.single.quantityOnHand, 7);
       expect(await database.select(database.localProducts).get(), isEmpty);
+    },
+  );
+
+  test(
+    'clears stale stock when canonical packaging stops tracking it',
+    () async {
+      await database
+          .into(database.localCanonicalItems)
+          .insert(
+            LocalCanonicalItemsCompanion.insert(
+              id: 'packaging-no-stock',
+              restaurantId: 'restaurant-1',
+              code: 'ART-4',
+              name: 'Packaging no stock',
+              itemType: 'non_inventory',
+              itemClass: const Value('packaging'),
+              baseUnitId: 'unit-1',
+              canSell: false,
+              visibleInPos: false,
+              isActive: true,
+              tracksInventory: const Value(false),
+            ),
+          );
+      await database
+          .into(database.localPackagingStock)
+          .insert(
+            LocalPackagingStockCompanion.insert(
+              packagingItemId: 'packaging-no-stock',
+              quantityOnHand: const Value(5),
+              createdAt: DateTime(2026),
+              updatedAt: DateTime(2026),
+            ),
+          );
+
+      await CanonicalItemPosProjector(database).project('restaurant-1');
+
+      final packaging = await database
+          .select(database.localPackagingItems)
+          .get();
+      final stock = await database.select(database.localPackagingStock).get();
+      expect(packaging.single.id, 'packaging-no-stock');
+      expect(packaging.single.tracksStock, isFalse);
+      expect(stock.single.quantityOnHand, 0);
     },
   );
 }

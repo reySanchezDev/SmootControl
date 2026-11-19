@@ -1,6 +1,33 @@
 part of 'supabase_catalog_pull_service.dart';
 
+/// Exposes the temporary administrator-token catalog pull workflow.
+extension CatalogPullTemporaryAccess on SupabaseCatalogPullService {
+  /// Downloads the full catalog using a temporary administrator token.
+  Future<CatalogPullSummary> pullOperationalCatalogWithAccessToken(
+    String accessToken,
+  ) => _pullOperationalCatalogWithAccessToken(accessToken);
+}
+
 extension on SupabaseCatalogPullService {
+  /// Downloads the full operational catalog using a temporary admin token.
+  Future<CatalogPullSummary> _pullOperationalCatalogWithAccessToken(
+    String accessToken,
+  ) async {
+    final previousToken = _accessToken;
+    final previousExpiration = _expiresAt;
+    final previousTemporaryTokenOnly = _temporaryTokenOnly;
+    _accessToken = accessToken;
+    _expiresAt = DateTime.now().add(const Duration(minutes: 55));
+    _temporaryTokenOnly = true;
+    try {
+      return await pullOperationalCatalog();
+    } finally {
+      _accessToken = previousToken;
+      _expiresAt = previousExpiration;
+      _temporaryTokenOnly = previousTemporaryTokenOnly;
+    }
+  }
+
   Future<void> _acknowledgeDeviceCatalog(ItemCatalogSnapshotV2 snapshot) async {
     final credentials = await _deviceCredentials();
     final response = await _client.post(
@@ -256,5 +283,14 @@ extension on SupabaseCatalogPullService {
       links.sort((first, second) => first.order.compareTo(second.order));
       return MapEntry(productId, links.map((link) => link.groupId).toList());
     });
+  }
+
+  List<Map<String, Object?>>? _canonicalModifierRows() {
+    final value = _deviceItemCatalogSnapshot?['item_modifier_groups'];
+    if (value is! List) return null;
+    return value
+        .whereType<Map<Object?, Object?>>()
+        .map((row) => row.map((key, value) => MapEntry(key.toString(), value)))
+        .toList(growable: false);
   }
 }

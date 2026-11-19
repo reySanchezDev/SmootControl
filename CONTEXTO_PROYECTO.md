@@ -5,6 +5,7 @@
 > Este documento **no sustituye** el código, `Documentation/`, los tests ni la comprobación del entorno real.
 
 ## Identidad y alcance
+- **Continuidad verificada 2026-11-19:** la rama `fix/audit-items-end-to-end-2026-11-19` parte de `main` `4181999ee58ba9eb65ec96d13b48de95ee2669cb` y contiene remediación local aún no integrada. Migraciones 132–134 están aplicadas solo al Supabase Docker local. No se modificaron `main`, producción, Supabase remoto ni la migración 088. Evidencia/pendientes: [acta de auditoría Items E2E](Documentation/Auditorias/ACTA-REMEDIACION-ITEMS-END-TO-END-2026-11-19.md) y [Plan Rector](Documentation/Planes/EJECUCION-CODEX-EMPAQUES-END-TO-END.md).
 - **SmooControl**: nombre del repositorio y base técnica.
 - **Kivo**: nombre comercial aprobado para la solución; el cambio de marca visual no implica renombrar identificadores técnicos.
 - Mantener `com.smoocontrol.pos`, rutas, autenticación y base de datos salvo una decisión explícita y un plan probado de migración.
