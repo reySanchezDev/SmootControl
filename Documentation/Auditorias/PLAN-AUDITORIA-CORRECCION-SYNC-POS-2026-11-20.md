@@ -35,7 +35,7 @@ los datos históricos, credenciales o claves de Supabase.
 | C. Reintento automático | Reusar cola FIFO; respetar `autoSyncEnabled`; disparar solo en inicio, intervalo, reconexión o reanudación, con exclusión concurrente existente. | ✅ Implementado y probado, incluida la exclusión de disparos solapados. |
 | D. Feedback de sync manual | Reportar resultados reales de cola y descarga; errores de RPC no se presentan como sincronización exitosa. | ✅ Implementado; verificar pruebas de regresión |
 | E. Validación local | `dart format`, análisis, pruebas de sync/POS y prueba SQL local de RPC/tenant/idempotencia según fixtures disponibles. | ✅ `dart format` sin cambios pendientes; `flutter analyze` sin errores; 83 pruebas de sync y 167 de POS/ventas/caja/inventario/empaques/catálogo en verde. `supabase status` y `docker info` se colgaron en esta continuación, por lo que no se repitió pgTAP (8/8 constaba de la ejecución local previa). |
-| F. Publicación y artefacto | Revisar diff; commit y push de la rama de corrección; compilar con el script oficial, comprobar defines, versión, permisos y SQLite nativo. | 🟡 APK generado y verificado; commit/push pendientes |
+| F. Publicación y artefacto | Revisar diff; commit y push de la rama de corrección; compilar con el script oficial, comprobar defines, versión, permisos y SQLite nativo. | ✅ Publicado en `fix/pos-sync-e2e-2026-11-20`; SHA confirmado local/remoto `96440694324d6563a0bf97a006009a0cf864b075`. APK generado y verificado. |
 
 ## Resultado del APK
 
