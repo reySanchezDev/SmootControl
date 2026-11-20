@@ -36,6 +36,9 @@ class _SmooControlAppState extends State<SmooControlApp>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    if (!AppRunMode.isBackoffice && !AppRunMode.isTimeClock) {
+      unawaited(serviceLocator<SyncSchedulerService>().start());
+    }
     _authBloc = serviceLocator<AuthBloc>()..add(const AuthSessionRequested());
     _remoteSessionSubscription = serviceLocator<CurrentRemoteSessionService>()
         .onExpired
@@ -58,7 +61,7 @@ class _SmooControlAppState extends State<SmooControlApp>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      unawaited(serviceLocator<SyncSchedulerService>().runAutomaticallyNow());
+      _retryPosQueueAutomatically();
     }
   }
 
@@ -72,8 +75,13 @@ class _SmooControlAppState extends State<SmooControlApp>
     final wasConnected = _wasConnected;
     _wasConnected = isConnected;
     if (isConnected && wasConnected == false) {
-      unawaited(serviceLocator<SyncSchedulerService>().runAutomaticallyNow());
+      _retryPosQueueAutomatically();
     }
+  }
+
+  void _retryPosQueueAutomatically() {
+    if (AppRunMode.isBackoffice || AppRunMode.isTimeClock) return;
+    unawaited(serviceLocator<SyncSchedulerService>().runAutomaticallyNow());
   }
 
   bool _isConnected(List<ConnectivityResult> results) {

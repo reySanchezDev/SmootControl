@@ -41,6 +41,53 @@ void main() {
     expect(queue.pendingCalls, 1);
   });
 
+  test(
+    'startup starts periodic scheduling and processes queued work',
+    () async {
+      final queue = _QueueRepository();
+      final scheduler = SyncSchedulerService(
+        settingsRepository: const _SettingsRepository(SyncSettings()),
+        processor: SyncQueueProcessor(
+          repository: queue,
+          remoteSender: const _Sender(),
+        ),
+      );
+
+      await scheduler.start();
+      await scheduler.start();
+
+      expect(queue.pendingCalls, 1);
+      scheduler.dispose();
+    },
+  );
+
+  test('initialization queue wake respects sync-on-save setting', () async {
+    final queue = _QueueRepository();
+    final disabled = SyncSchedulerService(
+      settingsRepository: const _SettingsRepository(
+        SyncSettings(syncOnSave: false),
+      ),
+      processor: SyncQueueProcessor(
+        repository: queue,
+        remoteSender: const _Sender(),
+      ),
+    );
+    await disabled.runOnSaveNow();
+    expect(queue.pendingCalls, 0);
+
+    final enabled = SyncSchedulerService(
+      settingsRepository: const _SettingsRepository(SyncSettings()),
+      processor: SyncQueueProcessor(
+        repository: queue,
+        remoteSender: const _Sender(),
+      ),
+    );
+    await enabled.runOnSaveNow();
+    expect(queue.pendingCalls, 1);
+    disabled.dispose();
+    enabled.dispose();
+  });
+
   test('overlapping automatic triggers share one queue run', () async {
     final queue = _QueueRepository();
     final scheduler = SyncSchedulerService(

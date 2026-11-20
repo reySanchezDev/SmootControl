@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer' as developer;
 
 import 'package:drift/drift.dart';
 import 'package:smoo_control/core/config/supabase_app_config.dart';
@@ -39,6 +40,7 @@ final class DeviceInitializationService {
     required CurrentRestaurantService restaurantService,
     required RemoteBootstrapAuthService remoteAuthService,
     required SupabaseCatalogPullService catalogPullService,
+    Future<void> Function()? afterDeviceInitialized,
     LocalPinHasher pinHasher = const LocalPinHasher(),
     Uuid uuid = const Uuid(),
   }) : _database = database,
@@ -46,6 +48,7 @@ final class DeviceInitializationService {
        _restaurantService = restaurantService,
        _remoteAuthService = remoteAuthService,
        _catalogPullService = catalogPullService,
+       _afterDeviceInitialized = afterDeviceInitialized,
        _pinHasher = pinHasher,
        _uuid = uuid;
 
@@ -54,6 +57,7 @@ final class DeviceInitializationService {
   final CurrentRestaurantService _restaurantService;
   final RemoteBootstrapAuthService _remoteAuthService;
   final SupabaseCatalogPullService _catalogPullService;
+  final Future<void> Function()? _afterDeviceInitialized;
   final LocalPinHasher _pinHasher;
   final Uuid _uuid;
 
@@ -179,6 +183,14 @@ final class DeviceInitializationService {
         summary: summary,
         deviceDisplayName: deviceDisplayName,
       );
+      try {
+        await _afterDeviceInitialized?.call();
+      } on Object {
+        developer.log(
+          'Initial sync wake failed; persisted queue remains retryable.',
+          name: 'DeviceInitializationService',
+        );
+      }
       return AppSuccess(summary);
     } on Object catch (error) {
       await _markRestoreFailed(session: session, error: error.toString());

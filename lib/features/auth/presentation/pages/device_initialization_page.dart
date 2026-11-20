@@ -235,7 +235,6 @@ class _DeviceInitializationPageState extends State<DeviceInitializationPage> {
       setState(() => _error = 'El PIN debe tener al menos 4 digitos.');
       return;
     }
-
     final session = _session;
     if (session == null) return;
 

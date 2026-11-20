@@ -38,14 +38,14 @@ final class SyncSchedulerService {
       success: (settings) async {
         if (!settings.autoSyncEnabled) return;
 
-        if (runStartupSync && settings.syncOnStartup) {
-          unawaited(runNow());
-        }
-
         _timer = Timer.periodic(
           Duration(minutes: settings.intervalMinutes),
           (_) => unawaited(runNow()),
         );
+
+        if (runStartupSync && settings.syncOnStartup) {
+          await runNow();
+        }
       },
       failure: (_) async {},
     );
@@ -68,6 +68,14 @@ final class SyncSchedulerService {
     if (settingsResult case AppSuccess(
       :final value,
     ) when value.autoSyncEnabled) {
+      await runNow();
+    }
+  }
+
+  /// Drains newly queued work when a local operation is saved.
+  Future<void> runOnSaveNow() async {
+    final settingsResult = await _settingsRepository.getSettings();
+    if (settingsResult case AppSuccess(:final value) when value.syncOnSave) {
       await runNow();
     }
   }

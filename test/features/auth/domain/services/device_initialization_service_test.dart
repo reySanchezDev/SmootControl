@@ -149,6 +149,7 @@ void main() {
     });
 
     test('restores a clean system even before catalog is loaded', () async {
+      var syncWakeCount = 0;
       final service = _service(
         database: database,
         config: const SupabaseAppConfig(
@@ -159,6 +160,7 @@ void main() {
           restaurantId: 'restaurant-1',
         ),
         client: _restoreClient(),
+        afterDeviceInitialized: () async => syncWakeCount++,
       );
 
       final result = await service.restoreDevice(
@@ -176,6 +178,7 @@ void main() {
       );
 
       expect(result.isSuccess, isTrue);
+      expect(syncWakeCount, 1);
       final state = await database.select(database.localDeviceState).get();
       expect(state.single.lastRestoreStatus, 'completed');
     });
@@ -187,6 +190,7 @@ DeviceInitializationService _service({
   required SupabaseAppConfig config,
   required CurrentRestaurantService restaurantService,
   MockClient? client,
+  Future<void> Function()? afterDeviceInitialized,
 }) {
   final effectiveClient =
       client ??
@@ -212,6 +216,7 @@ DeviceInitializationService _service({
       remoteSessionService: CurrentRemoteSessionService(),
       client: effectiveClient,
     ),
+    afterDeviceInitialized: afterDeviceInitialized,
   );
 }
 

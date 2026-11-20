@@ -81,6 +81,8 @@ void _registerSalesAndSyncDependencies() {
         restaurantService: serviceLocator<CurrentRestaurantService>(),
         remoteAuthService: serviceLocator<RemoteBootstrapAuthService>(),
         catalogPullService: serviceLocator<SupabaseCatalogPullService>(),
+        afterDeviceInitialized: () =>
+            serviceLocator<SyncSchedulerService>().runOnSaveNow(),
       ),
     )
     ..registerLazySingleton<AdminDataRefreshService>(

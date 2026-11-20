@@ -2,6 +2,23 @@
 
 ## Objetivo y alcance
 
+## Seguimiento adicional: inicializacion y cola automatica (2026-11-20)
+
+La revision del incidente posterior detecto dos omisiones: el scheduler tenia
+implementados inicio/temporizador pero nunca se invocaba `start()`; y el restore
+insertaba `device.initialize` directamente en la cola sin despertarla. Como el
+envio inmediato respeta FIFO, esa auditoria podia quedar delante de todas las
+ventas hasta la accion manual.
+
+| Criterio | Avance |
+|---|---|
+| Iniciar scheduler solo en la app POS, con startup y periodo configurados | Implementado; validar en analisis y pruebas |
+| Despertar la cola al completar restore, respetando `syncOnSave` y sin invalidar el restore local ante fallo remoto | Implementado; validar en pruebas |
+| Mantener reconexion/reanudacion y no activar sync POS en Backoffice/Marcador | Implementado; validar |
+| Pruebas de scheduler e inicializacion | Añadidas; ejecutar |
+| APK nuevo, posterior a `0.1.93+98`, verificado y copiado a `SmooControl/release` | Pendiente de build |
+| Confirmacion funcional con dispositivo real | Pendiente: la cola Drift del telefono no esta disponible para inspeccion remota |
+
 Corregir el fallo reportado al sincronizar el catálogo desde el POS sin duplicar
 la cola, sus estados ni el mecanismo de reintentos existente. Validar ida y
 vuelta de catálogo/ventas con la API canónica, publicar la rama de corrección y
@@ -36,6 +53,32 @@ los datos históricos, credenciales o claves de Supabase.
 | D. Feedback de sync manual | Reportar resultados reales de cola y descarga; errores de RPC no se presentan como sincronización exitosa. | ✅ Implementado; verificar pruebas de regresión |
 | E. Validación local | `dart format`, análisis, pruebas de sync/POS y prueba SQL local de RPC/tenant/idempotencia según fixtures disponibles. | ✅ `dart format` sin cambios pendientes; `flutter analyze` sin errores; 83 pruebas de sync y 167 de POS/ventas/caja/inventario/empaques/catálogo en verde. `supabase status` y `docker info` se colgaron en esta continuación, por lo que no se repitió pgTAP (8/8 constaba de la ejecución local previa). |
 | F. Publicación y artefacto | Revisar diff; commit y push de la rama de corrección; compilar con el script oficial, comprobar defines, versión, permisos y SQLite nativo. | ✅ Publicado en `fix/pos-sync-e2e-2026-11-20`; SHA confirmado local/remoto `96440694324d6563a0bf97a006009a0cf864b075`. APK generado y verificado. |
+
+## Seguimiento 2026-11-20: cola tras inicialización
+
+- Hallazgo reproducido por trazado: `device.initialize` se agrega primero a la
+  cola FIFO; el envío inmediato de ventas se omite correctamente mientras haya
+  un elemento más antiguo. Además, el scheduler no se iniciaba en el ciclo de
+  vida normal de la app. Por eso el botón manual vaciaba el bloqueo inicial y
+  luego parecía "despertar" la sincronización.
+- Corrección: iniciar el scheduler solo en modo POS, despertarlo después de
+  confirmar localmente la inicialización y ejecutar el ciclo inicial antes de
+  dejar el temporizador periódico activo. `syncOnSave` conserva su semántica
+  aunque el reintento periódico esté desactivado; FIFO y exclusión mutua se
+  mantienen.
+- Validación comprobada: `dart format` aplicado; `flutter analyze` sin errores;
+  37 pruebas dirigidas de inicialización, scheduler, cola, sincronización y
+  ventas pasaron. No hay emulador/dispositivo disponible para observar una
+  cola Drift física; esa comprobación queda para la nueva instalación.
+- APK oficial `production`: `release/SmooControl-produccion-0.1.94-99.apk`,
+  80,212,081 bytes, SHA-256
+  `D0ACD6D4CB6167CC435A6007991F76FF9937D34DF281D7417D6D64291663F3E1`;
+  firma v2 válida; paquete `com.smoocontrol.pos`, versión `0.1.94`,
+  versionCode `99`. Se generó mediante el script oficial con credenciales
+  privadas; no se incluyeron secretos en Git.
+- Pendiente de QA propietario: reinstalar/inicializar el APK, abrir caja y
+  observar si la primera venta se sincroniza sin tocar "Sincronizar datos".
+  No se inspeccionó ni se afirma acceso a la cola local del teléfono.
 
 ## Resultado del APK
 
