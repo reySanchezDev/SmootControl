@@ -45,7 +45,7 @@ extension on SupabaseSyncRemoteSender {
       'unit_cost': _money(unitCost),
       'subtotal': _money(subtotal),
       'gross_profit': _money(subtotal - totalCost),
-      'created_at': payload['createdAt'],
+      'created_at': _utcTimestamp(payload['createdAt']),
     };
   }
 }

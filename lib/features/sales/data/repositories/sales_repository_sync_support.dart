@@ -46,10 +46,7 @@ extension _SalesRepositorySyncSupport on SalesRepository {
       operation: SyncOperation.update,
       payload: {
         'sale': _salePayload(sale),
-        'void': {
-          'reason': reason,
-          'voidedBy': voidedBy,
-        },
+        'void': {'reason': reason, 'voidedBy': voidedBy},
         'inventoryMovements': inventoryMovements,
         'packagingMovements': packagingMovements,
       },
@@ -109,7 +106,9 @@ extension _SalesRepositorySyncSupport on SalesRepository {
       'status': sale.status.name,
       'subtotalInCents': sale.subtotalInCents,
       'totalInCents': sale.totalInCents,
-      'createdAt': sale.createdAt.toIso8601String(),
+      // Persist the event instant explicitly; naive local ISO strings become
+      // UTC when PostgreSQL casts them to timestamptz.
+      'createdAt': sale.createdAt.toUtc().toIso8601String(),
     };
   }
 
@@ -126,7 +125,7 @@ extension _SalesRepositorySyncSupport on SalesRepository {
       'quantity': item.quantity,
       'unitPriceInCents': item.unitPriceInCents,
       'unitCostInCents': item.unitCostInCents,
-      'createdAt': item.createdAt.toIso8601String(),
+      'createdAt': item.createdAt.toUtc().toIso8601String(),
     };
   }
 }

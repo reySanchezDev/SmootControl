@@ -557,6 +557,14 @@
 - Related screens/flows: catalogos, POS, caja, gastos, usuarios, sync.
 - Data impact: `Documentation/SUPABASE_READINESS_AUDIT.md`, `supabase/migrations`, `local_sync_queue`.
 
+### Regla: Instantes de venta sincronizados en UTC
+- Description: El POS conserva la fecha de negocio con la fecha local del restaurante, pero serializa los instantes de venta y sus líneas con zona UTC explícita antes de sincronizarlos. El emisor normaliza también timestamps locales sin zona de filas antiguas que sigan en la cola, interpretándolos con la zona horaria configurada en el dispositivo.
+- Rationale: PostgreSQL interpreta un timestamp sin zona según la sesión/servidor, no según la zona del teléfono; enviar una hora local desnuda puede desplazar ventas seis horas en Nicaragua.
+- Example(s): Una venta registrada a las 15:11 en Managua se envía como `2026-11-20T21:11:00Z`; su fecha de negocio continúa siendo `2026-11-20`.
+- Edge cases: La normalización de filas antiguas asume que el dispositivo conserva la zona horaria que tenía al registrar la venta. Un payload con `Z` u offset se convierte al mismo instante, no se vuelve a desplazar.
+- Related screens/flows: POS > Cobrar > cola FIFO `local_sync_queue` > `pos_sync_sale_v2` / sincronización de consumo de personal.
+- Data impact: `sales.sold_at`, `sale_items.created_at`, payload `local_sync_queue`; no cambia esquema ni fecha de negocio.
+
 ## Version 2 / KDS
 
 ### Regla futura: KDS remoto por estaciones

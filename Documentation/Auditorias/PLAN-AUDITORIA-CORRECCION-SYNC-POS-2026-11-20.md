@@ -2,6 +2,28 @@
 
 ## Objetivo y alcance
 
+## Hallazgo adicional: timestamps POS interpretados con zona incorrecta
+
+- Evidencia remota: la factura `F-1332` tenía `sold_at` y la línea a las
+  `15:11:09.098453Z`, mientras caja y recepción de la venta ocurrieron a las
+  `21:10:54Z` y `21:11:09.458203Z`. Al sumar seis horas, el instante de venta
+  queda `21:11:09.098453Z`, 0.36 segundos antes de la recepción.
+- Causa: la cola serializaba `DateTime` local sin sufijo de zona; Postgres
+  asumía UTC al convertir a `timestamptz`.
+- Corrección: serializar ventas y líneas nuevas con sufijo UTC; normalizar en
+  el emisor los registros antiguos pendientes interpretando su timestamp sin
+  zona en el huso del dispositivo. La fecha comercial sigue siendo local.
+- Datos: corregidos únicamente `sold_at` de `F-1332` y `created_at` de su línea
+  por +6 horas, protegidos por IDs, restaurante, caja, POS, estado, número de
+  factura y valores anteriores exactos. No se cambió esquema/RPC ni se creó
+  migración.
+- Validación de código: `dart format` y `flutter analyze` sin errores; las dos
+  pruebas focalizadas de serialización nueva y normalización de cola anterior
+  pasaron. Una corrida más amplia con dos suites heredadas excedió el límite
+  de 300 s de la herramienta de pruebas y no se toma como resultado de fallo.
+- Validación de cliente: generar APK posterior a `0.1.94+99`; QA del instante
+  de una nueva venta queda pendiente en el teléfono del propietario.
+
 ## Seguimiento adicional: inicializacion y cola automatica (2026-11-20)
 
 La revision del incidente posterior detecto dos omisiones: el scheduler tenia

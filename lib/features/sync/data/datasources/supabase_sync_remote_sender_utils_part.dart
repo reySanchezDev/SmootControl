@@ -99,6 +99,16 @@ extension on SupabaseSyncRemoteSender {
     return text.substring(0, 10);
   }
 
+  /// Converts timestamps from both old local queue rows and new UTC rows.
+  ///
+  /// Legacy rows have no offset, so `DateTime.parse` interprets them in the
+  /// device timezone; explicit offsets are preserved as the same instant.
+  String? _utcTimestamp(Object? value) {
+    final text = _optionalText(value);
+    if (text == null) return null;
+    return DateTime.parse(text).toUtc().toIso8601String();
+  }
+
   String? _optionalText(Object? value) {
     final text = value?.toString().trim();
     return text == null || text.isEmpty ? null : text;

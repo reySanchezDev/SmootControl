@@ -44,14 +44,11 @@ extension on SupabaseSyncRemoteSender {
     final itemPayloads = _listPayload(item.payload['items']);
     final cashierId =
         _optionalText(salePayload['cashierId']) ?? await _deviceUserId();
-    final totalCost = itemPayloads.fold<int>(
-      0,
-      (total, saleItem) {
-        final quantity = _intValue(saleItem['quantity']);
-        final cost = _intValue(saleItem['unitCostInCents']);
-        return total + (quantity * cost);
-      },
-    );
+    final totalCost = itemPayloads.fold<int>(0, (total, saleItem) {
+      final quantity = _intValue(saleItem['quantity']);
+      final cost = _intValue(saleItem['unitCostInCents']);
+      return total + (quantity * cost);
+    });
     final totalAmount = _intValue(salePayload['totalInCents']);
     final saleId = _remoteUuid(salePayload['id'], scope: 'sales');
     final tableAccountId = _nullableRemoteUuid(
@@ -89,7 +86,7 @@ extension on SupabaseSyncRemoteSender {
           'total_cost': _money(totalCost),
           'gross_profit': _money(totalAmount - totalCost),
           'status': salePayload['status'],
-          'sold_at': salePayload['createdAt'],
+          'sold_at': _utcTimestamp(salePayload['createdAt']),
         },
         'items': itemPayloads.map((payload) {
           return _saleItemPayload(payload, saleId);
@@ -109,10 +106,7 @@ extension on SupabaseSyncRemoteSender {
         'void': _mapPayload(item.payload['void']),
       },
     });
-    await _applyRemoteSaleResult(
-      result: result,
-      salePayload: salePayload,
-    );
+    await _applyRemoteSaleResult(result: result, salePayload: salePayload);
   }
 
   Future<void> _pushStaffConsumptionWithDevice(SyncQueueItem item) async {
@@ -120,14 +114,11 @@ extension on SupabaseSyncRemoteSender {
     final itemPayloads = _listPayload(item.payload['items']);
     final cashierId =
         _optionalText(salePayload['cashierId']) ?? await _deviceUserId();
-    final totalCost = itemPayloads.fold<int>(
-      0,
-      (total, saleItem) {
-        final quantity = _intValue(saleItem['quantity']);
-        final cost = _intValue(saleItem['unitCostInCents']);
-        return total + (quantity * cost);
-      },
-    );
+    final totalCost = itemPayloads.fold<int>(0, (total, saleItem) {
+      final quantity = _intValue(saleItem['quantity']);
+      final cost = _intValue(saleItem['unitCostInCents']);
+      return total + (quantity * cost);
+    });
     final totalAmount = _intValue(salePayload['totalInCents']);
     final saleId = _remoteUuid(salePayload['id'], scope: 'sales');
     final cashRegisterSessionId = await _cashRegisterSessionIdForSale(
@@ -160,7 +151,7 @@ extension on SupabaseSyncRemoteSender {
           'total_cost': _money(totalCost),
           'gross_profit': _money(totalAmount - totalCost),
           'status': salePayload['status'],
-          'sold_at': salePayload['createdAt'],
+          'sold_at': _utcTimestamp(salePayload['createdAt']),
         },
         'items': itemPayloads.map((payload) {
           return _saleItemPayload(payload, saleId);
