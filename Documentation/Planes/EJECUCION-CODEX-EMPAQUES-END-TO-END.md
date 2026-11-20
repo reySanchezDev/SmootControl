@@ -1,6 +1,6 @@
 # PLAN RECTOR VIVO — Core de artículos de Kivo
 
-> **Estado vigente al 2026-11-19:** la remediación de auditoría está en `fix/audit-items-end-to-end-2026-11-19`, basada en `main` `4181999ee58ba9eb65ec96d13b48de95ee2669cb`. RELEASE oficial local compilado y servido en `http://127.0.0.1:8105/`; migraciones 132–134 solo en Docker local. Sin cambios en `main`, producción, Supabase remoto ni migración 088. Ver gates y evidencia en [acta de remediación](../Auditorias/ACTA-REMEDIACION-ITEMS-END-TO-END-2026-11-19.md). Inspección visual, E2E de dispositivo y compatibilidad histórica siguen abiertos.
+> **Estado vigente al 2026-11-19:** remediación integrada por fast-forward a GitHub `main`, SHA `74ae87d333d76cce302e4f1b61b3b1764a378249`. RELEASE local servido en `http://127.0.0.1:8105/`; migraciones 132–134 solo en Docker local. Vercel no ha desplegado este SHA: no aparece deployment coincidente y el proyecto Kivo no figura enlazado a Git en la conexión consultada. Supabase remoto y migración 088 sin cambios. Ver gates en [acta](../Auditorias/ACTA-REMEDIACION-ITEMS-END-TO-END-2026-11-19.md). Inspección visual, E2E de dispositivo y compatibilidad histórica siguen abiertos.
 
 **Identificador:** KIVO-ITEM-CORE  
 **Última actualización:** 2026-11-11  

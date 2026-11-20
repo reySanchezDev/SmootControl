@@ -3,7 +3,7 @@
 **Fecha:** 2026-11-19
 **Base de implementación:** `main` `4181999ee58ba9eb65ec96d13b48de95ee2669cb`
 **Rama:** `fix/audit-items-end-to-end-2026-11-19`
-**Alcance:** correcciones locales en rama aislada y pruebas contra Docker local. Sin cambios en `main`, producción ni Supabase remoto.
+**Alcance:** correcciones probadas contra Docker local y luego fast-forward publicadas en GitHub `main` (`74ae87d333d76cce302e4f1b61b3b1764a378249`). Supabase remoto no fue modificado. El deploy productivo de Vercel no se actualizó: no hay deployment para este SHA y el proyecto no figura enlazado a Git.
 
 ## Decisiones y resultados
 
@@ -48,4 +48,4 @@
 - Fuentes y pruebas nuevas/modificadas comprobadas <=300 líneas; `git diff --check` sin errores. Existen otros archivos heredados mayores a 300 no tocados por esta remediación.
 - Pendiente: QA visual del propietario, prueba E2E de venta POS/dispositivo y los riesgos históricos descritos en la matriz. No promover a producción con estos gates abiertos.
 
-**Resultado:** remediación parcial verificada localmente; no certifica producción ni cierra los riesgos A05–A08, H01/H02, E02/E03 ni pruebas E2E de dispositivo.
+**Resultado:** código integrado a GitHub `main` y verificado localmente; no equivale a deploy de Vercel ni certifica producción. Siguen abiertos los riesgos A05–A08, H01/H02, E02/E03 y las pruebas E2E de dispositivo.
