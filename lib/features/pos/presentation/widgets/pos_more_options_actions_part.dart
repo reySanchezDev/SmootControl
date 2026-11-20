@@ -94,12 +94,7 @@ mixin _PosMoreOptionsActionsMixin on StatelessWidget {
       return;
     }
 
-    unawaited(
-      showPosSplitAccountsDialog(
-        context: context,
-        state: state,
-      ),
-    );
+    unawaited(showPosSplitAccountsDialog(context: context, state: state));
   }
 
   bool get _hasPendingProducts {
@@ -113,9 +108,8 @@ mixin _PosMoreOptionsActionsMixin on StatelessWidget {
 
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => PosCashTransactionsPage(
-          cashRegisterSessionId: session.id,
-        ),
+        builder: (_) =>
+            PosCashTransactionsPage(cashRegisterSessionId: session.id),
       ),
     );
   }
@@ -126,9 +120,8 @@ mixin _PosMoreOptionsActionsMixin on StatelessWidget {
 
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => PosRegisterExpensePage(
-          cashRegisterSessionId: session.id,
-        ),
+        builder: (_) =>
+            PosRegisterExpensePage(cashRegisterSessionId: session.id),
       ),
     );
   }
@@ -162,11 +155,22 @@ mixin _PosMoreOptionsActionsMixin on StatelessWidget {
       ),
     );
 
+    var queueSummary = const SyncProcessSummary(
+      processed: 0,
+      succeeded: 0,
+      failed: 0,
+    );
+    var queueFailure = '';
     try {
       final pushResult = await serviceLocator<SyncSchedulerService>().runNow();
+      if (pushResult == null) {
+        throw StateError('La sincronizacion ya esta en curso.');
+      }
       if (pushResult case AppFailureResult(:final error)) {
+        queueFailure = error.message;
         throw StateError(error.message);
       }
+      if (pushResult case AppSuccess(:final value)) queueSummary = value;
 
       final summary = await serviceLocator<ICatalogPullService>()
           .pullOperationalCatalog();
@@ -180,10 +184,17 @@ mixin _PosMoreOptionsActionsMixin on StatelessWidget {
           ? 'El POS quedo listo para vender.'
           : 'Atencion: el POS aun no esta listo para vender. '
                 'Falta: ${summary.missingPosRequirements.join(', ')}.';
+      final queueMessage = queueSummary.failed == 0
+          ? 'Cola: ${queueSummary.succeeded} operaciones enviadas.'
+          : 'Cola: ${queueSummary.succeeded} enviadas, '
+                '${queueSummary.failed} fallidas. Revise Sincronizacion.';
+      final syncStatus = queueSummary.failed == 0
+          ? 'Sincronizacion completada.'
+          : 'Sincronizacion parcial.';
       await showAppMessageDialog(
         context: context,
         message:
-            'Datos sincronizados correctamente. '
+            '$syncStatus $queueMessage Catalogo descargado: '
             'Registros actualizados: ${summary.total}. '
             '$readinessMessage',
         title: 'Sincronizar datos',
@@ -193,7 +204,11 @@ mixin _PosMoreOptionsActionsMixin on StatelessWidget {
       Navigator.of(context, rootNavigator: true).pop();
       await showAppMessageDialog(
         context: context,
-        message: 'No se pudieron sincronizar los datos. $error',
+        message:
+            'No se pudo completar la sincronizacion. '
+            'Cola: ${queueSummary.succeeded} enviadas, '
+            '${queueSummary.failed} fallidas. '
+            '${queueFailure.isEmpty ? error : queueFailure}',
         title: 'Sincronizar datos',
       );
     }
@@ -207,10 +222,9 @@ mixin _PosMoreOptionsActionsMixin on StatelessWidget {
       return;
     }
 
-    await Navigator.of(context).pushNamedAndRemoveUntil(
-      AppRoutes.dashboard,
-      (_) => false,
-    );
+    await Navigator.of(
+      context,
+    ).pushNamedAndRemoveUntil(AppRoutes.dashboard, (_) => false);
   }
 
   PosBloc? maybePosBloc(BuildContext context) {

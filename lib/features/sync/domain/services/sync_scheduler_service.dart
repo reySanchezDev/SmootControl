@@ -62,6 +62,16 @@ final class SyncSchedulerService {
     }
   }
 
+  /// Retries the existing FIFO queue when automatic synchronization is enabled.
+  Future<void> runAutomaticallyNow() async {
+    final settingsResult = await _settingsRepository.getSettings();
+    if (settingsResult case AppSuccess(
+      :final value,
+    ) when value.autoSyncEnabled) {
+      await runNow();
+    }
+  }
+
   /// Stops the scheduler.
   void dispose() {
     _timer?.cancel();

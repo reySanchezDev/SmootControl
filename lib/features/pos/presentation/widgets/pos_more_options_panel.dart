@@ -32,6 +32,7 @@ import 'package:smoo_control/features/staff/domain/entities/business_rule.dart';
 import 'package:smoo_control/features/staff/domain/entities/employee.dart';
 import 'package:smoo_control/features/staff/domain/entities/salary_advance.dart';
 import 'package:smoo_control/features/staff/domain/repositories/i_staff_repository.dart';
+import 'package:smoo_control/features/sync/domain/entities/sync_process_summary.dart';
 import 'package:smoo_control/features/sync/domain/services/i_catalog_pull_service.dart';
 import 'package:smoo_control/features/sync/domain/services/sync_scheduler_service.dart';
 import 'package:smoo_control/l10n/app_localizations.dart';

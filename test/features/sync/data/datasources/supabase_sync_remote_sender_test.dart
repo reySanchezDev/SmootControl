@@ -870,11 +870,13 @@ void main() {
     );
 
     test(
-      'reuses existing remote open cash session when local cash collides',
+      'uses the canonical device RPC and resolved remote cash session',
       () async {
         final requests = <http.Request>[];
+        final database = _testDatabase();
+        await _seedDeviceForPosSync(database, DateTime(2026, 7));
         final sender = SupabaseSyncRemoteSender(
-          database: _testDatabase(),
+          database: database,
           config: const SupabaseAppConfig(
             supabaseUrl: 'https://smoo.test',
             publishableKey: 'publishable-key',
@@ -886,25 +888,16 @@ void main() {
           client: MockClient((request) async {
             requests.add(request);
             if (request.method == 'POST' &&
-                request.url.path == '/rest/v1/cash_register_sessions') {
+                request.url.path ==
+                    '/rest/v1/rpc/pos_sync_cash_register_session') {
               return http.Response(
-                jsonEncode({
-                  'code': '23505',
-                  'message':
-                      'duplicate key value violates unique constraint '
-                      '"cash_register_one_open_per_user_day_idx"',
-                }),
-                409,
-              );
-            }
-            if (request.method == 'GET' &&
-                request.url.path == '/rest/v1/cash_register_sessions') {
-              return http.Response(
-                jsonEncode([
-                  {'id': 'cash-remote-open'},
-                ]),
+                jsonEncode({'remote_id': 'cash-remote-open'}),
                 200,
               );
+            }
+            if (request.method == 'POST' &&
+                request.url.path == '/rest/v1/rpc/pos_sync_sale_v2') {
+              return http.Response('{}', 200);
             }
             return http.Response('', 204);
           }),
@@ -965,12 +958,14 @@ void main() {
             updatedAt: DateTime(2026, 7),
           ),
         );
-
         final saleRequest = requests.singleWhere(
-          (request) => request.url.path == '/rest/v1/sales',
+          (request) => request.url.path == '/rest/v1/rpc/pos_sync_sale_v2',
         );
-        final saleBody = jsonDecode(saleRequest.body) as Map<String, Object?>;
-        expect(saleBody['cash_register_session_id'], 'cash-remote-open');
+        final body = (jsonDecode(saleRequest.body) as Map)
+            .cast<String, Object?>();
+        final payload = (body['p_payload']! as Map).cast<String, Object?>();
+        final sale = (payload['sale']! as Map).cast<String, Object?>();
+        expect(sale['cash_register_session_id'], 'cash-remote-open');
       },
     );
   });
